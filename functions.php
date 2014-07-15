@@ -84,7 +84,7 @@ function rent($number,$bike)
 			return;
 		}
     		$row = $result->fetch_assoc();
-		$currentCode = $row["currentCode"];
+		$currentCode = sprintf("%04d",$row["currentCode"]);
 		$currentUser= $row["currentUser"];
 	} else error("bike code not retrieved");
 
