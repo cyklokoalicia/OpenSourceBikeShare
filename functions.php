@@ -6,7 +6,7 @@ require("config.php");
 
 function Help()
 {
-	return "Available commands: RENT,RETURN";
+	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber";
 }
 function sendSMS($number, $text)
 {
@@ -174,6 +174,42 @@ function returnBike($number,$bike,$stand)
 	
 	sendSMS($number,"You have successfully returned the bike $bikeNum to stand $stand. Make sure you have set the code $currentCode. Do not forget to rotate the lockpad to 0000 when leaving.");
 //	echo "RETURN success";
+}
+
+
+function where($number,$bike)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$userId = getUser($number);
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	$bikeNum = intval($bike);
+
+	if ($result = $mysqli->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
+    		if($result->num_rows!=1)
+		{
+			sendSMS($number,"Bike $bikeNum does not exist.");
+			return;
+		}
+    		$row = $result->fetch_assoc();
+		$phone= $row["number"];
+		$userName= $row["userName"];
+		$standName= $row["standName"];
+	} else error("bike code not retrieved");
+
+	if($standName!=NULL)
+	{
+		sendSMS($number,"Bike $bikeNum is at stand $standName.");
+	}
+	else
+	{
+		sendSMS($number,"Bike $bikeNum is rented by $userName (+$phone).");
+	}
+
+
+	//echo "RENT success";
+
 }
 
 
