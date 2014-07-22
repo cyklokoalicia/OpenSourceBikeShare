@@ -62,6 +62,8 @@ switch($args[0])
 	sendSMS($number,Help());
 	break;
     case "WHERE":
+    case "WHO":
+    case "KTO":
     case "KDE":
 	where($number,$args[1]);
 	break;
