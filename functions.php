@@ -108,6 +108,9 @@ function rent($number,$bike)
 	} else error("update failed");
 	//echo "RENT success";
 
+	if ($result = $mysqli->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode")) {
+	} else error("update failed");
+	
 }
 
 
@@ -121,9 +124,9 @@ function returnBike($number,$bike,$stand)
 	$bikeNum = intval($bike);
 	$stand = strtoupper($stand);
 
-	if(!preg_match("/^[A-Z]+$/",$stand))
+	if(!preg_match("/^[A-Z]+[0-9]*$/",$stand))
 	{
-		sendSMS($number,"The stand name '$stand' you have provided was not in the correct format. A correct stand name looks like a person's first name, e.g.: TOMAS"); 
+		sendSMS($number,"The stand name '$stand' you have provided was not in the correct format. Stands are marked by CAPITALLETTERS."); 
 		return;
 	}
 
@@ -155,7 +158,7 @@ function returnBike($number,$bike,$stand)
 		}
 
 		$row = $result->fetch_assoc();
-		$currentCode = $row["currentCode"];
+		$currentCode = sprintf("%04d",$row["currentCode"]);
 	} else error("code not retrieved");
 
 	if ($result = $mysqli->query("SELECT standId FROM stands where standName='$stand'")) {
@@ -174,6 +177,10 @@ function returnBike($number,$bike,$stand)
 	
 	sendSMS($number,"You have successfully returned the bike $bikeNum to stand $stand. Make sure you have set the code $currentCode. Do not forget to rotate the lockpad to 0000 when leaving.");
 //	echo "RETURN success";
+
+	if ($result = $mysqli->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
+	} else error("update failed");
+	
 }
 
 
