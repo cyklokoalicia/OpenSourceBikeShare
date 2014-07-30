@@ -6,7 +6,7 @@ require("config.php");
 
 function Help()
 {
-	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber";
+	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nLIST standname";
 }
 function sendSMS($number, $text)
 {
@@ -88,7 +88,7 @@ function rent($number,$bike)
 		$currentUser= $row["currentUser"];
 	} else error("bike code not retrieved");
 
-	$newCode = sprintf("%04d",rand(1,9999));
+	$newCode = sprintf("%04d",rand(100,9900));//do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
 
 	if($currentUser==$userId)
 	{
@@ -131,7 +131,7 @@ function returnBike($number,$bike,$stand)
 	}
 
 
-	if ($result = $mysqli->query("SELECT bikeNum FROM bikes where currentUser=$userId")) {
+	if ($result = $mysqli->query("SELECT bikeNum FROM bikes where currentUser=$userId ORDER BY bikeNum")) {
 		$rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
 	} else error("rented bikes not fetched");
 
@@ -217,6 +217,55 @@ function where($number,$bike)
 
 	//echo "RENT success";
 
+}
+
+
+function listBikes($number,$stand)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$userId = getUser($number);
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	$stand = strtoupper($stand);
+
+	if(!preg_match("/^[A-Z]+[0-9]*$/",$stand))
+	{
+		sendSMS($number,"The stand name '$stand' you have provided was not in the correct format. Stands are marked by CAPITALLETTERS."); 
+		return;
+	}
+
+	if ($result = $mysqli->query("SELECT standId FROM stands where standName='$stand'")) {
+    		if($result->num_rows!=1)
+		{
+			sendSMS($number,"Stand '$stand' does not exist.");
+			return;
+		}
+    		$row = $result->fetch_assoc();
+		$standId = $row["standId"];
+	} else error("stand not retrieved");
+
+
+	if ($result = $mysqli->query("SELECT bikeNum FROM bikes where currentStand=$standId ORDER BY bikeNum")) {
+		$rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
+	} else error("bikes on stand not fetched");
+
+	if(count($rentedBikes)==0)
+	{
+		sendSMS($number,"Stand $stand is empty."); 
+		return;
+	}
+
+	$listBikes="";
+	for($i=0; $i<count($rentedBikes);$i++)
+	{
+		if($i!=0)
+			$listBikes.=",";
+		$listBikes.=$rentedBikes[$i]["bikeNum"];
+	}
+
+	$countBikes = count($rentedBikes);
+	sendSMS($number,"$countBikes bike(s) on stand $stand: $listBikes");
 }
 
 

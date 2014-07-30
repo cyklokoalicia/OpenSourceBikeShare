@@ -62,14 +62,36 @@ switch($args[0])
 	sendSMS($number,Help());
 	break;
     case "WHERE":
-    case "WHO":
-    case "KTO":
     case "KDE":
+	if(count($args)<2)
+	{
+	    sendSMS($number,"You have to provide the bike number, e.g.: WHERE 47");
+	    return;
+	}
+	if(count($args)>2)
+	{
+	    sendSMS($number,"You have provided too many arguments. Provide only the bike number, e.g.: WHERE 47");
+	    return;
+	}
 	where($number,$args[1]);
 	break;
-    case "NEAR":
-    case "BLIZKO":
-	near($number,$args[1]);
+    case "LIST":
+    case "ZOZNAM":
+	if(count($args)<2)
+	{
+	    sendSMS($number,"You have to provide the stand name, e.g.: LIST RACKO");
+	    return;
+	}
+	if(count($args)>2)
+	{
+	    sendSMS($number,"You have provided too many arguments. Provide only the stand name, e.g.: LIST RACKO");
+	    return;
+	}
+	listBikes($number,$args[1]);
+	break;
+ //    case "NEAR":
+//    case "BLIZKO":
+//	near($number,$args[1]);
     default:
 	sendSMS($number,"Your message '$message' was not understood. The command $args[0] does not exist.".Help());
 }
