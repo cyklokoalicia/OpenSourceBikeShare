@@ -6,7 +6,7 @@ require("config.php");
 
 function Help()
 {
-	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nLIST standname";
+	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nLIST standname\nFREE";
 }
 function sendSMS($number, $text)
 {
@@ -266,6 +266,38 @@ function listBikes($number,$stand)
 
 	$countBikes = count($rentedBikes);
 	sendSMS($number,"$countBikes bike(s) on stand $stand: $listBikes");
+}
+
+
+function freeBikes($number)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$userId = getUser($number);
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	if ($result = $mysqli->query("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on
+	bikes.currentStand=stands.standId where stands.serviceTag=0 group by
+	placeName having bikeCount>0 order by placeName")) {
+		$rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
+	} else error("bikes on stand not fetched");
+
+	if(count($rentedBikes)==0)
+	{
+		sendSMS($number,"No free bikes."); 
+		return;
+	}
+
+	$listBikes="";
+	for($i=0; $i<count($rentedBikes);$i++)
+	{
+		if($i!=0)
+			$listBikes.=",";
+		$listBikes.=$rentedBikes[$i]["placeName"].":".$rentedBikes[$i]["bikeCount"];
+	}
+
+	$countBikes = count($rentedBikes);
+	sendSMS($number,"Free bikes counts: $listBikes");
 }
 
 
