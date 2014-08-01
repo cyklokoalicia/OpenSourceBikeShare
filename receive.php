@@ -92,7 +92,10 @@ switch($args[0])
  //    case "NEAR":
 //    case "BLIZKO":
 //	near($number,$args[1]);
-    default:
+    case "FREE":
+	freeBikes($number);
+	break;
+     default:
 	sendSMS($number,"Your message '$message' was not understood. The command $args[0] does not exist.".Help());
 }
 
