@@ -10,7 +10,10 @@ function Help()
 }
 function sendSMS($number, $text)
 {
-    global $gatewayId, $gatewayKey, $gatewaySenderNumber;
+log_sendsms($number,$text);
+
+return;
+global $gatewayId, $gatewayKey, $gatewaySenderNumber;
     $s = substr(md5($gatewayKey.$number),10,11);
     $text = substr($text,0,160);
      
@@ -300,6 +303,40 @@ function freeBikes($number)
 	sendSMS($number,"Free bikes counts: $listBikes");
 }
 
+function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	
+	$sms_uuid = $mysqli->real_escape_string($sms_uuid);
+	$sender = $mysqli->real_escape_string($sender);
+	$receive_time = $mysqli->real_escape_string($receive_time);
+	$sms_text = $mysqli->real_escape_string($sms_text);
+	$ip = $mysqli->real_escape_string($ip);
+	
+
+	if ($result = $mysqli->query("INSERT INTO receivedsms SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'")) {
+	} else error("update failed");
+    
+
+}
+
+function log_sendsms($number, $text)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	
+	$number = $mysqli->real_escape_string($number);
+	$text = $mysqli->real_escape_string($text);
+	
+
+	if ($result = $mysqli->query("INSERT INTO sentsms SET number='$number',text='$text'")) {
+	} else error("update failed");
+    
+
+}
 
 
 ?>

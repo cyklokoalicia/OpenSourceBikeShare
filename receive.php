@@ -8,6 +8,8 @@ $message = strtoupper(trim(urldecode($_GET["sms_text"])));
 $number = $_GET["sender"];
 $sms_uuid = $_GET["sms_uuid"];
 
+log_sms($sms_uuid,$number,$_GET["receive_time"],$_GET["sms_text"],$_SERVER['REMOTE_ADDR']);
+
 echo "ok:$sms_uuid";
 echo "\n";
 
