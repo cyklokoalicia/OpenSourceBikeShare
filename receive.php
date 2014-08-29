@@ -91,6 +91,14 @@ switch($args[0])
 	}
 	listBikes($number,$args[1]);
 	break;
+    case "NOTE":
+	if(count($args)<2)
+	{
+	    sendSMS($number,"You have to provide the bike number and description (can be more words), e.g.: NOTE 47 Flat tire on front wheel");
+	    return;
+	}
+	note($number,$args[1],trim(urldecode($_GET["sms_text"])));
+	break;
  //    case "NEAR":
 //    case "BLIZKO":
 //	near($number,$args[1]);

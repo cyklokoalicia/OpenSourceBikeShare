@@ -6,13 +6,12 @@ require("config.php");
 
 function Help()
 {
-	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nLIST standname\nFREE";
+	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nFREE\nNOTE bikenumber Description what is broken";
 }
 function sendSMS($number, $text)
 {
 log_sendsms($number,$text);
 
-return;
 global $gatewayId, $gatewayKey, $gatewaySenderNumber;
     $s = substr(md5($gatewayKey.$number),10,11);
     $text = substr($text,0,160);
@@ -39,6 +38,22 @@ function getUser($number)
 		return -1;
 	}	
 }
+
+function getPrivileges($userId)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	if ($result = $mysqli->query("SELECT privileges FROM users where userId=$userId")) {
+    		if($result->num_rows==1)
+		{
+			$row = $result->fetch_assoc();
+			return $row["privileges"];
+		}
+		return 0;
+	}	
+}
+
 
 function validateNumber($number)
 {
@@ -105,7 +120,7 @@ function rent($number,$bike)
 		return;
 	}
 
-	sendSMS($number,"Open with code $currentCode, change code immediately to $newCode (open,rotate metal part,set new code,rotate metal part back).");
+	sendSMS($number,"Bike $bikeNum: Open with code $currentCode, change code immediately to $newCode (open,rotate metal part,set new code,rotate metal part back).");
 
 	if ($result = $mysqli->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL where bikeNum=$bikeNum")) {
 	} else error("update failed");
@@ -228,6 +243,14 @@ function listBikes($number,$stand)
 	global $dbServer, $dbUser, $dbPassword, $dbName;
 	
 	$userId = getUser($number);
+	$privileges = getPrivileges($userId);
+
+	if($privileges == 0)
+	{
+		sendSMS($number,"This command is available only for privileged users. Sorry."); 
+		return;
+	}
+	
 	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
 
 	$stand = strtoupper($stand);
@@ -337,6 +360,96 @@ function log_sendsms($number, $text)
     
 
 }
+
+function note($number,$bikeNum,$message)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$userId = getUser($number);
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	if ($result = $mysqli->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
+    		if($result->num_rows!=1)
+		{
+			sendSMS($number,"Bike $bikeNum does not exist.");
+			return;
+		}
+    		$row = $result->fetch_assoc();
+		$phone= $row["number"];
+		$userName= $row["userName"];
+		$standName= $row["standName"];
+	} else error("bike code not retrieved");
+
+	if($standName!=NULL)
+	{
+		$bikeStatus = "B.$bikeNum is at $standName.";
+	}
+	else
+	{
+		$bikeStatus = "B.$bikeNum is rented by $userName (+$phone).";
+	}
+
+	if ($result = $mysqli->query("SELECT userName from users where number=$number")) {
+    		$row = $result->fetch_assoc();
+		$reportedBy= $row["userName"];
+	} else error("user not retrieved");
+
+	if(!preg_match("/note[\s,\.]+[0-9]+[\s,\.]+(.*)/i",$message ,$matches))
+	{
+//		sendSMS($number,"Your note was not understood. Sorry.");
+		$userNote="";
+		//return;
+	}
+	else $userNote=$mysqli->real_escape_string(trim($matches[1]));
+
+	if($userNote=="")
+	{
+		if(getPrivileges($userId)==0)
+		{
+			sendSMS($number,"Deleting notes is available only for privileged users. Sorry."); 
+			return;
+		}
+
+		if ($result = $mysqli->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum")) {
+		} else error("update failed");
+		
+		sendSMS($number,"Note for bike $bikeNum deleted."); 
+		return;
+	}
+	else
+	{
+		$userNote=$userNote."(by $reportedBy)"; 
+		if ($result = $mysqli->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum")) {
+		} else error("update failed");
+	
+		sendSMS($number,"Note for bike $bikeNum saved."); 
+		
+		notifyAdmins("Note b.$bikeNum:".$userNote." ".$bikeStatus);
+		
+		return;
+	}
+
+}
+
+
+function notifyAdmins($message)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	if ($result = $mysqli->query("SELECT number FROM users where privileges & 2 != 0")) {
+		$admins = $result->fetch_all(MYSQLI_ASSOC);
+	} else error("admins not fetched");
+
+
+	for($i=0; $i<count($admins);$i++)
+	{
+		sendSMS($admins[$i]["number"],$message);
+	}
+	
+}
+
 
 
 ?>
