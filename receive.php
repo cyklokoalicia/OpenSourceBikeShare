@@ -102,7 +102,20 @@ switch($args[0])
  //    case "NEAR":
 //    case "BLIZKO":
 //	near($number,$args[1]);
-    case "FREE":
+    case "LAST":
+	if(count($args)<2)
+	{
+	    sendSMS($number,"You have to provide the bike number, e.g.: LAST 47");
+	    return;
+	}
+	if(count($args)>2)
+	{
+	    sendSMS($number,"You have provided too many arguments. Provide only the bike number, e.g.: LAST 47");
+	    return;
+	}
+	last($number,$args[1]);
+	break;
+     case "FREE":
 	freeBikes($number);
 	break;
      default:

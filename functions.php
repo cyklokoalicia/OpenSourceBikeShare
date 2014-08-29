@@ -418,13 +418,13 @@ function note($number,$bikeNum,$message)
 	}
 	else
 	{
-		$userNote=$userNote."(by $reportedBy)"; 
+		//$userNote=$userNote."(by $reportedBy)"; 
 		if ($result = $mysqli->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum")) {
 		} else error("update failed");
 	
 		sendSMS($number,"Note for bike $bikeNum saved."); 
 		
-		notifyAdmins("Note b.$bikeNum:".$userNote." ".$bikeStatus);
+		notifyAdmins("Note b.$bikeNum by $reportedBy:".$userNote." ".$bikeStatus);
 		
 		return;
 	}
@@ -448,6 +448,57 @@ function notifyAdmins($message)
 		sendSMS($admins[$i]["number"],$message);
 	}
 	
+}
+
+
+function last($number,$bike)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$userId = getUser($number);
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	if(getPrivileges($userId) == 0)
+	{
+		sendSMS($number,"This command is available only for privileged users. Sorry."); 
+		return;
+	}
+	
+	$bikeNum = intval($bike);
+
+	if ($result = $mysqli->query("SELECT bikeNum FROM bikes where bikeNum=$bikeNum")) {
+    		if($result->num_rows!=1)
+		{
+			sendSMS($number,"Bike $bikeNum does not exist.");
+			return;
+		}
+    	} else error("bike not retrieved");
+
+	if ($result = $mysqli->query("SELECT userName,parameter,standName
+FROM `history` join users on history.userid=users.userid left join stands on stands.standid=history.parameter where bikenum=$bikeNum order by time desc
+LIMIT 10")) {
+		$bikeHistory= $result->fetch_all(MYSQLI_ASSOC);
+	} else error("bike history not retrieved");
+
+	$historyInfo="B.$bikeNum:";
+	for($i=0; $i<count($bikeHistory);$i++)
+	{
+		if($i!=0)
+			$historyInfo.=",";
+		
+		if(($standName=$bikeHistory[$i]["standName"])!=NULL)
+		{
+			$historyInfo.=$standName;
+		
+		}
+		else
+		{
+			$historyInfo.=$bikeHistory[$i]["userName"]."(".$bikeHistory[$i]["parameter"].")";
+		}
+	}
+
+	sendSMS($number,$historyInfo);
+
 }
 
 
