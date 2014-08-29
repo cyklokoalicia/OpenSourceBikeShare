@@ -24,7 +24,7 @@ function report()
 	
 	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
 
-	if ($result = $mysqli->query("SELECT bikeNum,userName,standName
+	if ($result = $mysqli->query("SELECT bikeNum,userName,standName,note
 	FROM bikes left join users on bikes.currentUser=users.userId left
 	join stands on bikes.currentStand=stands.standId order by
 	standName,bikeNum
@@ -34,7 +34,7 @@ function report()
 
 	for($i=0; $i<count($rentedBikes);$i++)
 	{
-		echo $rentedBikes[$i]["bikeNum"],"&nbsp;",$rentedBikes[$i]["userName"],$rentedBikes[$i]["standName"],"<br/>";
+		echo $rentedBikes[$i]["bikeNum"],"&nbsp;",$rentedBikes[$i]["userName"],$rentedBikes[$i]["standName"],"&nbsp;",$rentedBikes[$i]["note"],"<br/>";
 		
 	}
 }
