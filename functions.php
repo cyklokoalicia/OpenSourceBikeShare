@@ -502,5 +502,129 @@ LIMIT 10")) {
 }
 
 
+function add($number,$email,$phone,$message)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$userId = getUser($number);
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	if(getPrivileges($userId)==0)
+	{
+		sendSMS($number,"This command is available only for privileged users. Sorry."); 
+		return;
+	}
+
+	$phone=intval($phone);
+	if($phone<=999999999)
+	{
+		$phone+=421000000000;
+	}
+
+	if ($result = $mysqli->query("SELECT number,mail,userName FROM users where number=$phone OR mail='$email'")) {
+    		if($result->num_rows!=0)
+		{
+    			$row = $result->fetch_assoc();
+			
+			$oldPhone= $row["number"];
+			$oldName= $row["userName"];
+			$oldMail= $row["mail"];
+				
+			sendSMS($number,"Contact information conflict: Other user already registered: $oldMail +$oldPhone $oldName");
+			return;
+		}
+	} else error("user info not retrieved");
+
+	if($phone < 421000000000 || $phone > 422000000000 || !preg_match("/add\s+([a-z0-9._%+-]+@[a-z0-9.-]+)\s+\+?[0-9]+\s+(.{2,}\s.{2,})/i",$message ,$matches))
+	{
+		sendSMS($number,"Contact information is in incorrect format. Usage: ADD king@earth.com 0901456789 Martin Luther King Jr.");
+		return;
+	}
+	$userName=$mysqli->real_escape_string(trim($matches[2]));
+	$email=$mysqli->real_escape_string(trim($matches[1]));
+
+	if ($result = $mysqli->query("INSERT into users SET userName='$userName',number=$phone,mail='$email'")) {
+	} else error("insert user failed");
+
+	sendConfirmationEmail($email);	
+
+	sendSMS($number,"User $userName added. He/She has to read the email and confirm usage rules before using the system."); 
+		
+
+}
+
+function sendConfirmationEmail($email)
+{
+     
+	$subject = 'registracia/registration White Bikes';
+	$headers = 'From: info@whitebikes.info' . "\r\n" .
+    'Reply-To: info@cyklokoalicia.sk' . "\r\n" .
+        'X-Mailer: PHP/' . phpversion();
+        
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	if ($result = $mysqli->query("SELECT userName,userId FROM users where mail='$email'")) {
+		$user = $result->fetch_all(MYSQLI_ASSOC);
+	} else error("email not fetched");
+
+	$userId =$user[0]["userId"]; 
+	$userKey = hash('sha256', $email.$dbPassword.rand(0,1000000));
+
+	if ($result = $mysqli->query("INSERT into registration SET userKey='$userKey',userId='$userId'")) {
+	} else error("insert registration failed");
+
+	if ($result = $mysqli->query("INSERT into limits SET userId='$userId',userLimit=0")) {
+	} else error("insert limit failed");
+
+		$mena = preg_split("/[\s,]+/",$user[0]["userName"]);
+		$krstne = $mena[0];
+		$message = "Ahoj $krstne, [EN below]\n
+bol/a si zaregistrovany/a do systemu komunitneho poziciavania bicyklov White Bikes.\n
+Navod k Bielym Bicyklom najdes na http://v.gd/navod
+
+Ak suhlasis s pravidlami, klikni na linku dole v maili.
+
+Dear $krstne,
+you were registered to the community bikesharing White Bikes.
+The current guide (in English) for White Bikes can be found at http://v.gd/introWB
+
+If you agree with the rules, click on the following link:
+
+http://whitebikes.info/sms/agree.php?key=$userKey
+";
+		mail($email, $subject, $message, $headers);
+}
+	
+function confirmUser($userKey)
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	
+	$userKey = $mysqli->real_escape_string($userKey);
+
+	if ($result = $mysqli->query("SELECT userId FROM registration where userKey='$userKey'")) {
+		if($result->num_rows==1)
+		{
+			$row = $result->fetch_assoc();
+			$userId = $row["userId"];
+		}
+		else 
+		{
+			echo "Some probem occured!";
+			return -1;
+		}
+	} else error("key not fetched");
+
+	if ($result = $mysqli->query("UPDATE limits SET userLimit=1 where userId=$userId")) {
+	} else error("update limit failed");
+
+	if ($result = $mysqli->query("DELETE from registration where userId='$userId'")) {
+	} else error("delete registration failed");
+
+	echo "All fine. Welcome!";
+}
+	
+
 
 ?>

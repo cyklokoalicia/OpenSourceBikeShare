@@ -13,7 +13,7 @@ log_sms($sms_uuid,$number,$_GET["receive_time"],$_GET["sms_text"],$_SERVER['REMO
 echo "ok:$sms_uuid";
 echo "\n";
 
-$args = preg_split("/[\s,\.]+/", $message);
+$args = preg_split("/\s+/", $message);
 
 #foreach($args as $arg)
 #{
@@ -99,6 +99,16 @@ switch($args[0])
 	}
 	note($number,$args[1],trim(urldecode($_GET["sms_text"])));
 	break;
+
+    case "ADD":
+	if(count($args)<3)
+	{
+	    sendSMS($number,"You have to provide the email, phone number, first name, last name(s), e.g.: ADD king@earth.com 0901456789 Martin Luther King Jr.");
+	    return;
+	}
+	add($number,$args[1],$args[2],trim(urldecode($_GET["sms_text"])));
+	break;
+
  //    case "NEAR":
 //    case "BLIZKO":
 //	near($number,$args[1]);
