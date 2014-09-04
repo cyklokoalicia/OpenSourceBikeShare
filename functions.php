@@ -95,7 +95,7 @@ function rent($number,$bike)
 		return;
 	}
 
-	if ($result = $mysqli->query("SELECT currentUser,currentCode FROM bikes where bikeNum=$bikeNum")) {
+	if ($result = $mysqli->query("SELECT currentUser,currentCode,note FROM bikes where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"Bike $bikeNum does not exist.");
@@ -104,6 +104,7 @@ function rent($number,$bike)
     		$row = $result->fetch_assoc();
 		$currentCode = sprintf("%04d",$row["currentCode"]);
 		$currentUser= $row["currentUser"];
+		$note= $row["note"];
 	} else error("bike code not retrieved");
 
 	$newCode = sprintf("%04d",rand(100,9900));//do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
@@ -120,7 +121,12 @@ function rent($number,$bike)
 		return;
 	}
 
-	sendSMS($number,"Bike $bikeNum: Open with code $currentCode, change code immediately to $newCode (open,rotate metal part,set new code,rotate metal part back).");
+	$message="Bike $bikeNum: Open with code $currentCode, change code immediately to $newCode (open,rotate metal part,set new code,rotate metal part back).";
+	if($note!="")
+	{
+		$message.="(bike note:".$note.")";
+	}
+	sendSMS($number,$message);
 
 	if ($result = $mysqli->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL where bikeNum=$bikeNum")) {
 	} else error("update failed");
@@ -168,7 +174,7 @@ function returnBike($number,$bike,$stand)
 	}
 
 
-	if ($result = $mysqli->query("SELECT currentCode FROM bikes where currentUser=$userId and bikeNum=$bikeNum")) {
+	if ($result = $mysqli->query("SELECT currentCode,note FROM bikes where currentUser=$userId and bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"You have not rented the bike $bikeNum. You have rented the following bike(s): $listBikes");
@@ -177,6 +183,7 @@ function returnBike($number,$bike,$stand)
 
 		$row = $result->fetch_assoc();
 		$currentCode = sprintf("%04d",$row["currentCode"]);
+		$note= $row["note"];
 	} else error("code not retrieved");
 
 	if ($result = $mysqli->query("SELECT standId FROM stands where standName='$stand'")) {
@@ -192,8 +199,15 @@ function returnBike($number,$bike,$stand)
 
 	if ($result = $mysqli->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId where bikeNum=$bikeNum")) {
 	} else error("update failed");
-	
-	sendSMS($number,"You have successfully returned the bike $bikeNum to stand $stand. Make sure you have set the code $currentCode. Do not forget to rotate the lockpad to 0000 when leaving.");
+
+
+	$message = "You have successfully returned the bike $bikeNum to stand $stand. Make sure you have set the code $currentCode.";
+	if($note!="")
+	{
+		$message.="(bike note:".$note.")";
+	}
+	$message.="Do not forget to rotate the lockpad to 0000 when leaving.";
+	sendSMS($number,$message);
 //	echo "RETURN success";
 
 	if ($result = $mysqli->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
@@ -211,7 +225,7 @@ function where($number,$bike)
 
 	$bikeNum = intval($bike);
 
-	if ($result = $mysqli->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
+	if ($result = $mysqli->query("SELECT number,userName,stands.standName,note FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"Bike $bikeNum does not exist.");
@@ -221,15 +235,19 @@ function where($number,$bike)
 		$phone= $row["number"];
 		$userName= $row["userName"];
 		$standName= $row["standName"];
+		$note= $row["note"];
+		if($note!=""){
+			$note=" Bike note: $note";
+		}
 	} else error("bike code not retrieved");
 
 	if($standName!=NULL)
 	{
-		sendSMS($number,"Bike $bikeNum is at stand $standName.");
+		sendSMS($number,"Bike $bikeNum is at stand $standName.$note");
 	}
 	else
 	{
-		sendSMS($number,"Bike $bikeNum is rented by $userName (+$phone).");
+		sendSMS($number,"Bike $bikeNum is rented by $userName (+$phone).$note");
 	}
 
 
