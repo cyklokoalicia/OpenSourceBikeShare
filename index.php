@@ -47,7 +47,7 @@ var bicycleicon = L.icon({
 
 
 <?php
-require("sms/config.php");
+require("config.php");
 
 $mysqli = new mysqli($dbServer,$dbUser,$dbPassword,$dbName);
 if (mysqli_connect_errno())
@@ -55,7 +55,7 @@ if (mysqli_connect_errno())
    printf("Connect failed: %s\n", mysqli_connect_error());
    exit();
    }
-$result = $mysqli->query("SELECT count(bikeNum) as bikecount,placeName as placename,longitude as lon, latitude as lat from stands left join bikes on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName order by placeName") or die($mysqli->error.__LINE__);
+$result = $mysqli->query("SELECT count(bikeNum) as bikecount,standDescription,placeName as placename,longitude as lon, latitude as lat from stands left join bikes on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName order by placeName") or die($mysqli->error.__LINE__);
 // $result = $mysqli->query("SELECT placename,bikecount FROM bikes") // testing
 $i=0; srand();
 while($row = $result->fetch_assoc())
@@ -67,7 +67,7 @@ while($row = $result->fetch_assoc())
       $row["lon"]=17.124543+$rand;
       }
    echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon}).addTo(map);',"\n";
-   echo 'marker',$i,'.bindPopup("<strong>',$row["placename"],'</strong><br />Bicycles available: ',$row["bikecount"],'");',"\n";
+   echo 'marker',$i,'.bindPopup("<strong>',$row["placename"],'</strong><br/>',$row["standDescription"],'<br/>Bicycles available: ',$row["bikecount"],'");',"\n";
    $i++;
    }
 mysqli_close($mysqli);
