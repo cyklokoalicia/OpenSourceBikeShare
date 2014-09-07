@@ -68,7 +68,7 @@ while($row = $result->fetch_assoc())
       }
    echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon}).addTo(map);',"\n";
    echo 'marker',$i,'.bindPopup("<strong>',$row["placename"],'</strong><br/>',$row["standDescription"],'<br/>Bicycles available: ',$row["bikecount"],'");',"\n";
-   echo 'marker',$i,'.on("mouseover", function(e){ marker.openPopup(); });';
+   echo 'marker',$i,'.on("mouseover", function(e){ marker',$i,'.openPopup(); });';
    $i++;
    }
 mysqli_close($mysqli);
