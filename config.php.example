@@ -1,11 +1,17 @@
 <?php
 
+$systemName="smsBikeShare";
+$systemURL="https://github.com/mmmaly/smsBikeShare/"; // needs trailing slash!
+$systemLat="48.148154"; // default map center point - latitude
+$systemLong="17.117232"; // default map center point - longitude
+$systemZoom="15"; // default map zoom
+
 $gatewayId = "1-ORG";
 $gatewayKey = "YourKey";
 $gatewaySenderNumber= "421912345678";
-    
+
 $dbServer="localhost";
-$dbUser="bikeshare";  
+$dbUser="bikeshare";
 $dbPassword="YourPassword";
 $dbName="WB";
 
