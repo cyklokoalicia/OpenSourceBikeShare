@@ -15,7 +15,7 @@ log_sendsms($number,$text);
 global $gatewayId, $gatewayKey, $gatewaySenderNumber;
     $s = substr(md5($gatewayKey.$number),10,11);
     $text = substr($text,0,160);
-     
+
     //print $s;
     //fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$id&s=d79a84418a0&d=1&sender=Miso&number=$number&msg=this is testing message");
     //$message="toto je testovacia sms";
@@ -26,8 +26,7 @@ global $gatewayId, $gatewayKey, $gatewaySenderNumber;
 
 function getUser($number)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	if ($result = $mysqli->query("SELECT userId FROM users where number=$number")) {
     		if($result->num_rows==1)
@@ -36,13 +35,12 @@ function getUser($number)
 			return $row["userId"];
 		}
 		return -1;
-	}	
+	}
 }
 
 function getPrivileges($userId)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	if ($result = $mysqli->query("SELECT privileges FROM users where userId=$userId")) {
     		if($result->num_rows==1)
@@ -51,7 +49,7 @@ function getPrivileges($userId)
 			return $row["privileges"];
 		}
 		return 0;
-	}	
+	}
 }
 
 
@@ -71,10 +69,9 @@ function error($message)
 
 function rent($number,$bike)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
+
 	$userId = getUser($number);
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	$bikeNum = intval($bike);
 
@@ -112,7 +109,7 @@ function rent($number,$bike)
 	if($currentUser==$userId)
 	{
 		sendSMS($number,"You already rented the bike $bikeNum. Code is $currentCode. Return the bike with command: RETURN bikenumber standname.");
-		return;	
+		return;
 	}
 
 	if($currentUser!=0)
@@ -134,23 +131,21 @@ function rent($number,$bike)
 
 	if ($result = $mysqli->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode")) {
 	} else error("update failed");
-	
+
 }
 
 
 function returnBike($number,$bike,$stand)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
 	$userId = getUser($number);
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	$bikeNum = intval($bike);
 	$stand = strtoupper($stand);
 
 	if(!preg_match("/^[A-Z]+[0-9]*$/",$stand))
 	{
-		sendSMS($number,"The stand name '$stand' you have provided was not in the correct format. Stands are marked by CAPITALLETTERS."); 
+		sendSMS($number,"The stand name '$stand' you have provided was not in the correct format. Stands are marked by CAPITALLETTERS.");
 		return;
 	}
 
@@ -161,7 +156,7 @@ function returnBike($number,$bike,$stand)
 
 	if(count($rentedBikes)==0)
 	{
-		sendSMS($number,"You have no rented bikes currently."); 
+		sendSMS($number,"You have no rented bikes currently.");
 		return;
 	}
 
@@ -212,16 +207,15 @@ function returnBike($number,$bike,$stand)
 
 	if ($result = $mysqli->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
 	} else error("update failed");
-	
+
 }
 
 
 function where($number,$bike)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
+
 	$userId = getUser($number);
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	$bikeNum = intval($bike);
 
@@ -258,24 +252,23 @@ function where($number,$bike)
 
 function listBikes($number,$stand)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
+
 	$userId = getUser($number);
 	$privileges = getPrivileges($userId);
 
 	if($privileges == 0)
 	{
-		sendSMS($number,"This command is available only for privileged users. Sorry."); 
+		sendSMS($number,"This command is available only for privileged users. Sorry.");
 		return;
 	}
-	
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	$mysqli = createDbConnection();
 
 	$stand = strtoupper($stand);
 
 	if(!preg_match("/^[A-Z]+[0-9]*$/",$stand))
 	{
-		sendSMS($number,"The stand name '$stand' you have provided was not in the correct format. Stands are marked by CAPITALLETTERS."); 
+		sendSMS($number,"The stand name '$stand' you have provided was not in the correct format. Stands are marked by CAPITALLETTERS.");
 		return;
 	}
 
@@ -296,7 +289,7 @@ function listBikes($number,$stand)
 
 	if(count($rentedBikes)==0)
 	{
-		sendSMS($number,"Stand $stand is empty."); 
+		sendSMS($number,"Stand $stand is empty.");
 		return;
 	}
 
@@ -315,10 +308,9 @@ function listBikes($number,$stand)
 
 function freeBikes($number)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
+
 	$userId = getUser($number);
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	if ($result = $mysqli->query("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on
 	bikes.currentStand=stands.standId where stands.serviceTag=0 group by
@@ -328,7 +320,7 @@ function freeBikes($number)
 
 	if(count($rentedBikes)==0)
 	{
-		sendSMS($number,"No free bikes."); 
+		sendSMS($number,"No free bikes.");
 		return;
 	}
 
@@ -346,45 +338,50 @@ function freeBikes($number)
 
 function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
-	
+	$mysqli = createDbConnection();
+
 	$sms_uuid = $mysqli->real_escape_string($sms_uuid);
 	$sender = $mysqli->real_escape_string($sender);
 	$receive_time = $mysqli->real_escape_string($receive_time);
 	$sms_text = $mysqli->real_escape_string($sms_text);
 	$ip = $mysqli->real_escape_string($ip);
-	
 
-	if ($result = $mysqli->query("INSERT INTO receivedsms SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'")) {
-	} else error("update failed");
-    
+        $result = $mysqli->query("SELECT sms_uuid FROM receivedsms WHERE sms_uuid=$sms_uuid");
+        if ($result->num_rows>=1) // sms already exists in DB, possible problem
+           {
+           notifyAdmins("Problem with SMS $sms_uuid!",1);
+           return FALSE;
+           }
+        else
+           {
+           if ($result = $mysqli->query("INSERT INTO receivedsms SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'"))
+              {
+              }
+              else error("update failed");
+           }
+
 
 }
 
 function log_sendsms($number, $text)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
-	
+	$mysqli = createDbConnection();
+
 	$number = $mysqli->real_escape_string($number);
 	$text = $mysqli->real_escape_string($text);
-	
+
 
 	if ($result = $mysqli->query("INSERT INTO sentsms SET number='$number',text='$text'")) {
 	} else error("update failed");
-    
+
 
 }
 
 function note($number,$bikeNum,$message)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
+
 	$userId = getUser($number);
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	if ($result = $mysqli->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
@@ -424,37 +421,38 @@ function note($number,$bikeNum,$message)
 	{
 		if(getPrivileges($userId)==0)
 		{
-			sendSMS($number,"Deleting notes is available only for privileged users. Sorry."); 
+			sendSMS($number,"Deleting notes is available only for privileged users. Sorry.");
 			return;
 		}
 
 		if ($result = $mysqli->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum")) {
 		} else error("update failed");
-		
-		sendSMS($number,"Note for bike $bikeNum deleted."); 
+
+		sendSMS($number,"Note for bike $bikeNum deleted.");
 		return;
 	}
 	else
 	{
-		//$userNote=$userNote."(by $reportedBy)"; 
+		//$userNote=$userNote."(by $reportedBy)";
 		if ($result = $mysqli->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum")) {
 		} else error("update failed");
-	
-		sendSMS($number,"Note for bike $bikeNum saved."); 
-		
+
+		sendSMS($number,"Note for bike $bikeNum saved.");
+
 		notifyAdmins("Note b.$bikeNum by $reportedBy:".$userNote." ".$bikeStatus);
-		
+
 		return;
 	}
 
 }
 
 
-function notifyAdmins($message)
+/**
+ * @param int $notificationtype 0 = via SMS, 1 = via email
+**/
+function notifyAdmins($message,$notificationtype=0)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	if ($result = $mysqli->query("SELECT number FROM users where privileges & 2 != 0")) {
 		$admins = $result->fetch_all(MYSQLI_ASSOC);
@@ -463,25 +461,31 @@ function notifyAdmins($message)
 
 	for($i=0; $i<count($admins);$i++)
 	{
-		sendSMS($admins[$i]["number"],$message);
+            if ($notificationtype==0)
+               {
+               sendSMS($admins[$i]["number"],$message);
+               }
+            else
+               {
+               sendEmail($admins[$i]["mail"],$message,"");
+               }
 	}
-	
+
 }
 
 
 function last($number,$bike)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
+
 	$userId = getUser($number);
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	if(getPrivileges($userId) == 0)
 	{
-		sendSMS($number,"This command is available only for privileged users. Sorry."); 
+		sendSMS($number,"This command is available only for privileged users. Sorry.");
 		return;
 	}
-	
+
 	$bikeNum = intval($bike);
 
 	if ($result = $mysqli->query("SELECT bikeNum FROM bikes where bikeNum=$bikeNum")) {
@@ -503,11 +507,11 @@ LIMIT 10")) {
 	{
 		if($i!=0)
 			$historyInfo.=",";
-		
+
 		if(($standName=$bikeHistory[$i]["standName"])!=NULL)
 		{
 			$historyInfo.=$standName;
-		
+
 		}
 		else
 		{
@@ -522,14 +526,13 @@ LIMIT 10")) {
 
 function add($number,$email,$phone,$message)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
+
 	$userId = getUser($number);
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = createDbConnection();
 
 	if(getPrivileges($userId)==0)
 	{
-		sendSMS($number,"This command is available only for privileged users. Sorry."); 
+		sendSMS($number,"This command is available only for privileged users. Sorry.");
 		return;
 	}
 
@@ -543,11 +546,11 @@ function add($number,$email,$phone,$message)
     		if($result->num_rows!=0)
 		{
     			$row = $result->fetch_assoc();
-			
+
 			$oldPhone= $row["number"];
 			$oldName= $row["userName"];
 			$oldMail= $row["mail"];
-				
+
 			sendSMS($number,"Contact information conflict: Other user already registered: $oldMail +$oldPhone $oldName");
 			return;
 		}
@@ -564,29 +567,24 @@ function add($number,$email,$phone,$message)
 	if ($result = $mysqli->query("INSERT into users SET userName='$userName',number=$phone,mail='$email'")) {
 	} else error("insert user failed");
 
-	sendConfirmationEmail($email);	
+	sendConfirmationEmail($email);
 
-	sendSMS($number,"User $userName added. He/She has to read the email and confirm usage rules before using the system."); 
-		
+	sendSMS($number,"User $userName added. He/She has to read the email and confirm usage rules before using the system.");
+
 
 }
 
 function sendConfirmationEmail($email)
 {
-     
 	$subject = 'registracia/registration White Bikes';
-	$headers = 'From: info@whitebikes.info' . "\r\n" .
-    'Reply-To: info@cyklokoalicia.sk' . "\r\n" .
-        'X-Mailer: PHP/' . phpversion();
-        
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	$mysqli = createDbConnection();
 
 	if ($result = $mysqli->query("SELECT userName,userId FROM users where mail='$email'")) {
 		$user = $result->fetch_all(MYSQLI_ASSOC);
 	} else error("email not fetched");
 
-	$userId =$user[0]["userId"]; 
+	$userId =$user[0]["userId"];
 	$userKey = hash('sha256', $email.$dbPassword.rand(0,1000000));
 
 	if ($result = $mysqli->query("INSERT into registration SET userKey='$userKey',userId='$userId'")) {
@@ -611,14 +609,13 @@ If you agree with the rules, click on the following link:
 
 http://whitebikes.info/sms/agree.php?key=$userKey
 ";
-		mail($email, $subject, $message, $headers);
+		sendEmail($email, $subject, $message);
 }
-	
+
 function confirmUser($userKey)
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
-	
+	$mysqli=createDbConnection();
+
 	$userKey = $mysqli->real_escape_string($userKey);
 
 	if ($result = $mysqli->query("SELECT userId FROM registration where userKey='$userKey'")) {
@@ -627,9 +624,9 @@ function confirmUser($userKey)
 			$row = $result->fetch_assoc();
 			$userId = $row["userId"];
 		}
-		else 
+		else
 		{
-			echo "Some probem occured!";
+			echo "Some problem occured!";
 			return -1;
 		}
 	} else error("key not fetched");
@@ -642,7 +639,16 @@ function confirmUser($userKey)
 
 	echo "All fine. Welcome!";
 }
-	
 
+
+function createDbConnection() {
+      global $dbServer, $dbUser, $dbPassword, $dbName;
+      return new mysqli($dbServer, $dbUser, $dbPassword, $dbName) or die('db connection error!');
+}
+
+function sendEmail($email,$subject,$message) {
+     $headers = 'From: info@whitebikes.info' . "\r\n" . 'Reply-To: info@cyklokoalicia.sk' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
+     mail($email, $subject, $message, $headers); // @TODO: replace with proper SMTP mailer
+}
 
 ?>
