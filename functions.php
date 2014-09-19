@@ -375,10 +375,10 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 	$sms_text = $mysqli->real_escape_string($sms_text);
 	$ip = $mysqli->real_escape_string($ip);
 
-        $result = $mysqli->query("SELECT sms_uuid FROM receivedsms WHERE sms_uuid=$sms_uuid");
-        if ($result->num_rows>=1) // sms already exists in DB, possible problem
+        $result = $mysqli->query("SELECT sms_uuid FROM receivedsms WHERE sms_uuid='$sms_uuid'");
+        if ($result->num_rows>=100) // sms already exists in DB, possible problem
            {
-           notifyAdmins("Problem with SMS $sms_uuid!",1);
+           //notifyAdmins("Problem with SMS $sms_uuid!",1);
            return FALSE;
            }
         else
@@ -411,6 +411,8 @@ function note($number,$bikeNum,$message)
 
 	$userId = getUser($number);
 	$mysqli = createDbConnection();
+	$bikeNum = intval($bikeNum);                                                                                                                             
+	        
 
 	if ($result = $mysqli->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
@@ -483,7 +485,7 @@ function notifyAdmins($message,$notificationtype=0)
 {
 	$mysqli = createDbConnection();
 
-	if ($result = $mysqli->query("SELECT number FROM users where privileges & 2 != 0")) {
+	if ($result = $mysqli->query("SELECT number,mail FROM users where privileges & 2 != 0")) {
 		$admins = $result->fetch_all(MYSQLI_ASSOC);
 	} else error("admins not fetched");
 
@@ -697,7 +699,9 @@ function confirmUser($userKey)
 
 function createDbConnection() {
       global $dbServer, $dbUser, $dbPassword, $dbName;
-      return new mysqli($dbServer, $dbUser, $dbPassword, $dbName) or error('db connection error!');
+      $result = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+      if (!$result) die('db connection error!');
+      return $result;
 }
 
 function sendEmail($email,$subject,$message) {

@@ -18,7 +18,7 @@
 -->
 <html>
 <head>
-<title><? echo $systemName; ?> map with availability</title>
+<title><?php echo $systemName; ?> map with availability</title>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <link rel="stylesheet" type="text/css" href="leaflet/leaflet.css" />
 <script type="text/javascript" src="leaflet/leaflet.js"></script>
