@@ -1,5 +1,6 @@
+<?php require("config.php"); ?>
 <!--
-    WhiteBikes map with points with bicycle availability
+    smsBikeShare map with points with bicycle availability
     Copyright (C) 2014 Daniel Duris | dusoft[at]staznosti[dot]sk
 
     This program is free software: you can redistribute it and/or modify
@@ -17,25 +18,44 @@
 -->
 <html>
 <head>
-<title>WhiteBikes map with availability</title>
+<title><? echo $systemName; ?> map with availability</title>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <link rel="stylesheet" type="text/css" href="leaflet/leaflet.css" />
 <script type="text/javascript" src="leaflet/leaflet.js"></script>
+<script src="js/modernizr.custom.js"></script>
 <script>
 $(document).ready(function(){
 
+        $("body").data("mapcenterlat", <?php echo $systemLat; ?> );
+        $("body").data("mapcenterlong", <?php echo $systemLong; ?> );
+        $("body").data("mapzoom", <?php echo $systemZoom; ?> );
+
         map = new L.Map('map');
+        Modernizr.load({
+         test: Modernizr.geolocation,
+         yep : 'js/geo.js'
+         });
 
         // create the tile layer with correct attribution
         var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
         var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 18, attribution: osmAttrib});
-
-        map.setView(new L.LatLng(48.148154, 17.117232),15);
+        map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
         map.addLayer(osm);
 
 var bicycleicon = L.icon({
-    iconUrl: 'icon.png',
+    iconUrl: 'img/icon.png',
+    shadowUrl: '',
+
+    iconSize:     [50, 50], // size of the icon
+    shadowSize:   [0, 0], // size of the shadow
+    iconAnchor:   [25, 25], // point of the icon which will correspond to marker's location
+    shadowAnchor: [0, 0],  // the same for the shadow
+    popupAnchor:  [0, -25] // point from which the popup should open relative to the iconAnchor
+});
+
+var bicycleicon0 = L.icon({
+    iconUrl: 'img/icon-none.png',
     shadowUrl: '',
 
     iconSize:     [50, 50], // size of the icon
@@ -47,8 +67,6 @@ var bicycleicon = L.icon({
 
 
 <?php
-require("config.php");
-
 $mysqli = new mysqli($dbServer,$dbUser,$dbPassword,$dbName);
 if (mysqli_connect_errno())
    {
@@ -56,7 +74,6 @@ if (mysqli_connect_errno())
    exit();
    }
 $result = $mysqli->query("SELECT count(bikeNum) as bikecount,standDescription,placeName as placename,longitude as lon, latitude as lat from stands left join bikes on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName order by placeName") or die($mysqli->error.__LINE__);
-// $result = $mysqli->query("SELECT placename,bikecount FROM bikes") // testing
 $i=0; srand();
 while($row = $result->fetch_assoc())
    {
@@ -66,7 +83,14 @@ while($row = $result->fetch_assoc())
       $row["lat"]=48.150013+$rand;
       $row["lon"]=17.124543+$rand;
       }
-   echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon}).addTo(map);',"\n";
+   if ($row["bikecount"]) // some available
+      {
+      echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon}).addTo(map);',"\n";
+      }
+   else // none available
+      {
+      echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon0}).addTo(map);',"\n";
+      }
    echo 'marker',$i,'.bindPopup("<strong>',$row["placename"],'</strong><br/>',$row["standDescription"],'<br/>Bicycles available: ',$row["bikecount"],'");',"\n";
    echo 'marker',$i,'.on("mouseover", function(e){ marker',$i,'.openPopup(); });';
    $i++;
