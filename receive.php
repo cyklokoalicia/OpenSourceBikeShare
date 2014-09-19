@@ -77,6 +77,19 @@ switch($args[0])
 	}
 	where($number,$args[1]);
 	break;
+    case "INFO":
+        if(count($args)<2)
+        {
+            sendSMS($number,"You have to provide the stand name, e.g.: INFO RACKO");
+            return;
+        }
+        if(count($args)>2)
+        {
+            sendSMS($number,"You have provided too many arguments. Provide only the stand name, e.g.: INFO RACKO");
+            return;
+        }
+        info($number,$args[1]);
+        break;
     case "LIST":
     case "ZOZNAM":
 	if(count($args)<2)
@@ -99,7 +112,6 @@ switch($args[0])
 	}
 	note($number,$args[1],trim(urldecode($_GET["sms_text"])));
 	break;
-
     case "ADD":
 	if(count($args)<3)
 	{
