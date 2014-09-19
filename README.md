@@ -5,7 +5,7 @@ Bottom-up bicycle sharing system suitable for smaller communities or closed area
 Features
 ----------
 * Admin to add, edit or remove users, create stands or change bicycle availability
-* Registered users send SMS to rent and return bicycles
+* Registered users send a text message (SMS) to rent and return bicycles and get various information
 * Web map with availability of the bicycle stands
 * Uses eurosms.com SMS gateway, but easy to modify to different gateways/SMS API
 * Requires bicycle locks with four digit code for locking bicycles
