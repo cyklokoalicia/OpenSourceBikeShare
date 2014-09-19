@@ -552,6 +552,31 @@ LIMIT 10")) {
 
 }
 
+function revert($number,$bikenum)
+{
+
+        $userId = getUser($number);
+        $mysqli = createDbConnection();
+
+        if(getPrivileges($userId)==0)
+        {
+                sendSMS($number,"This command is available only for privileged users. Sorry.");
+                return;
+        }
+
+        if ($result = $mysqli->query("SELECT parameter FROM stands LEFT JOIN history ON standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1")) {
+                if($result->num_rows==1)
+                {
+                        $row = $result->fetch_assoc();
+                        $standId=$row["parameter"];
+                        if ($result = $mysqli->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId where bikeNum=$bikeNum")) {
+                        } else error("update failed");
+                }
+        } else {
+               sendSMS($number,"No last stand for bicycle $bikenum found. Revert not successful!");
+               error("no last stand for bicycle found / revert not successful!");
+               }
+}
 
 function add($number,$email,$phone,$message)
 {

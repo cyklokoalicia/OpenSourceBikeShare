@@ -120,10 +120,17 @@ switch($args[0])
 	}
 	add($number,$args[1],$args[2],trim(urldecode($_GET["sms_text"])));
 	break;
-
- //    case "NEAR":
-//    case "BLIZKO":
-//	near($number,$args[1]);
+    case "REVERT":
+        if(count($args)<1 OR count($args)>1)
+        {
+            sendSMS($number,"You have to provide the bike number, e.g. REVERT 47");
+            return;
+        }
+        revert($number,$args[1]);
+        break;
+   //    case "NEAR":
+   //    case "BLIZKO":
+   //	near($number,$args[1]);
     case "LAST":
 	if(count($args)<2)
 	{
