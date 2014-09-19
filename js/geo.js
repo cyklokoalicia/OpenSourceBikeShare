@@ -2,6 +2,7 @@ navigator.geolocation.getCurrentPosition(GetLocation);
 function GetLocation(location) {
    $("body").data("mapcenterlat", location.coords.latitude);
    $("body").data("mapcenterlong", location.coords.longitude);
+   $("body").data("mapzoom", $("body").data("mapzoom")+1);
 
    // 80 m x 5 mins walking distance
    var circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")],80*5, {
