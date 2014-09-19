@@ -6,7 +6,7 @@ require("config.php");
 
 function Help()
 {
-	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nFREE\nNOTE bikenumber Description what is broken";
+	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nINFO standname\nFREE\nNOTE bikenumber Description what is broken";
 }
 function sendSMS($number, $text)
 {
@@ -65,6 +65,35 @@ function error($message)
 {
 	//nieco sa pokazilo
 	die($message);
+}
+
+function info($number,$stand)
+{
+        $mysqli = createDbConnection();
+        $stand = strtoupper($stand);
+
+        if(!preg_match("/^[A-Z]+[0-9]*$/",$stand))
+        {
+                sendSMS($number,"The stand name '$stand' has not been recognized. Stands are marked by CAPITALLETTERS.");
+                return;
+        }
+        if ($result = $mysqli->query("SELECT standId FROM stands where standName='$stand'")) {
+                if($result->num_rows!=1)
+                {
+                        sendSMS($number,"Stand '$stand' does not exist.");
+                        return;
+                }
+                $row = $result->fetch_assoc();
+                $standId = $row["standId"];
+        } else error("stand not retrieved");
+        if ($result = $mysqli->query("SELECT * FROM stands where standname='$stand'")) {
+                $row = $result->fetch_assoc();
+                $standDescription=$row["standDescription"];
+                $standLat=$row["latitude"];
+                $standLong=$row["longitude"];
+                $message=$stand." - ".$standDescription.", GPS: ".$standLong.",".$standLat;
+                sendSMS($number,$message);
+        } else error("stand not found");
 }
 
 function rent($number,$bike)
@@ -145,7 +174,7 @@ function returnBike($number,$bike,$stand)
 
 	if(!preg_match("/^[A-Z]+[0-9]*$/",$stand))
 	{
-		sendSMS($number,"The stand name '$stand' you have provided was not in the correct format. Stands are marked by CAPITALLETTERS.");
+		sendSMS($number,"The stand name '$stand' has not been recognized. Stands are marked by CAPITALLETTERS.");
 		return;
 	}
 
@@ -268,7 +297,7 @@ function listBikes($number,$stand)
 
 	if(!preg_match("/^[A-Z]+[0-9]*$/",$stand))
 	{
-		sendSMS($number,"The stand name '$stand' you have provided was not in the correct format. Stands are marked by CAPITALLETTERS.");
+		sendSMS($number,"The stand name '$stand' has not been recognized. Stands are marked by CAPITALLETTERS.");
 		return;
 	}
 
@@ -643,7 +672,7 @@ function confirmUser($userKey)
 
 function createDbConnection() {
       global $dbServer, $dbUser, $dbPassword, $dbName;
-      return new mysqli($dbServer, $dbUser, $dbPassword, $dbName) or die('db connection error!');
+      return new mysqli($dbServer, $dbUser, $dbPassword, $dbName) or error('db connection error!');
 }
 
 function sendEmail($email,$subject,$message) {
