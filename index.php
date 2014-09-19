@@ -43,29 +43,6 @@ $(document).ready(function(){
         map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
         map.addLayer(osm);
 
-var bicycleicon = L.icon({
-    iconUrl: 'img/icon.png',
-    shadowUrl: '',
-
-    iconSize:     [50, 50], // size of the icon
-    shadowSize:   [0, 0], // size of the shadow
-    iconAnchor:   [25, 25], // point of the icon which will correspond to marker's location
-    shadowAnchor: [0, 0],  // the same for the shadow
-    popupAnchor:  [0, -25] // point from which the popup should open relative to the iconAnchor
-});
-
-var bicycleicon0 = L.icon({
-    iconUrl: 'img/icon-none.png',
-    shadowUrl: '',
-
-    iconSize:     [50, 50], // size of the icon
-    shadowSize:   [0, 0], // size of the shadow
-    iconAnchor:   [25, 25], // point of the icon which will correspond to marker's location
-    shadowAnchor: [0, 0],  // the same for the shadow
-    popupAnchor:  [0, -25] // point from which the popup should open relative to the iconAnchor
-});
-
-
 <?php
 $mysqli = new mysqli($dbServer,$dbUser,$dbPassword,$dbName);
 if (mysqli_connect_errno())
@@ -85,14 +62,26 @@ while($row = $result->fetch_assoc())
       }
    if ($row["bikecount"]) // some available
       {
-      echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon}).addTo(map);',"\n";
+      echo 'var bicycleicon',$i,' = L.divIcon({
+      iconSize:     [50, 50], // size of the icon
+      iconAnchor:   [25, 25], // point of the icon which will correspond to marker location
+      html: \'<h1 style="background:url(img/icon.png);background-position:0 0;background-size: 50px 50px;margin:0;height:50px;width:50px;"><span style="position:absolute;top:-5px;left:2px;font-size:90%;letter-spacing:-1px;">',$row["bikecount"],'</span></h1>\'
+      });
+      ';
+      echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon',$i,'}).addTo(map);',"\n";
       }
    else // none available
       {
-      echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon0}).addTo(map);',"\n";
+      echo 'var bicycleicon',$i,' = L.divIcon({
+      iconSize:     [50, 50], // size of the icon
+      iconAnchor:   [25, 25], // point of the icon which will correspond to marker location
+      html: \'<h1 style="background:url(img/icon-none.png);background-position:0 0;background-size: 50px 50px;margin:0;height:50px;width:50px;"><span style="position:absolute;top:-5px;left:2px;font-size:90%;letter-spacing:-1px;">',$row["bikecount"],'</span></h1>\'
+      });
+      ';
+      echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon',$i,'}).addTo(map);',"\n";
       }
    echo 'marker',$i,'.bindPopup("<strong>',$row["placename"],'</strong><br/>',$row["standDescription"],'<br/>Bicycles available: ',$row["bikecount"],'");',"\n";
-   echo 'marker',$i,'.on("mouseover", function(e){ marker',$i,'.openPopup(); });';
+   //echo 'marker',$i,'.on("mouseover", function(e){ marker',$i,'.openPopup(); });';
    $i++;
    }
 mysqli_close($mysqli);
