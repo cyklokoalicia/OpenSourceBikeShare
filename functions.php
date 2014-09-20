@@ -4,24 +4,21 @@ error_reporting(-1);
 
 require("config.php");
 
-function Help()
+function help()
 {
-	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nINFO standname\nFREE\nNOTE bikenumber Description what is broken";
+	return "Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nINFO standname\nFREE\nNOTE bikenumber problem description";
 }
 function sendSMS($number, $text)
 {
+
 log_sendsms($number,$text);
 
 global $gatewayId, $gatewayKey, $gatewaySenderNumber;
     $s = substr(md5($gatewayKey.$number),10,11);
     $text = substr($text,0,160);
-
-    //print $s;
-    //fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$id&s=d79a84418a0&d=1&sender=Miso&number=$number&msg=this is testing message");
-    //$message="toto je testovacia sms";
     $um = urlencode($text);
-    fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um","r");
-    //print $um;
+    //fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um","r");
+    echo $text;
 }
 
 function getUser($number)
@@ -96,6 +93,28 @@ function info($number,$stand)
         } else error("stand not found");
 }
 
+/** Validate received SMS - check message for required number of arguments
+ * @param string $number sender's phone number
+ * @param int $receivedargumentno number of received arguments
+ * @param int $requiredargumentno number of requiredarguments
+ * @param string $errormessage error message to send back in case of mismatch
+ * @param boolean $moreok TRUE if more arguments than required are OK and should not be validated, otherwise FALSE by default
+**/
+function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$errormessage,$moreok=FALSE)
+{
+   if($receivedargumentno<$requiredargumentno)
+      {
+      sendSMS($number,"Error. More arguments needed, use command ".$errormessage);
+      exit;
+      }
+   elseif($receivedargumentno>$requiredargumentno AND $moreok===FALSE)
+      {
+      sendSMS($number,"Error. Less arguments needed, use command ".$errormessage);
+      exit;
+      }
+   return TRUE;
+}
+
 function rent($number,$bike)
 {
 
@@ -116,8 +135,18 @@ function rent($number,$bike)
 
 	if($countRented >= $limit)
 	{
-		//echo "limit exceeded";
-		sendSMS($number,"You cannot rent more bikes at one time.");
+		if ($limit==0)
+                   {
+                   sendSMS($number,"You can not rent any bikes. Contact the admins to lift the ban.");
+                   }
+		elseif ($limit==1)
+                   {
+                   sendSMS($number,"You can only rent ".$limit." bike at once.");
+                   }
+                else
+                   {
+                   sendSMS($number,"You can only rent ".$limit." bikes at once and you have already rented ".$limit.".");
+                   }
 		return;
 	}
 
@@ -163,7 +192,6 @@ function rent($number,$bike)
 
 }
 
-
 function returnBike($number,$bike,$stand)
 {
 	$userId = getUser($number);
@@ -191,12 +219,11 @@ function returnBike($number,$bike,$stand)
 
 	$listBikes="";
 	for($i=0; $i<count($rentedBikes);$i++)
-	{
-		if($i!=0)
-			$listBikes.=",";
-		$listBikes.=$rentedBikes[$i]["bikeNum"];
-	}
-
+         {
+         if($i!=0)
+         $listBikes.=$rentedBikes[$i]["bikeNum"];
+         if ($i<count($rentedBikes)) $listBikes.=",";
+         }
 
 	if ($result = $mysqli->query("SELECT currentCode,note FROM bikes where currentUser=$userId and bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
@@ -283,13 +310,6 @@ function listBikes($number,$stand)
 {
 
 	$userId = getUser($number);
-	$privileges = getPrivileges($userId);
-
-	if($privileges == 0)
-	{
-		sendSMS($number,"This command is available only for privileged users. Sorry.");
-		return;
-	}
 
 	$mysqli = createDbConnection();
 
@@ -411,8 +431,8 @@ function note($number,$bikeNum,$message)
 
 	$userId = getUser($number);
 	$mysqli = createDbConnection();
-	$bikeNum = intval($bikeNum);                                                                                                                             
-	        
+	$bikeNum = intval($bikeNum);
+
 
 	if ($result = $mysqli->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
@@ -442,19 +462,13 @@ function note($number,$bikeNum,$message)
 
 	if(!preg_match("/note[\s,\.]+[0-9]+[\s,\.]+(.*)/i",$message ,$matches))
 	{
-//		sendSMS($number,"Your note was not understood. Sorry.");
 		$userNote="";
-		//return;
 	}
 	else $userNote=$mysqli->real_escape_string(trim($matches[1]));
 
 	if($userNote=="")
 	{
-		if(getPrivileges($userId)==0)
-		{
-			sendSMS($number,"Deleting notes is available only for privileged users. Sorry.");
-			return;
-		}
+		checkUserPrivileges($number);
 
 		if ($result = $mysqli->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum")) {
 		} else error("update failed");
@@ -464,7 +478,6 @@ function note($number,$bikeNum,$message)
 	}
 	else
 	{
-		//$userNote=$userNote."(by $reportedBy)";
 		if ($result = $mysqli->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum")) {
 		} else error("update failed");
 
@@ -511,12 +524,6 @@ function last($number,$bike)
 	$userId = getUser($number);
 	$mysqli = createDbConnection();
 
-	if(getPrivileges($userId) == 0)
-	{
-		sendSMS($number,"This command is available only for privileged users. Sorry.");
-		return;
-	}
-
 	$bikeNum = intval($bike);
 
 	if ($result = $mysqli->query("SELECT bikeNum FROM bikes where bikeNum=$bikeNum")) {
@@ -560,12 +567,6 @@ function revert($number,$bikenum)
         $userId = getUser($number);
         $mysqli = createDbConnection();
 
-        if(getPrivileges($userId)==0)
-        {
-                sendSMS($number,"This command is available only for privileged users. Sorry.");
-                return;
-        }
-
         if ($result = $mysqli->query("SELECT parameter FROM stands LEFT JOIN history ON standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1")) {
                 if($result->num_rows==1)
                 {
@@ -585,12 +586,6 @@ function add($number,$email,$phone,$message)
 
 	$userId = getUser($number);
 	$mysqli = createDbConnection();
-
-	if(getPrivileges($userId)==0)
-	{
-		sendSMS($number,"This command is available only for privileged users. Sorry.");
-		return;
-	}
 
 	$phone=intval($phone);
 	if($phone<=999999999)
@@ -697,16 +692,29 @@ function confirmUser($userKey)
 }
 
 
-function createDbConnection() {
-      global $dbServer, $dbUser, $dbPassword, $dbName;
-      $result = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
-      if (!$result) die('db connection error!');
-      return $result;
+function createDbConnection()
+{
+   global $dbServer, $dbUser, $dbPassword, $dbName;
+   $result = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+   if (!$result) die('db connection error!');
+   return $result;
 }
 
-function sendEmail($email,$subject,$message) {
-     $headers = 'From: info@whitebikes.info' . "\r\n" . 'Reply-To: info@cyklokoalicia.sk' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
-     mail($email, $subject, $message, $headers); // @TODO: replace with proper SMTP mailer
+function sendEmail($email,$subject,$message)
+{
+   $headers = 'From: info@whitebikes.info' . "\r\n" . 'Reply-To: info@cyklokoalicia.sk' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
+   mail($email, $subject, $message, $headers); // @TODO: replace with proper SMTP mailer
+}
+
+function checkUserPrivileges($number)
+{
+   $userId=getUser($number);
+   $privileges=getPrivileges($userId);
+   if ($privileges==0)
+      {
+      sendSMS($number,"Sorry, this command is only available for the privileged users.");
+      exit;
+      }
 }
 
 ?>
