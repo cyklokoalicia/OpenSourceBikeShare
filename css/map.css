@@ -1,0 +1,70 @@
+body {
+   margin: 0;
+   padding: 0;
+}
+
+@media screen and (min-width: 992px) {
+   .icondesc {
+      background: url(../img/icon.png);
+      background-position: 0 0;
+      background-size: 60px 60px;
+      background-repeat: none;
+      margin: 0;
+      height: 60px;
+      width: 60px;
+   }
+   .none {
+      background: url(../img/icon-none.png);
+      background-position: 0 0;
+      background-size: 60px 60px;
+      background-repeat: none;
+   }
+
+   .bikecount {
+      position: absolute;
+      top: -4px;
+      left: 2px;
+      font-size: 170%;
+      letter-spacing: -1px;
+   }
+
+   .standname {
+      position: absolute;
+      bottom: -4px;
+      left: 1px;
+      font-size: 80%;
+      letter-spacing: -1px;
+   }
+}
+
+@media screen and (max-width: 991px) {
+   .icondesc {
+      background: url(../img/icon.png);
+      background-position: 0 0;
+      background-size: 100px 100px;
+      background-repeat: none;
+      margin: 0;
+      height: 100px;
+      width: 100px;
+   }
+   .none {
+      background: url(../img/icon-none.png);
+      background-position: 0 0;
+      background-size: 100px 100px;
+      background-repeat: none;
+   }
+
+   .bikecount {
+      position: absolute;
+      top: -8px;
+      left: 2px;
+      font-size: 350%;
+   }
+
+   .standname {
+      position: absolute;
+      bottom: 1px;
+      left: 5px;
+      font-size: 100%;
+   }
+}
