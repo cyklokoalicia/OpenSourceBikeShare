@@ -20,12 +20,21 @@
 <head>
 <base href="/sms/">
 <title><?php echo $systemName; ?> map with availability</title>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<link rel="stylesheet" type="text/css" href="leaflet/leaflet.css" />
-<script type="text/javascript" src="leaflet/leaflet.js"></script>
-<script src="js/modernizr.custom.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/viewportDetect.js"></script>
+<script type="text/javascript" src="js/leaflet.js"></script>
+<script type="text/javascript" src="js/modernizr.custom.js"></script>
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="css/leaflet.css" />
+<link rel="stylesheet" type="text/css" href="css/map.css" />
 <script>
 $(document).ready(function(){
+
+        var viewport = $.viewportDetect(); // ("xs", "sm", "md", or "lg");
+        var iconsize=60;
+        if (viewport=="xs" || viewport=="sm") iconsize=100;
 
         $("body").data("mapcenterlat", <?php echo $systemLat; ?> );
         $("body").data("mapcenterlong", <?php echo $systemLong; ?> );
@@ -39,7 +48,7 @@ $(document).ready(function(){
 
         // create the tile layer with correct attribution
         var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-        var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+        var osmAttrib='Map data (c) <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
         var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 18, attribution: osmAttrib});
         map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
         map.addLayer(osm);
@@ -58,29 +67,28 @@ while($row = $result->fetch_assoc())
    if (!$row["lat"])
       {
       $rand=rand(-100,100)*0.0001;
-      $row["lat"]=48.150013+$rand;
-      $row["lon"]=17.124543+$rand;
+      $row["lat"]=$systemLat+$rand;
+      $row["lon"]=$systemLong+$rand;
       }
    if ($row["bikecount"]) // some available
       {
       echo 'var bicycleicon',$i,' = L.divIcon({
-      iconSize:     [50, 50], // size of the icon
-      iconAnchor:   [25, 25], // point of the icon which will correspond to marker location
-      html: \'<h1 style="background:url(img/icon.png);background-position:0 0;background-size: 50px 50px;margin:0;height:50px;width:50px;"><span style="position:absolute;top:-5px;left:2px;font-size:90%;letter-spacing:-1px;">',$row["bikecount"],'</span></h1>\'
+      iconSize:     [iconsize, iconsize], // size of the icon
+      iconAnchor:   [iconsize/2, 0], // point of the icon which will correspond to marker location
+      html: \'<dl class="icondesc"><dt class="bikecount">',$row["bikecount"],'</dt><dd class="standname">',$row["placename"],'</dd></dl>\'
       });
       ';
-      echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon',$i,'}).addTo(map);',"\n";
       }
    else // none available
       {
       echo 'var bicycleicon',$i,' = L.divIcon({
-      iconSize:     [50, 50], // size of the icon
-      iconAnchor:   [25, 25], // point of the icon which will correspond to marker location
-      html: \'<h1 style="background:url(img/icon-none.png);background-position:0 0;background-size: 50px 50px;margin:0;height:50px;width:50px;"><span style="position:absolute;top:-5px;left:2px;font-size:90%;letter-spacing:-1px;">',$row["bikecount"],'</span></h1>\'
+      iconSize:     [iconsize, iconsize], // size of the icon
+      iconAnchor:   [iconsize/2, 0], // point of the icon which will correspond to marker location
+      html: \'<dl class="icondesc none"><dt class="bikecount">',$row["bikecount"],'</dt><dd class="standname">',$row["placename"],'</dd></dl>\'
       });
       ';
-      echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon',$i,'}).addTo(map);',"\n";
       }
+   echo 'var marker',$i,' = L.marker([',$row["lat"],', ',$row["lon"],'], {icon: bicycleicon',$i,'}).addTo(map);',"\n";
    echo 'marker',$i,'.bindPopup("<strong>',$row["placename"],'</strong><br/>',$row["standDescription"],'<br/>Bicycles available: ',$row["bikecount"],'");',"\n";
    //echo 'marker',$i,'.on("mouseover", function(e){ marker',$i,'.openPopup(); });';
    $i++;
