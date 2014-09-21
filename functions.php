@@ -18,6 +18,7 @@ function unknownCommand($number,$command)
 
 function sendSMS($number,$text)
 {
+
    global $gatewayId, $gatewayKey, $gatewaySenderNumber;
 
    log_sendsms($number,$text);
@@ -116,6 +117,7 @@ function info($number,$stand)
 **/
 function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$errormessage)
 {
+   global $mysqli;
    if($receivedargumentno<$requiredargumentno)
       {
       sendSMS($number,"Error. More arguments needed, use command ".$errormessage);
@@ -559,24 +561,44 @@ LIMIT 10")) {
 
 }
 
-function revert($number,$bikenum)
+function revert($number,$bikeNum)
 {
 
         global $mysqli;
         $userId = getUser($number);
 
-        if ($result = dbQuery("SELECT parameter FROM stands LEFT JOIN history ON standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1")) {
-                if($result->num_rows==1)
+        $result = dbQuery("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser<>'NULL'");
+        if(!$result->num_rows)
+                {
+                sendSMS($number,"Bicycle $bikeNum is not rented right now. Revert not successful!");
+                return;
+                }
+
+        $result = dbQuery("SELECT parameter,standName FROM stands LEFT JOIN history ON standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1");
+        if($result->num_rows==1)
                 {
                         $row = $result->fetch_assoc();
                         $standId=$row["parameter"];
-                        if ($result = dbQuery("UPDATE bikes SET currentUser=NULL,currentStand=$standId where bikeNum=$bikeNum")) {
-                        } else error("update failed");
+                        $stand=$row["standName"];
                 }
-        } else {
-               sendSMS($number,"No last stand for bicycle $bikenum found. Revert not successful!");
-               error("no last stand for bicycle found / revert not successful!");
-               }
+        $result = dbQuery("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action='RENT' ORDER BY time DESC LIMIT 2,1");
+        if($result->num_rows==1)
+                {
+                        $row = $result->fetch_assoc();
+                        $code=$row["parameter"];
+                }
+        if ($standId and $code)
+           {
+           if ($result = dbQuery("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code where bikeNum=$bikeNum")) {
+                        } else error("update failed");
+           if ($result = dbQuery("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'")) {
+                        } else error("update failed");
+           sendSMS($number,"Bicycle $bikeNum reverted to stand $stand with code $code.");
+           }
+        else
+           {
+           sendSMS($number,"No last code for bicycle $bikeNum found. Revert not successful!");
+           }
 
 }
 
