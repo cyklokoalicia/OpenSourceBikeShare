@@ -1,7 +1,8 @@
 <?php
 require('functions.php');
 
-$mysqli=createDbConnection();
+$db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+$db->connect();
 
 $message = strtoupper(trim(urldecode($_GET["sms_text"])));
 $number = $_GET["sender"]; //$number = intval($_GET["sender"]);
@@ -80,6 +81,6 @@ else
       }
    }
 
-$mysqli->commit();
+$db->conn->commit();
 
 ?>

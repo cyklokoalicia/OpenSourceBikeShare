@@ -3,16 +3,17 @@
 error_reporting(-1);
 
 require("config.php");
+require("db.class.php");
 
 function help($number)
 {
-   global $mysqli;
+   global $db;
    sendSMS($number,"Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nINFO standname\nFREE\nNOTE bikenumber problem description");
 }
 
 function unknownCommand($number,$command)
 {
-   global $mysqli;
+   global $db;
    sendSMS($number,"Error. The command $command does not exist. Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nINFO standname\nFREE\nNOTE bikenumber problem description");
 }
 
@@ -37,9 +38,9 @@ function sendSMS($number,$text)
 
 function getUser($number)
 {
-	global $mysqli;
+	global $db;
 
-	if ($result = dbQuery("SELECT userId FROM users where number=$number")) {
+	if ($result = $db->query("SELECT userId FROM users where number=$number")) {
     		if($result->num_rows==1)
 		{
 			$row = $result->fetch_assoc();
@@ -51,9 +52,9 @@ function getUser($number)
 
 function getPrivileges($userId)
 {
-	global $mysqli;
+	global $db;
 
-	if ($result = dbQuery("SELECT privileges FROM users where userId=$userId")) {
+	if ($result = $db->query("SELECT privileges FROM users where userId=$userId")) {
     		if($result->num_rows==1)
 		{
 			$row = $result->fetch_assoc();
@@ -74,14 +75,14 @@ function validateNumber($number)
 
 function error($message)
 {
-        global $mysqli;
-        $mysqli->rollback();
+        global $db;
+        $db->conn->rollback();
 	exit($message);
 }
 
 function info($number,$stand)
 {
-        global $mysqli;
+        global $db;
         $stand = strtoupper($stand);
 
         if(!preg_match("/^[A-Z]+[0-9]*$/",$stand))
@@ -89,7 +90,7 @@ function info($number,$stand)
                 sendSMS($number,"The stand name '$stand' has not been recognized. Stands are marked by CAPITALLETTERS.");
                 return;
         }
-        if ($result = dbQuery("SELECT standId FROM stands where standName='$stand'")) {
+        if ($result = $db->query("SELECT standId FROM stands where standName='$stand'")) {
                 if($result->num_rows!=1)
                 {
                         sendSMS($number,"Stand '$stand' does not exist.");
@@ -98,7 +99,7 @@ function info($number,$stand)
                 $row = $result->fetch_assoc();
                 $standId = $row["standId"];
         } else error("stand not retrieved");
-        if ($result = dbQuery("SELECT * FROM stands where standname='$stand'")) {
+        if ($result = $db->query("SELECT * FROM stands where standname='$stand'")) {
                 $row = $result->fetch_assoc();
                 $standDescription=$row["standDescription"];
                 $standLat=$row["latitude"];
@@ -117,12 +118,10 @@ function info($number,$stand)
 **/
 function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$errormessage)
 {
-   global $mysqli;
+   global $db;
    if($receivedargumentno<$requiredargumentno)
       {
       sendSMS($number,"Error. More arguments needed, use command ".$errormessage);
-      $mysqli->commit();
-      exit;
       }
    // if more arguments provided than required, they will be silently ignored
    return TRUE;
@@ -131,16 +130,16 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
 function rent($number,$bike)
 {
 
-        global $mysqli;
+        global $db;
 	$userId = getUser($number);
 	$bikeNum = intval($bike);
 
-	if ($result = dbQuery("SELECT count(*) as countRented FROM bikes where currentUser=$userId")) {
+	if ($result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId")) {
     		$row = $result->fetch_assoc();
 		$countRented = $row["countRented"];
 	} else error("count not retrieved");
 
-	if ($result = dbQuery("SELECT userLimit FROM limits where userId=$userId")) {
+	if ($result = $db->query("SELECT userLimit FROM limits where userId=$userId")) {
     		$row = $result->fetch_assoc();
 		$limit = $row["userLimit"];
 	} else error("limit not retrieved");
@@ -163,7 +162,7 @@ function rent($number,$bike)
 		return;
 	}
 
-	if ($result = dbQuery("SELECT currentUser,currentCode,note FROM bikes where bikeNum=$bikeNum")) {
+	if ($result = $db->query("SELECT currentUser,currentCode,note FROM bikes where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"Bike $bikeNum does not exist.");
@@ -195,10 +194,10 @@ function rent($number,$bike)
 	}
 	sendSMS($number,$message);
 
-	if ($result = dbQuery("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL where bikeNum=$bikeNum")) {
+	if ($result = $db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL where bikeNum=$bikeNum")) {
 	} else error("update failed");
 
-	if ($result = dbQuery("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode")) {
+	if ($result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode")) {
 	} else error("update failed");
 
 
@@ -207,7 +206,7 @@ function rent($number,$bike)
 function returnBike($number,$bike,$stand)
 {
 
-        global $mysqli;
+        global $db;
 	$userId = getUser($number);
 	$bikeNum = intval($bike);
 	$stand = strtoupper($stand);
@@ -219,7 +218,7 @@ function returnBike($number,$bike,$stand)
 	}
 
 
-	if ($result = dbQuery("SELECT bikeNum FROM bikes where currentUser=$userId ORDER BY bikeNum")) {
+	if ($result = $db->query("SELECT bikeNum FROM bikes where currentUser=$userId ORDER BY bikeNum")) {
 		$rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
 	} else error("rented bikes not fetched");
 
@@ -236,7 +235,7 @@ function returnBike($number,$bike,$stand)
          if ($i+1<count($rentedBikes)) $listBikes.=",";
          }
 
-	if ($result = dbQuery("SELECT currentCode,note FROM bikes where currentUser=$userId and bikeNum=$bikeNum")) {
+	if ($result = $db->query("SELECT currentCode,note FROM bikes where currentUser=$userId and bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"You have not rented the bike $bikeNum. You have rented the following bike(s): $listBikes");
@@ -248,7 +247,7 @@ function returnBike($number,$bike,$stand)
 		$note= $row["note"];
 	} else error("code not retrieved");
 
-	if ($result = dbQuery("SELECT standId FROM stands where standName='$stand'")) {
+	if ($result = $db->query("SELECT standId FROM stands where standName='$stand'")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"Stand '$stand' does not exist.");
@@ -258,8 +257,7 @@ function returnBike($number,$bike,$stand)
 		$standId = $row["standId"];
 	} else error("stand not retrieved");
 
-
-	if ($result = dbQuery("UPDATE bikes SET currentUser=NULL,currentStand=$standId where bikeNum=$bikeNum")) {
+	if ($result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId where bikeNum=$bikeNum")) {
 	} else error("update failed");
 
 
@@ -271,7 +269,7 @@ function returnBike($number,$bike,$stand)
 	$message.="Do not forget to rotate the lockpad to 0000 when leaving.";
 	sendSMS($number,$message);
 
-	if ($result = dbQuery("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
+	if ($result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
 	} else error("update failed");
 
 
@@ -281,11 +279,11 @@ function returnBike($number,$bike,$stand)
 function where($number,$bike)
 {
 
-        global $mysqli;
+        global $db;
 	$userId = getUser($number);
 	$bikeNum = intval($bike);
 
-	if ($result = dbQuery("SELECT number,userName,stands.standName,note FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
+	if ($result = $db->query("SELECT number,userName,stands.standName,note FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"Bike $bikeNum does not exist.");
@@ -316,7 +314,7 @@ function where($number,$bike)
 function listBikes($number,$stand)
 {
 
-        global $mysqli;
+        global $db;
 	$userId = getUser($number);
 	$stand = strtoupper($stand);
 
@@ -326,7 +324,7 @@ function listBikes($number,$stand)
 		return;
 	}
 
-	if ($result = dbQuery("SELECT standId FROM stands where standName='$stand'")) {
+	if ($result = $db->query("SELECT standId FROM stands where standName='$stand'")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"Stand '$stand' does not exist.");
@@ -337,7 +335,7 @@ function listBikes($number,$stand)
 	} else error("stand not retrieved");
 
 
-	if ($result = dbQuery("SELECT bikeNum FROM bikes where currentStand=$standId ORDER BY bikeNum")) {
+	if ($result = $db->query("SELECT bikeNum FROM bikes where currentStand=$standId ORDER BY bikeNum")) {
 		$rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
 	} else error("bikes on stand not fetched");
 
@@ -363,10 +361,10 @@ function listBikes($number,$stand)
 function freeBikes($number)
 {
 
-        global $mysqli;
+        global $db;
 	$userId = getUser($number);
 
-	if ($result = dbQuery("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on
+	if ($result = $db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on
 	bikes.currentStand=stands.standId where stands.serviceTag=0 group by
 	placeName having bikeCount>0 order by placeName")) {
 		$rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
@@ -392,15 +390,17 @@ function freeBikes($number)
 
 function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 {
-	global $mysqli;
+	global $dbServer,$dbUser,$dbPassword,$dbName;
+        $localdb=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+        $localdb->connect();
 
-	$sms_uuid = $mysqli->real_escape_string($sms_uuid);
-	$sender = $mysqli->real_escape_string($sender);
-	$receive_time = $mysqli->real_escape_string($receive_time);
-	$sms_text = $mysqli->real_escape_string($sms_text);
-	$ip = $mysqli->real_escape_string($ip);
+	$sms_uuid = $localdb->conn->real_escape_string($sms_uuid);
+	$sender = $localdb->conn->real_escape_string($sender);
+	$receive_time = $localdb->conn->real_escape_string($receive_time);
+	$sms_text = $localdb->conn->real_escape_string($sms_text);
+	$ip = $localdb->conn->real_escape_string($ip);
 
-        $result = dbQuery("SELECT sms_uuid FROM receivedsms WHERE sms_uuid='$sms_uuid'");
+        $result = $localdb->query("SELECT sms_uuid FROM receivedsms WHERE sms_uuid='$sms_uuid'");
         if (DEBUG===FALSE AND $result->num_rows>=100) // sms already exists in DB, possible problem
            {
            //notifyAdmins("Problem with SMS $sms_uuid!",1);
@@ -408,33 +408,37 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
            }
         else
            {
-           if ($result = dbQuery("INSERT INTO receivedsms SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'"))
+           if ($result = $localdb->query("INSERT INTO receivedsms SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'"))
               {
               }
               else error("update failed");
            }
+        $localdb->conn->commit();
 
 }
 
 function log_sendsms($number, $text)
 {
-	global $mysqli;
-	$number = $mysqli->real_escape_string($number);
-	$text = $mysqli->real_escape_string($text);
+        global $dbServer,$dbUser,$dbPassword,$dbName;
+	$localdb=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+        $localdb->connect();
+	$number = $localdb->conn->real_escape_string($number);
+	$text = $localdb->conn->real_escape_string($text);
 
-	if ($result = dbQuery("INSERT INTO sentsms SET number='$number',text='$text'")) {
+	if ($result = $localdb->query("INSERT INTO sentsms SET number='$number',text='$text'")) {
 	} else error("update failed");
+	$localdb->conn->commit();
 
 }
 
 function note($number,$bikeNum,$message)
 {
 
-        global $mysqli;
+        global $db;
 	$userId = getUser($number);
 	$bikeNum = intval($bikeNum);
 
-	if ($result = dbQuery("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
+	if ($result = $db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"Bike $bikeNum does not exist.");
@@ -455,7 +459,7 @@ function note($number,$bikeNum,$message)
 		$bikeStatus = "B.$bikeNum is rented by $userName (+$phone).";
 	}
 
-	if ($result = dbQuery("SELECT userName from users where number=$number")) {
+	if ($result = $db->query("SELECT userName from users where number=$number")) {
     		$row = $result->fetch_assoc();
 		$reportedBy= $row["userName"];
 	} else error("user not retrieved");
@@ -464,20 +468,20 @@ function note($number,$bikeNum,$message)
 	{
 		$userNote="";
 	}
-	else $userNote=$mysqli->real_escape_string(trim($matches[1]));
+	else $userNote=$db->conn->real_escape_string(trim($matches[1]));
 
 	if($userNote=="")
 	{
 		checkUserPrivileges($number);
 
-		if ($result = dbQuery("UPDATE bikes SET note=NULL where bikeNum=$bikeNum")) {
+		if ($result = $db->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum")) {
 		} else error("update failed");
 
 		sendSMS($number,"Note for bike $bikeNum deleted.");
 	}
 	else
 	{
-		if ($result = dbQuery("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum")) {
+		if ($result = $db->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum")) {
 		} else error("update failed");
 
 		sendSMS($number,"Note for bike $bikeNum saved.");
@@ -495,9 +499,9 @@ function note($number,$bikeNum,$message)
 **/
 function notifyAdmins($message,$notificationtype=0)
 {
-	global $mysqli;
+	global $db;
 
-	if ($result = dbQuery("SELECT number,mail FROM users where privileges & 2 != 0")) {
+	if ($result = $db->query("SELECT number,mail FROM users where privileges & 2 != 0")) {
 		$admins = $result->fetch_all(MYSQLI_ASSOC);
 	} else error("admins not fetched");
 
@@ -521,11 +525,11 @@ function notifyAdmins($message,$notificationtype=0)
 function last($number,$bike)
 {
 
-        global $mysqli;
+        global $db;
 	$userId = getUser($number);
 	$bikeNum = intval($bike);
 
-	if ($result = dbQuery("SELECT bikeNum FROM bikes where bikeNum=$bikeNum")) {
+	if ($result = $db->query("SELECT bikeNum FROM bikes where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
 		{
 			sendSMS($number,"Bike $bikeNum does not exist.");
@@ -533,7 +537,7 @@ function last($number,$bike)
 		}
     	} else error("bike not retrieved");
 
-	if ($result = dbQuery("SELECT userName,parameter,standName
+	if ($result = $db->query("SELECT userName,parameter,standName
 FROM `history` join users on history.userid=users.userid left join stands on stands.standid=history.parameter where bikenum=$bikeNum order by time desc
 LIMIT 10")) {
 		$bikeHistory= $result->fetch_all(MYSQLI_ASSOC);
@@ -564,24 +568,24 @@ LIMIT 10")) {
 function revert($number,$bikeNum)
 {
 
-        global $mysqli;
+        global $db;
         $userId = getUser($number);
 
-        $result = dbQuery("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser<>'NULL'");
+        $result = $db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser<>'NULL'");
         if(!$result->num_rows)
                 {
                 sendSMS($number,"Bicycle $bikeNum is not rented right now. Revert not successful!");
                 return;
                 }
 
-        $result = dbQuery("SELECT parameter,standName FROM stands LEFT JOIN history ON standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1");
+        $result = $db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1");
         if($result->num_rows==1)
                 {
                         $row = $result->fetch_assoc();
                         $standId=$row["parameter"];
                         $stand=$row["standName"];
                 }
-        $result = dbQuery("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action='RENT' ORDER BY time DESC LIMIT 1,1");
+        $result = $db->query("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action='RENT' ORDER BY time DESC LIMIT 1,1");
         if($result->num_rows==1)
                 {
                         $row = $result->fetch_assoc();
@@ -589,13 +593,13 @@ function revert($number,$bikeNum)
                 }
         if ($standId and $code)
            {
-           if ($result = dbQuery("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code where bikeNum=$bikeNum")) {
+           if ($result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code where bikeNum=$bikeNum")) {
                         } else error("update failed");
-           if ($result = dbQuery("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'")) {
+           if ($result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'")) {
                         } else error("update failed");
-           if ($result = dbQuery("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code")) {
+           if ($result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code")) {
                         } else error("update failed");
-           if ($result = dbQuery("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
+           if ($result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
                         } else error("update failed");
            sendSMS($number,"Bicycle $bikeNum reverted to stand $stand with code $code.");
            }
@@ -609,7 +613,7 @@ function revert($number,$bikeNum)
 function add($number,$email,$phone,$message)
 {
 
-        global $mysqli;
+        global $db;
 	$userId = getUser($number);
 
 	$phone=intval($phone);
@@ -618,7 +622,7 @@ function add($number,$email,$phone,$message)
 		$phone+=421000000000;
 	}
 
-	if ($result = dbQuery("SELECT number,mail,userName FROM users where number=$phone OR mail='$email'")) {
+	if ($result = $db->query("SELECT number,mail,userName FROM users where number=$phone OR mail='$email'")) {
     		if($result->num_rows!=0)
 		{
     			$row = $result->fetch_assoc();
@@ -637,10 +641,10 @@ function add($number,$email,$phone,$message)
 		sendSMS($number,"Contact information is in incorrect format. Usage: ADD king@earth.com 0901456789 Martin Luther King Jr.");
 		return;
 	}
-	$userName=$mysqli->real_escape_string(trim($matches[2]));
-	$email=$mysqli->real_escape_string(trim($matches[1]));
+	$userName=$db->conn->real_escape_string(trim($matches[2]));
+	$email=$db->conn->real_escape_string(trim($matches[1]));
 
-	if ($result = dbQuery("INSERT into users SET userName='$userName',number=$phone,mail='$email'")) {
+	if ($result = $db->query("INSERT into users SET userName='$userName',number=$phone,mail='$email'")) {
 	} else error("insert user failed");
 
 	sendConfirmationEmail($email);
@@ -653,21 +657,21 @@ function add($number,$email,$phone,$message)
 function sendConfirmationEmail($email)
 {
 
-        global $mysqli, $dbPassword;
+        global $db, $dbPassword;
 
 	$subject = 'registracia/registration White Bikes';
 
-	if ($result = dbQuery("SELECT userName,userId FROM users where mail='$email'")) {
+	if ($result = $db->query("SELECT userName,userId FROM users where mail='$email'")) {
 		$user = $result->fetch_all(MYSQLI_ASSOC);
 	} else error("email not fetched");
 
 	$userId =$user[0]["userId"];
 	$userKey = hash('sha256', $email.$dbPassword.rand(0,1000000));
 
-	if ($result = dbQuery("INSERT into registration SET userKey='$userKey',userId='$userId'")) {
+	if ($result = $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'")) {
 	} else error("insert registration failed");
 
-	if ($result = dbQuery("INSERT into limits SET userId='$userId',userLimit=0")) {
+	if ($result = $db->query("INSERT into limits SET userId='$userId',userLimit=0")) {
 	} else error("insert limit failed");
 
 		$mena = preg_split("/[\s,]+/",$user[0]["userName"]);
@@ -691,10 +695,10 @@ http://whitebikes.info/sms/agree.php?key=$userKey
 
 function confirmUser($userKey)
 {
-	global $mysqli;
-	$userKey = $mysqli->real_escape_string($userKey);
+	global $db;
+	$userKey = $db->conn->real_escape_string($userKey);
 
-	if ($result = dbQuery("SELECT userId FROM registration where userKey='$userKey'")) {
+	if ($result = $db->query("SELECT userId FROM registration where userKey='$userKey'")) {
 		if($result->num_rows==1)
 		{
 			$row = $result->fetch_assoc();
@@ -707,36 +711,19 @@ function confirmUser($userKey)
 		}
 	} else error("key not fetched");
 
-	if ($result = dbQuery("UPDATE limits SET userLimit=1 where userId=$userId")) {
+	if ($result = $db->query("UPDATE limits SET userLimit=1 where userId=$userId")) {
 	} else error("update limit failed");
 
-	if ($result = dbQuery("DELETE from registration where userId='$userId'")) {
+	if ($result = $db->query("DELETE from registration where userId='$userId'")) {
 	} else error("delete registration failed");
 
 	echo "All fine. Welcome!";
 
 }
 
-
-function createDbConnection()
-{
-   global $dbServer, $dbUser, $dbPassword, $dbName;
-   $result = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
-   $result->autocommit(FALSE);
-   if (!$result) error('db connection error!');
-   return $result;
-}
-
-function dbQuery($query)
-{
-   global $mysqli;
-   $result=$mysqli->query($query);
-   return $result;
-}
-
 function sendEmail($email,$subject,$message)
 {
-   global $mysqli;
+   global $db;
    $headers = 'From: info@whitebikes.info' . "\r\n" . 'Reply-To: info@cyklokoalicia.sk' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
    if (DEBUG===FALSE) mail($email, $subject, $message, $headers); // @TODO: replace with proper SMTP mailer
    else echo $email,' | ',$subject,' | ',$message;
@@ -744,13 +731,12 @@ function sendEmail($email,$subject,$message)
 
 function checkUserPrivileges($number)
 {
-   global $mysqli;
+   global $db;
    $userId=getUser($number);
    $privileges=getPrivileges($userId);
    if ($privileges==0)
       {
       sendSMS($number,"Sorry, this command is only available for the privileged users.");
-      $mysqli->commit();
       exit;
       }
 }
