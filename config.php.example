@@ -1,5 +1,7 @@
 <?php
 
+define('DEBUG',FALSE); // debug mode, TRUE to turn on
+
 $systemName="smsBikeShare";
 $systemURL="https://github.com/mmmaly/smsBikeShare/"; // needs trailing slash!
 $systemLat="48.148154"; // default map center point - latitude
