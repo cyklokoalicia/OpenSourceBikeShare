@@ -2,6 +2,10 @@ body {
    margin: 0;
    padding: 0;
 }
+#map {
+   width: 100%;
+   height: 100%;
+}
 
 @media screen and (min-width: 992px) {
    .icondesc {
@@ -25,15 +29,13 @@ body {
       top: -4px;
       left: 2px;
       font-size: 170%;
-      letter-spacing: -1px;
    }
 
    .standname {
       position: absolute;
-      bottom: -4px;
-      left: 1px;
-      font-size: 80%;
-      letter-spacing: -1px;
+      bottom: -3px;
+      left: 2px;
+      font-size: 75%;
    }
 }
 
