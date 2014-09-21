@@ -581,7 +581,7 @@ function revert($number,$bikeNum)
                         $standId=$row["parameter"];
                         $stand=$row["standName"];
                 }
-        $result = dbQuery("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action='RENT' ORDER BY time DESC LIMIT 2,1");
+        $result = dbQuery("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action='RENT' ORDER BY time DESC LIMIT 1,1");
         if($result->num_rows==1)
                 {
                         $row = $result->fetch_assoc();
@@ -592,6 +592,10 @@ function revert($number,$bikeNum)
            if ($result = dbQuery("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code where bikeNum=$bikeNum")) {
                         } else error("update failed");
            if ($result = dbQuery("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'")) {
+                        } else error("update failed");
+           if ($result = dbQuery("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code")) {
+                        } else error("update failed");
+           if ($result = dbQuery("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
                         } else error("update failed");
            sendSMS($number,"Bicycle $bikeNum reverted to stand $stand with code $code.");
            }
