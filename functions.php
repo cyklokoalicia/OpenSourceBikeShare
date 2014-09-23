@@ -393,6 +393,7 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 	global $dbServer,$dbUser,$dbPassword,$dbName;
         $localdb=new Database($dbServer,$dbUser,$dbPassword,$dbName);
         $localdb->connect();
+        $localdb->conn->autocommit(TRUE);
 
 	$sms_uuid = $localdb->conn->real_escape_string($sms_uuid);
 	$sender = $localdb->conn->real_escape_string($sender);
@@ -413,7 +414,6 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
               }
               else error("update failed");
            }
-        $localdb->conn->commit();
 
 }
 
@@ -422,12 +422,12 @@ function log_sendsms($number, $text)
         global $dbServer,$dbUser,$dbPassword,$dbName;
 	$localdb=new Database($dbServer,$dbUser,$dbPassword,$dbName);
         $localdb->connect();
+        $localdb->conn->autocommit(TRUE);
 	$number = $localdb->conn->real_escape_string($number);
 	$text = $localdb->conn->real_escape_string($text);
 
 	if ($result = $localdb->query("INSERT INTO sentsms SET number='$number',text='$text'")) {
 	} else error("update failed");
-	$localdb->conn->commit();
 
 }
 
