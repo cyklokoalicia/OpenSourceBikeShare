@@ -1,6 +1,8 @@
 <?php
+error_reporting(0);
 
 define('DEBUG',FALSE); // debug mode, TRUE to turn on
+define('ERROR',1);
 
 $systemName="smsBikeShare";
 $systemURL="https://github.com/mmmaly/smsBikeShare/"; // needs trailing slash!
@@ -17,5 +19,7 @@ $dbServer="localhost";
 $dbUser="bikeshare";
 $dbPassword="YourPassword";
 $dbName="WB";
+
+$connectors["sms"]="eurosms.php";
 
 ?>
