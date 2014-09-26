@@ -10,6 +10,6 @@ Features
 * Uses eurosms.com SMS gateway, but easy to modify to different gateways/SMS API
 * Requires bicycle locks with four digit code for locking bicycles
 
-Pilot testing
+Pilot testing / Demo
 ---------
-Currently running in Bratislava.
+Currently running in [Bratislava](http://whitebikes.info), Slovakia..
