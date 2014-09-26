@@ -6,6 +6,9 @@ body {
    width: 100%;
    height: 100%;
 }
+.loading {
+   background: url(../img/loading.gif);
+}
 
 @media screen and (min-width: 992px) {
    .icondesc {
