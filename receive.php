@@ -2,12 +2,12 @@
 require("config.php");
 require("db.class.php");
 require("actions-sms.php");
-require("connectors/".$connectors["sms"]);
+require("connectors/sms.php");
 
 $db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
 $db->connect();
 
-$sms=new SMSConnector();
+$sms=new SMSConnector($connectors["sms"]);
 
 log_sms($sms->UUID(),$sms->Number(),$sms->Time(),$sms->Text(),$sms->IPAddress());
 

@@ -20,6 +20,6 @@ $dbUser="bikeshare";
 $dbPassword="YourPassword";
 $dbName="WB";
 
-$connectors["sms"]="eurosms.php";
+$connectors["sms"]="eurosms";
 
 ?>
