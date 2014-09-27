@@ -9,7 +9,7 @@ Features
 * Registered users send a text message (SMS) to rent and return bicycles and get various information
 * Web map with availability of the bicycle stands
 * Admin to add, edit or remove users, create stands or change bicycle availability
-* Uses eurosms.com SMS gateway, but easy to modify to different gateways/SMS API
+* Uses eurosms.com SMS gateway, but ready to use any SMS provider / gateway
 * Bicycles require the locks with a four digit code
 
 Pilot testing
