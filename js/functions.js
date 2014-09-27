@@ -1,12 +1,14 @@
-var markers=[]; var iconsize=60; var sidebar;
+var markers=[]; var nameid=[]; var markerdata=[]; var iconsize=60; var sidebar;
 
 $(document).ready(function(){
 //TODO refresh user limit, used stand bicycle total + bicycle list, buttons after each action (rent/return/note)
    $('#standactions').hide();
    $(".bicycleactions").hide();
-   $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" />'); });
+   $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" id="loading" />'); });
+   $(document).ajaxComplete(function() { $('#loading').remove(); });
    $("#rent").click(function() { rent(); });
-   $(".return").click(function() { returnbike(); });
+   $("#return").click(function(e) { returnbike(); });
+   $("#note").click(function() { note(); });
    $("#where").click(function() { where(); });
    $("#last").click(function() { last(); });
    $("#revert").click(function() { revert(); });
@@ -17,7 +19,7 @@ $(document).ready(function(){
 function mapinit()
 {
    var viewport = $.viewportDetect(); // ("xs", "sm", "md", or "lg");
-   if (viewport=="xs" || viewport=="sm") iconsize=100;
+   if (viewport=="xs" || viewport=="sm") iconsize=80;
 
    $("body").data("mapcenterlat", maplat);
    $("body").data("mapcenterlong", maplon);
@@ -26,7 +28,7 @@ function mapinit()
    map = new L.Map('map');
    Modernizr.load({
    test: Modernizr.geolocation,
-   yep : 'js/geo.js'
+   ayep : 'js/geo.js'
    });
 
    // create the tile layer with correct attribution
@@ -48,8 +50,7 @@ function mapinit()
 
 function getmarkers()
 {
-   markers=[];
-   window.markerdata=[];
+   markers=[]; markerdata=[];
    $.ajax({
          url: "command.php?action=map:markers"
          }).done(function(jsonresponse) {
@@ -76,8 +77,10 @@ function getmarkers()
                   });
                   }
 
-               window.markerdata[jsonobject[i].standId]={name:jsonobject[i].placename,desc:jsonobject[i].standDescription,count:jsonobject[i].bikecount};
+               markerdata[jsonobject[i].standId]={name:jsonobject[i].placename,desc:jsonobject[i].standDescription,count:jsonobject[i].bikecount};
                markers[jsonobject[i].standId] = L.marker([jsonobject[i].lat, jsonobject[i].lon], { icon: tempicon }).addTo(map).on("click", showstand );
+               nameid[jsonobject[i].placename]=jsonobject[i].standId; // creates reverse relation - for matching name to id purposes
+               $('body').data('markerdata',markerdata);
                }
          });
 }
@@ -90,59 +93,100 @@ function getuserstatus()
             jsonobject=$.parseJSON(jsonresponse);
             $('body').data('limit',jsonobject.limit);
             $('body').data('rented',jsonobject.rented);
+            togglebikeactions();
          });
 }
 
 function showstand(e)
 {
    sidebar.show();
-   standid=e.target.options.icon.options.standid;
-   resetrentbutton()
-   resetconsole();
-   if (window.markerdata[standid].count==0)
-      {
-      $('#standname').html(window.markerdata[standid].name+' <span class="label label-danger" id="standcount">No bicycles</span>');
-      resetstandbikes();
-      }
-   else if (window.markerdata[standid].count==1)
-      {
-      $('#standname').html(window.markerdata[standid].name+' <span class="label label-success" id="standcount">'+window.markerdata[standid].count+' bicycle:</span>');
-      }
+   rentedbikes();
+   if ($.isNumeric(e)) standid=e; // passed via manual call
    else
       {
-      $('#standname').html(window.markerdata[standid].name+' <span class="label label-success" id="standcount">'+window.markerdata[standid].count+' bicycles:</span>');
+      standid=e.target.options.icon.options.standid; // passed via event call
+      resetconsole();
       }
-   if (window.markerdata[standid].count>0)
+   resetbutton("rent");
+   markerdata=$('body').data('markerdata');
+
+   if (markerdata[standid].count>0)
       {
+      if (markerdata[standid].count==1)
+         {
+         $('#standname').html(markerdata[standid].name+' <span class="label label-success" id="standcount">'+window.markerdata[standid].count+' bicycle:</span>');
+         }
+      else
+         {
+         $('#standname').html(markerdata[standid].name+' <span class="label label-success" id="standcount">'+window.markerdata[standid].count+' bicycles:</span>');
+         }
       $.ajax({
-         url: "command.php?action=list&stand="+window.markerdata[standid].name
+         url: "command.php?action=list&stand="+markerdata[standid].name
          }).done(function(jsonresponse) {
             jsonobject=$.parseJSON(jsonresponse);
             handleresponse(jsonobject,0);
             bikelist="";
-            for (var i=0, len=jsonobject.content.length; i < len; i++)
+            if (jsonobject.content!="")
                {
-               if (jsonobject.content[i][0]=="*" && $("body").data("limit")>0)
+               for (var i=0, len=jsonobject.content.length; i < len; i++)
                   {
-                  jsonobject.content[i]=jsonobject.content[i].replace("*","");
-                  bikelist=bikelist+' <button type="button" class="btn btn-warning bikeid">'+jsonobject.content[i]+'</button>';
+                  if (jsonobject.content[i][0]=="*" && $("body").data("limit")>0)
+                     {
+                     jsonobject.content[i]=jsonobject.content[i].replace("*","");
+                     bikelist=bikelist+' <button type="button" class="btn btn-warning bikeid">'+jsonobject.content[i]+'</button>';
+                     }
+                  else if (jsonobject.content[i][0]=="*" && $("body").data("limit")==0)
+                     {
+                     jsonobject.content[i]=jsonobject.content[i].replace("*","");
+                     bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.content[i]+'</button>';
+                     }
+                  else if ($("body").data("limit")>0) bikelist=bikelist+' <button type="button" class="btn btn-success bikeid b'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
+                  else bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.content[i]+'</button>';
                   }
-               else if (jsonobject.content[i][0]=="*" && $("body").data("limit")==0)
-                  {
-                  jsonobject.content[i]=jsonobject.content[i].replace("*","");
-                  bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.content[i]+'</button>';
-                  }
-               else if ($("body").data("limit")>0) bikelist=bikelist+' <button type="button" class="btn btn-success bikeid b'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
-               else bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.content[i]+'</button>';
+               $('#standbikes').html('<div class="btn-group">'+bikelist+'</div>');
+               $('#standbikes .bikeid').click( function() { attachbicycleinfo(this,"rent"); });
                }
-            $('#standbikes').html('<div class="btn-group">'+bikelist+'</div>');
-            $('.bikeid').click( function() { attachbicycleinfo(this); });
+            else // no bicyles at stand
+               {
+               $('#standname').html(markerdata[standid].name+' <span class="label label-danger" id="standcount">No bicycles</span>');
+               resetstandbikes();
+               }
+
          });
       }
-   showbuttons(window.markerdata[standid].count);
+   else
+      {
+      $('#standname').html(markerdata[standid].name+' <span class="label label-danger" id="standcount">No bicycles</span>');
+      resetstandbikes();
+      }
+   togglestandactions(markerdata[standid].count);
 }
 
-function showbuttons(count)
+function rentedbikes()
+{
+   $.ajax({
+      url: "command.php?action=userbikes"
+      }).done(function(jsonresponse) {
+         jsonobject=$.parseJSON(jsonresponse);
+         handleresponse(jsonobject,0);
+         bikelist="";
+         if (jsonobject.content!="")
+            {
+            for (var i=0, len=jsonobject.content.length; i < len; i++)
+               {
+               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
+               }
+            $('#rentedbikes').html('<div class="btn-group">'+bikelist+'</div>');
+            $('#rentedbikes .bikeid').click( function() { attachbicycleinfo(this,"return"); attachbicycleinfo(this,"note"); });
+            }
+         else
+            {
+            resetrentedbikes();
+            }
+      });
+}
+
+function togglestandactions(count)
 {
    if (count==0 || $("body").data("limit")==0)
       {
@@ -152,7 +196,18 @@ function showbuttons(count)
       {
       $('#standactions').show();
       }
-   $(".bicycleactions").show();
+}
+
+function togglebikeactions()
+{
+   if ($('body').data('rented')==0)
+      {
+      $('.bicycleactions').hide();
+      }
+   else
+      {
+      $('.bicycleactions').show();
+      }
 }
 
 function rent()
@@ -164,14 +219,18 @@ function rent()
       jsonobject=$.parseJSON(jsonresponse);
       handleresponse(jsonobject);
       $('.b'+$('#rent .bikenumber').html()).remove();
-      resetrentbutton();
+      resetbutton("rent");
       $('body').data("limit",$('body').data("limit")-1);
       if ($("body").data("limit")<0) $("body").data("limit",0);
-      standname=$('#standname').clone().children().remove().end().text();
-      standbiketotal=$('#stand-'+standname+' .bikecount').html();
-      standbiketotal=standbiketotal-1;
-      $('#stand-'+standname+' .bikecount').html(standbiketotal);
-      $('#standcount').html(standbiketotal+' bicycles:');
+      standname=$('#standname').clone().children().remove().end().text().trim();
+      markerdata=$('body').data('markerdata');
+      standbiketotal=markerdata[nameid[standname]].count;
+      if (jsonobject.error==0)
+         {
+         standbiketotal=standbiketotal-1;
+         markerdata[nameid[standname]].count=standbiketotal
+         $('body').data('markerdata',markerdata);
+         }
       if (standbiketotal==0)
          {
          $('#standcount').removeClass('label-success');
@@ -179,19 +238,37 @@ function rent()
          }
       getmarkers();
       getuserstatus();
+      showstand(nameid[standname]);
    });
 }
 
 function returnbike()
 {
+   standname=$('#standname').clone().children().remove().end().text().trim();
    $.ajax({
-   url: "command.php?action=return&bikeno="+$('.return .bikenumber').html()+"&stand="+$('#standname').clone().children().remove().end().text()
+   url: "command.php?action=return&bikeno="+$('#return .bikenumber').html()+"&stand="+standname
    }).done(function(jsonresponse) {
       jsonobject=$.parseJSON(jsonresponse);
       handleresponse(jsonobject);
+      $('.b'+$('#return .bikenumber').html()).remove();
+      $('.b'+$('#note .bikenumber').html()).remove();
+      resetbutton("return"); resetbutton("note");
+      markerdata=$('body').data('markerdata');
+      standbiketotal=markerdata[nameid[standname]].count;
+      if (jsonobject.error==0)
+         {
+         standbiketotal=standbiketotal+1;
+         markerdata[nameid[standname]].count=standbiketotal
+         $('body').data('markerdata',markerdata);
+         }
+      if (standbiketotal==0)
+         {
+         $('#standcount').removeClass('label-success');
+         $('#standcount').addClass('label-danger');
+         }
       getmarkers();
       getuserstatus();
-      if ($("body").data("rented")==0) $(".bicycleactions").hide();
+      showstand(nameid[standname]);
    });
 }
 
@@ -237,16 +314,14 @@ function revert()
    });
 }
 
-function attachbicycleinfo(element)
+function attachbicycleinfo(element,attachto)
 {
-   $('#rent .bikenumber').html($(element).html());
+   $('#'+attachto+' .bikenumber').html($(element).html());
    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">This bicycle might have some problem!</div>');
-   else resetconsole();
 }
 
 function handleresponse(jsonobject,display)
 {
-   resetconsole();
    if (display==undefined)
       {
       if (jsonobject.error==1)
@@ -269,12 +344,17 @@ function resetconsole()
    $('#console').html('');
 }
 
-function resetrentbutton()
+function resetbutton(attachto)
 {
-   $('#rent .bikenumber').html('');
+   $('#'+attachto+' .bikenumber').html('');
 }
 
 function resetstandbikes()
 {
    $('#standbikes').html('');
+}
+
+function resetrentedbikes()
+{
+   $('#rentedbikes').html('');
 }
