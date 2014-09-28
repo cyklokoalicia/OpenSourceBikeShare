@@ -6,14 +6,15 @@ $(document).ready(function(){
    $(".bicycleactions").hide();
    $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" id="loading" />'); });
    $(document).ajaxComplete(function() { $('#loading').remove(); });
-   $("#rent").click(function() { rent(); });
-   $("#return").click(function(e) { returnbike(); });
-   $("#note").click(function() { note(); });
-   $("#where").click(function() { where(); });
-   $("#last").click(function() { last(); });
-   $("#revert").click(function() { revert(); });
+   $("#rent").click(function() { ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
+   $("#return").click(function(e) { ga('send', 'event', 'buttons', 'click', 'bike-return'); returnbike(); });
+   $("#note").click(function() { ga('send', 'event', 'buttons', 'click', 'bike-note'); note(); });
+   $("#where").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-where'); where(); });
+   $("#last").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-last'); last(); });
+   $("#revert").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-revert'); revert(); });
+   $('.dropdown-toggle').dropdown()
    mapinit();
-
+   setInterval(getmarkers, 60000);
 });
 
 function mapinit()
@@ -34,7 +35,7 @@ function mapinit()
    // create the tile layer with correct attribution
    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
    var osmAttrib='Map data (c) <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-   var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 18, attribution: osmAttrib});
+   var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 19, attribution: osmAttrib});
    map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
    map.addLayer(osm);
    sidebar = L.control.sidebar('sidebar', {
@@ -63,7 +64,7 @@ function getmarkers()
                   tempicon=L.divIcon({
                      iconSize: [iconsize, iconsize],
                      iconAnchor: [iconsize/2, 0],
-                     html: '<dl class="icondesc none" id="stand-'+jsonobject[i].placename+'"><dt class="bikecount">'+jsonobject[i].bikecount+'</dt><dd class="standname">'+jsonobject[i].placename+'</dd></dl>',
+                     html: '<dl class="icondesc none" id="stand-'+jsonobject[i].standName+'"><dt class="bikecount">'+jsonobject[i].bikecount+'</dt><dd class="standname">'+jsonobject[i].standName+'</dd></dl>',
                      standid: jsonobject[i].standId
                   });
                   }
@@ -72,14 +73,14 @@ function getmarkers()
                   tempicon=L.divIcon({
                      iconSize: [iconsize, iconsize],
                      iconAnchor: [iconsize/2, 0],
-                     html: '<dl class="icondesc" id="stand-'+jsonobject[i].placename+'"><dt class="bikecount">'+jsonobject[i].bikecount+'</dt><dd class="standname">'+jsonobject[i].placename+'</dd></dl>',
+                     html: '<dl class="icondesc" id="stand-'+jsonobject[i].standName+'"><dt class="bikecount">'+jsonobject[i].bikecount+'</dt><dd class="standname">'+jsonobject[i].standName+'</dd></dl>',
                      standid: jsonobject[i].standId
                   });
                   }
 
-               markerdata[jsonobject[i].standId]={name:jsonobject[i].placename,desc:jsonobject[i].standDescription,count:jsonobject[i].bikecount};
+               markerdata[jsonobject[i].standId]={name:jsonobject[i].standName,desc:jsonobject[i].standDescription,count:jsonobject[i].bikecount};
                markers[jsonobject[i].standId] = L.marker([jsonobject[i].lat, jsonobject[i].lon], { icon: tempicon }).addTo(map).on("click", showstand );
-               nameid[jsonobject[i].placename]=jsonobject[i].standId; // creates reverse relation - for matching name to id purposes
+               nameid[jsonobject[i].standName]=jsonobject[i].standId; // creates reverse relation - for matching name to id purposes
                $('body').data('markerdata',markerdata);
                }
          });
@@ -104,6 +105,7 @@ function showstand(e)
    if ($.isNumeric(e)) standid=e; // passed via manual call
    else
       {
+      ga('send', 'event', 'buttons', 'click', 'stand-select');
       standid=e.target.options.icon.options.standid; // passed via event call
       resetconsole();
       }
@@ -144,7 +146,7 @@ function showstand(e)
                   else bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.content[i]+'</button>';
                   }
                $('#standbikes').html('<div class="btn-group">'+bikelist+'</div>');
-               $('#standbikes .bikeid').click( function() { attachbicycleinfo(this,"rent"); });
+               $('#standbikes .bikeid').click( function() { ga('send', 'event', 'buttons', 'click', 'bike-number'); attachbicycleinfo(this,"rent"); });
                }
             else // no bicyles at stand
                {
@@ -213,6 +215,7 @@ function togglebikeactions()
 function rent()
 {
    if ($('#rent .bikenumber').html()=="") return false;
+   ga('send', 'event', 'bikes', 'rent', $('#rent .bikenumber').html());
    $.ajax({
    url: "command.php?action=rent&bikeno="+$('#rent .bikenumber').html()
    }).done(function(jsonresponse) {
@@ -227,7 +230,7 @@ function rent()
       standbiketotal=markerdata[nameid[standname]].count;
       if (jsonobject.error==0)
          {
-         standbiketotal=standbiketotal-1;
+         standbiketotal=(standbiketotal*1)-1;
          markerdata[nameid[standname]].count=standbiketotal
          $('body').data('markerdata',markerdata);
          }
@@ -245,6 +248,8 @@ function rent()
 function returnbike()
 {
    standname=$('#standname').clone().children().remove().end().text().trim();
+   ga('send', 'event', 'bikes', 'return', $('#return .bikenumber').html());
+   ga('send', 'event', 'stands', 'return', standname);
    $.ajax({
    url: "command.php?action=return&bikeno="+$('#return .bikenumber').html()+"&stand="+standname
    }).done(function(jsonresponse) {
@@ -257,7 +262,7 @@ function returnbike()
       standbiketotal=markerdata[nameid[standname]].count;
       if (jsonobject.error==0)
          {
-         standbiketotal=standbiketotal+1;
+         standbiketotal=(standbiketotal*1)+1;
          markerdata[nameid[standname]].count=standbiketotal
          $('body').data('markerdata',markerdata);
          }
@@ -274,6 +279,7 @@ function returnbike()
 
 function where()
 {
+   ga('send', 'event', 'bikes', 'where', $('#adminparam').val());
    $.ajax({
    url: "command.php?action=where&bikeno="+$('#adminparam').val()
    }).done(function(jsonresponse) {
@@ -284,6 +290,7 @@ function where()
 
 function last()
 {
+   ga('send', 'event', 'bikes', 'last', $('#adminparam').val());
    $.ajax({
    url: "command.php?action=last&bikeno="+$('#adminparam').val()
    }).done(function(jsonresponse) {
@@ -292,18 +299,9 @@ function last()
    });
 }
 
-function list()
-{
-   $.ajax({
-   url: "command.php?action=list&stand="+$('#adminparam').val()
-   }).done(function(jsonresponse) {
-      jsonobject=$.parseJSON(jsonresponse);
-      handleresponse(jsonobject);
-   });
-}
-
 function revert()
 {
+   ga('send', 'event', 'bikes', 'revert', $('#adminparam').val());
    $.ajax({
    url: "command.php?action=revert&bikeno="+$('#adminparam').val()
    }).done(function(jsonresponse) {
