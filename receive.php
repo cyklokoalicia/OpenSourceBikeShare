@@ -2,7 +2,7 @@
 require("config.php");
 require("db.class.php");
 require("actions-sms.php");
-require("connectors/sms.php");
+require("connectors/".$connectors["sms"].".php");
 
 $db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
 $db->connect();
