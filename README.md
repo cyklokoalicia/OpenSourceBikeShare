@@ -14,7 +14,7 @@ Features
 
 Pilot testing
 ---------
-Currently running in Bratislava, Slovakia.
+Currently running in Bratislava with about 50 bicycles.
 
 Demo
 ---------
