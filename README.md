@@ -1,4 +1,4 @@
-smsBikeShare
+OpenSourceBikeShare
 ============
 *The open source bike sharing system.*
 
@@ -19,3 +19,13 @@ Currently running in Bratislava, Slovakia.
 Demo
 ---------
 [Whitebikes](http://whitebikes.info) - do not share your location if you are out of Bratislava, otherwise map will jump out of the bike share area.
+
+Need help to set it up?
+---------
+**If you need help to set up your own bike sharing system** including the real world part (the stands, bicycles, locks etc.), **we are available for consultation**.
+
+Consultations are personalized and paid.
+
+We will talk to you about the expectations, situation, bicycle theft, potential users and **provide you with help on how to launch your own successful bike sharing system**.
+
+**Get in touch**: [consult AT whitebikes DOT info](mailto:consult@whitebikes.info)
