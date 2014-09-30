@@ -70,35 +70,24 @@ $(document).ready(function(){
 
 });
 
-function changecontent(name,desc,count)
-{
-   if (count==0)
-      {
-      $('#standname').html(name+' <span class="label label-danger" id="standcount">No bicycles</span>');
-      }
-   else if (count==1)
-      {
-      $('#standname').html(name+' <span class="label label-success" id="standcount">'+count+' bicycle</span>');
-      }
-   else
-      {
-      $('#standname').html(name+' <span class="label label-success" id="standcount">'+count+' bicycles</span>');
-      }
-   $('#standinfo').html(desc+' bicycles here: ');
-   showbuttons(count);
-}
-
 function getsmscode(event)
 {
    event.preventDefault();
-   $( "#validate" ).prop( "disabled", true );
    $.ajax({
    url: "command.php?action=smscode&number="+$('#number').val()
    }).done(function(jsonresponse) {
    jsonobject=$.parseJSON(jsonresponse);
-   $("#validatednumber").val(jsonobject.content);
-   $("#checkcode").val(jsonobject.checkcode);
-   $( "#step1" ).fadeOut();
+   if (jsonobject.error==1)
+      {
+      $('#console').html('<div class="alert alert-danger" role="alert">'+jsonobject.content+'</div>');
+      }
+   else
+      {
+      $('#console').html('');
+      $("#validatednumber").val(jsonobject.content);
+      $("#checkcode").val(jsonobject.checkcode);
+      $("#step1").fadeOut();
+      }
    });
 }
 
@@ -110,8 +99,11 @@ function register(event)
    url: "command.php?action=register&validatednumber="+$('#validatednumber').val()+"&checkcode="+$('#checkcode').val()+"&smscode="+$('#smscode').val()+"&fullname="+$('#fullname').val()+"&email="+$('#email').val()+"&password="+$('#password').val()+"&password2="+$('#password2').val()
    }).done(function(jsonresponse) {
    jsonobject=$.parseJSON(jsonresponse);
-   $("#validatednumber").val(jsonobject.content);
-   $("#checkcode").val(jsonobject.checkcode);
-   $( "#step1" ).fadeOut();
+   $("#step2").fadeOut();
+   if (jsonobject.error==1)
+      {
+      $('#console').html('<div class="alert alert-danger" role="alert">'+jsonobject.content+'</div>');
+      }
+   else $('#console').html('<div class="alert alert-success" role="alert">'+jsonobject.content+'</div>');
    });
 }

@@ -27,7 +27,7 @@ require("db.class.php");
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#"><?php echo $systemName; ?></a>
+          <a class="navbar-brand" href="<?php echo $systemURL; ?>"><?php echo $systemName; ?></a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -42,8 +42,9 @@ require("db.class.php");
 
       <div class="page-header">
             <h1>Registration</h1>
-
+            <div id="console"></div>
             </div>
+
 
        <form class="container" id="step1">
        <h2>Step 1 - Confirm your phone number</h2>

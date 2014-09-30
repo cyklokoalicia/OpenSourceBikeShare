@@ -12,7 +12,6 @@ $(document).ready(function(){
    $("#where").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-where'); where(); });
    $("#last").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-last'); last(); });
    $("#revert").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-revert'); revert(); });
-   $('.dropdown-toggle').dropdown()
    mapinit();
    setInterval(getmarkers, 60000);
 });
@@ -190,6 +189,11 @@ function rentedbikes()
 
 function togglestandactions(count)
 {
+   if (loggedin==0)
+      {
+      $('#standactions').hide();
+      return false;
+      }
    if (count==0 || $("body").data("limit")==0)
       {
       $('#standactions').hide();
@@ -202,6 +206,11 @@ function togglestandactions(count)
 
 function togglebikeactions()
 {
+   if (loggedin==0)
+      {
+      $('.bicycleactions').hide();
+      return false;
+      }
    if ($('body').data('rented')==0)
       {
       $('.bicycleactions').hide();
