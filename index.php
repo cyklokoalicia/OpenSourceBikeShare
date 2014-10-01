@@ -11,7 +11,6 @@ $db->connect();
 <title><? echo $systemName; ?> map with availability</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script type="text/javascript" src="js/jquery-timing.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
 <script type="text/javascript" src="js/viewportDetect.js"></script>
 <script type="text/javascript" src="js/leaflet.js"></script>
