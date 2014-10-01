@@ -31,8 +31,8 @@ CREATE TABLE `limits` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `receivedsms`;
-CREATE TABLE `receivedsms` (
+DROP TABLE IF EXISTS `received`;
+CREATE TABLE `received` (
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `sms_uuid` varchar(60) NOT NULL,
   `sender` varchar(20) NOT NULL,
@@ -49,8 +49,8 @@ CREATE TABLE `registration` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `sentsms`;
-CREATE TABLE `sentsms` (
+DROP TABLE IF EXISTS `sent`;
+CREATE TABLE `sent` (
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `number` varchar(20) NOT NULL,
   `text` varchar(200) NOT NULL

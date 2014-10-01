@@ -111,7 +111,7 @@ function info($number,$stand)
  * @param int $requiredargumentno number of requiredarguments
  * @param string $errormessage error message to send back in case of mismatch
 **/
-function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$errormessage)
+function validatereceived($number,$receivedargumentno,$requiredargumentno,$errormessage)
 {
    global $db;
    if($receivedargumentno<$requiredargumentno)
@@ -396,7 +396,7 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 	$sms_text = $localdb->conn->real_escape_string($sms_text);
 	$ip = $localdb->conn->real_escape_string($ip);
 
-        $result = $localdb->query("SELECT sms_uuid FROM receivedsms WHERE sms_uuid='$sms_uuid'");
+        $result = $localdb->query("SELECT sms_uuid FROM received WHERE sms_uuid='$sms_uuid'");
         if (DEBUG===FALSE AND $result->num_rows>=100) // sms already exists in DB, possible problem
            {
            //notifyAdmins("Problem with SMS $sms_uuid!",1);
@@ -404,7 +404,7 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
            }
         else
            {
-           if ($result = $localdb->query("INSERT INTO receivedsms SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'"))
+           if ($result = $localdb->query("INSERT INTO received SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'"))
               {
               }
               else error("update failed");
@@ -421,7 +421,7 @@ function log_sendsms($number, $text)
 	$number = $localdb->conn->real_escape_string($number);
 	$text = $localdb->conn->real_escape_string($text);
 
-	if ($result = $localdb->query("INSERT INTO sentsms SET number='$number',text='$text'")) {
+	if ($result = $localdb->query("INSERT INTO sent SET number='$number',text='$text'")) {
 	} else error("update failed");
 
 }
