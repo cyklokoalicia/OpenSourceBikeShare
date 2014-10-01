@@ -188,7 +188,7 @@ function logrequest($userid)
 
    $number=getphonenumber($userid);
 
-   $result = $localdb->query("INSERT INTO receivedsms SET sender='$number',receive_time='".date("Y-m-d H:i:s")."',sms_text='".$_SERVER['REQUEST_URI']."',ip='".$_SERVER['REMOTE_ADDR']."'");
+   $result = $localdb->query("INSERT INTO received SET sender='$number',receive_time='".date("Y-m-d H:i:s")."',sms_text='".$_SERVER['REQUEST_URI']."',ip='".$_SERVER['REMOTE_ADDR']."'");
 
 }
 
@@ -215,7 +215,7 @@ function logresult($userid,$text)
 
    $logtext = strip_tags($localdb->conn->real_escape_string($logtext));
 
-   $result = $localdb->query("INSERT INTO sentsms SET number='$userid',text='$logtext'");
+   $result = $localdb->query("INSERT INTO sent SET number='$userid',text='$logtext'");
 
 }
 
@@ -670,7 +670,7 @@ function smscode($number)
    $text="Enter this code to register: ".$smscode;
    $text=$db->conn->real_escape_string($text);
 
-   $result = $db->query("INSERT INTO sentsms SET number='$number',text='$text'");
+   $result = $db->query("INSERT INTO sent SET number='$number',text='$text'");
    $result = $db->query("INSERT INTO history SET userId=0,bikeNum=0,action='REGISTER',parameter='$number;$smscodenormalized;$checkcode'");
 
    if (DEBUG===TRUE)
