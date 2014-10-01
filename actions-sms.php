@@ -111,7 +111,7 @@ function info($number,$stand)
  * @param int $requiredargumentno number of requiredarguments
  * @param string $errormessage error message to send back in case of mismatch
 **/
-function validatereceived($number,$receivedargumentno,$requiredargumentno,$errormessage)
+function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$errormessage)
 {
    global $db;
    if($receivedargumentno<$requiredargumentno)
