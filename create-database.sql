@@ -1,7 +1,7 @@
--- Adminer 4.1.0 MySQL dump
-
 SET NAMES utf8;
 SET time_zone = '+00:00';
+SET foreign_key_checks = 0;
+SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
 DROP TABLE IF EXISTS `bikes`;
 CREATE TABLE `bikes` (
@@ -19,7 +19,7 @@ CREATE TABLE `history` (
   `bikeNum` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `action` varchar(20) NOT NULL,
-  `parameter` varchar(20) NOT NULL
+  `parameter` varchar(100) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -74,11 +74,20 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `userId` int(11) NOT NULL AUTO_INCREMENT,
   `userName` varchar(50) NOT NULL,
+  `password` text NOT NULL,
   `mail` varchar(30) NOT NULL,
   `number` varchar(30) NOT NULL,
   `privileges` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`userId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `sessions`;
+CREATE TABLE `sessions` (
+  `userId` int(10) unsigned NOT NULL,
+  `sessionId` varchar(256) NOT NULL,
+  `timeStamp` varchar(256) NOT NULL,
+  UNIQUE KEY `userId` (`userId`),
+  KEY `sessionId` (`sessionId`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- 2014-09-04 19:40:43
+-- 2014-10-01
