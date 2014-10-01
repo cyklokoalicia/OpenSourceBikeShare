@@ -4,6 +4,7 @@ $(document).ready(function(){
 //TODO refresh user limit, used stand bicycle total + bicycle list, buttons after each action (rent/return/note)
    $('#standactions').hide();
    $(".bicycleactions").hide();
+   $(".adminactions").hide();
    $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" id="loading" />'); });
    $(document).ajaxComplete(function() { $('#loading').remove(); });
    $("#rent").click(function() { ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
@@ -41,11 +42,10 @@ function mapinit()
         position: 'left'
         });
    map.addControl(sidebar);
-   sidebar.show();
-
    getmarkers();
    getuserstatus();
    resetconsole();
+   sidebar.show();
 }
 
 function getmarkers()
@@ -99,8 +99,11 @@ function getuserstatus()
 
 function showstand(e)
 {
+   standselected=1;
    sidebar.show();
+   toggleadminactions();
    rentedbikes();
+   checkonebikeattach();
    if ($.isNumeric(e)) standid=e; // passed via manual call
    else
       {
@@ -161,6 +164,7 @@ function showstand(e)
       resetstandbikes();
       }
    togglestandactions(markerdata[standid].count);
+   togglebikeactions();
 }
 
 function rentedbikes()
@@ -179,6 +183,7 @@ function rentedbikes()
                }
             $('#rentedbikes').html('<div class="btn-group">'+bikelist+'</div>');
             $('#rentedbikes .bikeid').click( function() { attachbicycleinfo(this,"return"); attachbicycleinfo(this,"note"); });
+            checkonebikeattach();
             }
          else
             {
@@ -211,13 +216,25 @@ function togglebikeactions()
       $('.bicycleactions').hide();
       return false;
       }
-   if ($('body').data('rented')==0)
+   if ($('body').data('rented')==0 || standselected==0)
       {
       $('.bicycleactions').hide();
       }
    else
       {
       $('.bicycleactions').show();
+      }
+}
+
+function toggleadminactions()
+{
+   if (priv==0)
+      {
+      $('.adminactions').hide();
+      }
+   else
+      {
+      $('.adminactions').show();
       }
 }
 
@@ -325,6 +342,16 @@ function attachbicycleinfo(element,attachto)
 {
    $('#'+attachto+' .bikenumber').html($(element).html());
    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">This bicycle might have some problem!</div>');
+}
+
+function checkonebikeattach()
+{
+   if ($("#rentedbikes .btn-group").length==1)
+      {
+      element=$("#rentedbikes .btn-group .btn");
+      attachbicycleinfo(element,"return");
+      attachbicycleinfo(element,"note");
+      }
 }
 
 function handleresponse(jsonobject,display)
