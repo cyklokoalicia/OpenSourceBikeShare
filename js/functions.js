@@ -29,7 +29,7 @@ function mapinit()
    map = new L.Map('map');
    Modernizr.load({
    test: Modernizr.geolocation,
-   ayep : 'js/geo.js'
+   yep : 'js/geo.js'
    });
 
    // create the tile layer with correct attribution
