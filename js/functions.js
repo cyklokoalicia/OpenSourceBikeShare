@@ -45,8 +45,7 @@ function mapinit()
    getuserstatus();
    resetconsole();
    sidebar.show();
-   savegeolocation();
-   ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat")+","+$("body").data("mapcenterlong"));
+
 }
 
 function getmarkers()
