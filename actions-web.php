@@ -116,7 +116,7 @@ function returnBike($userId,$bike,$stand)
    $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
 
    $message = '<h3>Bike '.$bikeNum.': <span class="label label-primary">Lock with code '.$currentCode.'.</span></h3>';
-   $message.= '<br />Please, <strong>rotate the lockpad to 0000</strong> when leaving.';
+   $message.= '<br />Please, <span class="label label-default">rotate the lockpad to 0000</label> when leaving.';
 
    $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
    response($message);
@@ -399,11 +399,6 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
       {
       $result = $db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='$number',privileges=0");
       $userId=$db->conn->insert_id;
-      /*
-      $userKey = hash('sha256',$email.$dbPassword.rand(0,1000000));
-      $result = $db->query("INSERT INTO registration SET userKey='$userKey',userId='$userId'");
-      sendConfirmationEmail($email);
-      */
       response("You have been successfully registered.");
       }
    else
