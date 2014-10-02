@@ -100,6 +100,11 @@ switch($action)
    case "map:status":
       mapgetlimit($userid);
       break;
+   case "map:geolocation":
+      $lat=trim($_GET["lat"]);
+      $long=trim($_GET["long"]);
+      mapgeolocation($userid,$lat,$long);
+      break;
    }
 
 ?>

@@ -121,7 +121,6 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
    <div class="col-lg-12">
    <button type="button" id="revert" class="btn btn-default"><span class="glyphicon glyphicon-fast-backward"></span> Revert</button>
    <button type="button" id="last" class="btn btn-default"><span class="glyphicon glyphicon-stats"></span> Last usage</button>
-   <button type="button" id="createuser" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Create user</button>
    </div>
    </div>
 </div>
