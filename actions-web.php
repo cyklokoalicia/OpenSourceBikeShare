@@ -77,7 +77,7 @@ function rent($userId,$bike)
       return;
       }
 
-   $message='<h3>Bike '.$bikeNum.': <span class="label label-primary">Open with code '.$currentCode.'.</span></h3>Change code immediately to <strong>'.$newCode.'</strong><br />(open, rotate metal part, set new code, rotate metal part back).';
+   $message='<h3>Bike '.$bikeNum.': <span class="label label-primary">Open with code '.$currentCode.'.</span></h3>Change code immediately to <span class="label label-default">'.$newCode.'</span><br />(open, rotate metal part, set new code, rotate metal part back).';
    if ($note)
       {
       $message.="<br />Reported issue: <em>".$note."</em>";
