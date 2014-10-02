@@ -116,7 +116,7 @@ function returnBike($userId,$bike,$stand)
    $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
 
    $message = '<h3>Bike '.$bikeNum.': <span class="label label-primary">Lock with code '.$currentCode.'.</span></h3>';
-   $message.= '<br />Please, <span class="label label-default">rotate the lockpad to 0000</label> when leaving.';
+   $message.= '<br />Please, <span class="label label-default">rotate the lockpad to 0000</span> when leaving.';
 
    $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
    response($message);
