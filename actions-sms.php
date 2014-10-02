@@ -90,7 +90,7 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
    if($receivedargumentno<$requiredargumentno)
       {
       sendSMS($number,"Error. More arguments needed, use command ".$errormessage);
-      exit;
+      return FALSE;
       }
    // if more arguments provided than required, they will be silently ignored
    return TRUE;
