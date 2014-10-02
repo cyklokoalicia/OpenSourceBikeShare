@@ -1,10 +1,9 @@
 var markers=[]; var nameid=[]; var markerdata=[]; var iconsize=60; var sidebar;
 
 $(document).ready(function(){
-//TODO refresh user limit, used stand bicycle total + bicycle list, buttons after each action (rent/return/note)
    $('#standactions').hide();
-   $(".bicycleactions").hide();
-   $(".adminactions").hide();
+   $('.bicycleactions').hide();
+   $('.adminactions').hide();
    $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" id="loading" />'); });
    $(document).ajaxComplete(function() { $('#loading').remove(); });
    $("#rent").click(function() { ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
@@ -14,7 +13,7 @@ $(document).ready(function(){
    $("#last").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-last'); last(); });
    $("#revert").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-revert'); revert(); });
    mapinit();
-   setInterval(getmarkers, 60000);
+   setInterval(getmarkers, 60000); // refresh map every 60 seconds
 });
 
 function mapinit()
@@ -52,6 +51,7 @@ function getmarkers()
 {
    markers=[]; markerdata=[];
    $.ajax({
+         global: false,
          url: "command.php?action=map:markers"
          }).done(function(jsonresponse) {
             jsonobject=$.parseJSON(jsonresponse);
@@ -88,6 +88,7 @@ function getmarkers()
 function getuserstatus()
 {
    $.ajax({
+         global: false,
          url: "command.php?action=map:status"
          }).done(function(jsonresponse) {
             jsonobject=$.parseJSON(jsonresponse);
@@ -125,6 +126,7 @@ function showstand(e)
          $('#standname').html(markerdata[standid].name+' <span class="label label-success" id="standcount">'+window.markerdata[standid].count+' bicycles:</span>');
          }
       $.ajax({
+         global: false,
          url: "command.php?action=list&stand="+markerdata[standid].name
          }).done(function(jsonresponse) {
             jsonobject=$.parseJSON(jsonresponse);
@@ -170,6 +172,7 @@ function showstand(e)
 function rentedbikes()
 {
    $.ajax({
+      global: false,
       url: "command.php?action=userbikes"
       }).done(function(jsonresponse) {
          jsonobject=$.parseJSON(jsonresponse);
@@ -342,6 +345,7 @@ function attachbicycleinfo(element,attachto)
 {
    $('#'+attachto+' .bikenumber').html($(element).html());
    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">This bicycle might have some problem!</div>');
+   else if ($('#console div').hasClass('alert-warning')) resetconsole();
 }
 
 function checkonebikeattach()
