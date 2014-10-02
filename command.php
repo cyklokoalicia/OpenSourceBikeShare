@@ -25,7 +25,8 @@ switch($action)
       $email=trim($_GET["email"]);
       $password=trim($_GET["password"]);
       $password2=trim($_GET["password2"]);
-      register($number,$smscode,$checkcode,$fullname,$email,$password,$password2);
+      $existing=trim($_GET["existing"]);
+      register($number,$smscode,$checkcode,$fullname,$email,$password,$password2,$existing);
       break;
    case "login":
       $number=trim($_POST["number"]);
@@ -100,7 +101,5 @@ switch($action)
       mapgetlimit($userid);
       break;
    }
-
-
 
 ?>

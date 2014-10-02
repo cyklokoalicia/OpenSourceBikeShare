@@ -77,16 +77,17 @@ function getsmscode(event)
    url: "command.php?action=smscode&number="+$('#number').val()
    }).done(function(jsonresponse) {
    jsonobject=$.parseJSON(jsonresponse);
-   if (jsonobject.error==1)
+   $('#console').html('');
+   $("#validatednumber").val(jsonobject.content);
+   $("#checkcode").val(jsonobject.checkcode);
+   $("#existing").val(jsonobject.existing);
+   $("#step1").fadeOut();
+   if (jsonobject.existing==1)
       {
-      $('#console').html('<div class="alert alert-danger" role="alert">'+jsonobject.content+'</div>');
-      }
-   else
-      {
-      $('#console').html('');
-      $("#validatednumber").val(jsonobject.content);
-      $("#checkcode").val(jsonobject.checkcode);
-      $("#step1").fadeOut();
+      $('h1').html('Existing user password change').fadeIn();
+      $('#step2title').html('Step 2 - Change password').fadeIn();
+      $('#register').html('Set password');
+      $('#regonly').fadeOut();
       }
    });
 }
@@ -96,7 +97,7 @@ function register(event)
    event.preventDefault();
    $( "#register" ).prop( "disabled", true );
    $.ajax({
-   url: "command.php?action=register&validatednumber="+$('#validatednumber').val()+"&checkcode="+$('#checkcode').val()+"&smscode="+$('#smscode').val()+"&fullname="+$('#fullname').val()+"&email="+$('#email').val()+"&password="+$('#password').val()+"&password2="+$('#password2').val()
+   url: "command.php?action=register&validatednumber="+$('#validatednumber').val()+"&checkcode="+$('#checkcode').val()+"&smscode="+$('#smscode').val()+"&fullname="+$('#fullname').val()+"&email="+$('#email').val()+"&password="+$('#password').val()+"&password2="+$('#password2').val()+"&existing="+$('#existing').val()
    }).done(function(jsonresponse) {
    jsonobject=$.parseJSON(jsonresponse);
    $("#step2").fadeOut();

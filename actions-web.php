@@ -383,9 +383,9 @@ function revert($userId,$bikeNum)
 
 }
 
-function register($number,$code,$checkcode,$fullname,$email,$password,$password2)
+function register($number,$code,$checkcode,$fullname,$email,$password,$password2,$existing)
 {
-   global $db, $dbPassword;
+   global $db, $dbPassword, $countryCode, $systemURL;
 
    $number=$db->conn->real_escape_string(trim($number));
    $code=$db->conn->real_escape_string(trim($code));
@@ -393,13 +393,26 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
    $fullname=$db->conn->real_escape_string(trim($fullname));
    $email=$db->conn->real_escape_string(trim($email));
    $password=$db->conn->real_escape_string(trim($password));
+   $existing=$db->conn->real_escape_string(trim($existing));
    $parametercheck=$number.";".str_replace(" ","",$code).";".$checkcode;
-   $result = $db->query("SELECT parameter FROM history WHERE userId=0 AND bikeNum=0 AND action='REGISTER' AND parameter='$parametercheck' ORDER BY time DESC LIMIT 1");
+   $result=$db->query("SELECT parameter FROM history WHERE userId=0 AND bikeNum=0 AND action='REGISTER' AND parameter='$parametercheck' ORDER BY time DESC LIMIT 1");
    if ($result->num_rows==1)
       {
-      $result = $db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='$number',privileges=0");
-      $userId=$db->conn->insert_id;
-      response("You have been successfully registered.");
+      if (!$existing) // new user registration
+         {
+         $result=$db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='$number',privileges=0");
+         $userId=$db->conn->insert_id;
+         sendConfirmationEmail($email);
+         response("You have been successfully registered. Please, check your email and read the instructions to finish your registration..");
+         }
+      else // existing user, password change
+         {
+         $result=$db->query("SELECT userId FROM users WHERE number='$number'");
+         $row=$result->fetch_assoc();
+         $userId=$row["userId"];
+         $result=$db->query("UPDATE users SET password=SHA2('$password',512) WHERE userId='$userId'");
+         response('Password successfully changed. Your username is your phone number. Continue to <a href="'.$systemURL.'">login</a>.');
+         }
       }
    else
       {
@@ -513,73 +526,6 @@ function logout()
    exit;
 }
 
-function sendConfirmationEmail($email)
-{
-
-        global $db, $dbPassword;
-
-	$subject = 'registracia/registration White Bikes';
-
-	if ($result = $db->query("SELECT userName,userId FROM users where mail='$email'")) {
-		$user = $result->fetch_all(MYSQLI_ASSOC);
-	} else error("email not fetched");
-
-	$userId =$user[0]["userId"];
-	$userKey = hash('sha256', $email.$dbPassword.rand(0,1000000));
-
-	if ($result = $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'")) {
-	} else error("insert registration failed");
-
-	if ($result = $db->query("INSERT into limits SET userId='$userId',userLimit=0")) {
-	} else error("insert limit failed");
-
-		$mena = preg_split("/[\s,]+/",$user[0]["userName"]);
-		$krstne = $mena[0];
-		$message = "Ahoj $krstne, [EN below]\n
-bol/a si zaregistrovany/a do systemu komunitneho poziciavania bicyklov White Bikes.\n
-Navod k Bielym Bicyklom najdes na http://v.gd/navod
-
-Ak suhlasis s pravidlami, klikni na linku dole v maili.
-
-Dear $krstne,
-you were registered to the community bikesharing White Bikes.
-The current guide (in English) for White Bikes can be found at http://v.gd/introWB
-
-If you agree with the rules, click on the following link:
-
-http://whitebikes.info/sms/agree.php?key=$userKey
-";
-		sendEmail($email, $subject, $message);
-}
-
-function confirmUser($userKey)
-{
-	global $db;
-	$userKey = $db->conn->real_escape_string($userKey);
-
-	if ($result = $db->query("SELECT userId FROM registration where userKey='$userKey'")) {
-		if($result->num_rows==1)
-		{
-			$row = $result->fetch_assoc();
-			$userId = $row["userId"];
-		}
-		else
-		{
-			response("Some problem occured!",ERROR);
-			return FALSE;
-		}
-	} else error("key not fetched");
-
-	if ($result = $db->query("UPDATE limits SET userLimit=1 where userId=$userId")) {
-	} else error("update limit failed");
-
-	if ($result = $db->query("DELETE from registration where userId='$userId'")) {
-	} else error("delete registration failed");
-
-	response("All fine. Welcome!");
-
-}
-
 function checkprivileges($userid)
 {
    global $db;
@@ -600,11 +546,9 @@ function smscode($number)
    $number=str_replace(" ","",$number); $number=str_replace("-","",$number); $number=str_replace("/","",$number);
    $number=$countryCode.substr($number,1,strlen($number));
    $number = $db->conn->real_escape_string($number);
+   $userexists=0;
    $result = $db->query("SELECT userId FROM users WHERE number='$number'");
-   if ($result->num_rows)
-      {
-      response("User with the number ".$number." already exists!",ERROR);
-      }
+   if ($result->num_rows) $userexists=1;
 
    $smscode=chr(rand(65,90)).chr(rand(65,90))." ".rand(100000,999999);
    $smscodenormalized=str_replace(" ","",$smscode);
@@ -617,7 +561,7 @@ function smscode($number)
 
    if (DEBUG===TRUE)
       {
-      response($number,0,array("checkcode"=>$checkcode));
+      response($number,0,array("checkcode"=>$checkcode,"smscode"=>$smscode,"existing"=>$userexists));
       }
    else
       {
@@ -625,7 +569,7 @@ function smscode($number)
       $text = substr($text,0,160);
       $um = urlencode($text);
       fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um","r");
-      response($number,0,array("checkcode"=>$checkcode));
+      response($number,0,array("checkcode"=>$checkcode,"existing"=>$userexists));
       }
 }
 
