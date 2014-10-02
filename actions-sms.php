@@ -382,9 +382,9 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 	$ip = $localdb->conn->real_escape_string($ip);
 
         $result = $localdb->query("SELECT sms_uuid FROM received WHERE sms_uuid='$sms_uuid'");
-        if (DEBUG===FALSE AND $result->num_rows>=100) // sms already exists in DB, possible problem
+        if (DEBUG===FALSE AND $result->num_rows>=1) // sms already exists in DB, possible problem
            {
-           //notifyAdmins("Problem with SMS $sms_uuid!",1);
+           notifyAdmins("Problem with SMS $sms_uuid!",1);
            return FALSE;
            }
         else
