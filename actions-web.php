@@ -437,7 +437,7 @@ function login($number,$password)
    else
       {
       header("HTTP/1.1 301 Moved permanently");
-      header("Location: ".$systemURL."login.php?error=1");
+      header("Location: ".$systemURL."?error=1");
       header("Connection: close");
       exit;
       }
@@ -467,7 +467,7 @@ function checksession()
          setcookie("loguserid","",time()-86400);
          setcookie("logsession","",time()-86400);
          header("HTTP/1.1 301 Moved permanently");
-         header("Location: ".$systemURL."login.php?error=2");
+         header("Location: ".$systemURL."?error=2");
          header("Connection: close");
          exit;
          }
@@ -475,7 +475,7 @@ function checksession()
    else
       {
       header("HTTP/1.1 301 Moved permanently");
-      header("Location: ".$systemURL."login.php?error=2");
+      header("Location: ".$systemURL."?error=2");
       header("Connection: close");
       exit;
       }
