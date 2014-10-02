@@ -52,17 +52,33 @@ else
    <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
    <ul class="nav nav-pills">
    <?php
-   if (isloggedin()) echo '<li><em>',getusername($_COOKIE["loguserid"]),'</em><br /><a href="command.php?action=logout" id="logout">Log out</a></li>';
-   else
-      {
-      echo '<li><a href="login.php" id="login">Log in</a></li>';
-      }
+   if (isloggedin()) echo '<li><span class="label label-success"><em>',getusername($_COOKIE["loguserid"]),'</em></span><br /><a href="command.php?action=logout" id="logout">Log out</a></li>';
    ?>
    </ul>
    </div>
    <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
    </div>
 </div>
+<?php if (!isloggedin()): ?>
+<div id="loginform">
+<h1>Log in</h1>
+<?php
+if (isset($_GET["error"]) AND $_GET["error"]==1) echo '<div class="alert alert-danger" role="alert"><h3>Phone number or password incorrect! Please, try again.</h3></div>';
+elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert alert-danger" role="alert"><h3>Session timed out! Please, log in again.</h3></div>';
+?>
+      <form method="POST" action="command.php?action=login">
+      <div class="row"><div class="col-lg-12">
+            <label for="number" class="control-label">Phone number:</label> <input type="text" name="number" id="number" class="form-control" placeholder="09XX 123 456" />
+       </div></div>
+       <div class="row"><div class="col-lg-12">
+            <label for="fullname">Password:</label> <input type="password" name="password" id="password" class="form-control" />
+       </div></div><br />
+       <div class="row"><div class="col-lg-12">
+         <button type="submit" id="register" class="btn btn-lg btn-block btn-primary">Log in</button>
+       </div></div>
+         </form>
+</div>
+<? endif; ?>
 <h2 id="standname"></h2>
 <div id="standinfo"></div>
 <div id="standbikes"></div>
