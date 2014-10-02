@@ -55,19 +55,22 @@ require("db.class.php");
          <button type="submit" id="validate" class="btn btn-primary">Validate this phone number</button>
        </form>
       <form class="container" id="step2">
-      <h2>Step 2 - Create account</h2>
+      <h2 id="step2title">Step 2 - Create account</h2>
          <div class="form-group">
-            <label for="smscode" class="control-label">SMS code (received to your phone):</label> <input type="text" name="smscode" id="smscode" class="form-control" placeholder="AB 123 456" /></div>
+            <label for="smscode" class="control-label">SMS code (received to your phone):</label> <input type="text" name="smscode" id="smscode" class="form-control" placeholder="AB 123456" /></div>
+            <div id="regonly">
          <div class="form-group">
             <label for="fullname">Fullname:</label> <input type="text" name="fullname" id="fullname" class="form-control" placeholder="Firstname Lastname" /></div>
          <div class="form-group">
             <label for="email">Email:</label> <input type="text" name="email" id="email" class="form-control" placeholder="email@domain.com" /></div>
+            </div>
          <div class="form-group">
             <label for="password">Password:</label> <input type="password" name="password" id="password" class="form-control" /></div>
          <div class="form-group">
             <label for="password2">Password confirmation:</label> <input type="password" name="password2" id="password2" class="form-control" /></div>
          <input type="hidden" name="validatednumber" id="validatednumber" value="" />
          <input type="hidden" name="checkcode" id="checkcode" value="" />
+         <input type="hidden" name="existing" id="existing" value="0" />
          <button type="submit" id="register" class="btn btn-primary">Create account</button>
          </form>
    <br />
