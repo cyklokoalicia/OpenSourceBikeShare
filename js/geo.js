@@ -12,5 +12,7 @@ function GetLocation(location) {
    }).addTo(map);
 
    map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
+   ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat")+","+$("body").data("mapcenterlong"));
+   savegeolocation();
 
 }
