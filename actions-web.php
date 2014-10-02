@@ -604,4 +604,14 @@ function mapgetlimit($userId)
    echo json_encode(array("limit"=>$currentlimit,"rented"=>$rented));
 }
 
+function mapgeolocation ($userid,$lat,$long)
+{
+   global $db;
+
+   $result = $db->query("INSERT INTO geolocation SET userId='$userid',latitude='$lat',longitude='$long'");
+
+   response("");
+
+}
+
 ?>
