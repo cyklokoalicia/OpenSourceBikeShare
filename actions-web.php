@@ -1,11 +1,5 @@
 <?php
-
-function error($message)
-{
-   global $db;
-   $db->conn->rollback();
-   exit($message);
-}
+require("common.php");
 
 function response($message,$error=0,$additional="",$log=1)
 {
@@ -591,14 +585,6 @@ function confirmUser($userKey)
 
 }
 
-function sendEmail($email,$subject,$message)
-{
-   global $db;
-   $headers = 'From: info@whitebikes.info' . "\r\n" . 'Reply-To: info@cyklokoalicia.sk' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
-   if (DEBUG===FALSE) mail($email, $subject, $message, $headers); // @TODO: replace with proper SMTP mailer
-   else echo $email,' | ',$subject,' | ',$message;
-}
-
 function checkprivileges($userid)
 {
    global $db;
@@ -608,45 +594,6 @@ function checkprivileges($userid)
       response("Sorry, this command is only available for the privileged users.",ERROR);
       exit;
       }
-}
-
-function getprivileges($userId)
-{
-   global $db;
-
-   $result = $db->query("SELECT privileges FROM users WHERE userId=$userId");
-   if ($result->num_rows==1)
-      {
-      $row = $result->fetch_assoc();
-      return $row["privileges"];
-      }
-   return FALSE;
-}
-
-function getusername($userid)
-{
-   global $db;
-
-   $result = $db->query("SELECT userName FROM users WHERE userId=$userid");
-   if ($result->num_rows==1)
-      {
-      $row = $result->fetch_assoc();
-      return $row["userName"];
-      }
-   return FALSE;
-}
-
-function getphonenumber($userid)
-{
-   global $db;
-
-   $result = $db->query("SELECT number FROM users WHERE userId=$userid");
-   if ($result->num_rows==1)
-      {
-      $row = $result->fetch_assoc();
-      return $row["number"];
-      }
-   return FALSE;
 }
 
 function smscode($number)

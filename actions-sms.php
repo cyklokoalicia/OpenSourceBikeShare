@@ -1,4 +1,5 @@
 <?php
+require("common.php");
 
 function help($number)
 {
@@ -31,48 +32,20 @@ function sendSMS($number,$text)
       }
 }
 
+/**
+ * @deprecated, call getuserid() directly
+ */
 function getUser($number)
 {
-	global $db;
-
-	if ($result = $db->query("SELECT userId FROM users where number=$number")) {
-    		if($result->num_rows==1)
-		{
-			$row = $result->fetch_assoc();
-			return $row["userId"];
-		}
-		return -1;
-	}
+   return getuserid($number);
 }
-
-function getPrivileges($userId)
-{
-	global $db;
-
-	if ($result = $db->query("SELECT privileges FROM users where userId=$userId")) {
-    		if($result->num_rows==1)
-		{
-			$row = $result->fetch_assoc();
-			return $row["privileges"];
-		}
-		return 0;
-	}
-}
-
 
 function validateNumber($number)
 {
-    if(getUser($number)!=-1)
+    if(getUser($number))
 	return true;
     else
 	return false;
-}
-
-function error($message)
-{
-        global $db;
-        $db->conn->rollback();
-	exit($message);
 }
 
 function info($number,$stand)
@@ -198,7 +171,7 @@ function rent($number,$bike)
 
 }
 
-function returnBike($number,$bike,$stand)
+function returnBike($number,$bike,$stand,$message="")
 {
 
         global $db;
@@ -252,14 +225,24 @@ function returnBike($number,$bike,$stand)
 		$standId = $row["standId"];
 	} else error("stand not retrieved");
 
-	if ($result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId where bikeNum=$bikeNum")) {
-	} else error("update failed");
+	if(!preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z]+[\s,\.]+(.*)/i",$message ,$matches))
+        {
+                $userNote="";
+        }
+        else $userNote=$db->conn->real_escape_string(trim($matches[1]));
 
+        if ($result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId where bikeNum=$bikeNum")) {
+        } else error("update failed");
+
+	if ($userNote) $db->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum");
 
 	$message = "You have successfully returned the bike $bikeNum to stand $stand. Make sure you have set the code $currentCode.";
-	if($note!="")
+	if(!$note)
 	{
-		$message.="(bike note:".$note.")";
+	$tempnote=$note;
+	if (!$userNote) $tempnote=$userNote;
+
+		$message.="(bike note:".$tempnote.")";
 	}
 	$message.="Do not forget to rotate the lockpad to 0000 when leaving.";
 	sendSMS($number,$message);
@@ -714,14 +697,6 @@ function confirmUser($userKey)
 
 	echo "All fine. Welcome!";
 
-}
-
-function sendEmail($email,$subject,$message)
-{
-   global $db;
-   $headers = 'From: info@whitebikes.info' . "\r\n" . 'Reply-To: info@cyklokoalicia.sk' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
-   if (DEBUG===FALSE) mail($email, $subject, $message, $headers); // @TODO: replace with proper SMTP mailer
-   else echo $email,' | ',$subject,' | ',$message;
 }
 
 function checkUserPrivileges($number)

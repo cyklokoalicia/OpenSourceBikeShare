@@ -1,11 +1,11 @@
 <?php
 require("config.php");
 require("db.class.php");
+$db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+$db->connect();
 require("actions-sms.php");
 require("connectors/".$connectors["sms"].".php");
 
-$db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
-$db->connect();
 
 $sms=new SMSConnector($connectors["sms"]);
 
@@ -36,7 +36,7 @@ else
       case "RETURN":
       case "VRAT":
          validateReceivedSMS($sms->Number(),count($args),3,"with bike number and stand name: RETURN 47 RACKO");
-         returnBike($sms->Number(),$args[1],$args[2]);
+         returnBike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())));
          break;
       case "WHERE":
       case "WHO":
