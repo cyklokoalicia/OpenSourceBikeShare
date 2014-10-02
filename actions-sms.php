@@ -636,12 +636,13 @@ function add($number,$email,$phone,$message)
 
 function checkUserPrivileges($number)
 {
-   global $db;
+   global $db, $sms;
    $userId=getUser($number);
    $privileges=getPrivileges($userId);
    if ($privileges==0)
       {
       sendSMS($number,"Sorry, this command is only available for the privileged users.");
+      $sms->Respond();
       exit;
       }
 }
