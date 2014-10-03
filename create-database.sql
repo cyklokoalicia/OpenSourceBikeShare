@@ -88,7 +88,7 @@ CREATE TABLE `sessions` (
   `timeStamp` varchar(256) NOT NULL,
   UNIQUE KEY `userId` (`userId`),
   KEY `sessionId` (`sessionId`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `geolocation`;
 CREATE TABLE `geolocation` (
@@ -96,6 +96,6 @@ CREATE TABLE `geolocation` (
   `longitude` float NOT NULL,
   `latitude` float NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 2014-10-01
