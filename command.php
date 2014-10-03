@@ -87,8 +87,13 @@ switch($action)
       logrequest($userid,$action);
       checksession();
       checkprivileges($userid);
-      $bikeno=trim($_GET["bikeno"]);
-      checkbikeno($bikeno);
+      if ($_GET["bikeno"])
+         {
+         $bikeno=trim($_GET["bikeno"]);
+         checkbikeno($bikeno);
+         last($userid);
+         }
+      else $bikeno=0;
       last($userid,$bikeno);
       break;
    case "userbikes":

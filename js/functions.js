@@ -44,6 +44,7 @@ function mapinit()
    getmarkers();
    getuserstatus();
    resetconsole();
+   rentedbikes();
    sidebar.show();
 
 }
@@ -140,14 +141,14 @@ function showstand(e)
                   if (jsonobject.content[i][0]=="*" && $("body").data("limit")>0)
                      {
                      jsonobject.content[i]=jsonobject.content[i].replace("*","");
-                     bikelist=bikelist+' <button type="button" class="btn btn-warning bikeid">'+jsonobject.content[i]+'</button>';
+                     bikelist=bikelist+' <button type="button" class="btn btn-warning bikeid" data-id="'+jsonobject.content[i]+'" data-note="'+jsonobject.notes[i]+'">'+jsonobject.content[i]+'</button>';
                      }
                   else if (jsonobject.content[i][0]=="*" && $("body").data("limit")==0)
                      {
                      jsonobject.content[i]=jsonobject.content[i].replace("*","");
-                     bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.content[i]+'</button>';
+                     bikelist=bikelist+' <button type="button" class="btn btn-default bikeid" data-id="'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
                      }
-                  else if ($("body").data("limit")>0) bikelist=bikelist+' <button type="button" class="btn btn-success bikeid b'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
+                  else if ($("body").data("limit")>0) bikelist=bikelist+' <button type="button" class="btn btn-success bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
                   else bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.content[i]+'</button>';
                   }
                $('#standbikes').html('<div class="btn-group">'+bikelist+'</div>');
@@ -184,7 +185,7 @@ function rentedbikes()
             {
             for (var i=0, len=jsonobject.content.length; i < len; i++)
                {
-               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
+               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'">'+jsonobject.content[i]+'<br /><span class="label label-default">('+jsonobject.codes[i]+')</span></button> ';
                }
             $('#rentedbikes').html('<div class="btn-group">'+bikelist+'</div>');
             $('#rentedbikes .bikeid').click( function() { attachbicycleinfo(this,"return"); attachbicycleinfo(this,"note"); });
@@ -233,7 +234,7 @@ function togglebikeactions()
 
 function toggleadminactions()
 {
-   if (priv==0)
+   if (priv<2)
       {
       $('.adminactions').hide();
       }
@@ -345,8 +346,8 @@ function revert()
 
 function attachbicycleinfo(element,attachto)
 {
-   $('#'+attachto+' .bikenumber').html($(element).html());
-   if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">This bicycle might have some problem!</div>');
+   $('#'+attachto+' .bikenumber').html($(element).attr('data-id'));
+   if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">Reported problem on this bicycle: '+$(element).attr('data-note')+'</div>');
    else if ($('#console div').hasClass('alert-warning')) resetconsole();
 }
 

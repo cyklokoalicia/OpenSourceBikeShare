@@ -73,7 +73,7 @@ function rent($userId,$bike)
       }
    if ($currentUser!=0)
       {
-      response($number,"The bike $bikeNum is already rented.",ERROR);
+      response("The bike $bikeNum is already rented.",ERROR);
       return;
       }
 
@@ -260,11 +260,23 @@ function listbikes($stand)
    $result=$db->query("SELECT bikeNum,note FROM bikes LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE standName='$stand'");
    while($row=$result->fetch_assoc())
       {
-      if ($row["note"]) $bicycles[]="*".$row["bikeNum"]; // bike with note / issue
-      else $bicycles[]=$row["bikeNum"];
+      if ($row["note"])
+         {
+         $bicycles[]="*".$row["bikeNum"]; // bike with note / issue
+         $notes[]=$row["note"];
+         }
+      else
+         {
+         $bicycles[]=$row["bikeNum"];
+         $notes[]="";
+         }
       }
-   if (!$result->num_rows) $bicycles="";
-   response($bicycles,0,"",0);
+   if (!$result->num_rows)
+      {
+      $bicycles="";
+      $notes="";
+      }
+   response($bicycles,0,array("notes"=>$notes),0);
 
 }
 
@@ -303,30 +315,49 @@ function last($userId,$bike)
 {
 
    global $db;
-   $bikeNum = intval($bike);
-
-   $result = $db->query("SELECT userName,parameter,standName,time FROM `history` join users on history.userid=users.userid left join stands on stands.standid=history.parameter where bikenum=$bikeNum order by time desc LIMIT 10");
-   $bikeHistory= $result->fetch_all(MYSQLI_ASSOC);
-
-   $historyInfo="<h3>Bike $bikeNum history:</h3><ul>";
-   for($i=0; $i<count($bikeHistory);$i++)
-   {
-      $time=strtotime($bikeHistory[$i]["time"]);
-      $historyInfo.="<li>".date("d/m H:i",$time)." - ";
-      if($bikeHistory[$i]["standName"]!=NULL)
+   $bikeNum=intval($bike);
+   if ($bikeNum)
       {
-      $historyInfo.=$bikeHistory[$i]["standName"];
+      $result=$db->query("SELECT userName,parameter,standName,time FROM `history` JOIN users ON history.userid=users.userid LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum ORDER BY time DESC LIMIT 10");
+      $bikeHistory=$result->fetch_all(MYSQLI_ASSOC);
+      $historyInfo="<h3>Bike $bikeNum history:</h3><ul>";
+      for($i=0; $i<count($bikeHistory);$i++)
+         {
+         $time=strtotime($bikeHistory[$i]["time"]);
+         $historyInfo.="<li>".date("d/m H:i",$time)." - ";
+         if($bikeHistory[$i]["standName"]!=NULL)
+            {
+            $historyInfo.=$bikeHistory[$i]["standName"];
+            }
+         else
+            {
+            $historyInfo.=$bikeHistory[$i]["userName"]." (code ".$bikeHistory[$i]["parameter"].")";
+            }
+         $historyInfo.="</li>";
+         }
+      $historyInfo.="</ul>";
       }
-      else
+   else
       {
-      $historyInfo.=$bikeHistory[$i]["userName"]." (code ".$bikeHistory[$i]["parameter"].")";
+      $result=$db->query("SELECT bikeNum,userName,standName,note FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId LEFT JOIN stands ON bikes.currentStand=stands.standId ORDER BY bikeNum");
+      $historyInfo="<h3>Current network usage:</h3><ul>";
+      while($row=$result->fetch_assoc())
+         {
+         $historyInfo.="<li>".$row["bikeNum"]." - ";
+         if($row["standName"]!=NULL)
+            {
+            $historyInfo.=$row["standName"];
+            }
+         else
+            {
+            $historyInfo.=$row["userName"];
+            }
+         if ($row["note"]) $historyInfo.=" (".$row["note"].")";
+         $historyInfo.="</li>";
+         }
+      $historyInfo.="</ul>";
       }
-      $historyInfo.="</li>";
-   }
-   $historyInfo.="</ul>";
-
    response($historyInfo,0,"",0);
-
 }
 
 
@@ -334,13 +365,19 @@ function userbikes($userId)
 {
    global $db;
    if (!isloggedin()) response("");
-   $result=$db->query("SELECT bikeNum FROM bikes where currentUser=$userId ORDER BY bikeNum");
+   $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
    while ($row=$result->fetch_assoc())
       {
-      $bicycles[]=$row["bikeNum"];
+      $bikenum=$row["bikeNum"];
+      $bicycles[]=$bikenum;
+      $result2=$db->query("SELECT parameter FROM history WHERE userId='$userId' AND bikeNum='$bikenum' AND action='RENT' ORDER BY time DESC LIMIT 1");
+      $row2=$result2->fetch_assoc();
+      $codes[]=$row2["parameter"];
       }
    if (!$result->num_rows) $bicycles="";
-   response($bicycles,0,"",0);
+   if (!isset($codes)) $codes="";
+   else $codes=array("codes"=>$codes);
+   response($bicycles,0,$codes,0);
 }
 
 function revert($userId,$bikeNum)
@@ -530,7 +567,7 @@ function checkprivileges($userid)
 {
    global $db;
    $privileges=getprivileges($userid);
-   if (!$privileges)
+   if ($privileges<2)
       {
       response("Sorry, this command is only available for the privileged users.",ERROR);
       exit;
