@@ -82,7 +82,11 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <h2 id="standname"></h2>
 <div id="standinfo"></div>
 <div id="standbikes"></div>
-<div id="console"></div>
+<div id="console">
+<?php
+
+?>
+</div>
 <div class="row">
 <div id="standactions" class="btn-group">
   <div class="col-lg-12">
