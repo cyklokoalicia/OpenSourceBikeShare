@@ -590,7 +590,8 @@ function smscode($number)
    $smscode=chr(rand(65,90)).chr(rand(65,90))." ".rand(100000,999999);
    $smscodenormalized=str_replace(" ","",$smscode);
    $checkcode=md5("WB".$number.$smscodenormalized);
-   $text="Enter this code to register: ".$smscode;
+   if (!$userexists) $text="Enter this code to register: ".$smscode;
+   else $text="Enter this code to change password: ".$smscode;
    $text=$db->conn->real_escape_string($text);
 
    $result = $db->query("INSERT INTO sent SET number='$number',text='$text'");

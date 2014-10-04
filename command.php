@@ -91,7 +91,7 @@ switch($action)
          {
          $bikeno=trim($_GET["bikeno"]);
          checkbikeno($bikeno);
-         last($userid);
+         last($userid,$bikeno);
          }
       else $bikeno=0;
       last($userid,$bikeno);

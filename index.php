@@ -15,7 +15,6 @@ $db->connect();
 <script type="text/javascript" src="js/viewportDetect.js"></script>
 <script type="text/javascript" src="js/leaflet.js"></script>
 <script type="text/javascript" src="js/L.Control.Sidebar.js"></script>
-<script type="text/javascript" src="js/modernizr.custom.js"></script>
 <script type="text/javascript" src="js/functions.js"></script>
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />

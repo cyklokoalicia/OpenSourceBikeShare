@@ -5,7 +5,7 @@ L.Control.Sidebar = L.Control.extend({
     options: {
         closeButton: true,
         position: 'left',
-        autoPan: true,
+        autoPan: true
     },
 
     initialize: function (placeholder, options) {
@@ -59,6 +59,7 @@ L.Control.Sidebar = L.Control.extend({
         this._map = map;
 
         // Make sure we don't drag the map when we interact with the content
+
         var stop = L.DomEvent.stopPropagation;
         L.DomEvent
             .on(content, 'contextmenu', stop)
@@ -87,6 +88,7 @@ L.Control.Sidebar = L.Control.extend({
 
         // Unregister events to prevent memory leak
         var stop = L.DomEvent.stopPropagation;
+
         L.DomEvent
             .off(content, 'contextmenu', stop)
             .off(content, 'click', stop)
