@@ -1,4 +1,5 @@
 var markers=[]; var nameid=[]; var markerdata=[]; var iconsize=60; var sidebar;
+var watchID, circle;
 
 $(document).ready(function(){
    $('#standactions').hide();
@@ -14,6 +15,10 @@ $(document).ready(function(){
    $("#revert").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-revert'); revert(); });
    mapinit();
    setInterval(getmarkers, 60000); // refresh map every 60 seconds
+   if ("geolocation" in navigator) {
+   navigator.geolocation.getCurrentPosition(showlocation);
+   watchID=navigator.geolocation.watchPosition(changelocation);
+   }
 });
 
 function mapinit()
@@ -26,10 +31,6 @@ function mapinit()
    $("body").data("mapzoom", mapzoom);
 
    map = new L.Map('map');
-   Modernizr.load({
-   test: Modernizr.geolocation,
-   yep : 'js/geo.js'
-   });
 
    // create the tile layer with correct attribution
    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -408,4 +409,38 @@ function savegeolocation()
       console.log(jsonresponse);
       return;
    });
+}
+
+
+function showlocation(location)
+{
+   $("body").data("mapcenterlat", location.coords.latitude);
+   $("body").data("mapcenterlong", location.coords.longitude);
+   $("body").data("mapzoom", $("body").data("mapzoom")+1);
+
+   // 80 m x 5 mins walking distance
+   circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")],80*5, {
+   color: 'green',
+   fillColor: '#0f0',
+   fillOpacity: 0.1
+   }).addTo(map);
+
+   map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
+   ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat")+","+$("body").data("mapcenterlong"));
+   savegeolocation();
+}
+
+function changelocation(location)
+{
+   if (location.coords.latitude!=$("body").data("mapcenterlat") || location.coords.longitude!=$("body").data("mapcenterlong"))
+      {
+      $("body").data("mapcenterlat", location.coords.latitude);
+      $("body").data("mapcenterlong", location.coords.longitude);
+      map.removeLayer(circle);
+      circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")],80*5, {
+      color: 'green',
+      fillColor: '#0f0',
+      fillOpacity: 0.1
+      }).addTo(map);
+      }
 }
