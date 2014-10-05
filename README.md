@@ -1,6 +1,6 @@
 OpenSourceBikeShare
 ============
-*The open source bike sharing system.*
+*The world's first low-cost and open source bike sharing system.*
 
 Bottom-up bicycle sharing system suitable for smaller communities or closed areas such as campuses, companies etc.
 
@@ -28,4 +28,4 @@ Consultations are personalized and paid.
 
 We will talk to you about the expectations, situation, bicycle theft, potential users and **provide you with help on how to launch your own successful bike sharing system**.
 
-**Get in touch**: [consult AT whitebikes DOT info](mailto:consult@whitebikes.info)
+**Get in touch**: [consult@whitebikes.info](mailto:consult@whitebikes.info)
