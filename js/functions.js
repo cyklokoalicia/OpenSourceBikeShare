@@ -1,4 +1,4 @@
-var markers=[]; var nameid=[]; var markerdata=[]; var iconsize=60; var sidebar;
+var markers=[]; var nameid=[]; var markerdata=[]; var iconsize=60; var sidebar; var firstrun=1;
 var watchID, circle;
 
 $(document).ready(function(){
@@ -13,6 +13,7 @@ $(document).ready(function(){
    $("#where").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-where'); where(); });
    $("#last").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-last'); last(); });
    $("#revert").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-revert'); revert(); });
+   $('#stands').change(function() { showstand($('#stands').val()); });
    mapinit();
    setInterval(getmarkers, 60000); // refresh map every 60 seconds
    if ("geolocation" in navigator) {
@@ -85,6 +86,11 @@ function getmarkers()
                nameid[jsonobject[i].standName]=jsonobject[i].standId; // creates reverse relation - for matching name to id purposes
                $('body').data('markerdata',markerdata);
                }
+            if (firstrun==1)
+               {
+               createstandselector();
+               firstrun=0;
+               }
          });
 }
 
@@ -99,6 +105,25 @@ function getuserstatus()
             $('body').data('rented',jsonobject.rented);
             togglebikeactions();
          });
+}
+
+function createstandselector()
+{
+   var selectdata='<option value="del">-- Select stand --</option>';
+   $.each( markerdata, function( key, value ) {
+   if (value!=undefined)
+      {
+      selectdata=selectdata+'<option value="'+key+'">'+value.name+'</option>';
+      }
+   });
+   $('#stands').html(selectdata);
+   var options = $('#stands option');
+   var arr = options.map(function(_, o) { return { t: $(o).text(), v: o.value }; }).get();
+   arr.sort(function(o1, o2) { return o1.t > o2.t ? 1 : o1.t < o2.t ? -1 : 0; });
+   options.each(function(i, o) {
+   o.value = arr[i].v;
+   $(o).text(arr[i].t);
+   });
 }
 
 function showstand(e)
@@ -118,15 +143,18 @@ function showstand(e)
    resetbutton("rent");
    markerdata=$('body').data('markerdata');
 
+   $('#stands').val(standid);
+   $('#stands option[value="del"]').remove();
    if (markerdata[standid].count>0)
       {
+      $('#standcount').removeClass('label label-danger').addClass('label label-success');
       if (markerdata[standid].count==1)
          {
-         $('#standname').html(markerdata[standid].name+' <span class="label label-success" id="standcount">'+window.markerdata[standid].count+' bicycle:</span>');
+         $('#standcount').html(window.markerdata[standid].count+' bicycle:');
          }
       else
          {
-         $('#standname').html(markerdata[standid].name+' <span class="label label-success" id="standcount">'+window.markerdata[standid].count+' bicycles:</span>');
+         $('#standcount').html(window.markerdata[standid].count+' bicycles:');
          }
       $.ajax({
          global: false,
@@ -157,7 +185,8 @@ function showstand(e)
                }
             else // no bicyles at stand
                {
-               $('#standname').html(markerdata[standid].name+' <span class="label label-danger" id="standcount">No bicycles</span>');
+               $('#standcount').html('No bicycles');
+               $('#standcount').removeClass('label label-success').addClass('label label-danger');
                resetstandbikes();
                }
 
@@ -165,7 +194,8 @@ function showstand(e)
       }
    else
       {
-      $('#standname').html(markerdata[standid].name+' <span class="label label-danger" id="standcount">No bicycles</span>');
+      $('#standcount').html('No bicycles');
+      $('#standcount').removeClass('label label-success').addClass('label label-danger');
       resetstandbikes();
       }
    $('#standinfo').html(markerdata[standid].desc);
@@ -258,29 +288,33 @@ function rent()
       resetbutton("rent");
       $('body').data("limit",$('body').data("limit")-1);
       if ($("body").data("limit")<0) $("body").data("limit",0);
-      standname=$('#standname').clone().children().remove().end().text().trim();
+      standid=$('#stands').val();
       markerdata=$('body').data('markerdata');
-      standbiketotal=markerdata[nameid[standname]].count;
+      standbiketotal=markerdata[standid].count;
       if (jsonobject.error==0)
          {
          standbiketotal=(standbiketotal*1)-1;
-         markerdata[nameid[standname]].count=standbiketotal
+         markerdata[standid].count=standbiketotal;
          $('body').data('markerdata',markerdata);
          }
       if (standbiketotal==0)
          {
-         $('#standcount').removeClass('label-success');
-         $('#standcount').addClass('label-danger');
+         $('#standcount').removeClass('label-success').addClass('label-danger');
+         }
+      else
+         {
+         $('#standcount').removeClass('label-danger').addClass('label-success');
          }
       getmarkers();
       getuserstatus();
-      showstand(nameid[standname]);
+      showstand(standid);
    });
 }
 
 function returnbike()
 {
-   standname=$('#standname').clone().children().remove().end().text().trim();
+   standname=$('#stands option:selected').text();
+   standid=$('#stands').val();
    ga('send', 'event', 'bikes', 'return', $('#return .bikenumber').html());
    ga('send', 'event', 'stands', 'return', standname);
    $.ajax({
@@ -292,11 +326,11 @@ function returnbike()
       $('.b'+$('#note .bikenumber').html()).remove();
       resetbutton("return"); resetbutton("note");
       markerdata=$('body').data('markerdata');
-      standbiketotal=markerdata[nameid[standname]].count;
+      standbiketotal=markerdata[standid].count;
       if (jsonobject.error==0)
          {
          standbiketotal=(standbiketotal*1)+1;
-         markerdata[nameid[standname]].count=standbiketotal
+         markerdata[standid].count=standbiketotal
          $('body').data('markerdata',markerdata);
          }
       if (standbiketotal==0)
@@ -306,7 +340,7 @@ function returnbike()
          }
       getmarkers();
       getuserstatus();
-      showstand(nameid[standname]);
+      showstand(standid);
    });
 }
 
@@ -347,9 +381,9 @@ function revert()
 
 function attachbicycleinfo(element,attachto)
 {
+   resetconsole();
    $('#'+attachto+' .bikenumber').html($(element).attr('data-id'));
    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">Reported problem on this bicycle: '+$(element).attr('data-note')+'</div>');
-   else if ($('#console div').hasClass('alert-warning')) resetconsole();
 }
 
 function checkonebikeattach()
