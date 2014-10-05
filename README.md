@@ -6,11 +6,13 @@ Bottom-up bicycle sharing system suitable for smaller communities or closed area
 
 Features
 ----------
-* Registered users send a text message (SMS) to rent and return bicycles and get various information
-* Web map with availability of the bicycle stands
-* Admin to add, edit or remove users, create stands or change bicycle availability
-* Uses eurosms.com SMS gateway, but ready to use any SMS provider / gateway
+* Web app (mobile-friendly) and SMS system to rent and return bicycles
+* Web map with geolocation and availability of the bicycle stands
+* Registration form for new users
+* Admin to edit users, create stands or change bicycle availability
+* Google Analytics enabled for stats on web and bike usage etc.
 * Bicycles require the locks with a four digit code
+* Connector system to support any provider of SMS Gateway / API (the connector for eurosms.com provided)
 
 Pilot testing
 ---------
@@ -26,6 +28,6 @@ Need help to set it up?
 
 Consultations are personalized and paid.
 
-We will talk to you about the expectations, situation, bicycle theft, potential users and **provide you with help on how to launch your own successful bike sharing system**.
+We will talk to you about the expectations, situation, bicycle theft, potential users and **provide you with help to launch your own successful bike sharing system**.
 
 **Get in touch**: [consult@whitebikes.info](mailto:consult@whitebikes.info)
