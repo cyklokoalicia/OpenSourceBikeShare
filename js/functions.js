@@ -1,4 +1,4 @@
-var markers=[]; var nameid=[]; var markerdata=[]; var iconsize=60; var sidebar; var firstrun=1;
+var markers=[]; var markerdata=[]; var iconsize=60; var sidebar; var firstrun=1;
 var watchID, circle;
 
 $(document).ready(function(){
@@ -81,9 +81,8 @@ function getmarkers()
                   });
                   }
 
-               markerdata[jsonobject[i].standId]={name:jsonobject[i].standName,desc:jsonobject[i].standDescription,count:jsonobject[i].bikecount};
+               markerdata[jsonobject[i].standId]={name:jsonobject[i].standName,desc:jsonobject[i].standDescription,photo:jsonobject[i].standPhoto,count:jsonobject[i].bikecount};
                markers[jsonobject[i].standId] = L.marker([jsonobject[i].lat, jsonobject[i].lon], { icon: tempicon }).addTo(map).on("click", showstand );
-               nameid[jsonobject[i].standName]=jsonobject[i].standId; // creates reverse relation - for matching name to id purposes
                $('body').data('markerdata',markerdata);
                }
             if (firstrun==1)
@@ -150,11 +149,11 @@ function showstand(e)
       $('#standcount').removeClass('label label-danger').addClass('label label-success');
       if (markerdata[standid].count==1)
          {
-         $('#standcount').html(window.markerdata[standid].count+' bicycle:');
+         $('#standcount').html(markerdata[standid].count+' bicycle:');
          }
       else
          {
-         $('#standcount').html(window.markerdata[standid].count+' bicycles:');
+         $('#standcount').html(markerdata[standid].count+' bicycles:');
          }
       $.ajax({
          global: false,
@@ -198,7 +197,14 @@ function showstand(e)
       $('#standcount').removeClass('label label-success').addClass('label label-danger');
       resetstandbikes();
       }
-   $('#standinfo').html(markerdata[standid].desc);
+   if (markerdata[standid].photo)
+      {
+      $('#standinfo').html(markerdata[standid].desc+' (<a href="'+markerdata[standid].photo+'" id="photo'+standid+'">photo</a>)');
+      $('#standphoto').hide();
+      $('#standphoto').html('<img src="'+markerdata[standid].photo+'" alt="'+markerdata[standid].name+'" width="100%" />');
+      $('#photo'+standid).click(function() { $('#standphoto').slideToggle(); return false; });
+      }
+   else $('#standinfo').html(markerdata[standid].desc);
    togglestandactions(markerdata[standid].count);
    togglebikeactions();
 }

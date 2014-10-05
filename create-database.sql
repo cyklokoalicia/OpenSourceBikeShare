@@ -13,6 +13,15 @@ CREATE TABLE `bikes` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `geolocation`;
+CREATE TABLE `geolocation` (
+  `userId` int(10) unsigned NOT NULL,
+  `longitude` float NOT NULL,
+  `latitude` float NOT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `history`;
 CREATE TABLE `history` (
   `userId` int(11) NOT NULL,
@@ -57,11 +66,22 @@ CREATE TABLE `sent` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `sessions`;
+CREATE TABLE `sessions` (
+  `userId` int(10) unsigned NOT NULL,
+  `sessionId` varchar(256) NOT NULL,
+  `timeStamp` varchar(256) NOT NULL,
+  UNIQUE KEY `userId` (`userId`),
+  KEY `sessionId` (`sessionId`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `stands`;
 CREATE TABLE `stands` (
   `standId` int(11) NOT NULL AUTO_INCREMENT,
   `standName` varchar(50) NOT NULL,
-  `standDescription` varchar(100) DEFAULT NULL,
+  `standDescription` varchar(100) NOT NULL,
+  `standPhoto` varchar(255) NOT NULL,
   `serviceTag` int(10) NOT NULL,
   `placeName` varchar(50) NOT NULL,
   `longitude` float NOT NULL,
@@ -81,21 +101,5 @@ CREATE TABLE `users` (
   PRIMARY KEY (`userId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `sessions`;
-CREATE TABLE `sessions` (
-  `userId` int(10) unsigned NOT NULL,
-  `sessionId` varchar(256) NOT NULL,
-  `timeStamp` varchar(256) NOT NULL,
-  UNIQUE KEY `userId` (`userId`),
-  KEY `sessionId` (`sessionId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `geolocation`;
-CREATE TABLE `geolocation` (
-  `userId` int(10) unsigned NOT NULL,
-  `longitude` float NOT NULL,
-  `latitude` float NOT NULL,
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- 2014-10-01
+-- 2014-10-05 21:13:47
