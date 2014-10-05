@@ -70,9 +70,12 @@ function info($number,$stand)
         if ($result = $db->query("SELECT * FROM stands where standname='$stand'")) {
                 $row = $result->fetch_assoc();
                 $standDescription=$row["standDescription"];
+                $standPhoto=$row["standPhoto"];
                 $standLat=$row["latitude"];
                 $standLong=$row["longitude"];
-                $message=$stand." - ".$standDescription.", GPS: ".$standLong.",".$standLat;
+                $message=$stand." - ".$standDescription;
+                if ($standLong AND $standLat) $message.=", GPS: ".$standLong.",".$standLat;
+                if ($standPhoto) $message.=", ".$standPhoto;
                 sendSMS($number,$message);
         } else error("stand not found");
 

@@ -616,7 +616,7 @@ function mapgetmarkers()
    global $db;
 
    $jsoncontent=array();
-   $result = $db->query("SELECT standId,count(bikeNum) AS bikecount,standDescription,standName,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.standId WHERE stands.serviceTag=0 GROUP BY standName ORDER BY standName");
+   $result = $db->query("SELECT standId,count(bikeNum) AS bikecount,standDescription,standName,standPhoto,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.standId WHERE stands.serviceTag=0 GROUP BY standName ORDER BY standName");
    while($row = $result->fetch_assoc())
       {
       $jsoncontent[]=$row;

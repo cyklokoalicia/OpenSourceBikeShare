@@ -80,6 +80,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <? endif; ?>
 <h2 id="standname"><select id="stands"></select><span id="standcount"></span></h2>
 <div id="standinfo"></div>
+<div id="standphoto"></div>
 <div id="standbikes"></div>
 <div id="console">
 </div>
