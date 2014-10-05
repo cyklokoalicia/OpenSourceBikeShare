@@ -244,8 +244,8 @@ function addnote($userId,$bikeNum,$message)
 		if ($result = $db->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum")) {
 		} else error("update failed");
 
-		response("Note for bike $bikeNum saved.");
 		notifyAdmins("Note b.$bikeNum by $reportedBy:".$userNote." ".$bikeStatus);
+		response("Note for bike $bikeNum saved.");
 
 	}
 
@@ -286,29 +286,6 @@ function removenote($userId,$bikeNum)
 
    $result = $db->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum");
    response("Note for bike $bikeNum deleted.");
-}
-
-/**
- * @param int $notificationtype 0 = via SMS, 1 = via email
-**/
-function notifyAdmins($message,$notificationtype=0)
-{
-   global $db;
-
-   $result = $db->query("SELECT number,mail FROM users where privileges & 2 != 0");
-   $admins = $result->fetch_all(MYSQLI_ASSOC);
-   for ($i=0; $i<count($admins);$i++)
-   {
-   if ($notificationtype==0)
-      {
-      sendSMS($admins[$i]["number"],$message);
-      }
-   else
-      {
-      sendEmail($admins[$i]["mail"],$message,"");
-      }
-   }
-
 }
 
 function last($userId,$bike)
