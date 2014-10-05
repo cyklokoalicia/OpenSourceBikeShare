@@ -125,7 +125,7 @@ function createstandselector()
    });
 }
 
-function showstand(e)
+function showstand(e,clear)
 {
    standselected=1;
    sidebar.show();
@@ -137,6 +137,9 @@ function showstand(e)
       {
       ga('send', 'event', 'buttons', 'click', 'stand-select');
       standid=e.target.options.icon.options.standid; // passed via event call
+      }
+   if (clear!=0)
+      {
       resetconsole();
       }
    resetbutton("rent");
@@ -313,7 +316,7 @@ function rent()
          }
       getmarkers();
       getuserstatus();
-      showstand(standid);
+      showstand(standid,0);
    });
 }
 
@@ -346,7 +349,7 @@ function returnbike()
          }
       getmarkers();
       getuserstatus();
-      showstand(standid);
+      showstand(standid,0);
    });
 }
 
@@ -387,9 +390,9 @@ function revert()
 
 function attachbicycleinfo(element,attachto)
 {
-   resetconsole();
    $('#'+attachto+' .bikenumber').html($(element).attr('data-id'));
    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">Reported problem on this bicycle: '+$(element).attr('data-note')+'</div>');
+   //else resetconsole();
 }
 
 function checkonebikeattach()
