@@ -491,9 +491,7 @@ function last($number,$bike)
 		}
     	} else error("bike not retrieved");
 
-	if ($result = $db->query("SELECT userName,parameter,standName
-FROM `history` join users on history.userid=users.userid left join stands on stands.standid=history.parameter where bikenum=$bikeNum order by time desc
-LIMIT 10")) {
+	if ($result = $db->query("SELECT userName,parameter,standName,action FROM `history` join users on history.userid=users.userid left join stands on stands.standid=history.parameter where bikenum=$bikeNum order by time desc LIMIT 10")) {
 		$bikeHistory= $result->fetch_all(MYSQLI_ASSOC);
 	} else error("bike history not retrieved");
 
@@ -505,8 +503,8 @@ LIMIT 10")) {
 
 		if(($standName=$bikeHistory[$i]["standName"])!=NULL)
 		{
+			if ($bikeHistory[$i]["action"]=="REVERT") $historyInfo.="*";
 			$historyInfo.=$standName;
-
 		}
 		else
 		{
