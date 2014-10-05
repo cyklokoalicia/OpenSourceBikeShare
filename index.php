@@ -67,10 +67,10 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 ?>
       <form method="POST" action="command.php?action=login">
       <div class="row"><div class="col-lg-12">
-            <label for="number" class="control-label">Phone number:</label> <input type="text" name="number" id="number" class="form-control" placeholder="09XX 123 456" />
+            <label for="number" class="control-label">Phone number:</label> <input type="number" name="number" id="number" class="form-control" placeholder="09XX 123 456" />
        </div></div>
        <div class="row"><div class="col-lg-12">
-            <label for="fullname">Password:</label> <input type="password" name="password" id="password" class="form-control" />
+            <label for="password">Password:</label> <input type="password" name="password" id="password" class="form-control" />
        </div></div><br />
        <div class="row"><div class="col-lg-12">
          <button type="submit" id="register" class="btn btn-lg btn-block btn-primary">Log in</button>
