@@ -476,35 +476,6 @@ function note($number,$bikeNum,$message)
 
 }
 
-
-/**
- * @param int $notificationtype 0 = via SMS, 1 = via email
-**/
-function notifyAdmins($message,$notificationtype=0)
-{
-	global $db;
-
-	if ($result = $db->query("SELECT number,mail FROM users where privileges & 2 != 0")) {
-		$admins = $result->fetch_all(MYSQLI_ASSOC);
-	} else error("admins not fetched");
-
-
-	for($i=0; $i<count($admins);$i++)
-	{
-            if ($notificationtype==0)
-               {
-               sendSMS($admins[$i]["number"],$message);
-               }
-            else
-               {
-               sendEmail($admins[$i]["mail"],$message,"");
-               }
-	}
-
-
-}
-
-
 function last($number,$bike)
 {
 

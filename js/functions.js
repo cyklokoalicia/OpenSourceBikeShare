@@ -13,7 +13,7 @@ $(document).ready(function(){
    $("#where").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-where'); where(); });
    $("#last").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-last'); last(); });
    $("#revert").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-revert'); revert(); });
-   $('#stands').change(function() { showstand($('#stands').val()); });
+   $('#stands').change(function() { showstand($('#stands').val()); }).keyup(function() { showstand($('#stands').val()); });
    mapinit();
    setInterval(getmarkers, 60000); // refresh map every 60 seconds
    if ("geolocation" in navigator) {
