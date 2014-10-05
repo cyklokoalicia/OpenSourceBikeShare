@@ -295,7 +295,7 @@ function last($userId,$bike)
    $bikeNum=intval($bike);
    if ($bikeNum)
       {
-      $result=$db->query("SELECT userName,parameter,standName,time FROM `history` JOIN users ON history.userid=users.userid LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum ORDER BY time DESC LIMIT 10");
+      $result=$db->query("SELECT userName,parameter,standName,action,time FROM `history` JOIN users ON history.userid=users.userid LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum ORDER BY time DESC LIMIT 10");
       $bikeHistory=$result->fetch_all(MYSQLI_ASSOC);
       $historyInfo="<h3>Bike $bikeNum history:</h3><ul>";
       for($i=0; $i<count($bikeHistory);$i++)
@@ -305,10 +305,11 @@ function last($userId,$bike)
          if($bikeHistory[$i]["standName"]!=NULL)
             {
             $historyInfo.=$bikeHistory[$i]["standName"];
+            if ($bikeHistory[$i]["action"]=="REVERT") $historyInfo.=' <span class="label label-warning">Revert</span>';
             }
          else
             {
-            $historyInfo.=$bikeHistory[$i]["userName"]." (code ".$bikeHistory[$i]["parameter"].")";
+            $historyInfo.=$bikeHistory[$i]["userName"].' (<span class="label label-default">'.$bikeHistory[$i]["parameter"].'</span>)';
             }
          $historyInfo.="</li>";
          }
