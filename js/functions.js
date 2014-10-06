@@ -207,7 +207,11 @@ function showstand(e,clear)
       $('#standphoto').html('<img src="'+markerdata[standid].photo+'" alt="'+markerdata[standid].name+'" width="100%" />');
       $('#photo'+standid).click(function() { $('#standphoto').slideToggle(); return false; });
       }
-   else $('#standinfo').html(markerdata[standid].desc);
+   else
+      {
+      $('#standinfo').html(markerdata[standid].desc);
+      $('#standphoto').hide();
+      }
    togglestandactions(markerdata[standid].count);
    togglebikeactions();
 }
