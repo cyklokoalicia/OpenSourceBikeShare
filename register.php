@@ -57,7 +57,7 @@ require("db.class.php");
       <form class="container" id="step2">
       <h2 id="step2title">Step 2 - Create account</h2>
          <div class="form-group">
-            <label for="smscode" class="control-label">SMS code (received to your phone):</label> <input type="text" name="smscode" id="smscode" class="form-control" placeholder="AB 123456" /></div>
+            <label for="smscode" class="control-label">SMS code (received to your phone):</label> <input type="text" name="smscode" id="smscode" class="form-control" /></div>
             <div id="regonly">
          <div class="form-group">
             <label for="fullname">Fullname:</label> <input type="text" name="fullname" id="fullname" class="form-control" placeholder="Firstname Lastname" /></div>

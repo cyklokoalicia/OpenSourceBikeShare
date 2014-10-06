@@ -408,8 +408,13 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
    $fullname=$db->conn->real_escape_string(trim($fullname));
    $email=$db->conn->real_escape_string(trim($email));
    $password=$db->conn->real_escape_string(trim($password));
+   $password2=$db->conn->real_escape_string(trim($password2));
    $existing=$db->conn->real_escape_string(trim($existing));
    $parametercheck=$number.";".str_replace(" ","",$code).";".$checkcode;
+   if ($password<>$password2)
+      {
+      response("Password do not match. Please correct and try again.",ERROR);
+      }
    $result=$db->query("SELECT parameter FROM history WHERE userId=0 AND bikeNum=0 AND action='REGISTER' AND parameter='$parametercheck' ORDER BY time DESC LIMIT 1");
    if ($result->num_rows==1)
       {
@@ -431,7 +436,7 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
       }
    else
       {
-      response("Problem with registration. Please reload the page and try again.",ERROR);
+      response("Problem with the SMS code entered. Please check and try again.",ERROR);
       }
 
 }
