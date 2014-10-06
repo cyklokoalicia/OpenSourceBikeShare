@@ -274,7 +274,7 @@ function togglebikeactions()
 
 function toggleadminactions()
 {
-   if (priv<2)
+   if (priv<1)
       {
       $('.adminactions').hide();
       }
