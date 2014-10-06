@@ -14,9 +14,9 @@ Features
 * Bicycles require the locks with a four digit code
 * Connector system to support any provider of SMS Gateway / API (the connector for eurosms.com provided)
 
-Pilot testing
+Pilot experiment
 ---------
-Currently running in Bratislava with about 50 bicycles.
+Currently running with about 50 bicycles in Bratislava, the capital of Slovakia.
 
 Demo
 ---------
