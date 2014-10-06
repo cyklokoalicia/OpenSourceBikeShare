@@ -95,16 +95,23 @@ function getsmscode(event)
 function register(event)
 {
    event.preventDefault();
+   $("#console").fadeOut();
    $( "#register" ).prop( "disabled", true );
    $.ajax({
    url: "command.php?action=register&validatednumber="+$('#validatednumber').val()+"&checkcode="+$('#checkcode').val()+"&smscode="+$('#smscode').val()+"&fullname="+$('#fullname').val()+"&email="+$('#email').val()+"&password="+$('#password').val()+"&password2="+$('#password2').val()+"&existing="+$('#existing').val()
    }).done(function(jsonresponse) {
    jsonobject=$.parseJSON(jsonresponse);
-   $("#step2").fadeOut();
    if (jsonobject.error==1)
       {
       $('#console').html('<div class="alert alert-danger" role="alert">'+jsonobject.content+'</div>');
+      $("#console").fadeIn();
+      $( "#register" ).prop( "disabled", false );
       }
-   else $('#console').html('<div class="alert alert-success" role="alert">'+jsonobject.content+'</div>');
+   else
+      {
+      $("#step2").fadeOut();
+      $("#console").fadeIn();
+      $('#console').html('<div class="alert alert-success" role="alert">'+jsonobject.content+'</div>');
+      }
    });
 }
