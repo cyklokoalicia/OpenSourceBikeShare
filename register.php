@@ -49,7 +49,7 @@ require("db.class.php");
        <form class="container" id="step1">
        <h2>Step 1 - Confirm your phone number</h2>
          <div class="form-group">
-            <label for="number" class="control-label">Phone number:</label> <input type="number" name="number" id="number" class="form-control" placeholder="09XX 123 456" />
+            <label for="number" class="control-label">Phone number:</label> <input type="number" name="number" id="number" class="form-control hidden-md hidden-lg" placeholder="09XX 123 456" /><input type="text" name="number" id="number" class="form-control hidden-xs hidden-sm" placeholder="09XX 123 456" />
          </div>
          <div class="alert alert-info">You will receive SMS code to this phone number.</div>
          <button type="submit" id="validate" class="btn btn-primary">Validate this phone number</button>

@@ -80,7 +80,7 @@ DROP TABLE IF EXISTS `stands`;
 CREATE TABLE `stands` (
   `standId` int(11) NOT NULL AUTO_INCREMENT,
   `standName` varchar(50) NOT NULL,
-  `standDescription` varchar(100) NOT NULL,
+  `standDescription` varchar(255) NOT NULL,
   `standPhoto` varchar(255) NOT NULL,
   `serviceTag` int(10) NOT NULL,
   `placeName` varchar(50) NOT NULL,
