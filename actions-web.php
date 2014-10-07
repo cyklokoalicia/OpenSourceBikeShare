@@ -550,7 +550,7 @@ function checkprivileges($userid)
 {
    global $db;
    $privileges=getprivileges($userid);
-   if ($privileges<2)
+   if ($privileges<1)
       {
       response("Sorry, this command is only available for the privileged users.",ERROR);
       exit;

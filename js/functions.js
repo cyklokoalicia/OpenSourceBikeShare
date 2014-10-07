@@ -200,16 +200,21 @@ function showstand(e,clear)
       $('#standcount').removeClass('label label-success').addClass('label label-danger');
       resetstandbikes();
       }
-   if (markerdata[standid].photo)
+   if (loggedin==1 && markerdata[standid].photo)
       {
       $('#standinfo').html(markerdata[standid].desc+' (<a href="'+markerdata[standid].photo+'" id="photo'+standid+'">photo</a>)');
       $('#standphoto').hide();
       $('#standphoto').html('<img src="'+markerdata[standid].photo+'" alt="'+markerdata[standid].name+'" width="100%" />');
       $('#photo'+standid).click(function() { $('#standphoto').slideToggle(); return false; });
       }
-   else
+   else if (loggedin==1)
       {
       $('#standinfo').html(markerdata[standid].desc);
+      $('#standphoto').hide();
+      }
+   else
+      {
+      $('#standinfo').hide();
       $('#standphoto').hide();
       }
    togglestandactions(markerdata[standid].count);
