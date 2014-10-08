@@ -13,25 +13,6 @@ function unknownCommand($number,$command)
    sendSMS($number,"Error. The command $command does not exist. Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nINFO standname\nFREE\nNOTE bikenumber problem description");
 }
 
-function sendSMS($number,$text)
-{
-
-   global $gatewayId, $gatewayKey, $gatewaySenderNumber;
-
-   log_sendsms($number,$text);
-   if (DEBUG===TRUE)
-      {
-      echo $number,' -&gt ',$text;
-      }
-   else
-      {
-      $s = substr(md5($gatewayKey.$number),10,11);
-      $text = substr($text,0,160);
-      $um = urlencode($text);
-      fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um","r");
-      }
-}
-
 /**
  * @deprecated, call getuserid() directly
  */
@@ -246,8 +227,7 @@ function returnBike($number,$bike,$stand,$message="")
 	{
 	$tempnote=$note;
 	if (!$userNote) $tempnote=$userNote;
-
-		$message.="(bike note:".$tempnote.")";
+	if ($tempnote) $message.="(bike note:".$tempnote.")";
 	}
 	$message.="Do not forget to rotate the lockpad to 0000 when leaving.";
 	sendSMS($number,$message);
@@ -397,20 +377,6 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
               }
               else error("update failed");
            }
-
-}
-
-function log_sendsms($number, $text)
-{
-        global $dbServer,$dbUser,$dbPassword,$dbName;
-	$localdb=new Database($dbServer,$dbUser,$dbPassword,$dbName);
-        $localdb->connect();
-        $localdb->conn->autocommit(TRUE);
-	$number = $localdb->conn->real_escape_string($number);
-	$text = $localdb->conn->real_escape_string($text);
-
-	if ($result = $localdb->query("INSERT INTO sent SET number='$number',text='$text'")) {
-	} else error("update failed");
 
 }
 
