@@ -4,10 +4,6 @@ require("db.class.php");
 $db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
 $db->connect();
 require("actions-sms.php");
-require("connectors/".$connectors["sms"].".php");
-
-
-$sms=new SMSConnector($connectors["sms"]);
 
 log_sms($sms->UUID(),$sms->Number(),$sms->Time(),$sms->Text(),$sms->IPAddress());
 

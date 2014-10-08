@@ -1,4 +1,6 @@
 <?php
+require("connectors/".$connectors["sms"].".php");
+$sms=new SMSConnector($connectors["sms"]);
 
 function error($message)
 {
@@ -18,7 +20,7 @@ function sendEmail($email,$subject,$message)
 function sendSMS($number,$text)
 {
 
-   global $gatewayId, $gatewayKey, $gatewaySenderNumber;
+   global $sms;
 
    log_sendsms($number,$text);
    if (DEBUG===TRUE)
@@ -27,10 +29,8 @@ function sendSMS($number,$text)
       }
    else
       {
-      $s = substr(md5($gatewayKey.$number),10,11);
-      $text = substr($text,0,160);
-      $um = urlencode($text);
-      fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um","r");
+      $text=substr($text,0,160);
+      $sms->Send($number,$text);
       }
 }
 

@@ -49,6 +49,14 @@ class SMSConnector
       echo 'ok:',$this->uuid,"\n";
       }
 
+   function Send($number,$text)
+      {
+      global $gatewayId,$gatewayKey,$gatewaySenderNumber;
+      $s=substr(md5($gatewayKey.$number),10,11);
+      $um=urlencode($text);
+      fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um","r");
+      }
+
    }
 
 ?>
