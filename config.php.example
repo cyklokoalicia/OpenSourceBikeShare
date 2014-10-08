@@ -14,6 +14,8 @@ $gatewayKey = "YourKey";
 $gatewaySenderNumber= "421912345678";
 $countryCode = "421"; // international dialing code (country code prefix), no plus sign
 
+$longrental=24; // in hours
+
 $dbServer="localhost";
 $dbUser="bikeshare";
 $dbPassword="YourPassword";
