@@ -26,8 +26,6 @@ Need help to set it up?
 ---------
 **If you need help to set up your own bike sharing system** including the real world part (the stands, bicycles, locks etc.), **we are available for consultation**.
 
-Consultations are personalized and paid.
-
 We will talk to you about the expectations, situation, bicycle theft, potential users and **provide you with help to launch your own successful bike sharing system**.
 
-**Get in touch**: [consult@whitebikes.info](mailto:consult@whitebikes.info)
+First consultation is free, **get in touch**: [consult@whitebikes.info](mailto:consult@whitebikes.info)
