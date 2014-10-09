@@ -557,34 +557,6 @@ function checkprivileges($userid)
       }
 }
 
-function checklongrental()
-{
-   global $db,$longrental;
-
-   $abusers="";
-   $result=$db->query("SELECT bikeNum,currentUser,userName FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId WHERE currentStand IS NULL");
-   while($row=$result->fetch_assoc())
-      {
-      $bikenum=$row["bikeNum"];
-      $userid=$row["currentUser"];
-      $username=$row["userName"];
-      $result2=$db->query("SELECT time FROM history WHERE bikeNum=$bikenum AND userId=$userid AND action='RENT' ORDER BY time DESC LIMIT 1");
-      if ($result2->num_rows)
-         {
-         $row2=$result2->fetch_assoc();
-         $time=$row2["time"];
-         $time=strtotime($time);
-         if ($time+($longrental*3600)<=time())
-            {
-            $abusers.=" b".$bikenum." by ".$username.",";
-            }
-         }
-      }
-   $abusers=substr($abusers,0,strlen($abusers)-1);
-   notifyAdmins($longrental."+ hour rental:".$abusers);
-
-}
-
 function smscode($number)
 {
 

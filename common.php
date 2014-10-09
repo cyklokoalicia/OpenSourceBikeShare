@@ -188,4 +188,63 @@ function confirmUser($userKey)
 
 }
 
+function checklongrental()
+{
+   global $db,$watches;
+
+   $abusers=""; $found=0;
+   $result=$db->query("SELECT bikeNum,currentUser,userName FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId WHERE currentStand IS NULL");
+   while($row=$result->fetch_assoc())
+      {
+      $bikenum=$row["bikeNum"];
+      $userid=$row["currentUser"];
+      $username=$row["userName"];
+      $result2=$db->query("SELECT time FROM history WHERE bikeNum=$bikenum AND userId=$userid AND action='RENT' ORDER BY time DESC LIMIT 1");
+      if ($result2->num_rows)
+         {
+         $row2=$result2->fetch_assoc();
+         $time=$row2["time"];
+         $time=strtotime($time);
+         if ($time+($watches["longrental"]*3600)<=time())
+            {
+            $abusers.=" b".$bikenum." by ".$username.",";
+            $found=1;
+            }
+         }
+      }
+   if ($found)
+      {
+      $abusers=substr($abusers,0,strlen($abusers)-1);
+      notifyAdmins($watches["longrental"]."+ hour rental:".$abusers);
+      }
+
+}
+
+function checktoomany()
+{
+   global $db,$watches;
+
+   $abusers=""; $found=0;
+   $result=$db->query("SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId");
+   while($row=$result->fetch_assoc())
+      {
+      $userid=$row["userId"];
+      $username=$row["userName"];
+      $userlimit=$row["userLimit"];
+      $currenttime=date("Y-m-d H:i:s",time()-$watches["timetoomany"]*3600);
+      $result2=$db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
+      if ($result2->num_rows>=($userlimit+$watches["numbertoomany"]))
+         {
+         $abusers.=" ".$result2->num_rows." (".$userlimit.") by ".$username.",";
+         $found=1;
+         }
+      }
+   if ($found)
+      {
+      $abusers=substr($abusers,0,strlen($abusers)-1);
+      notifyAdmins("Over limit in ".$watches["timetoomany"]." hs:".$abusers);
+      }
+
+}
+
 ?>
