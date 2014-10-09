@@ -5,8 +5,10 @@ require("actions-web.php");
 
 $db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
 $db->connect();
+echo '<span style="display:none;"></span>'; // 2014-10-02 weird bug: map not shown, when DOCTYPE tag included, but everything OK, if this line printed here
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <title><? echo $systemName; ?> map with availability</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
