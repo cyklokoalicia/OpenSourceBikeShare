@@ -31,7 +31,8 @@ function response($message,$error=0,$additional="",$log=1)
 function rent($userId,$bike)
 {
 
-   global $db;
+   global $db,$forcestack;
+   $stacktopbike=FALSE;
    $bikeNum = $bike;
 
    $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
@@ -55,6 +56,17 @@ function rent($userId,$bike)
       else
          {
          response("You can only rent ".$limit." bikes at once and you have already rented ".$limit.".",ERROR);
+         }
+      }
+
+   if ($forcestack)
+      {
+      $result=$db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bike'");
+      $row=$result->fetch_assoc();
+      $stacktopbike=checktopofstack($row["currentStand"]);
+      if ($stacktopbike<>$bike)
+         {
+         response("Bike ".$bike." is not rentable now, you have to rent bike ".$stacktopbike." from this stand.",ERROR);
          }
       }
 
@@ -254,20 +266,28 @@ function addnote($userId,$bikeNum,$message)
 
 function listbikes($stand)
 {
-   global $db;
+   global $db,$forcestack;
 
+   $stacktopbike=FALSE;
    $stand=$db->conn->real_escape_string($stand);
+   if ($forcestack)
+      {
+      $result=$db->query("SELECT standId FROM stands WHERE standName='$stand'");
+      $row=$result->fetch_assoc();
+      $stacktopbike=checktopofstack($row["standId"]);
+      }
    $result=$db->query("SELECT bikeNum,note FROM bikes LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE standName='$stand'");
    while($row=$result->fetch_assoc())
       {
+      $bikenum=$row["bikeNum"];
       if ($row["note"])
          {
-         $bicycles[]="*".$row["bikeNum"]; // bike with note / issue
+         $bicycles[]="*".$bikenum; // bike with note / issue
          $notes[]=$row["note"];
          }
       else
          {
-         $bicycles[]=$row["bikeNum"];
+         $bicycles[]=$bikenum;
          $notes[]="";
          }
       }
@@ -276,7 +296,7 @@ function listbikes($stand)
       $bicycles="";
       $notes="";
       }
-   response($bicycles,0,array("notes"=>$notes),0);
+   response($bicycles,0,array("notes"=>$notes,"stacktopbike"=>$stacktopbike),0);
 
 }
 

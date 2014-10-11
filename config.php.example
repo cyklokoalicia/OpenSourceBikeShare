@@ -11,6 +11,7 @@ $systemZoom="15"; // default map zoom
 
 $countryCode = "421"; // international dialing code (country code prefix), no plus sign
 
+$forcestack=1; // 0 = allow renting any bike at stand, 1 = allow renting last bicycle returned only (top of stack)
 $watches["longrental"]=24; // in hours (bike rented for more than X h)
 $watches["timetoomany"]=1; // in hours (high number of rentals by one person in a short time)
 $watches["numbertoomany"]=1; // if userlimit+numbertooomany reached in timetoomany, then notify
