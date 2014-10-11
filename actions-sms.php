@@ -84,7 +84,8 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
 function rent($number,$bike)
 {
 
-        global $db;
+        global $db,$forcestack;
+        $stacktopbike=FALSE;
 	$userId = getUser($number);
 	$bikeNum = intval($bike);
 
@@ -115,6 +116,18 @@ function rent($number,$bike)
 
 		return;
 	}
+
+	if ($forcestack)
+         {
+         $result=$db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bikeNum'");
+         $row=$result->fetch_assoc();
+         $stacktopbike=checktopofstack($row["currentStand"]);
+         if ($stacktopbike<>$bikeNum)
+            {
+            sendSMS($number,"Bike ".$bikeNum." is not rentable now, rent bike ".$stacktopbike." from here.",ERROR);
+            return;
+            }
+         }
 
 	if ($result = $db->query("SELECT currentUser,currentCode,note FROM bikes where bikeNum=$bikeNum")) {
     		if($result->num_rows!=1)
@@ -277,7 +290,8 @@ function where($number,$bike)
 function listBikes($number,$stand)
 {
 
-        global $db;
+        global $db,$forcestack;
+        $stacktopbike=FALSE;
 	$userId = getUser($number);
 	$stand = strtoupper($stand);
 
@@ -297,6 +311,10 @@ function listBikes($number,$stand)
 		$standId = $row["standId"];
 	} else error("stand not retrieved");
 
+	if ($forcestack)
+            {
+            $stacktopbike=checktopofstack($standId);
+            }
 
 	if ($result = $db->query("SELECT bikeNum FROM bikes where currentStand=$standId ORDER BY bikeNum")) {
 		$rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
@@ -314,6 +332,7 @@ function listBikes($number,$stand)
 		if($i!=0)
 			$listBikes.=",";
 		$listBikes.=$rentedBikes[$i]["bikeNum"];
+		if ($stacktopbike==$rentedBikes[$i]["bikeNum"]) $listBikes.=' (first)';
 	}
 
 	$countBikes = count($rentedBikes);
