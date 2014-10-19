@@ -60,6 +60,19 @@ function getprivileges($userid)
    return FALSE;
 }
 
+function getcredit($userid)
+{
+   global $db;
+
+   $result=$db->query("SELECT credit FROM credit WHERE userId=$userid");
+   if ($result->num_rows==1)
+      {
+      $row=$result->fetch_assoc();
+      return $row["credit"];
+      }
+   return 0;
+}
+
 function getusername($userid)
 {
    global $db;
@@ -239,22 +252,41 @@ function checklongrental()
 
 }
 
-function checktoomany()
+// cron - called from cron by default, set to 0 if manual
+function checktoomany($cron=1,$userid=0)
 {
    global $db,$watches;
 
    $abusers=""; $found=0;
-   $result=$db->query("SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId");
-   while($row=$result->fetch_assoc())
+
+   if ($cron) // called from cron
       {
-      $userid=$row["userId"];
+      $result=$db->query("SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId");
+      while($row=$result->fetch_assoc())
+         {
+         $userid=$row["userId"];
+         $username=$row["userName"];
+         $userlimit=$row["userLimit"];
+         $currenttime=date("Y-m-d H:i:s",time()-$watches["timetoomany"]*3600);
+         $result2=$db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
+         if ($result2->num_rows>=($userlimit+$watches["numbertoomany"]))
+            {
+            $abusers.=" ".$result2->num_rows." (limit ".$userlimit.") by ".$username.",";
+            $found=1;
+            }
+         }
+      }
+   else // called from function for user userid
+      {
+      $result=$db->query("SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId WHERE users.userId=$userid");
+      $row=$result->fetch_assoc();
       $username=$row["userName"];
       $userlimit=$row["userLimit"];
       $currenttime=date("Y-m-d H:i:s",time()-$watches["timetoomany"]*3600);
-      $result2=$db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
-      if ($result2->num_rows>=($userlimit+$watches["numbertoomany"]))
+      $result=$db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
+      if ($result->num_rows>=($userlimit+$watches["numbertoomany"]))
          {
-         $abusers.=" ".$result2->num_rows." (".$userlimit.") by ".$username.",";
+         $abusers.=" ".$result->num_rows." (limit ".$userlimit.") by ".$username.",";
          $found=1;
          }
       }
