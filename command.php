@@ -52,8 +52,10 @@ switch($action)
       checksession();
       $bikeno=trim($_GET["bikeno"]);
       $stand=trim($_GET["stand"]);
+      $note="";
+      if (isset($_GET["note"])) $note=trim($_GET["note"]);
       checkbikeno($bikeno); checkstandname($stand);
-      returnBike($userid,$bikeno,$stand);
+      returnBike($userid,$bikeno,$stand,$note);
       break;
    case "where":
       logrequest($userid,$action);
@@ -61,12 +63,6 @@ switch($action)
       $bikeno=trim($_GET["bikeno"]);
       checkbikeno($bikeno);
       where($userid,$bikeno);
-      break;
-   case "addnote": // TODO
-      logrequest($userid,$action);
-      checksession();
-      checkbikeno($bikeno);
-      addnote($userid,$bikeno,$note);
       break;
    case "removenote":
       logrequest($userid,$action);

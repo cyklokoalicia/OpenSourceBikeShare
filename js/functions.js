@@ -5,6 +5,7 @@ $(document).ready(function(){
    $('#standactions').hide();
    $('.bicycleactions').hide();
    $('.adminactions').hide();
+   $('#notetext').hide();
    $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" id="loading" />'); });
    $(document).ajaxComplete(function() { $('#loading').remove(); });
    $("#rent").click(function() { ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
@@ -266,7 +267,7 @@ function rentedbikes()
                bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'">'+jsonobject.content[i]+'<br /><span class="label label-default">('+jsonobject.codes[i]+')</span></button> ';
                }
             $('#rentedbikes').html('<div class="btn-group">'+bikelist+'</div>');
-            $('#rentedbikes .bikeid').click( function() { attachbicycleinfo(this,"return"); attachbicycleinfo(this,"note"); });
+            $('#rentedbikes .bikeid').click( function() { attachbicycleinfo(this,"return"); });
             checkonebikeattach();
             }
          else
@@ -274,6 +275,12 @@ function rentedbikes()
             resetrentedbikes();
             }
       });
+}
+
+function note()
+{
+   $('#notetext').slideToggle();
+   $('#notetext').val('');
 }
 
 function togglestandactions(count)
@@ -352,6 +359,8 @@ function rent()
          {
          $('#standcount').removeClass('label-danger').addClass('label-success');
          }
+      $('#notetext').val('');
+      $('#notetext').hide();
       getmarkers();
       getuserstatus();
       showstand(standid,0);
@@ -360,18 +369,19 @@ function rent()
 
 function returnbike()
 {
+   note="";
    standname=$('#stands option:selected').text();
    standid=$('#stands').val();
    ga('send', 'event', 'bikes', 'return', $('#return .bikenumber').html());
    ga('send', 'event', 'stands', 'return', standname);
+   if ($('#notetext').val()) note="&note="+$('#notetext').val();
    $.ajax({
-   url: "command.php?action=return&bikeno="+$('#return .bikenumber').html()+"&stand="+standname
+   url: "command.php?action=return&bikeno="+$('#return .bikenumber').html()+"&stand="+standname+note
    }).done(function(jsonresponse) {
       jsonobject=$.parseJSON(jsonresponse);
       handleresponse(jsonobject);
       $('.b'+$('#return .bikenumber').html()).remove();
-      $('.b'+$('#note .bikenumber').html()).remove();
-      resetbutton("return"); resetbutton("note");
+      resetbutton("return");
       markerdata=$('body').data('markerdata');
       standbiketotal=markerdata[standid].count;
       if (jsonobject.error==0)
@@ -385,6 +395,8 @@ function returnbike()
          $('#standcount').removeClass('label-success');
          $('#standcount').addClass('label-danger');
          }
+      $('#notetext').val('');
+      $('#notetext').hide();
       getmarkers();
       getuserstatus();
       showstand(standid,0);
@@ -439,7 +451,6 @@ function checkonebikeattach()
       {
       element=$("#rentedbikes .btn-group .btn");
       attachbicycleinfo(element,"return");
-      attachbicycleinfo(element,"note");
       }
 }
 

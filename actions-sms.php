@@ -52,8 +52,8 @@ function info($number,$stand)
                 $row = $result->fetch_assoc();
                 $standDescription=$row["standDescription"];
                 $standPhoto=$row["standPhoto"];
-                $standLat=$row["latitude"];
-                $standLong=$row["longitude"];
+                $standLat=round($row["latitude"],5);
+                $standLong=round($row["longitude"],5);
                 $message=$stand." - ".$standDescription;
                 if ($standLong AND $standLat) $message.=", GPS: ".$standLong.",".$standLat;
                 if ($standPhoto) $message.=", ".$standPhoto;
@@ -88,6 +88,8 @@ function rent($number,$bike)
         $stacktopbike=FALSE;
 	$userId = getUser($number);
 	$bikeNum = intval($bike);
+
+	checktoomany(0,$userId);
 
 	if ($result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId")) {
     		$row = $result->fetch_assoc();

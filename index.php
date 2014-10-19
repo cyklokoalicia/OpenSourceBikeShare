@@ -10,6 +10,7 @@ echo '<span style="display:none;"></span>'; // 2014-10-02 weird bug: map not sho
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="utf-8">
 <title><? echo $systemName; ?> map with availability</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -53,7 +54,12 @@ else
    <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
    <ul class="nav nav-pills">
    <?php
-   if (isloggedin()) echo '<li><span class="label label-success"><em>',getusername($_COOKIE["loguserid"]),'</em></span><br /><a href="command.php?action=logout" id="logout">Log out</a></li>';
+   if (isloggedin())
+      {
+      echo '<li><span class="label label-success"><em>',getusername($_COOKIE["loguserid"]),'</em></span>';
+      if ($creditsystem) echo ' (',getcredit($_COOKIE["loguserid"]),' ',$creditcurrency,')';
+      echo '<br /><a href="command.php?action=logout" id="logout">Log out</a></li>';
+      }
    ?>
    </ul>
    </div>
@@ -97,17 +103,19 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <br /></div></div>
 <div id="rentedbikes"></div>
 <div class="row">
-   <div class="btn-group bicycleactions">
+   <div class="input-group">
    <div class="col-lg-12">
-   <button type="button" class="btn btn-primary" id="return"><span class="glyphicon glyphicon-log-in"></span> Return bicycle <span class="bikenumber"></span></button>
-   </div></div>
-   <div class="btn-group bicycleactions">
-   <div class="col-lg-12">
-   <button type="button" class="btn btn-warning" id="note"><span class="glyphicon glyphicon-exclamation-sign"></span> Report bicycle <span class="bikenumber"></span></button>
+   <input type="text" name="notetext" id="notetext" class="form-control" placeholder="Describe problem" >
+   </div>
    </div>
 </div>
-</div>
 <div class="row">
+   <div class="btn-group bicycleactions">
+   <div class="col-lg-12">
+   <button type="button" class="btn btn-primary" id="return"><span class="glyphicon glyphicon-log-in"></span> Return bicycle <span class="bikenumber"></span></button> and <a href="#" id="note">report problem <span class="glyphicon glyphicon-exclamation-sign"></span></a>
+   </div></div>
+</div>
+<br /><div class="row">
   <div class="btn-group adminactions">
   <div class="col-lg-12">
   <div class="input-group">

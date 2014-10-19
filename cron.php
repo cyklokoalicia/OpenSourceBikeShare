@@ -7,5 +7,4 @@ $db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
 $db->connect();
 
 checklongrental();
-checktoomany();
 ?>

@@ -35,6 +35,8 @@ function rent($userId,$bike)
    $stacktopbike=FALSE;
    $bikeNum = $bike;
 
+   checktoomany(0,$userId);
+
    $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
    $row = $result->fetch_assoc();
    $countRented = $row["countRented"];
@@ -101,7 +103,7 @@ function rent($userId,$bike)
 
 }
 
-function returnBike($userId,$bike,$stand)
+function returnBike($userId,$bike,$stand,$note="")
 {
 
    global $db;
@@ -116,19 +118,20 @@ function returnBike($userId,$bike,$stand)
       response("You have no rented bikes currently.",ERROR);
       }
 
-   $result = $db->query("SELECT currentCode,note FROM bikes WHERE currentUser=$userId and bikeNum=$bikeNum");
+   $result = $db->query("SELECT currentCode FROM bikes WHERE currentUser=$userId and bikeNum=$bikeNum");
    $row = $result->fetch_assoc();
    $currentCode = sprintf("%04d",$row["currentCode"]);
-   $note= $row["note"];
 
    $result = $db->query("SELECT standId FROM stands where standName='$stand'");
    $row = $result->fetch_assoc();
    $standId = $row["standId"];
 
    $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
+   if ($note) addNote($userId,$bikeNum,$note);
 
    $message = '<h3>Bike '.$bikeNum.': <span class="label label-primary">Lock with code '.$currentCode.'.</span></h3>';
    $message.= '<br />Please, <strong>rotate the lockpad to <span class="label label-default">0000</span></strong> when leaving.';
+   if ($note) $message.='<br />You have also reported this problem: '.$note.'.';
 
    $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
    response($message);
@@ -228,39 +231,26 @@ function logresult($userid,$text)
 function addnote($userId,$bikeNum,$message)
 {
 
-        global $db;
-	$bikeNum = intval($bikeNum);
+   global $db;
+   $userNote=$db->conn->real_escape_string(trim($message));
 
-	if ($result = $db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
-               $row = $result->fetch_assoc();
-               $phone= $row["number"];
-               $userName= $row["userName"];
-               $standName= $row["standName"];
-        } else error("bike code not retrieved");
-
-        if($standName!=NULL)
-        {
-                $bikeStatus = "B.$bikeNum is at $standName.";
-        }
-        else
-        {
-                $bikeStatus = "B.$bikeNum is rented by $userName (+$phone).";
-        }
-
-	$reportedBy=getusername($userId);
-
-	$userNote=$db->conn->real_escape_string(trim($message));
-
-	if ($userNote)
-	{
-		if ($result = $db->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum")) {
-		} else error("update failed");
-
-		notifyAdmins("Note b.$bikeNum by $reportedBy:".$userNote." ".$bikeStatus);
-		response("Note for bike $bikeNum saved.");
-
-	}
-
+   $result=$db->query("SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
+   $row=$result->fetch_assoc();
+   $standName=$row["standName"];
+   if ($standName!=NULL)
+      {
+      $bikeStatus="at $standName";
+      }
+      else
+      {
+      $bikeStatus="rented by $userName +$phone";
+      }
+   $result=$db->query("SELECT userName,number from users where userId=$userId");
+   $row=$result->fetch_assoc();
+   $userName=$row["userName"];
+   $phone=$row["number"];
+   $db->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum");
+   notifyAdmins("Note b.$bikeNum (".$bikeStatus.") by $userName/$phone:".$userNote);
 
 }
 
