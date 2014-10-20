@@ -4,7 +4,16 @@ require("common.php");
 function help($number)
 {
    global $db;
-   sendSMS($number,"Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nINFO standname\nFREE\nNOTE bikenumber problem description");
+   $userid=getUser($number);
+   $privileges=getprivileges($userid);
+   if ($privileges>1)
+      {
+      sendSMS($number,"HELP\nFREE\nRENT bikenumber\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem\n---\nLIST stand\nLAST bikeno\nREVERT bikeno\nADD email phone fullname");
+      }
+   else
+      {
+      sendSMS($number,"Commands:\nHELP\nFREE\nRENT bikeno\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem description");
+      }
 }
 
 function unknownCommand($number,$command)
@@ -448,7 +457,7 @@ function note($number,$bikeNum,$message)
 		} else error("update failed");
 
 		sendSMS($number,"Note for bike $bikeNum deleted.");
-		
+
 		notifyAdmins("Note for bike $bikeNum deleted.");
 	}
 	else
