@@ -1,10 +1,8 @@
-##### upgrading from v10:43
-ALTER TABLE `stands`
-ADD `standPhoto` varchar(255) COLLATE 'utf8_general_ci' AFTER `standDescription`,
-COMMENT='';
-CHANGE `standDescription` `standDescription` varchar(100) COLLATE 'utf8_general_ci' AFTER `standName`,
-CHANGE `standPhoto` `standPhoto` varchar(255) COLLATE 'utf8_general_ci' AFTER `standDescription`,
-COMMENT='';
-UPDATE stands set standPhoto='' where standPhoto=NULL
+##### upgrading from v7.10 0:44
+DROP TABLE IF EXISTS `credit`;
+CREATE TABLE `credit` (
+  `userId` int(11) NOT NULL,
+  `credit` float(5,2),
+  PRIMARY KEY (`userId`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-#

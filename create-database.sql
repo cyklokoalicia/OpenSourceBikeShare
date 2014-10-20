@@ -13,6 +13,14 @@ CREATE TABLE `bikes` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `credit`;
+CREATE TABLE `credit` (
+  `userId` int(11) NOT NULL,
+  `credit` float(5,2) DEFAULT NULL,
+  PRIMARY KEY (`userId`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `geolocation`;
 CREATE TABLE `geolocation` (
   `userId` int(10) unsigned NOT NULL,
@@ -80,7 +88,7 @@ DROP TABLE IF EXISTS `stands`;
 CREATE TABLE `stands` (
   `standId` int(11) NOT NULL AUTO_INCREMENT,
   `standName` varchar(50) NOT NULL,
-  `standDescription` varchar(255) NOT NULL,
+  `standDescription` varchar(100) NOT NULL,
   `standPhoto` varchar(255) NOT NULL,
   `serviceTag` int(10) NOT NULL,
   `placeName` varchar(50) NOT NULL,
@@ -102,4 +110,4 @@ CREATE TABLE `users` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
--- 2014-10-05 21:13:47
+-- 2014-10-12 19:54:35

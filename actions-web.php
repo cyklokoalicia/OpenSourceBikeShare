@@ -162,7 +162,7 @@ function where($userId,$bike)
       }
    else
       {
-      response('<h3>Bike '.$bikeNum.' rented by <span class="label label-primary">'.$userName.'</span>.</h3>Phone: +'.$phone.'. '.$note);
+      response('<h3>Bike '.$bikeNum.' rented by <span class="label label-primary">'.$userName.'</span>.</h3>Phone: <a href="tel:+'.$phone.'">+'.$phone.'</a>. '.$note);
       }
 
 }
@@ -360,7 +360,7 @@ function userbikes($userId)
       $bicycles[]=$bikenum;
       $result2=$db->query("SELECT parameter FROM history WHERE userId='$userId' AND bikeNum='$bikenum' AND action='RENT' ORDER BY time DESC LIMIT 1");
       $row2=$result2->fetch_assoc();
-      $codes[]=$row2["parameter"];
+      $codes[]=sprintf("%04d",$row2["parameter"]);
       }
    if (!$result->num_rows) $bicycles="";
    if (!isset($codes)) $codes="";
