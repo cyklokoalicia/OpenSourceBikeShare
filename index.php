@@ -90,7 +90,11 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <div id="standinfo"></div>
 <div id="standphoto"></div>
 <div id="standbikes"></div>
-<div id="console">
+<div class="row">
+   <div class="col-lg-12">
+   <div id="console">
+   </div>
+   </div>
 </div>
 <div class="row">
 <div id="standactions" class="btn-group">
@@ -112,7 +116,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <div class="row">
    <div class="btn-group bicycleactions">
    <div class="col-lg-12">
-   <button type="button" class="btn btn-primary" id="return"><span class="glyphicon glyphicon-log-in"></span> Return bicycle <span class="bikenumber"></span></button> and <a href="#" id="note">report problem <span class="glyphicon glyphicon-exclamation-sign"></span></a>
+   <button type="button" class="btn btn-primary" id="return"><span class="glyphicon glyphicon-log-in"></span> Return bicycle <span class="bikenumber"></span></button> (and <a href="#" id="note">report problem <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
    </div></div>
 </div>
 <br /><div class="row">

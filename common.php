@@ -252,7 +252,7 @@ function checklongrental()
 
 }
 
-// cron - called from cron by default, set to 0 if manual
+// cron - called from cron by default, set to 0 if from rent function, userid needs to be passed if cron=0
 function checktoomany($cron=1,$userid=0)
 {
    global $db,$watches;
@@ -295,6 +295,22 @@ function checktoomany($cron=1,$userid=0)
       $abusers=substr($abusers,0,strlen($abusers)-1);
       notifyAdmins("Over limit in ".$watches["timetoomany"]." hs:".$abusers);
       }
+
+}
+
+// check if user has credit >= minimum credit+rent fee+long rental fee
+function checkrequiredcredit($userid)
+{
+   global $db,$credit;
+
+   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
+   $result=$db->query("SELECT credit FROM credit WHERE userId=$userid AND credit>=$requiredcredit");
+   if ($result->num_rows==1)
+      {
+      $row=$result->fetch_assoc();
+      return TRUE;
+      }
+   return FALSE;
 
 }
 

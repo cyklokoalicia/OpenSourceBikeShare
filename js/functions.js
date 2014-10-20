@@ -499,7 +499,6 @@ function savegeolocation()
    $.ajax({
    url: "command.php?action=map:geolocation&lat="+$("body").data("mapcenterlat")+"&long="+$("body").data("mapcenterlong")
    }).done(function(jsonresponse) {
-      console.log(jsonresponse);
       return;
    });
 }

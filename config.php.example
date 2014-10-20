@@ -9,17 +9,27 @@ $systemLat="48.148154"; // default map center point - latitude
 $systemLong="17.117232"; // default map center point - longitude
 $systemZoom="15"; // default map zoom
 
-$countryCode = "421"; // international dialing code (country code prefix), no plus sign
+$countryCode="421"; // international dialing code (country code prefix), no plus sign
 
 $forcestack=1; // 0 = allow renting any bike at stand, 1 = allow renting last bicycle returned only (top of stack)
 $watches["longrental"]=24; // in hours (bike rented for more than X h)
 $watches["timetoomany"]=1; // in hours (high number of rentals by one person in a short time)
 $watches["numbertoomany"]=1; // if userlimit+numbertooomany reached in timetoomany, then notify
+$watches["freetime"]=30; // in minutes (rental changes from free to paid after this time and $credit["rent"] is deducted)
+
+$creditsystem=0; // 0 = no credit system, 1 = apply credit system rules and deductions
+$creditcurrency="€"; // currency used for credit system
+$credit["min"]=2; // minimum credit required to allow any bike operations
+$credit["rent"]=2; // rental fee (after $watches["freetime"])
+$credit["longrental"]=5; // long rental fee ($watches["longrental"] time)
+$limitincrease=0; // allow more bike rentals in addition to user limit: 0 = not allowed, otherwise: temporary limit increase - number of bikes
+$credit["limitincrease"]=10; // credit needed to temporarily increase limit, applicable only when $limitincrease>0
+$credit["violation"]=5; // credit deduction for rule violations (applied by admins)
 
 $dbServer="localhost";
 $dbUser="bikeshare";
 $dbPassword="YourPassword";
 $dbName="WB";
 
-$connectors["sms"]="eurosms";
+$connectors["sms"]="eurosms"; // API connector used for SMS operations (resides in connectors/ directory)
 ?>
