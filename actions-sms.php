@@ -448,6 +448,8 @@ function note($number,$bikeNum,$message)
 		} else error("update failed");
 
 		sendSMS($number,"Note for bike $bikeNum deleted.");
+		
+		notifyAdmins("Note for bike $bikeNum deleted.");
 	}
 	else
 	{
