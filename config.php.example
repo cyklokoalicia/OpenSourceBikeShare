@@ -8,6 +8,7 @@ $systemURL="https://github.com/mmmaly/OpenSourceBikeShare"; // needs trailing sl
 $systemLat="48.148154"; // default map center point - latitude
 $systemLong="17.117232"; // default map center point - longitude
 $systemZoom="15"; // default map zoom
+$systemrules="http://example.com/rules.htm" // system rules / help URL
 
 $countryCode="421"; // international dialing code (country code prefix), no plus sign
 
