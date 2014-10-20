@@ -49,6 +49,7 @@ else
 <div id="sidebar">
 <div class="row">
    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+   <a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
    <h1><?php echo $systemName; ?></h1>
    </div>
    <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
