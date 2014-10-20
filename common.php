@@ -22,16 +22,41 @@ function sendSMS($number,$text)
 
    global $sms;
 
-   log_sendsms($number,$text);
-   if (DEBUG===TRUE)
+   $message=$text;
+   if (strlen($message)>160)
       {
-      echo $number,' -&gt ',$text,'<br />';
+      $message=chunk_split($message,160,"|");
+      $message=explode("|",$message);
+      foreach ($message as $text)
+         {
+         $text=trim($text);
+         if ($text)
+            {
+            log_sendsms($number,$text);
+            if (DEBUG===TRUE)
+               {
+               echo $number,' -&gt ',$text,'<br />';
+               }
+            else
+               {
+               $sms->Send($number,$text);
+               }
+            }
+         }
       }
    else
       {
-      $text=substr($text,0,160);
-      $sms->Send($number,$text);
+      log_sendsms($number,$text);
+      if (DEBUG===TRUE)
+         {
+         echo $number,' -&gt ',$text,'<br />';
+         }
+      else
+         {
+         $sms->Send($number,$text);
+         }
       }
+
 }
 
 function log_sendsms($number, $text)
