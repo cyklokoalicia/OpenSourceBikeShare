@@ -19,7 +19,7 @@ function help($number)
 function unknownCommand($number,$command)
 {
    global $db;
-   sendSMS($number,"Error. The command $command does not exist. Available commands:\nRENT bikenumber\nRETURN bikenumber standname\nWHERE bikenumber\nINFO standname\nFREE\nNOTE bikenumber problem description");
+   sendSMS($number,"Error. The command $command does not exist. If you need help, send: HELP");
 }
 
 /**
@@ -443,11 +443,15 @@ function note($number,$bikeNum,$message)
 		$reportedBy= $row["userName"];
 	} else error("user not retrieved");
 
-	if(!preg_match("/note[\s,\.]+[0-9]+[\s,\.]+(.*)/i",$message ,$matches))
+	if(trim(strtoupper(preg_replace('/[0-9]+/','',$message)))=="NOTE") // blank, delete note
 	{
 		$userNote="";
 	}
-	else $userNote=$db->conn->real_escape_string(trim($matches[1]));
+	else
+        {
+        $matches=explode(" ",$message,3);
+        $userNote=$db->conn->real_escape_string(trim($matches[2]));
+        }
 
 	if($userNote=="")
 	{
