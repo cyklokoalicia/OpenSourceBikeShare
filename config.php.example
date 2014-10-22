@@ -12,7 +12,8 @@ $systemrules="http://example.com/rules.htm" // system rules / help URL
 
 $countryCode="421"; // international dialing code (country code prefix), no plus sign
 
-$forcestack=1; // 0 = allow renting any bike at stand, 1 = allow renting last bicycle returned only (top of stack)
+$forcestack=0; // 0 = allow renting any bike at stand, 1 = allow renting last bicycle returned only (top of stack)
+$watches["stack"]=1;  // 0 - do not watch stack, 1 - notify if other than the top of the stack bike is rented from a stand (independent from forcestack)
 $watches["longrental"]=24; // in hours (bike rented for more than X h)
 $watches["timetoomany"]=1; // in hours (high number of rentals by one person in a short time)
 $watches["numbertoomany"]=1; // if userlimit+numbertooomany reached in timetoomany, then notify

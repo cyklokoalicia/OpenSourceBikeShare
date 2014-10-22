@@ -31,7 +31,7 @@ function response($message,$error=0,$additional="",$log=1)
 function rent($userId,$bike)
 {
 
-   global $db,$forcestack;
+   global $db,$forcestack,$watches;
    $stacktopbike=FALSE;
    $bikeNum = $bike;
 
@@ -61,12 +61,21 @@ function rent($userId,$bike)
          }
       }
 
-   if ($forcestack)
+   if ($forcestack OR $watches["stack"])
       {
       $result=$db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bike'");
       $row=$result->fetch_assoc();
-      $stacktopbike=checktopofstack($row["currentStand"]);
-      if ($stacktopbike<>$bike)
+      $standid=$row["currentStand"];
+      $stacktopbike=checktopofstack($standid);
+      if ($watches["stack"] AND $stacktopbike<>$bike)
+         {
+         $result=$db->query("SELECT standName FROM stands WHERE standId='$standid'");
+         $row=$result->fetch_assoc();
+         $stand=$row["standName"];
+         $user=getusername($userId);
+         notifyAdmins("Bike ".$bike." rented out of stack by ".$user.". ".$stacktopbike." was on the top of the stack at ".$stand.".",1);
+         }
+      if ($forcestack AND $stacktopbike<>$bike)
          {
          response("Bike ".$bike." is not rentable now, you have to rent bike ".$stacktopbike." from this stand.",ERROR);
          }

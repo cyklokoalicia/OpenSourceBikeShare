@@ -142,7 +142,7 @@ function getuserid($number)
 **/
 function notifyAdmins($message,$notificationtype=0)
 {
-   global $db;
+   global $db,$systemName;
 
    $result = $db->query("SELECT number,mail FROM users where privileges & 2 != 0");
    $admins = $result->fetch_all(MYSQLI_ASSOC);
@@ -154,7 +154,7 @@ function notifyAdmins($message,$notificationtype=0)
          }
       else
          {
-         sendEmail($admins[$i]["mail"],$message,"");
+         sendEmail($admins[$i]["mail"],$systemName." notification",$message);
          }
       }
 }
