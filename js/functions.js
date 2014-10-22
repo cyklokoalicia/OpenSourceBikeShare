@@ -134,11 +134,18 @@ function showstand(e,clear)
    toggleadminactions();
    rentedbikes();
    checkonebikeattach();
-   if ($.isNumeric(e)) standid=e; // passed via manual call
+   if ($.isNumeric(e))
+      {
+      standid=e; // passed via manual call
+      lat=markers[e]._latlng.lat;
+      long=markers[e]._latlng.lng;
+      }
    else
       {
       ga('send', 'event', 'buttons', 'click', 'stand-select');
       standid=e.target.options.icon.options.standid; // passed via event call
+      lat=e.latlng.lat;
+      long=e.latlng.lng;
       }
    if (clear!=0)
       {
@@ -230,9 +237,15 @@ function showstand(e,clear)
       $('#standcount').removeClass('label label-success').addClass('label label-danger');
       resetstandbikes();
       }
+   walklink='';
+   if ("geolocation" in navigator) // if geolocated, provide link to walking directions
+      {
+      walklink='<a href="https://www.google.com/maps?q='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'+to:'+lat+','+long+'&saddr='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'&daddr='+lat+','+long+'&output=classic&dirflg=w&t=m" target="_blank">walking directions</a>';
+      }
    if (loggedin==1 && markerdata[standid].photo)
       {
-      $('#standinfo').html(markerdata[standid].desc+' (<a href="'+markerdata[standid].photo+'" id="photo'+standid+'">photo</a>)');
+      walklink=walklink+' | ';
+      $('#standinfo').html(markerdata[standid].desc+' ('+walklink+' <a href="'+markerdata[standid].photo+'" id="photo'+standid+'">photo</a>)');
       $('#standphoto').hide();
       $('#standphoto').html('<img src="'+markerdata[standid].photo+'" alt="'+markerdata[standid].name+'" width="100%" />');
       $('#photo'+standid).click(function() { $('#standphoto').slideToggle(); return false; });
@@ -240,6 +253,7 @@ function showstand(e,clear)
    else if (loggedin==1)
       {
       $('#standinfo').html(markerdata[standid].desc);
+      if (walklink) $('#standinfo').html(markerdata[standid].desc+' ('+walklink+')');
       $('#standphoto').hide();
       }
    else
