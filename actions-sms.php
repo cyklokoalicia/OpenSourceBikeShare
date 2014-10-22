@@ -93,7 +93,7 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
 function rent($number,$bike)
 {
 
-        global $db,$forcestack;
+        global $db,$forcestack,$watches;
         $stacktopbike=FALSE;
 	$userId = getUser($number);
 	$bikeNum = intval($bike);
@@ -128,12 +128,21 @@ function rent($number,$bike)
 		return;
 	}
 
-	if ($forcestack)
-         {
-         $result=$db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bikeNum'");
+	if ($forcestack OR $watches["stack"])
+        {
+         $result=$db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bike'");
          $row=$result->fetch_assoc();
-         $stacktopbike=checktopofstack($row["currentStand"]);
-         if ($stacktopbike<>$bikeNum)
+         $standid=$row["currentStand"];
+         $stacktopbike=checktopofstack($standid);
+         if ($watches["stack"] AND $stacktopbike<>$bike)
+            {
+            $result=$db->query("SELECT standName FROM stands WHERE standId='$standid'");
+            $row=$result->fetch_assoc();
+            $stand=$row["standName"];
+            $user=getusername($userId);
+            notifyAdmins("Bike ".$bike." rented out of stack by ".$user.". ".$stacktopbike." was on the top of the stack at ".$stand.".",1);
+            }
+         if ($forcestack AND $stacktopbike<>$bikeNum)
             {
             sendSMS($number,"Bike ".$bikeNum." is not rentable now, rent bike ".$stacktopbike." from here.",ERROR);
             return;
