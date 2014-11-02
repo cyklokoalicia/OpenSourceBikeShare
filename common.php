@@ -211,7 +211,7 @@ function confirmUser($userKey)
                 }
                 else
                 {
-                        response("Some problem occured!",ERROR);
+                        echo '<div class="alert alert-danger" role="alert">Registration key not found!</div>';
                         return FALSE;
                 }
         } else error("key not fetched");
@@ -222,7 +222,7 @@ function confirmUser($userKey)
         if ($result = $db->query("DELETE from registration where userId='$userId'")) {
         } else error("delete registration failed");
 
-        response("Your account has been activated. Welcome!");
+        echo '<div class="alert alert-success" role="alert">Your account has been activated. Welcome!</div>';
 
 }
 

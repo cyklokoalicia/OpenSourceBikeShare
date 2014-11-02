@@ -1,6 +1,10 @@
 <?php
 require("config.php");
 require("db.class.php");
+require('actions-web.php');
+
+$db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+$db->connect();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,13 +46,12 @@ require("db.class.php");
    <h1>Account activation</h1>
    </div>
 <?php
-require('actions-sms.php');
 $userKey=$_GET["key"];
 confirmUser($userKey);
 ?>
 <div class="alert alert-warning" role="alert">
-<p>Potvrdzujem, ze som si precital: <a href="https://docs.google.com/document/d/1yEHbLEAU9waMiaxTqXFzZP0bLyRg7NMtN2dQUazro9o/edit">Navod</a></p>
-<p>I confirm that I have read: <a href="https://docs.google.com/document/d/1RBC4BOyZSaAeoTw4pIlUkWRFZSz16NR6glTAgZWvqTQ/edit">User Guide</a></p>
+<p>Registráciou potvrdzujem, že som si prečítal: <a href="https://docs.google.com/document/d/1yEHbLEAU9waMiaxTqXFzZP0bLyRg7NMtN2dQUazro9o/edit">Navod</a></p>
+<p>By registering I confirm that I have read: <a href="https://docs.google.com/document/d/1RBC4BOyZSaAeoTw4pIlUkWRFZSz16NR6glTAgZWvqTQ/edit">User Guide</a></p>
 </div>
    <div class="panel panel-default">
   <div class="panel-body">
