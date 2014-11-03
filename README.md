@@ -17,6 +17,7 @@ Features
 Pilot experiment
 ---------
 Currently running with about 50 bicycles in Bratislava, the capital of Slovakia.
+
 The bicycles in the bike share
 ![The bicycles in the bike share](http://i.cubeupload.com/Jr5pR3.jpg "Bicycles")
 One of the stands
