@@ -17,8 +17,11 @@ Features
 Pilot experiment
 ---------
 Currently running with about 50 bicycles in Bratislava, the capital of Slovakia.
+The bicycles in the bike share
 ![The bicycles in the bike share](http://i.cubeupload.com/Jr5pR3.jpg "Bicycles")
+One of the stands
 ![One of the stand of the open source bicycle sharing system](http://whitebikes.info/stands/MAINSQ.jpg "The bicycles at one of the stands")
+Another stand with some bicycles
 ![One of the stand of the free bicycle sharing system](http://whitebikes.info/stands/OLDMARKET.jpg "Another stand with the bicycles")
 
 Demo
