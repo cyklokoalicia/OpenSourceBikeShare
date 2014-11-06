@@ -328,7 +328,7 @@ function last($userId,$bike)
             }
          else
             {
-            $historyInfo.=$bikeHistory[$i]["userName"].' (<span class="label label-default">'.$bikeHistory[$i]["parameter"].'</span>)';
+            $historyInfo.=$bikeHistory[$i]["userName"].' (<span class="label label-default">'.str_pad($bikeHistory[$i]["parameter"],4,"0",STR_PAD_LEFT).'</span>)';
             }
          $historyInfo.="</li>";
          }
@@ -369,7 +369,7 @@ function userbikes($userId)
       $bicycles[]=$bikenum;
       $result2=$db->query("SELECT parameter FROM history WHERE userId='$userId' AND bikeNum='$bikenum' AND action='RENT' ORDER BY time DESC LIMIT 1");
       $row2=$result2->fetch_assoc();
-      $codes[]=sprintf("%04d",$row2["parameter"]);
+      $codes[]=str_pad($row2["parameter"],4,"0",STR_PAD_LEFT);
       }
    if (!$result->num_rows) $bicycles="";
    if (!isset($codes)) $codes="";
@@ -400,7 +400,7 @@ function revert($userId,$bikeNum)
    if ($result->num_rows==1)
       {
       $row = $result->fetch_assoc();
-      $code=$row["parameter"];
+      $code=str_pad($row["parameter"],4,"0",STR_PAD_LEFT);
       }
    if ($standId and $code)
       {
