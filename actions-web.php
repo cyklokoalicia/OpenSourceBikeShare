@@ -28,76 +28,82 @@ function response($message,$error=0,$additional="",$log=1)
    exit;
 }
 
-function rent($userId,$bike)
+function rent($userId,$bike,$force=FALSE)
 {
 
    global $db,$forcestack,$watches;
    $stacktopbike=FALSE;
    $bikeNum = $bike;
 
-   checktoomany(0,$userId);
-
-   $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
-   $row = $result->fetch_assoc();
-   $countRented = $row["countRented"];
-
-   $result = $db->query("SELECT userLimit FROM limits where userId=$userId");
-   $row = $result->fetch_assoc();
-   $limit = $row["userLimit"];
-
-   if ($countRented>=$limit)
+   if ($force==FALSE)
       {
-      if ($limit==0)
-         {
-         response("You can not rent any bikes. Contact the admins to lift the ban.",ERROR);
-         }
-      elseif ($limit==1)
-         {
-         response("You can only rent ".$limit." bike at once.",ERROR);
-         }
-      else
-         {
-         response("You can only rent ".$limit." bikes at once and you have already rented ".$limit.".",ERROR);
-         }
-      }
+      checktoomany(0,$userId);
 
-   if ($forcestack OR $watches["stack"])
-      {
-      $result=$db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bike'");
-      $row=$result->fetch_assoc();
-      $standid=$row["currentStand"];
-      $stacktopbike=checktopofstack($standid);
-      if ($watches["stack"] AND $stacktopbike<>$bike)
+      $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
+      $row = $result->fetch_assoc();
+      $countRented = $row["countRented"];
+
+      $result = $db->query("SELECT userLimit FROM limits where userId=$userId");
+      $row = $result->fetch_assoc();
+      $limit = $row["userLimit"];
+
+      if ($countRented>=$limit)
          {
-         $result=$db->query("SELECT standName FROM stands WHERE standId='$standid'");
+         if ($limit==0)
+            {
+            response("You can not rent any bikes. Contact the admins to lift the ban.",ERROR);
+            }
+         elseif ($limit==1)
+            {
+            response("You can only rent ".$limit." bike at once.",ERROR);
+            }
+         else
+            {
+            response("You can only rent ".$limit." bikes at once and you have already rented ".$limit.".",ERROR);
+            }
+         }
+
+      if ($forcestack OR $watches["stack"])
+         {
+         $result=$db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bike'");
          $row=$result->fetch_assoc();
-         $stand=$row["standName"];
-         $user=getusername($userId);
-         notifyAdmins("Bike ".$bike." rented out of stack by ".$user.". ".$stacktopbike." was on the top of the stack at ".$stand.".",1);
-         }
-      if ($forcestack AND $stacktopbike<>$bike)
-         {
-         response("Bike ".$bike." is not rentable now, you have to rent bike ".$stacktopbike." from this stand.",ERROR);
+         $standid=$row["currentStand"];
+         $stacktopbike=checktopofstack($standid);
+         if ($watches["stack"] AND $stacktopbike<>$bike)
+            {
+            $result=$db->query("SELECT standName FROM stands WHERE standId='$standid'");
+            $row=$result->fetch_assoc();
+            $stand=$row["standName"];
+            $user=getusername($userId);
+            notifyAdmins("Bike ".$bike." rented out of stack by ".$user.". ".$stacktopbike." was on the top of the stack at ".$stand.".",1);
+            }
+         if ($forcestack AND $stacktopbike<>$bike)
+            {
+            response("Bike ".$bike." is not rentable now, you have to rent bike ".$stacktopbike." from this stand.",ERROR);
+            }
          }
       }
 
-   $result = $db->query("SELECT currentUser,currentCode,note FROM bikes where bikeNum=$bikeNum");
-   $row = $result->fetch_assoc();
-   $currentCode = sprintf("%04d",$row["currentCode"]);
-   $currentUser= $row["currentUser"];
-   $note= $row["note"];
+   $result=$db->query("SELECT currentUser,currentCode,note FROM bikes where bikeNum=$bikeNum");
+   $row=$result->fetch_assoc();
+   $currentCode=sprintf("%04d",$row["currentCode"]);
+   $currentUser=$row["currentUser"];
+   $note=$row["note"];
 
    $newCode=sprintf("%04d",rand(100,9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
 
-   if ($currentUser==$userId)
+   if ($force==FALSE)
       {
-      response("You already rented the bike $bikeNum. Code is $currentCode. Return the bike with command: RETURN bikenumber standname.",ERROR);
-      return;
-      }
-   if ($currentUser!=0)
-      {
-      response("The bike $bikeNum is already rented.",ERROR);
-      return;
+      if ($currentUser==$userId)
+         {
+         response("You already rented the bike $bikeNum. Code is $currentCode. Return the bike with command: RETURN bikenumber standname.",ERROR);
+         return;
+         }
+      if ($currentUser!=0)
+         {
+         response("The bike $bikeNum is already rented.",ERROR);
+         return;
+         }
       }
 
    $message='<h3>Bike '.$bikeNum.': <span class="label label-primary">Open with code '.$currentCode.'.</span></h3>Change code immediately to <span class="label label-default">'.$newCode.'</span><br />(open, rotate metal part, set new code, rotate metal part back).';
@@ -107,27 +113,45 @@ function rent($userId,$bike)
       }
 
    $result = $db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
-   $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode");
+   if ($force==FALSE)
+      {
+      $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode");
+      }
+   else
+      {
+      $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
+      }
    response($message);
 
 }
 
-function returnBike($userId,$bike,$stand,$note="")
+
+function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
 {
 
    global $db;
    $bikeNum = intval($bike);
    $stand = strtoupper($stand);
 
-   $result = $db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
-   $rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
-
-   if (count($rentedBikes)==0)
+   if ($force==FALSE)
       {
-      response("You have no rented bikes currently.",ERROR);
+      $result = $db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
+      $rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
+
+      if (count($rentedBikes)==0)
+         {
+         response("You have no rented bikes currently.",ERROR);
+         }
       }
 
-   $result = $db->query("SELECT currentCode FROM bikes WHERE currentUser=$userId and bikeNum=$bikeNum");
+   if ($force==FALSE)
+      {
+      $result = $db->query("SELECT currentCode FROM bikes WHERE currentUser=$userId and bikeNum=$bikeNum");
+      }
+   else
+      {
+      $result = $db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
+      }
    $row = $result->fetch_assoc();
    $currentCode = sprintf("%04d",$row["currentCode"]);
 
@@ -142,7 +166,14 @@ function returnBike($userId,$bike,$stand,$note="")
    $message.= '<br />Please, <strong>rotate the lockpad to <span class="label label-default">0000</span></strong> when leaving.';
    if ($note) $message.='<br />You have also reported this problem: '.$note.'.';
 
-   $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
+   if ($force==FALSE)
+      {
+      $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
+      }
+   else
+      {
+      $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId");
+      }
    response($message);
 
 }

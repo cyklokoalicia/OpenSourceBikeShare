@@ -57,6 +57,25 @@ switch($action)
       checkbikeno($bikeno); checkstandname($stand);
       returnBike($userid,$bikeno,$stand,$note);
       break;
+   case "forcerent":
+      logrequest($userid,$action);
+      checksession();
+      checkprivileges($userid);
+      $bikeno=trim($_GET["bikeno"]);
+      checkbikeno($bikeno);
+      rent($userid,$bikeno,TRUE);
+      break;
+   case "forcereturn":
+      logrequest($userid,$action);
+      checksession();
+      checkprivileges($userid);
+      $bikeno=trim($_GET["bikeno"]);
+      $stand=trim($_GET["stand"]);
+      $note="";
+      if (isset($_GET["note"])) $note=trim($_GET["note"]);
+      checkbikeno($bikeno); checkstandname($stand);
+      returnBike($userid,$bikeno,$stand,$note,TRUE);
+      break;
    case "where":
       logrequest($userid,$action);
       checksession();

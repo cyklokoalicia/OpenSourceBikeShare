@@ -26,8 +26,7 @@ $(document).ready(function(){
 
 function mapinit()
 {
-   var viewport = $.viewportDetect(); // ("xs", "sm", "md", or "lg");
-   if (viewport=="xs" || viewport=="sm") iconsize=80;
+   // var viewport = $.viewportDetect(); // ("xs", "sm", "md", or "lg");
 
    $("body").data("mapcenterlat", maplat);
    $("body").data("mapcenterlong", maplon);

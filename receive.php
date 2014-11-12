@@ -34,6 +34,16 @@ else
          validateReceivedSMS($sms->Number(),count($args),3,"with bike number and stand name: RETURN 47 RACKO");
          returnBike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())));
          break;
+      case "FORCERENT":
+         checkUserPrivileges($sms->Number());
+         validateReceivedSMS($sms->Number(),count($args),2,"with bike number: FORCERENT 47");
+         rent($sms->Number(),$args[1],TRUE);
+         break;
+      case "FORCERETURN":
+         checkUserPrivileges($sms->Number());
+         validateReceivedSMS($sms->Number(),count($args),3,"with bike number and stand name: FORCERETURN 47 RACKO");
+         returnBike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())),TRUE);
+         break;
       case "WHERE":
       case "WHO":
       case "KDE":
