@@ -42,38 +42,6 @@ body {
    }
 }
 
-@media screen and (max-width: 991px) {
-   .icondesc {
-      background: url(../img/icon.png);
-      background-position: 0 0;
-      background-size: 100px 100px;
-      background-repeat: none;
-      margin: 0;
-      height: 100px;
-      width: 100px;
-   }
-   .none {
-      background: url(../img/icon-none.png);
-      background-position: 0 0;
-      background-size: 100px 100px;
-      background-repeat: none;
-   }
-
-   .bikecount {
-      position: absolute;
-      top: -8px;
-      left: 2px;
-      font-size: 350%;
-   }
-
-   .standname {
-      position: absolute;
-      bottom: -20px;
-      left: 5px;
-      font-size: 100%;
-   }
-}
-
 input:focus::-webkit-input-placeholder { color:transparent; }
 input:focus:-moz-placeholder { color:transparent; } /* FF 4-18 */
 input:focus::-moz-placeholder { color:transparent; } /* FF 19+ */
