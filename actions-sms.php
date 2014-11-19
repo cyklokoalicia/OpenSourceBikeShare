@@ -517,7 +517,7 @@ function note($number,$bikeNum,$message)
 
 		sendSMS($number,"Note for bike $bikeNum saved.");
 
-		notifyAdmins("Note b.$bikeNum by $reportedBy:".$userNote." ".$bikeStatus);
+		notifyAdmins("Note b.$bikeNum by $reportedBy ($number):".$userNote." ".$bikeStatus);
 
 	}
 
