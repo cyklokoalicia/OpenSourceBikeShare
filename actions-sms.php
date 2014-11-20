@@ -506,9 +506,10 @@ function note($number,$bikeNum,$message)
 		if ($result = $db->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum")) {
 		} else error("update failed");
 
-		sendSMS($number,"Note for bike $bikeNum deleted.");
+		//only admins can delete and those will receive the confirmation in the next step.
+		//sendSMS($number,"Note for bike $bikeNum deleted.");
 
-		notifyAdmins("Note for bike $bikeNum deleted.");
+		notifyAdmins("Note for bike $bikeNum deleted by $reportedBy.");
 	}
 	else
 	{
