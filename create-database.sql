@@ -1,7 +1,9 @@
+-- Adminer 4.1.0 MySQL dump
+
 SET NAMES utf8;
 SET time_zone = '+00:00';
-SET foreign_key_checks = 0;
-SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
+
+USE `WB`;
 
 DROP TABLE IF EXISTS `bikes`;
 CREATE TABLE `bikes` (
@@ -24,19 +26,21 @@ CREATE TABLE `credit` (
 DROP TABLE IF EXISTS `geolocation`;
 CREATE TABLE `geolocation` (
   `userId` int(10) unsigned NOT NULL,
-  `longitude` float NOT NULL,
-  `latitude` float NOT NULL,
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `longitude` double(20,17) NOT NULL,
+  `latitude` double(20,17) NOT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `history`;
 CREATE TABLE `history` (
   `userId` int(11) NOT NULL,
   `bikeNum` int(11) NOT NULL,
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `action` varchar(20) NOT NULL,
-  `parameter` varchar(100) NOT NULL
+  `parameter` varchar(100) NOT NULL,
+  `standId` int(11) DEFAULT NULL,
+  `pairAction` timestamp NULL DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -48,9 +52,16 @@ CREATE TABLE `limits` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `pairing`;
+CREATE TABLE `pairing` (
+  `time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `standid` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `received`;
 CREATE TABLE `received` (
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `sms_uuid` varchar(60) NOT NULL,
   `sender` varchar(20) NOT NULL,
   `receive_time` varchar(20) NOT NULL,
@@ -68,7 +79,7 @@ CREATE TABLE `registration` (
 
 DROP TABLE IF EXISTS `sent`;
 CREATE TABLE `sent` (
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `number` varchar(20) NOT NULL,
   `text` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -77,23 +88,23 @@ CREATE TABLE `sent` (
 DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `userId` int(10) unsigned NOT NULL,
-  `sessionId` varchar(256) NOT NULL,
-  `timeStamp` varchar(256) NOT NULL,
+  `sessionId` varchar(256) CHARACTER SET latin1 NOT NULL,
+  `timeStamp` varchar(256) CHARACTER SET latin1 NOT NULL,
   UNIQUE KEY `userId` (`userId`),
   KEY `sessionId` (`sessionId`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `stands`;
 CREATE TABLE `stands` (
   `standId` int(11) NOT NULL AUTO_INCREMENT,
   `standName` varchar(50) NOT NULL,
-  `standDescription` varchar(100) NOT NULL,
-  `standPhoto` varchar(255) NOT NULL,
+  `standDescription` varchar(255) DEFAULT NULL,
+  `standPhoto` varchar(255) DEFAULT NULL,
   `serviceTag` int(10) NOT NULL,
   `placeName` varchar(50) NOT NULL,
-  `longitude` float NOT NULL,
-  `latitude` float NOT NULL,
+  `longitude` double(20,17) NOT NULL,
+  `latitude` double(20,17) NOT NULL,
   PRIMARY KEY (`standId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -110,4 +121,4 @@ CREATE TABLE `users` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
--- 2014-10-12 19:54:35
+-- 2014-11-20 11:19:49
