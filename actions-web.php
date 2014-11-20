@@ -393,14 +393,12 @@ function userbikes($userId)
 {
    global $db;
    if (!isloggedin()) response("");
-   $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
+   $result=$db->query("SELECT bikeNum,currentCode FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
    while ($row=$result->fetch_assoc())
       {
       $bikenum=$row["bikeNum"];
       $bicycles[]=$bikenum;
-      $result2=$db->query("SELECT parameter FROM history WHERE userId='$userId' AND bikeNum='$bikenum' AND action='RENT' ORDER BY time DESC LIMIT 1");
-      $row2=$result2->fetch_assoc();
-      $codes[]=str_pad($row2["parameter"],4,"0",STR_PAD_LEFT);
+      $codes[]=str_pad($row["currentCode"],4,"0",STR_PAD_LEFT);
       }
    if (!$result->num_rows) $bicycles="";
    if (!isset($codes)) $codes="";
