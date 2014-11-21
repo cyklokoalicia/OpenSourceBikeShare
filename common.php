@@ -128,7 +128,7 @@ function getuserid($number)
 {
    global $db;
 
-   $result = $db->query("SELECT userId FROM users where number=$number");
+   $result = $db->query("SELECT userId FROM users where number='$number'");
    if ($result->num_rows==1)
       {
       $row = $result->fetch_assoc();
