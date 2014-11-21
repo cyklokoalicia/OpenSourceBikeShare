@@ -63,16 +63,15 @@ $(document).ready(function(){
                 }
             }
         }
-    });
+    }).on('success.form.bv',function(e){ e.preventDefault(); });
 
-   $("#step1").submit(function(event) { getsmscode(event); });
-   $("#step2").submit(function(event) { register(event); });
+   $("#step1").submit(function(e) { e.preventDefault(); getsmscode(); });
+   $("#step2").submit(function(e) { e.preventDefault(); register(); });
 
 });
 
-function getsmscode(event)
+function getsmscode()
 {
-   event.preventDefault();
    $.ajax({
    url: "command.php?action=smscode&number="+$('#number').val()
    }).done(function(jsonresponse) {
@@ -92,11 +91,10 @@ function getsmscode(event)
    });
 }
 
-function register(event)
+function register()
 {
-   event.preventDefault();
    $("#console").fadeOut();
-   $( "#register" ).prop( "disabled", true );
+   $("#register").prop("disabled", true);
    $.ajax({
    url: "command.php?action=register&validatednumber="+$('#validatednumber').val()+"&checkcode="+$('#checkcode').val()+"&smscode="+$('#smscode').val()+"&fullname="+$('#fullname').val()+"&email="+$('#email').val()+"&password="+$('#password').val()+"&password2="+$('#password2').val()+"&existing="+$('#existing').val()
    }).done(function(jsonresponse) {
@@ -105,7 +103,7 @@ function register(event)
       {
       $('#console').html('<div class="alert alert-danger" role="alert">'+jsonobject.content+'</div>');
       $("#console").fadeIn();
-      $( "#register" ).prop( "disabled", false );
+      $("#register").prop("disabled", false );
       }
    else
       {

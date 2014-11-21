@@ -32,7 +32,7 @@ require("db.class.php");
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li><a href="<?php echo $systemURL; ?>">Map</a></li>
-            <li class="active"><a href="<?php echo $systemURL; ?>/register.php">Registration</a></li>
+            <li class="active"><a href="<?php echo $systemURL; ?>register.php">Registration</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
