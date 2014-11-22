@@ -12,10 +12,14 @@ Config.php.example setup
 ----------
 1. Open `config.php.example` and change basic variables (self-descriptive) to suit your system.
 2. Set `$countryCode` to your country;'s international dialing code - no plus sign, no zeroes.
-3. Optional: Enable notifications in the `$watches` variables section to notify admins, if the conditions are met.
-4. Optional: Enable paid (credit) system in the `$credit` variables section, if you want charge the users when conditions met.
+3. _Optional:_ Enable notifications in the `$watches` variables section to notify admins, if the conditions are met.
+4. _Optional:_ Enable paid (credit) system in the `$credit` variables section, if you want charge the users when conditions met.
 5. Edit database details and fill in correct info.
-6. Optional: If you want to have SMS enable in addition to the web app, set the `$connectors["sms"]` variable to your provider's file in `connectors/` directory.
+6. _Optional:_ If you want to have SMS enable in addition to the web app, set the `$connectors["sms"]` variable to your provider's file in `connectors/` directory.
+
+CRON job
+----------
+1. _Optional:_ If you have some `$watches` notifications enabled, add `cron.php` to be called once a day.
 
 User registration
 ----------
