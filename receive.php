@@ -7,7 +7,7 @@ require("actions-sms.php");
 
 log_sms($sms->UUID(),$sms->Number(),$sms->Time(),$sms->Text(),$sms->IPAddress());
 
-$args = explode(" ", $sms->ProcessedText());
+$args=explode(" ",$sms->ProcessedText());
 
 if(!validateNumber($sms->Number()))
    {
@@ -20,6 +20,14 @@ else
       case "HELP":
       case "POMOC":
          help($sms->Number());
+         break;
+      case "CREDIT":
+         if (iscreditenabled()==FALSE)
+            {
+            unknownCommand($sms->Number(),$args[0]);
+            break;
+            }
+         credit($sms->Number());
          break;
       case "FREE":
          freeBikes($sms->Number());

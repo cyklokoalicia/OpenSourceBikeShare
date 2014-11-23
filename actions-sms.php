@@ -8,11 +8,17 @@ function help($number)
    $privileges=getprivileges($userid);
    if ($privileges>1)
       {
-      sendSMS($number,"HELP\nFREE\nRENT bikenumber\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem\n---\nFORCERENT bikenumber\nFORCERETURN bikeno stand\nLIST stand\nLAST bikeno\nREVERT bikeno\nADD email phone fullname");
+      $message="Commands:\nHELP\n";
+      if (iscreditenabled()) $message.="CREDIT\n";
+      $message.="FREE\nRENT bikenumber\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem\n---\nFORCERENT bikenumber\nFORCERETURN bikeno stand\nLIST stand\nLAST bikeno\nREVERT bikeno\nADD email phone fullname";
+      sendSMS($number,$message);
       }
    else
       {
-      sendSMS($number,"Commands:\nHELP\nFREE\nRENT bikeno\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem description");
+      $message="Commands:\nHELP\n";
+      if (iscreditenabled()) $message.="CREDIT\n";
+      $message.="FREE\nRENT bikeno\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem description";
+      sendSMS($number,$messsage);
       }
 }
 
@@ -90,16 +96,32 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
    return TRUE;
 }
 
+function credit($number)
+{
+   global $db;
+   $userid=getUser($number);
+   $usercredit=getusercredit($userid).getcreditcurrency();
+   sendSMS($number,"Your remaining credit: ".$usercredit);
+}
+
 function rent($number,$bike,$force=FALSE)
 {
 
-        global $db,$forcestack,$watches;
+        global $db,$forcestack,$watches,$credit;
         $stacktopbike=FALSE;
 	$userId = getUser($number);
 	$bikeNum = intval($bike);
+	$requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
 
 	if ($force==FALSE)
            {
+           $creditcheck=checkrequiredcredit($userId);
+            if ($creditcheck===FALSE)
+               {
+               $result=$db->query("SELECT credit FROM credit WHERE userId=$userid");
+               $row=$result->fetch_assoc();
+               sendSMS($number,"Please, recharge your credit: ".$row["credit"].$credit["currency"].". Credit required: ".$requiredcredit.$credit["currency"].".");
+               }
 
          checktoomany(0,$userId);
 
@@ -284,27 +306,29 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
 
 	if ($userNote) $db->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum");
 
-	$message = "You have successfully returned the bike $bikeNum to stand $stand. Make sure you have set the code $currentCode.";
+	$message = "Bike $bikeNum has been returned to stand $stand. Make sure you have set the code to $currentCode.";
 	if(!$note)
 	{
 	$tempnote=$note;
 	if (!$userNote) $tempnote=$userNote;
-	if ($tempnote) $message.="(bike note:".$tempnote.")";
+	if ($tempnote) $message.="(note:".$tempnote.")";
 	}
-	$message.="Do not forget to rotate the lockpad to 0000 when leaving.";
-	sendSMS($number,$message);
+	$message.="Please, rotate the lockpad to 0000.";
 
 	if ($force==FALSE)
             {
+            $creditchange=changecreditendrental($bikeNum,$userId);
             if ($result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
             } else error("update failed");
             }
         else
             {
             if ($result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId")) {
-            } else error("update failed");
+               } else error("update failed");
             }
 
+        if (iscreditenabled()) $message.="Credit remaining: ".getusercredit($userId).getcreditcurrency()." (-".$creditchange.").";
+        sendSMS($number,$message);
 
 }
 

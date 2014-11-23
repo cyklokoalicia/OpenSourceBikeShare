@@ -85,19 +85,6 @@ function getprivileges($userid)
    return FALSE;
 }
 
-function getcredit($userid)
-{
-   global $db;
-
-   $result=$db->query("SELECT credit FROM credit WHERE userId=$userid");
-   if ($result->num_rows==1)
-      {
-      $row=$result->fetch_assoc();
-      return $row["credit"];
-      }
-   return 0;
-}
-
 function getusername($userid)
 {
    global $db;
@@ -328,6 +315,8 @@ function checkrequiredcredit($userid)
 {
    global $db,$credit;
 
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+
    $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
    $result=$db->query("SELECT credit FROM credit WHERE userId=$userid AND credit>=$requiredcredit");
    if ($result->num_rows==1)
@@ -336,6 +325,67 @@ function checkrequiredcredit($userid)
       return TRUE;
       }
    return FALSE;
+
+}
+
+// subtract credit for rental
+function changecreditendrental($bike,$userid)
+{
+   global $db,$watches,$credit;
+
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+
+   $usercredit=getusercredit($userid);
+
+   $result=$db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND action='RENT' ORDER BY time DESC LIMIT 1");
+   if ($result->num_rows==1)
+      {
+      $row=$result->fetch_assoc();
+      $starttime=strtotime($row["time"]);
+      $endtime=time();
+      $timediff=$endtime-$starttime;
+      $creditchange=0;
+      if ($timediff>$watches["freetime"]*60) $creditchange=$creditchange+$credit["rent"];
+      if ($timediff>$watches["longrental"]*3600) $creditchange=$creditchange+$credit["longrental"];
+      $usercredit=$usercredit-$creditchange;
+      $result=$db->query("UPDATE credit SET credit=$usercredit WHERE userId=$userid");
+      $result=$db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$usercredit");
+      return $creditchange;
+      }
+
+}
+
+function iscreditenabled()
+{
+   global $credit;
+
+   if ($credit["enabled"]) return TRUE;
+
+   return FALSE;
+
+}
+
+function getusercredit($userid)
+{
+   global $db,$credit;
+
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+
+   $result=$db->query("SELECT credit FROM credit WHERE userId=$userid");
+   $row=$result->fetch_assoc();
+   $usercredit=$row["credit"];
+
+   return $usercredit;
+
+}
+
+function getcreditcurrency()
+{
+   global $credit;
+
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+
+   return $credit["currency"];
 
 }
 

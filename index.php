@@ -40,6 +40,14 @@ else
    echo 'var loggedin=0;',"\n";
    echo 'var priv=0;',"\n";
    }
+if (iscreditenabled())
+   {
+   echo 'var creditsystem=1;',"\n";
+   }
+else
+   {
+   echo 'var creditsystem=0;',"\n";
+   }
 ?>
 </script>
 <?php if (file_exists("analytics.php")) require("analytics.php"); ?>
@@ -58,7 +66,7 @@ else
    if (isloggedin())
       {
       echo '<li><span class="label label-success"><em>',getusername($_COOKIE["loguserid"]),'</em></span>';
-      if ($creditsystem) echo ' (',getcredit($_COOKIE["loguserid"]),' ',$creditcurrency,')';
+      if (iscreditenabled()) echo ' (<span id="usercredit">',getusercredit($_COOKIE["loguserid"]),'</span>',getcreditcurrency(),')';
       echo '<br /><a href="command.php?action=logout" id="logout">Log out</a></li>';
       }
    ?>
