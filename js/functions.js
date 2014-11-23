@@ -8,12 +8,12 @@ $(document).ready(function(){
    $('#notetext').hide();
    $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" id="loading" />'); });
    $(document).ajaxComplete(function() { $('#loading').remove(); });
-   $("#rent").click(function() { ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
-   $("#return").click(function(e) { ga('send', 'event', 'buttons', 'click', 'bike-return'); returnbike(); });
-   $("#note").click(function() { ga('send', 'event', 'buttons', 'click', 'bike-note'); note(); });
-   $("#where").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-where'); where(); });
-   $("#last").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-last'); last(); });
-   $("#revert").click(function() { ga('send', 'event', 'buttons', 'click', 'admin-revert'); revert(); });
+   $("#rent").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
+   $("#return").click(function(e) { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-return'); returnbike(); });
+   $("#note").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-note'); note(); });
+   $("#where").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-where'); where(); });
+   $("#last").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-last'); last(); });
+   $("#revert").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-revert'); revert(); });
    $('#stands').change(function() { showstand($('#stands').val()); }).keyup(function() { showstand($('#stands').val()); });
    mapinit();
    setInterval(getmarkers, 60000); // refresh map every 60 seconds
@@ -142,7 +142,7 @@ function showstand(e,clear)
       }
    else
       {
-      ga('send', 'event', 'buttons', 'click', 'stand-select');
+      if (window.ga) ga('send', 'event', 'buttons', 'click', 'stand-select');
       standid=e.target.options.icon.options.standid; // passed via event call
       lat=e.latlng.lat;
       long=e.latlng.lng;
@@ -214,12 +214,12 @@ function showstand(e,clear)
                $('#standbikes').html('<div class="btn-group">'+bikelist+'</div>');
                if (jsonobject.stacktopbike!=false) // bike stack is enabled, allow renting top of the stack bike only
                   {
-                  $('.b'+jsonobject.stacktopbike).click( function() { ga('send', 'event', 'buttons', 'click', 'bike-number'); attachbicycleinfo(this,"rent"); });
+                  $('.b'+jsonobject.stacktopbike).click( function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-number'); attachbicycleinfo(this,"rent"); });
                   $('body').data('stacktopbike',jsonobject.stacktopbike);
                   }
                else // bike stack is disabled, allow renting any bike
                   {
-                  $('#standbikes .bikeid').click( function() { ga('send', 'event', 'buttons', 'click', 'bike-number'); attachbicycleinfo(this,"rent"); });
+                  $('#standbikes .bikeid').click( function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-number'); attachbicycleinfo(this,"rent"); });
                   }
                }
             else // no bicyles at stand
@@ -346,7 +346,7 @@ function toggleadminactions()
 function rent()
 {
    if ($('#rent .bikenumber').html()=="") return false;
-   ga('send', 'event', 'bikes', 'rent', $('#rent .bikenumber').html());
+   if (window.ga) ga('send', 'event', 'bikes', 'rent', $('#rent .bikenumber').html());
    $.ajax({
    url: "command.php?action=rent&bikeno="+$('#rent .bikenumber').html()
    }).done(function(jsonresponse) {
@@ -386,8 +386,8 @@ function returnbike()
    note="";
    standname=$('#stands option:selected').text();
    standid=$('#stands').val();
-   ga('send', 'event', 'bikes', 'return', $('#return .bikenumber').html());
-   ga('send', 'event', 'stands', 'return', standname);
+   if (window.ga) ga('send', 'event', 'bikes', 'return', $('#return .bikenumber').html());
+   if (window.ga) ga('send', 'event', 'stands', 'return', standname);
    if ($('#notetext').val()) note="&note="+$('#notetext').val();
    $.ajax({
    url: "command.php?action=return&bikeno="+$('#return .bikenumber').html()+"&stand="+standname+note
@@ -419,7 +419,7 @@ function returnbike()
 
 function where()
 {
-   ga('send', 'event', 'bikes', 'where', $('#adminparam').val());
+   if (window.ga) ga('send', 'event', 'bikes', 'where', $('#adminparam').val());
    $.ajax({
    url: "command.php?action=where&bikeno="+$('#adminparam').val()
    }).done(function(jsonresponse) {
@@ -430,7 +430,7 @@ function where()
 
 function last()
 {
-   ga('send', 'event', 'bikes', 'last', $('#adminparam').val());
+   if (window.ga) ga('send', 'event', 'bikes', 'last', $('#adminparam').val());
    $.ajax({
    url: "command.php?action=last&bikeno="+$('#adminparam').val()
    }).done(function(jsonresponse) {
@@ -441,7 +441,7 @@ function last()
 
 function revert()
 {
-   ga('send', 'event', 'bikes', 'revert', $('#adminparam').val());
+   if (window.ga) ga('send', 'event', 'bikes', 'revert', $('#adminparam').val());
    $.ajax({
    url: "command.php?action=revert&bikeno="+$('#adminparam').val()
    }).done(function(jsonresponse) {
@@ -532,7 +532,7 @@ function showlocation(location)
    }).addTo(map);
 
    map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
-   ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat")+","+$("body").data("mapcenterlong"));
+   if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat")+","+$("body").data("mapcenterlong"));
    savegeolocation();
 }
 
