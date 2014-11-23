@@ -118,9 +118,10 @@ function rent($number,$bike,$force=FALSE)
            $creditcheck=checkrequiredcredit($userId);
             if ($creditcheck===FALSE)
                {
-               $result=$db->query("SELECT credit FROM credit WHERE userId=$userid");
+               $result=$db->query("SELECT credit FROM credit WHERE userId=$userId");
                $row=$result->fetch_assoc();
                sendSMS($number,"Please, recharge your credit: ".$row["credit"].$credit["currency"].". Credit required: ".$requiredcredit.$credit["currency"].".");
+               return;
                }
 
          checktoomany(0,$userId);
@@ -313,7 +314,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
 	if (!$userNote) $tempnote=$userNote;
 	if ($tempnote) $message.="(note:".$tempnote.")";
 	}
-	$message.="Please, rotate the lockpad to 0000.";
+	$message.=" Please, rotate the lockpad to 0000.";
 
 	if ($force==FALSE)
             {
@@ -327,7 +328,12 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
                } else error("update failed");
             }
 
-        if (iscreditenabled()) $message.="Credit remaining: ".getusercredit($userId).getcreditcurrency()." (-".$creditchange.").";
+        if (iscreditenabled())
+           {
+           $message.="Credit remaining: ".getusercredit($userId).getcreditcurrency();
+           if ($creditchange) $message.=" (-".$creditchange.")";
+           $message.=".";
+           }
         sendSMS($number,$message);
 
 }

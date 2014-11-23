@@ -175,7 +175,7 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
    if ($force==FALSE)
       {
       $creditchange=changecreditendrental($bikeNum,$userId);
-      if (iscreditenabled()) $message.='<br />Credit change: -'.$creditchange.getcreditcurrency().'.';
+      if (iscreditenabled() AND $creditchange) $message.='<br />Credit change: -'.$creditchange.getcreditcurrency().'.';
       $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
       }
    else
