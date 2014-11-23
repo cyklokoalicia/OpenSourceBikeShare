@@ -103,6 +103,7 @@ function getuserstatus()
             jsonobject=$.parseJSON(jsonresponse);
             $('body').data('limit',jsonobject.limit);
             $('body').data('rented',jsonobject.rented);
+            if ($('usercredit')) $('#usercredit').html(jsonobject.usercredit);
             togglebikeactions();
          });
 }
@@ -351,7 +352,6 @@ function rent()
    }).done(function(jsonresponse) {
       jsonobject=$.parseJSON(jsonresponse);
       handleresponse(jsonobject);
-      $('.b'+$('#rent .bikenumber').html()).remove();
       resetbutton("rent");
       $('body').data("limit",$('body').data("limit")-1);
       if ($("body").data("limit")<0) $("body").data("limit",0);
@@ -360,6 +360,7 @@ function rent()
       standbiketotal=markerdata[standid].count;
       if (jsonobject.error==0)
          {
+         $('.b'+$('#rent .bikenumber').html()).remove();
          standbiketotal=(standbiketotal*1)-1;
          markerdata[standid].count=standbiketotal;
          $('body').data('markerdata',markerdata);

@@ -31,12 +31,18 @@ function response($message,$error=0,$additional="",$log=1)
 function rent($userId,$bike,$force=FALSE)
 {
 
-   global $db,$forcestack,$watches;
+   global $db,$forcestack,$watches,$credit;
    $stacktopbike=FALSE;
    $bikeNum = $bike;
+   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
 
    if ($force==FALSE)
       {
+      $creditcheck=checkrequiredcredit($userId);
+      if ($creditcheck===FALSE)
+         {
+         response("You are below required credit ".$requiredcredit.$credit["currency"].". Please, recharge your credit.",ERROR);
+         }
       checktoomany(0,$userId);
 
       $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
@@ -168,6 +174,8 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
 
    if ($force==FALSE)
       {
+      $creditchange=changecreditendrental($bikeNum,$userId);
+      if (iscreditenabled()) $message.='<br />Credit change: -'.$creditchange.getcreditcurrency().'.';
       $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
       }
    else
@@ -670,7 +678,10 @@ function mapgetlimit($userId)
 
    $currentlimit=$limit-$rented;
 
-   echo json_encode(array("limit"=>$currentlimit,"rented"=>$rented));
+   $usercredit=0;
+   $usercredit=getusercredit($userId);
+
+   echo json_encode(array("limit"=>$currentlimit,"rented"=>$rented,"usercredit"=>$usercredit));
 }
 
 function mapgeolocation ($userid,$lat,$long)
