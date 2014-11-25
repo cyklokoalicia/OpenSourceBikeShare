@@ -66,7 +66,7 @@ else
    if (isloggedin())
       {
       echo '<li><span class="label label-success"><em>',getusername($_COOKIE["loguserid"]),'</em></span>';
-      if (iscreditenabled()) echo ' (<span id="usercredit">',getusercredit($_COOKIE["loguserid"]),'</span>',getcreditcurrency(),')';
+      if (iscreditenabled()) echo ' (<span id="usercredit" title="Remaning credit">',getusercredit($_COOKIE["loguserid"]),'</span>',getcreditcurrency(),')';
       echo '<br /><a href="command.php?action=logout" id="logout">Log out</a></li>';
       }
    ?>
@@ -108,7 +108,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <div class="row">
 <div id="standactions" class="btn-group">
   <div class="col-lg-12">
-         <button class="btn btn-primary" type="button" id="rent"><span class="glyphicon glyphicon-log-out"></span> Rent <span class="bikenumber"></span></button>
+         <button class="btn btn-primary" type="button" id="rent" title="Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set."><span class="glyphicon glyphicon-log-out"></span> Rent <span class="bikenumber"></span></button>
   </div>
 </div>
 </div>
@@ -118,14 +118,14 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <div class="row">
    <div class="input-group">
    <div class="col-lg-12">
-   <input type="text" name="notetext" id="notetext" class="form-control" placeholder="Describe problem" >
+   <input type="text" name="notetext" id="notetext" class="form-control" placeholder="Describe problem">
    </div>
    </div>
 </div>
 <div class="row">
    <div class="btn-group bicycleactions">
    <div class="col-lg-12">
-   <button type="button" class="btn btn-primary" id="return"><span class="glyphicon glyphicon-log-in"></span> Return bicycle <span class="bikenumber"></span></button> (and <a href="#" id="note">report problem <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
+   <button type="button" class="btn btn-primary" id="return" title="Return this bicycle to the selected stand."><span class="glyphicon glyphicon-log-in"></span> Return bicycle <span class="bikenumber"></span></button> (and <a href="#" id="note" title="Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).">report problem <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
    </div></div>
 </div>
 <br /><div class="row">
@@ -134,7 +134,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
   <div class="input-group">
          <input type="text" name="adminparam" id="adminparam" class="form-control">
          <span class="input-group-btn">
-         <button class="btn btn-default" type="button" id="where"><span class="glyphicon glyphicon-screenshot"></span> Where is?</button>
+         <button class="btn btn-default" type="button" id="where" title="Display the bike stand location or name of person using it."><span class="glyphicon glyphicon-screenshot"></span> Where is?</button>
          </span>
   </div>
   </div>
@@ -143,8 +143,8 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <div class="row">
    <div class="btn-group adminactions">
    <div class="col-lg-12">
-   <button type="button" id="revert" class="btn btn-default"><span class="glyphicon glyphicon-fast-backward"></span> Revert</button>
-   <button type="button" id="last" class="btn btn-default"><span class="glyphicon glyphicon-stats"></span> Last usage</button>
+   <button type="button" id="revert" class="btn btn-default" title="Be careful! Revert accidentaly rented bike in case of mistake or misread bike number."><span class="glyphicon glyphicon-fast-backward"></span> Revert</button>
+   <button type="button" id="last" class="btn btn-default" title="Display network usage (blank) or history of bike usage (number entered)."><span class="glyphicon glyphicon-stats"></span> Last usage</button>
    </div>
    </div>
 </div>

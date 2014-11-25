@@ -240,12 +240,12 @@ function showstand(e,clear)
    walklink='';
    if ("geolocation" in navigator) // if geolocated, provide link to walking directions
       {
-      walklink='<a href="https://www.google.com/maps?q='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'+to:'+lat+','+long+'&saddr='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'&daddr='+lat+','+long+'&output=classic&dirflg=w&t=m" target="_blank">walking directions</a>';
+      walklink='<a href="https://www.google.com/maps?q='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'+to:'+lat+','+long+'&saddr='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'&daddr='+lat+','+long+'&output=classic&dirflg=w&t=m" target="_blank" title="Open a map with directions to the selected stand from your current location.">walking directions</a>';
       }
    if (loggedin==1 && markerdata[standid].photo)
       {
       walklink=walklink+' | ';
-      $('#standinfo').html(markerdata[standid].desc+' ('+walklink+' <a href="'+markerdata[standid].photo+'" id="photo'+standid+'">photo</a>)');
+      $('#standinfo').html(markerdata[standid].desc+' ('+walklink+' <a href="'+markerdata[standid].photo+'" id="photo'+standid+'" title="Display photo of the stand.">photo</a>)');
       $('#standphoto').hide();
       $('#standphoto').html('<img src="'+markerdata[standid].photo+'" alt="'+markerdata[standid].name+'" width="100%" />');
       $('#photo'+standid).click(function() { $('#standphoto').slideToggle(); return false; });
@@ -278,7 +278,7 @@ function rentedbikes()
             {
             for (var i=0, len=jsonobject.content.length; i < len; i++)
                {
-               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'">'+jsonobject.content[i]+'<br /><span class="label label-default">('+jsonobject.codes[i]+')</span></button> ';
+               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'" title="You have this bicycle currently rented. The current lock code is displayed below the bike number.">'+jsonobject.content[i]+'<br /><span class="label label-default">('+jsonobject.codes[i]+')</span></button> ';
                }
             $('#rentedbikes').html('<div class="btn-group">'+bikelist+'</div>');
             $('#rentedbikes .bikeid').click( function() { attachbicycleinfo(this,"return"); });
