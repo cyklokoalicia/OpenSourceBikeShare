@@ -375,7 +375,7 @@ function last($userId,$bike)
       }
    else
       {
-      $result=$db->query("SELECT bikeNum,userName,standName,note FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId LEFT JOIN stands ON bikes.currentStand=stands.standId ORDER BY bikeNum");
+      $result=$db->query("SELECT bikeNum,userName,standName,note,users.userId FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId LEFT JOIN stands ON bikes.currentStand=stands.standId ORDER BY bikeNum");
       $historyInfo="<h3>Current network usage:</h3><ul>";
       while($row=$result->fetch_assoc())
          {
@@ -387,6 +387,9 @@ function last($userId,$bike)
          else
             {
             $historyInfo.=$row["userName"];
+            $result2=$db->query("SELECT time FROM history WHERE bikeNum=".$row["bikeNum"]." AND userId=".$row["userId"]." AND action='RENT' ORDER BY time DESC");
+            $row2=$result2->fetch_assoc();
+            $historyInfo.=": ".date("d/m H:i",strtotime($row2["time"]));
             }
          if ($row["note"]) $historyInfo.=" (".$row["note"].")";
          $historyInfo.="</li>";
