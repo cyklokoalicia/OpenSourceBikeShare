@@ -346,6 +346,31 @@ function changecreditendrental($bike,$userid)
       $timediff=$endtime-$starttime;
       $creditchange=0;
       if ($timediff>$watches["freetime"]*60) $creditchange=$creditchange+$credit["rent"];
+      if ($credit["pricecycle"] AND $timediff>$watches["freetime"]*60*2) // after first paid period, i.e. freetime*2; if pricecycle enabled
+         {
+         $temptimediff=$timediff-($watches["freetime"]*60*2);
+         if ($credit["pricecycle"]==1) // flat price per cycle
+            {
+            $cycles=ceil($temptimediff/($watches["flatpricecycle"]*60));
+            $creditchange=$creditchange+($credit["rent"]*$cycles);
+            }
+         elseif ($credit["pricecycle"]==2) // double price per cycle
+            {
+            $cycles=ceil($temptimediff/($watches["doublepricecycle"]*60));
+            $tempcreditrent=$credit["rent"];
+            for ($i=1;$i<=$cycles;$i++)
+               {
+               $multiplier=$i;
+               if ($multiplier>$watches["doublepricecyclecap"])
+                  {
+                  $multiplier=$watches["doublepricecyclecap"];
+                  }
+               // exception for rent=1, otherwise square won't work:
+               if ($tempcreditrent==1) $tempcreditrent=2;
+               $creditchange=$creditchange+pow($tempcreditrent,$multiplier);
+               }
+            }
+         }
       if ($timediff>$watches["longrental"]*3600) $creditchange=$creditchange+$credit["longrental"];
       $usercredit=$usercredit-$creditchange;
       $result=$db->query("UPDATE credit SET credit=$usercredit WHERE userId=$userid");
