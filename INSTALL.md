@@ -1,4 +1,4 @@
-OpenSourceBikeShare Installation Manual
+Open Source Bike Share Installation Manual
 ============
 
 Database setup
@@ -10,14 +10,33 @@ Database setup
 
 Config.php.example setup
 ----------
-1. Open `config.php.example` and change basic variables (self-descriptive) to suit your system.
+1. Open `config.php.example`, rename it to `config.php` and change basic variables (self-descriptive) to suit your system.
 2. Set `$countryCode` to your country;'s international dialing code - no plus sign, no zeroes.
 3. _Optional:_ Enable notifications in the `$watches` variables section to notify admins, if conditions met.
 4. _Optional:_ Enable paid (credit) system in the `$credit` variables section, if you want charge the users for bike rental based on time and more.
 5. Edit database details and fill in correct info.
 6. _Optional:_ If you want to have SMS enable in addition to the web app, set the `$connectors["sms"]` variable to your provider's file in `connectors/` directory.
 
-Credit system
+Watches and notifications (config.php)
+----------
+Open Source Bicycle Share is a community run system and therefore requires some additional precautions to secure the bicycles.
+You can set these using `$watches` variable. Any violations from the set rules will be reported to the admins (with `privileges` 2+) by SMS and by email `$watches["email"]`.
+Watch and report:
+* if bicycle is taken out of stack, if $forcestack is enabled (see below): `$watches["stack"]`.
+* if any long rentals occur: `$watches["longrental"]`.
+* if any user has rented too many bikes during a short period: `$watches["timetoomany"]` and `$watches["numbertoomany"]`.
+
+Additional variables are used by the credit system (if enabled):
+* Free rental time: `$watches["freetime"]`.
+* Flat price cycle length after first paid period: `$watches["flatpricecycle"]`.
+* Double price cycle length after first paid period: `$watches["doublepricecycle"]`.
+* Double price cycle capping: `$watches["doublepricecyclecap"]`.
+
+Bicycle stacking at stands (config.php)
+----------
+You can decide to allow rentals of any bicycle at a stand or only the latest bicycle left at the stand for the security reasons. Use `$forcestack` variable.
+
+Credit system (config.php)
 ----------
 You can have either credit system enabled (charging per rentals) or disabled (free rentals). Set `$creditsystem` variable accordingly.
 * Choose your system currency - it could be real money or "points" or whatever. Set `$creditcurrency` accordingly.
