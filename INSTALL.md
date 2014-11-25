@@ -17,6 +17,19 @@ Config.php.example setup
 5. Edit database details and fill in correct info.
 6. _Optional:_ If you want to have SMS enable in addition to the web app, set the `$connectors["sms"]` variable to your provider's file in `connectors/` directory.
 
+Credit system
+----------
+You can have either credit system enabled (charging per rentals) or disabled (free rentals). Set `$creditsystem` variable accordingly.
+* Choose your system currency - it could be real money or "points" or whatever. Set `$creditcurrency` accordingly.
+* Set `$credit["min"]` to minimum credit required for any bike operations.
+* Decide what you want to charge for the rentals and set `$credit["pricecycle"]` accordingly:
+    0. One-time only price: 0
+    1. Flat price every $watches["flatpricecycle"] minutes: 1
+    2. Doubled price every $watches["doublepricecycle"] minutes: 2 (with capping at $watches["doublepricecyclecap"] cycles)
+* Set additional charge for long rentals (e.g. over 24 hours) using `$credit["longrental"]` variable.
+* If you want to allow users to temporarily increase their rental limit, set `$limitincrease` to number of bikes allowed in addition to their limit. Also set `$credit["limitincrease"]` to require credits for this operation.
+* Set system violation fee using `$credit["violation"]`.
+
 CRON job
 ----------
 1. _Optional:_ If you have some `$watches` notifications enabled, add `cron.php` to be called once a day.
