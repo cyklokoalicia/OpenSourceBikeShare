@@ -3,8 +3,6 @@
 SET NAMES utf8;
 SET time_zone = '+00:00';
 
-USE `WB`;
-
 DROP TABLE IF EXISTS `bikes`;
 CREATE TABLE `bikes` (
   `bikeNum` int(11) NOT NULL,
@@ -38,7 +36,7 @@ CREATE TABLE `history` (
   `bikeNum` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `action` varchar(20) NOT NULL,
-  `parameter` varchar(100) NOT NULL,
+  `parameter` text NOT NULL,
   `standId` int(11) DEFAULT NULL,
   `pairAction` timestamp NULL DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

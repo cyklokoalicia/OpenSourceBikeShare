@@ -345,7 +345,12 @@ function changecreditendrental($bike,$userid)
       $endtime=time();
       $timediff=$endtime-$starttime;
       $creditchange=0;
-      if ($timediff>$watches["freetime"]*60) $creditchange=$creditchange+$credit["rent"];
+      $changelog="";
+      if ($timediff>$watches["freetime"]*60)
+         {
+         $creditchange=$creditchange+$credit["rent"];
+         $changelog.="overfree-".$credit["rent"].";";
+         }
       if ($credit["pricecycle"] AND $timediff>$watches["freetime"]*60*2) // after first paid period, i.e. freetime*2; if pricecycle enabled
          {
          $temptimediff=$timediff-($watches["freetime"]*60*2);
@@ -353,6 +358,7 @@ function changecreditendrental($bike,$userid)
             {
             $cycles=ceil($temptimediff/($watches["flatpricecycle"]*60));
             $creditchange=$creditchange+($credit["rent"]*$cycles);
+            $changelog.="flat-".$credit["rent"]*$cycles.";";
             }
          elseif ($credit["pricecycle"]==2) // double price per cycle
             {
@@ -368,12 +374,18 @@ function changecreditendrental($bike,$userid)
                // exception for rent=1, otherwise square won't work:
                if ($tempcreditrent==1) $tempcreditrent=2;
                $creditchange=$creditchange+pow($tempcreditrent,$multiplier);
+               $changelog.="double-".pow($tempcreditrent,$multiplier).";";
                }
             }
          }
-      if ($timediff>$watches["longrental"]*3600) $creditchange=$creditchange+$credit["longrental"];
+      if ($timediff>$watches["longrental"]*3600)
+         {
+         $creditchange=$creditchange+$credit["longrental"];
+         $changelog.="longrent-".$credit["longrental"].";";
+         }
       $usercredit=$usercredit-$creditchange;
       $result=$db->query("UPDATE credit SET credit=$usercredit WHERE userId=$userid");
+      $result=$db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDITCHANGE',parameter='".$creditchange."|".$changelog."'");
       $result=$db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$usercredit");
       return $creditchange;
       }
