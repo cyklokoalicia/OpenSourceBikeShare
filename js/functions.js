@@ -38,6 +38,13 @@ function mapinit()
    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
    var osmAttrib='Map data (c) <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
    var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 19, attribution: osmAttrib});
+
+   var today = new Date();
+   if (today.getMonth()+'.'+today.getDate()=='3.1') // april fools
+      {
+      var osm = new L.StamenTileLayer("toner");
+      }
+
    map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
    map.addLayer(osm);
    sidebar = L.control.sidebar('sidebar', {
