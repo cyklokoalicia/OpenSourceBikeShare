@@ -19,6 +19,7 @@ echo '<span style="display:none;"></span>'; // 2014-10-02 weird bug: map not sho
 <script type="text/javascript" src="js/leaflet.js"></script>
 <script type="text/javascript" src="js/L.Control.Sidebar.js"></script>
 <script type="text/javascript" src="js/functions.js"></script>
+<? if (date("m-d")=="04-01") echo '<script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>'; ?>
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
 <link rel="stylesheet" type="text/css" href="css/leaflet.css" />
