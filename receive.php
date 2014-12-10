@@ -7,7 +7,7 @@ require("actions-sms.php");
 
 log_sms($sms->UUID(),$sms->Number(),$sms->Time(),$sms->Text(),$sms->IPAddress());
 
-$args=explode(" ",$sms->ProcessedText());
+$args=preg_split("/\s+/",$sms->ProcessedText());//preg_split must be used instead of explode because of multiple spaces
 
 if(!validateNumber($sms->Number()))
    {
