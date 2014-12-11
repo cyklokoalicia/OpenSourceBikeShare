@@ -18,7 +18,7 @@ function help($number)
       $message="Commands:\nHELP\n";
       if (iscreditenabled()) $message.="CREDIT\n";
       $message.="FREE\nRENT bikeno\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem description";
-      sendSMS($number,$messsage);
+      sendSMS($number,$message);
       }
 }
 
