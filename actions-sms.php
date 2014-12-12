@@ -186,6 +186,12 @@ function rent($number,$bike,$force=FALSE)
 		$currentCode = sprintf("%04d",$row["currentCode"]);
 		$currentUser= $row["currentUser"];
 		$note= $row["note"];
+		if ($currentUser)
+                   {
+                  $result = $db->query("SELECT number FROM users WHERE userId=$currentUser");
+                  $row = $result->fetch_assoc();
+                  $currentUserNumber = $row["number"];
+                  }
 	} else error("bike code not retrieved");
 
 	$newCode = sprintf("%04d",rand(100,9900));//do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
@@ -222,6 +228,7 @@ function rent($number,$bike,$force=FALSE)
         else
          {
            if ($result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode")) {
+            if ($currentUser) { sendSMS($currentUserNumber,"System override: Your rented bike $bikeNum has been rented by admin."); }
             } else error("update failed");
          }
 
@@ -279,10 +286,14 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
          }
         else
          {
-         if ($result = $db->query("SELECT currentCode,note FROM bikes where bikeNum=$bikeNum")) {
+         if ($result = $db->query("SELECT currentCode,note,currentUser FROM bikes WHERE bikeNum=$bikeNum")) {
          $row = $result->fetch_assoc();
          $currentCode = sprintf("%04d",$row["currentCode"]);
+         $currentUser = $row["currentUser"];
          $note= $row["note"];
+         $result = $db->query("SELECT number FROM users WHERE userId=$currentUser");
+         $row = $result->fetch_assoc();
+         $currentUserNumber = $row["number"];
             } else error("code not retrieved");
          }
 
@@ -325,6 +336,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
         else
             {
             if ($result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId")) {
+               sendSMS($currentUserNumber,"System override: Your rented bike $bikeNum has been returned by admin.");
                } else error("update failed");
             }
 
