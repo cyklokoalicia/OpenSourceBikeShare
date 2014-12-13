@@ -12,8 +12,9 @@ $(document).ready(function(){
    $("#return").click(function(e) { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-return'); returnbike(); });
    $("#note").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-note'); note(); });
    $("#where").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-where'); where(); });
-   $("#last").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-last'); last(); });
    $("#revert").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-revert'); revert(); });
+   $("#last").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-last'); last(); });
+   $("#trips").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-trips'); trips(); });
    $('#stands').change(function() { showstand($('#stands').val()); }).keyup(function() { showstand($('#stands').val()); });
    mapinit();
    setInterval(getmarkers, 60000); // refresh map every 60 seconds
@@ -446,6 +447,51 @@ function last()
    });
 }
 
+function trips()
+{
+   if (window.ga) ga('send', 'event', 'bikes', 'trips', $('#adminparam').val());
+   $.ajax({
+   url: "command.php?action=trips&bikeno="+$('#adminparam').val()
+   }).done(function(jsonresponse) {
+      jsonobject=$.parseJSON(jsonresponse);
+      if (jsonobject.error==1)
+         {
+         handleresponse(jsonobject);
+         }
+      else
+         {
+         if (jsonobject[0]) // concrete bike requested
+            {
+            var polyline = L.polyline([[jsonobject[0].latitude*1,jsonobject[0].longitude*1],[jsonobject[1].latitude*1,jsonobject[1].longitude*1]], {color: 'red'}).addTo(map);
+            for (var i=2, len=jsonobject.length; i < len; i++)
+               {
+               if (jsonobject[i].longitude && jsonobject[i].latitude)
+                  {
+                  polyline.addLatLng([jsonobject[i].latitude*1,jsonobject[i].longitude*1]);
+                  }
+               }
+            }
+         else // all bikes requested
+            {
+            var polylines=[];
+            for (var bikenumber in jsonobject)
+               {
+               var bikecolor='#'+('00000'+(Math.random()*16777216<<0).toString(16)).substr(-6);
+               polylines[bikenumber] = L.polyline([[jsonobject[bikenumber][0].latitude*1,jsonobject[bikenumber][0].longitude*1],[jsonobject[bikenumber][1].latitude*1,jsonobject[bikenumber][1].longitude*1]], {color: bikecolor}).addTo(map);
+               for (var i=2, len=jsonobject[bikenumber].length; i < len; i++)
+                  {
+                  if (jsonobject[bikenumber][i].longitude && jsonobject[bikenumber][i].latitude)
+                     {
+                     polylines[bikenumber].addLatLng([jsonobject[bikenumber][i].latitude*1,jsonobject[bikenumber][i].longitude*1]);
+                     }
+                  }
+               }
+            }
+
+         }
+   });
+}
+
 function revert()
 {
    if (window.ga) ga('send', 'event', 'bikes', 'revert', $('#adminparam').val());
@@ -523,7 +569,6 @@ function savegeolocation()
       return;
    });
 }
-
 
 function showlocation(location)
 {

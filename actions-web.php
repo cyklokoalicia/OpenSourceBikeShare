@@ -346,7 +346,7 @@ function removenote($userId,$bikeNum)
    response("Note for bike $bikeNum deleted.");
 }
 
-function last($userId,$bike)
+function last($userId,$bike=0)
 {
 
    global $db;
@@ -651,6 +651,29 @@ function smscode($number)
       fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um","r");
       response($number,0,array("checkcode"=>$checkcode,"existing"=>$userexists));
       }
+}
+
+function trips($userId,$bike=0)
+{
+
+   global $db;
+   $bikeNum=intval($bike);
+   if ($bikeNum)
+      {
+      $result=$db->query("SELECT longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1000");
+      $jsoncontent=$result->fetch_all(MYSQLI_ASSOC);
+      }
+   else
+      {
+      $result=$db->query("SELECT bikeNum,longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE action='RETURN' ORDER BY bikeNum,time DESC LIMIT 1000");
+      $i=0;
+      while($row = $result->fetch_assoc())
+         {
+         $bikenum=$row["bikeNum"];
+         $jsoncontent[$bikenum][]=array("longitude"=>$row["longitude"],"latitude"=>$row["latitude"]);
+         }
+      }
+   echo json_encode($jsoncontent);
 }
 
 function mapgetmarkers()

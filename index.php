@@ -146,6 +146,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
    <div class="col-lg-12">
    <button type="button" id="revert" class="btn btn-default" title="Be careful! Revert accidentaly rented bike in case of mistake or misread bike number."><span class="glyphicon glyphicon-fast-backward"></span> Revert</button>
    <button type="button" id="last" class="btn btn-default" title="Display network usage (blank) or history of bike usage (number entered)."><span class="glyphicon glyphicon-stats"></span> Last usage</button>
+   <button type="button" id="trips" class="btn btn-default" title="Show history of stand to stand bike trips as lines."><span class="glyphicon glyphicon-road"></span> Trips overlay</button>
    </div>
    </div>
 </div>
