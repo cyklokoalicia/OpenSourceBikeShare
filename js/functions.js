@@ -465,7 +465,7 @@ function trips()
             var polyline = L.polyline([[jsonobject[0].latitude*1,jsonobject[0].longitude*1],[jsonobject[1].latitude*1,jsonobject[1].longitude*1]], {color: 'red'}).addTo(map);
             for (var i=2, len=jsonobject.length; i < len; i++)
                {
-               if (jsonobject[i].longitude && jsonobject[i].latitude)
+               if (jsonobject[i].longitude*1 && jsonobject[i].latitude*1)
                   {
                   polyline.addLatLng([jsonobject[i].latitude*1,jsonobject[i].longitude*1]);
                   }
@@ -480,7 +480,7 @@ function trips()
                polylines[bikenumber] = L.polyline([[jsonobject[bikenumber][0].latitude*1,jsonobject[bikenumber][0].longitude*1],[jsonobject[bikenumber][1].latitude*1,jsonobject[bikenumber][1].longitude*1]], {color: bikecolor}).addTo(map);
                for (var i=2, len=jsonobject[bikenumber].length; i < len; i++)
                   {
-                  if (jsonobject[bikenumber][i].longitude && jsonobject[bikenumber][i].latitude)
+                  if (jsonobject[bikenumber][i].longitude*1 && jsonobject[bikenumber][i].latitude*1)
                      {
                      polylines[bikenumber].addLatLng([jsonobject[bikenumber][i].latitude*1,jsonobject[bikenumber][i].longitude*1]);
                      }
