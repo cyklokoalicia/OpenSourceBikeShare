@@ -660,12 +660,12 @@ function trips($userId,$bike=0)
    $bikeNum=intval($bike);
    if ($bikeNum)
       {
-      $result=$db->query("SELECT longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1000");
+      $result=$db->query("SELECT longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum AND action='RETURN' ORDER BY time DESC");
       $jsoncontent=$result->fetch_all(MYSQLI_ASSOC);
       }
    else
       {
-      $result=$db->query("SELECT bikeNum,longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE action='RETURN' ORDER BY bikeNum,time DESC LIMIT 1000");
+      $result=$db->query("SELECT bikeNum,longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE action='RETURN' ORDER BY bikeNum,time DESC");
       $i=0;
       while($row = $result->fetch_assoc())
          {
