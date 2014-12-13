@@ -1,5 +1,5 @@
 var markers=[]; var markerdata=[]; var iconsize=60; var sidebar; var firstrun=1;
-var watchID, circle;
+var watchID, circle, polyline;
 
 $(document).ready(function(){
    $('#standactions').hide();
@@ -462,7 +462,8 @@ function trips()
          {
          if (jsonobject[0]) // concrete bike requested
             {
-            var polyline = L.polyline([[jsonobject[0].latitude*1,jsonobject[0].longitude*1],[jsonobject[1].latitude*1,jsonobject[1].longitude*1]], {color: 'red'}).addTo(map);
+            if (polyline!=undefined) map.removeLayer(polyline);
+            polyline = L.polyline([[jsonobject[0].latitude*1,jsonobject[0].longitude*1],[jsonobject[1].latitude*1,jsonobject[1].longitude*1]], {color: 'red'}).addTo(map);
             for (var i=2, len=jsonobject.length; i < len; i++)
                {
                if (jsonobject[i].longitude*1 && jsonobject[i].latitude*1)
