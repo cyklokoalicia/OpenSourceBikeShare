@@ -1,24 +1,23 @@
-OpenSourceBikeShare
+Open Source Bike Share
 ============
 *The world's first low-cost and open source bike sharing system.*
 
-Bottom-up bicycle sharing system suitable for smaller communities or closed areas such as campuses, companies etc.
+Bottom-up bicycle sharing system suitable for smaller communities or areas such as campuses, companies etc.
 
 Features
 ----------
 * Web app (mobile-friendly) and SMS system to rent and return bicycles
 * Web map with geolocation and availability of the bicycle stands
-* Registration form for new users
+* Registration form for the new users
 * Admin to edit users, create stands or change bicycle availability
-* Google Analytics enabled for stats on web and bike usage etc.
-* Bicycles require the locks with a four digit code
+* Google Analytics enabled for stats on web and bike usage
 * Connector system to support any provider of SMS Gateway / API (the connector for eurosms.com provided)
 
 Pilot experiment
 ---------
 Currently running with about 50 bicycles in Bratislava, the capital of Slovakia.
 
-The bicycles in the bike share
+The bicycles in the bike share (featuring four digit code U-locks)
 ![The bicycles in the bike share](http://i.cubeupload.com/Jr5pR3.jpg "Bicycles")
 One of the stands
 ![One of the stand of the open source bicycle sharing system](http://whitebikes.info/stands/MAINSQ.jpg "The bicycles at one of the stands")
