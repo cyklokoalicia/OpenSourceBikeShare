@@ -28,7 +28,14 @@ Demo
 ---------
 [Whitebikes](http://whitebikes.info) - do not share your location if you are out of Bratislava, otherwise map will jump out of the bike share area.
 
-Need help to set it up?
+How does it work?
+---------
+* No special bicycles required, any usable (mid-sized frame) bicycles will do
+* No fixed stands required, stand positions are just marked for visibility
+* Checks and balances included to prevent system abuse
+* Free for all or charge users for rental time
+
+Launch your own bike sharing system!
 ---------
 **If you need help to set up your own bike sharing system** including the real world part (the stands, bicycles, locks etc.), **we are available for consultation**.
 
