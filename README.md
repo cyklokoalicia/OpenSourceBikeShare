@@ -30,7 +30,8 @@ Another stand with some bicycles
 ### Cycling Faculty
 A faculty of a local university provides 8 bcycles for their students with three stands - the university and two different student housing locations in the city.
 
-[![Play video to see it in action:](https://cloud.githubusercontent.com/assets/8550349/5429137/281c4e54-83e1-11e4-8f7d-8780eb1a59c6.jpg)](http://youtu.be/WDCRNr_xXTY?t=40s)
+Play video to see it in action:
+[![Video of Cycling Faculty](https://cloud.githubusercontent.com/assets/8550349/5429137/281c4e54-83e1-11e4-8f7d-8780eb1a59c6.jpg)](http://youtu.be/WDCRNr_xXTY?t=40s)
 
 ![Web of the university bicycle share for students](https://cloud.githubusercontent.com/assets/8550349/5425915/ee90a994-832e-11e4-806e-a7e17242594d.png "Cycling Faculty student bicycle share")
 
