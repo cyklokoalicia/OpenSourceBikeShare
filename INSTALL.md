@@ -11,7 +11,7 @@ Database setup
 Config.php.example setup
 ----------
 1. Open `config.php.example`, rename it to `config.php` and change basic variables (self-descriptive) to suit your system.
-2. Set `$countryCode` to your country;'s international dialing code - no plus sign, no zeroes.
+2. Set `$countryCode` to your country's international dialing code - no plus sign, no zeroes.
 3. _Optional:_ Enable notifications in the `$watches` variables section to notify admins, if conditions met.
 4. _Optional:_ Enable paid (credit) system in the `$credit` variables section, if you want charge the users for bike rental based on time and more.
 5. Edit database details and fill in correct info.
