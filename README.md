@@ -13,8 +13,11 @@ Features
 * Google Analytics enabled for stats on web and bike usage
 * Connector system to support any provider of SMS Gateway / API (the connector for eurosms.com provided)
 
-Pilot experiment
+Where is it working?
 ---------
+2 separate community bike systems.
+
+### Pilot project
 Currently running with about 50 bicycles in Bratislava, the capital of Slovakia.
 
 The bicycles in the bike share (featuring four digit code U-locks)
@@ -23,6 +26,11 @@ One of the stands
 ![One of the stand of the open source bicycle sharing system](http://whitebikes.info/stands/MAINSQ.jpg "The bicycles at one of the stands")
 Another stand with some bicycles
 ![One of the stand of the free bicycle sharing system](http://whitebikes.info/stands/OLDMARKET.jpg "Another stand with the bicycles")
+
+### Cycling Faculty
+A faculty of a local university provides 8 bcycles for their students with three stands - the university and two different student housing locations in the city.
+
+![Web of the university bicycle share for students](https://cloud.githubusercontent.com/assets/8550349/5425915/ee90a994-832e-11e4-806e-a7e17242594d.png "Cycling Faculty student bicycle share")
 
 Demo
 ---------
