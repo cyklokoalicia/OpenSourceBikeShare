@@ -423,7 +423,7 @@ function revert($userId,$bikeNum)
    global $db;
 
    $standId=0;
-   $result = $db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser IS NOT NULL'");
+   $result = $db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser IS NOT NULL");
    if (!$result->num_rows)
       {
       response("Bicycle $bikeNum is not rented right now. Revert not successful!",ERROR);
