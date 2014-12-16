@@ -28,7 +28,7 @@ Another stand with some bicycles
 ![One of the stand of the free bicycle sharing system](http://whitebikes.info/stands/OLDMARKET.jpg "Another stand with the bicycles")
 
 ### Cycling Faculty
-A faculty of a local university provides 8 bcycles for their students with three stands - the university and two different student housing locations in the city.
+A faculty of a local university provides 8 bicycles for their students with three stands - the university and two different student housing locations in the city.
 
 Play video to see it in action:
 [![Video of Cycling Faculty](https://cloud.githubusercontent.com/assets/8550349/5429137/281c4e54-83e1-11e4-8f7d-8780eb1a59c6.jpg)](http://youtu.be/WDCRNr_xXTY?t=40s)
