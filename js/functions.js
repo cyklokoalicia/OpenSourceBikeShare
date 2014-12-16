@@ -62,7 +62,6 @@ function mapinit()
 
 function getmarkers()
 {
-   markers=[]; markerdata=[];
    $.ajax({
          global: false,
          url: "command.php?action=map:markers"
@@ -509,8 +508,10 @@ function revert()
 function attachbicycleinfo(element,attachto)
 {
    $('#'+attachto+' .bikenumber').html($(element).attr('data-id'));
+   // show warning, if exists:
    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">Reported problem on this bicycle: '+$(element).attr('data-note')+'</div>');
-   //else resetconsole();
+   // or hide warning, if bike without issue is clicked
+   else if ($(element).hasClass('btn-warning')==false && $('#console div').hasClass('alert-warning')) resetconsole();
 }
 
 function checkonebikeattach()

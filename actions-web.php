@@ -45,11 +45,11 @@ function rent($userId,$bike,$force=FALSE)
          }
       checktoomany(0,$userId);
 
-      $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
+      $result=$db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
       $row = $result->fetch_assoc();
       $countRented = $row["countRented"];
 
-      $result = $db->query("SELECT userLimit FROM limits where userId=$userId");
+      $result=$db->query("SELECT userLimit FROM limits where userId=$userId");
       $row = $result->fetch_assoc();
       $limit = $row["userLimit"];
 
@@ -90,11 +90,17 @@ function rent($userId,$bike,$force=FALSE)
          }
       }
 
-   $result=$db->query("SELECT currentUser,currentCode,note FROM bikes where bikeNum=$bikeNum");
+   $result=$db->query("SELECT currentUser,currentCode FROM bikes WHERE bikeNum=$bikeNum");
    $row=$result->fetch_assoc();
    $currentCode=sprintf("%04d",$row["currentCode"]);
    $currentUser=$row["currentUser"];
-   $note=$row["note"];
+   $result=$db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' ORDER BY time DESC");
+   $note="";
+   while ($row=$result->fetch_assoc())
+      {
+      $note.=$row["note"]."; ";
+      }
+   $note=substr($note,0,strlen($note)-2); // remove last two chars - comma and space
 
    $newCode=sprintf("%04d",rand(100,9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
 
@@ -118,14 +124,14 @@ function rent($userId,$bike,$force=FALSE)
       $message.="<br />Reported issue: <em>".$note."</em>";
       }
 
-   $result = $db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
+   $result=$db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
    if ($force==FALSE)
       {
-      $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode");
+      $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode");
       }
    else
       {
-      $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
+      $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
       }
    response($message);
 
@@ -141,7 +147,7 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
 
    if ($force==FALSE)
       {
-      $result = $db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
+      $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
       $rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
 
       if (count($rentedBikes)==0)
@@ -152,20 +158,20 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
 
    if ($force==FALSE)
       {
-      $result = $db->query("SELECT currentCode FROM bikes WHERE currentUser=$userId and bikeNum=$bikeNum");
+      $result=$db->query("SELECT currentCode FROM bikes WHERE currentUser=$userId and bikeNum=$bikeNum");
       }
    else
       {
-      $result = $db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
+      $result=$db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
       }
    $row = $result->fetch_assoc();
    $currentCode = sprintf("%04d",$row["currentCode"]);
 
-   $result = $db->query("SELECT standId FROM stands where standName='$stand'");
+   $result=$db->query("SELECT standId FROM stands where standName='$stand'");
    $row = $result->fetch_assoc();
    $standId = $row["standId"];
 
-   $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
+   $result=$db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
    if ($note) addNote($userId,$bikeNum,$note);
 
    $message = '<h3>Bike '.$bikeNum.': <span class="label label-primary">Lock with code '.$currentCode.'.</span></h3>';
@@ -176,11 +182,11 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
       {
       $creditchange=changecreditendrental($bikeNum,$userId);
       if (iscreditenabled() AND $creditchange) $message.='<br />Credit change: -'.$creditchange.getcreditcurrency().'.';
-      $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
+      $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
       }
    else
       {
-      $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId");
+      $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId");
       }
    response($message);
 
@@ -193,13 +199,19 @@ function where($userId,$bike)
    global $db;
    $bikeNum = $bike;
 
-   $result = $db->query("SELECT number,userName,stands.standName,note FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
+   $result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
    $row = $result->fetch_assoc();
    $phone= $row["number"];
    $userName= $row["userName"];
    $standName= $row["standName"];
-   $note= $row["note"];
-   if ($note!="")
+   $result=$db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' ORDER BY time DESC");
+   $note="";
+   while ($row=$result->fetch_assoc())
+      {
+      $note.=$row["note"]."; ";
+      }
+   $note=substr($note,0,strlen($note)-2); // remove last two chars - comma and space
+   if ($note)
       {
       $note="Bike note: $note";
       }
@@ -218,7 +230,7 @@ function where($userId,$bike)
 function checkbikeno($bikeNum)
 {
    global $db;
-   $result = $db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
+   $result=$db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
    if (!$result->num_rows)
       {
       response('<h3>Bike '.$bikeNum.' does not exist!</h3>',ERROR);
@@ -229,7 +241,7 @@ function checkstandname($stand)
 {
    global $db;
    $standname=trim(strtoupper($stand));
-   $result = $db->query("SELECT standName FROM stands WHERE standName='$stand'");
+   $result=$db->query("SELECT standName FROM stands WHERE standName='$stand'");
    if (!$result->num_rows)
       {
       response('<h3>Stand '.$stand.' does not exist!</h3>',ERROR);
@@ -262,7 +274,7 @@ function logresult($userid,$text)
       {
       foreach ($text as $value)
          {
-         $logtext.=$value.", ";
+         $logtext.=$value."; ";
          }
       }
    else
@@ -282,7 +294,7 @@ function addnote($userId,$bikeNum,$message)
    global $db;
    $userNote=$db->conn->real_escape_string(trim($message));
 
-   $result=$db->query("SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
+   $result=$db->query("SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
    $row=$result->fetch_assoc();
    $standName=$row["standName"];
    if ($standName!=NULL)
@@ -293,11 +305,11 @@ function addnote($userId,$bikeNum,$message)
       {
       $bikeStatus="rented by $userName +$phone";
       }
-   $result=$db->query("SELECT userName,number from users where userId=$userId");
+   $result=$db->query("SELECT userName,number from users where userId='$userId'");
    $row=$result->fetch_assoc();
    $userName=$row["userName"];
    $phone=$row["number"];
-   $db->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum");
+   $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
    notifyAdmins("Note b.$bikeNum (".$bikeStatus.") by $userName/$phone:".$userNote);
 
 }
@@ -314,14 +326,21 @@ function listbikes($stand)
       $row=$result->fetch_assoc();
       $stacktopbike=checktopofstack($row["standId"]);
       }
-   $result=$db->query("SELECT bikeNum,note FROM bikes LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE standName='$stand'");
+   $result=$db->query("SELECT bikeNum FROM bikes LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE standName='$stand'");
    while($row=$result->fetch_assoc())
       {
       $bikenum=$row["bikeNum"];
-      if ($row["note"])
+      $result2=$db->query("SELECT note FROM notes WHERE bikeNum='$bikenum' ORDER BY time DESC");
+      $note="";
+      while ($row=$result2->fetch_assoc())
+         {
+         $note.=$row["note"]."; ";
+         }
+      $note=substr($note,0,strlen($note)-2); // remove last two chars - comma and space
+      if ($note)
          {
          $bicycles[]="*".$bikenum; // bike with note / issue
-         $notes[]=$row["note"];
+         $notes[]=$note;
          }
       else
          {
@@ -342,7 +361,7 @@ function removenote($userId,$bikeNum)
 {
    global $db;
 
-   $result = $db->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum");
+   $result=$db->query("DELETE FROM notes WHERE bikeNum=$bikeNum LIMIT XXXX");
    response("Note for bike $bikeNum deleted.");
 }
 
@@ -353,7 +372,7 @@ function last($userId,$bike=0)
    $bikeNum=intval($bike);
    if ($bikeNum)
       {
-      $result=$db->query("SELECT userName,parameter,standName,action,time FROM `history` JOIN users ON history.userid=users.userid LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum ORDER BY time DESC LIMIT 10");
+      $result=$db->query("SELECT userName,parameter,standName,action,time FROM `history` JOIN users ON history.userid=users.userid LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum AND (action NOT LIKE '%CREDIT%') ORDER BY time DESC LIMIT 10");
       $bikeHistory=$result->fetch_all(MYSQLI_ASSOC);
       $historyInfo="<h3>Bike $bikeNum history:</h3><ul>";
       for($i=0; $i<count($bikeHistory);$i++)
@@ -375,8 +394,12 @@ function last($userId,$bike=0)
       }
    else
       {
-      $result=$db->query("SELECT bikeNum,userName,standName,note,users.userId FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId LEFT JOIN stands ON bikes.currentStand=stands.standId ORDER BY bikeNum");
-      $historyInfo="<h3>Current network usage:</h3><ul>";
+      $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser<>''");
+      $inuse=$result->num_rows;
+      $result=$db->query("SELECT bikeNum,userName,standName,users.userId FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId LEFT JOIN stands ON bikes.currentStand=stands.standId ORDER BY bikeNum");
+      $total=$result->num_rows;
+      $historyInfo="<h3>Current network usage:</h3>";
+      $historyInfo.="<h4>".$total." bicycles, ".$inuse." in use</h4><ul>";
       while($row=$result->fetch_assoc())
          {
          $historyInfo.="<li>".$row["bikeNum"]." - ";
@@ -391,7 +414,14 @@ function last($userId,$bike=0)
             $row2=$result2->fetch_assoc();
             $historyInfo.=": ".date("d/m H:i",strtotime($row2["time"]));
             }
-         if ($row["note"]) $historyInfo.=" (".$row["note"].")";
+         $result2=$db->query("SELECT note FROM notes WHERE bikeNum='".$row["bikeNum"]."' ORDER BY time DESC");
+         $note="";
+         while ($row=$result2->fetch_assoc())
+            {
+            $note.=$row["note"]."; ";
+            }
+         $note=substr($note,0,strlen($note)-2); // remove last two chars - comma and space
+         if ($note) $historyInfo.=" (".$note.")";
          $historyInfo.="</li>";
          }
       $historyInfo.="</ul>";
@@ -423,20 +453,20 @@ function revert($userId,$bikeNum)
    global $db;
 
    $standId=0;
-   $result = $db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser IS NOT NULL");
+   $result=$db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser IS NOT NULL");
    if (!$result->num_rows)
       {
       response("Bicycle $bikeNum is not rented right now. Revert not successful!",ERROR);
       return;
       }
-   $result = $db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1");
+   $result=$db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1");
    if ($result->num_rows==1)
       {
       $row = $result->fetch_assoc();
       $standId=$row["parameter"];
       $stand=$row["standName"];
       }
-   $result = $db->query("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action='RENT' ORDER BY time DESC LIMIT 1,1");
+   $result=$db->query("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action='RENT' ORDER BY time DESC LIMIT 1,1");
    if ($result->num_rows==1)
       {
       $row = $result->fetch_assoc();
@@ -444,10 +474,10 @@ function revert($userId,$bikeNum)
       }
    if ($standId and $code)
       {
-      $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code where bikeNum=$bikeNum");
-      $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'");
-      $result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code");
-      $result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
+      $result=$db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code where bikeNum=$bikeNum");
+      $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'");
+      $result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code");
+      $result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
       response('<h3>Bicycle '.$bikeNum.' reverted to <span class="label label-primary">'.$stand.'</span> with code <span class="label label-primary">'.$code.'</span>.</h3>');
       }
    else
@@ -626,7 +656,7 @@ function smscode($number)
    $number=$countryCode.substr($number,1,strlen($number));
    $number = $db->conn->real_escape_string($number);
    $userexists=0;
-   $result = $db->query("SELECT userId FROM users WHERE number='$number'");
+   $result=$db->query("SELECT userId FROM users WHERE number='$number'");
    if ($result->num_rows) $userexists=1;
 
    $smscode=chr(rand(65,90)).chr(rand(65,90))." ".rand(100000,999999);
@@ -636,8 +666,8 @@ function smscode($number)
    else $text="Enter this code to change password: ".$smscode;
    $text=$db->conn->real_escape_string($text);
 
-   $result = $db->query("INSERT INTO sent SET number='$number',text='$text'");
-   $result = $db->query("INSERT INTO history SET userId=0,bikeNum=0,action='REGISTER',parameter='$number;$smscodenormalized;$checkcode'");
+   $result=$db->query("INSERT INTO sent SET number='$number',text='$text'");
+   $result=$db->query("INSERT INTO history SET userId=0,bikeNum=0,action='REGISTER',parameter='$number;$smscodenormalized;$checkcode'");
 
    if (DEBUG===TRUE)
       {
@@ -681,7 +711,7 @@ function mapgetmarkers()
    global $db;
 
    $jsoncontent=array();
-   $result = $db->query("SELECT standId,count(bikeNum) AS bikecount,standDescription,standName,standPhoto,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.standId WHERE stands.serviceTag=0 GROUP BY standName ORDER BY standName");
+   $result=$db->query("SELECT standId,count(bikeNum) AS bikecount,standDescription,standName,standPhoto,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.standId WHERE stands.serviceTag=0 GROUP BY standName ORDER BY standName");
    while($row = $result->fetch_assoc())
       {
       $jsoncontent[]=$row;
@@ -694,11 +724,11 @@ function mapgetlimit($userId)
    global $db;
 
    if (!isloggedin()) response("");
-   $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
+   $result=$db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
    $row = $result->fetch_assoc();
    $rented= $row["countRented"];
 
-   $result = $db->query("SELECT userLimit FROM limits where userId=$userId");
+   $result=$db->query("SELECT userLimit FROM limits where userId=$userId");
    $row = $result->fetch_assoc();
    $limit = $row["userLimit"];
 
@@ -714,7 +744,7 @@ function mapgeolocation ($userid,$lat,$long)
 {
    global $db;
 
-   $result = $db->query("INSERT INTO geolocation SET userId='$userid',latitude='$lat',longitude='$long'");
+   $result=$db->query("INSERT INTO geolocation SET userId='$userid',latitude='$lat',longitude='$long'");
 
    response("");
 
