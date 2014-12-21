@@ -6,7 +6,7 @@ function help($number)
    global $db;
    $userid=getUser($number);
    $privileges=getprivileges($userid);
-   if ($privileges>1)
+   if ($privileges>0)
       {
       $message="Commands:\nHELP\n";
       if (iscreditenabled()) $message.="CREDIT\n";
@@ -316,6 +316,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
    if ($userNote)
       {
       $db->query("INSERT INTO notes SET bikeNum=$bikeNum,userId=$userId,note='$userNote'");
+      // @TODO report note to admins !!!!
       }
 
    $message = "Bike $bikeNum has been returned to stand $stand. Make sure you have set the code to $currentCode.";
@@ -501,69 +502,60 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 function note($number,$bikeNum,$message)
 {
 
-        global $db;
+   global $db;
    $userId = getUser($number);
    $bikeNum = intval($bikeNum);
 
-   if ($result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum")) {
-          if ($result->num_rows!=1)
+   $result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
+   if ($result->num_rows!=1)
       {
-         sendSMS($number,"Bike $bikeNum does not exist.");
-         return;
+      sendSMS($number,"Bike $bikeNum does not exist.");
+      return;
       }
-          $row =$result->fetch_assoc();
-      $phone=$row["number"];
-      $userName=$row["userName"];
-      $standName=$row["standName"];
-   } else error("bike code not retrieved");
+   $row =$result->fetch_assoc();
+   $phone=$row["number"];
+   $userName=$row["userName"];
+   $standName=$row["standName"];
 
    if ($standName!=NULL)
-   {
+      {
       $bikeStatus = "B.$bikeNum is at $standName.";
-   }
+      }
    else
-   {
+      {
       $bikeStatus = "B.$bikeNum is rented by $userName (+$phone).";
-   }
+      }
 
-   if ($result=$db->query("SELECT userName from users where number=$number")) {
-          $row =$result->fetch_assoc();
-      $reportedBy=$row["userName"];
-   } else error("user not retrieved");
+   $result=$db->query("SELECT userName from users where number=$number");
+   $row =$result->fetch_assoc();
+   $reportedBy=$row["userName"];
 
    if (trim(strtoupper(preg_replace('/[0-9]+/','',$message)))=="NOTE") // blank, delete note
-   {
+      {
       $userNote="";
-   }
+      }
    else
-        {
-        $matches=explode(" ",$message,3);
-        $userNote=$db->conn->real_escape_string(trim($matches[2]));
-        }
+      {
+      $matches=explode(" ",$message,3);
+      $userNote=$db->conn->real_escape_string(trim($matches[2]));
+      }
 
    if ($userNote=="")
-   {
+      {
       checkUserPrivileges($number);
-
-      if ($result=$db->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum")) {
-      } else error("update failed");
-
+      // @TODO remove SMS from deleting completely?
+      $result=$db->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum");
       //only admins can delete and those will receive the confirmation in the next step.
       //sendSMS($number,"Note for bike $bikeNum deleted.");
-
       notifyAdmins("Note for bike $bikeNum deleted by $reportedBy.");
-   }
+      }
    else
-   {
-      if ($result=$db->query("UPDATE bikes SET note='$userNote' where bikeNum=$bikeNum")) {
-      } else error("update failed");
-
+      {
+      $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
+      $noteid=$db->conn->insert_id;
       sendSMS($number,"Note for bike $bikeNum saved.");
-
-      notifyAdmins("Note b.$bikeNum by $reportedBy ($number):".$userNote." ".$bikeStatus);
-
-   }
-
+      notifyAdmins("Note #".$noteid.": b.$bikeNum by $reportedBy ($number):".$userNote." ".$bikeStatus);
+      }
 
 }
 
