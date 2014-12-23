@@ -14,3 +14,5 @@ Daniel Duris, dusoft@staznosti.sk
 * Bug fixes
 
 See LICENSE for more info.
+
+test
