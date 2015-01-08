@@ -6,7 +6,7 @@ require("db.class.php");
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title><? echo $systemName; ?> registration</title>
+<title><? echo $systemname; ?> registration</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -27,7 +27,7 @@ require("db.class.php");
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="<?php echo $systemURL; ?>"><?php echo $systemName; ?></a>
+          <a class="navbar-brand" href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -76,9 +76,9 @@ require("db.class.php");
    <br />
    <div class="panel panel-default">
   <div class="panel-body">
-    <i class="glyphicon glyphicon-copyright-mark"></i> <? echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemName; ?></a>
+    <i class="glyphicon glyphicon-copyright-mark"></i> <? echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
   </div>
-  <div class="panel-footer"><strong>Privacy policy:</strong> We will use your details for <?php echo $systemName; ?>-related activities only.</div>
+  <div class="panel-footer"><strong>Privacy policy:</strong> We will use your details for <?php echo $systemname; ?>-related activities only.</div>
    </div>
 
     </div><!-- /.container -->

@@ -61,8 +61,8 @@ function sendSMS($number,$text)
 
 function log_sendsms($number, $text)
 {
-        global $dbServer,$dbUser,$dbPassword,$dbName;
-        $localdb=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+        global $dbserver,$dbuser,$dbpassword,$dbname;
+        $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
         $localdb->connect();
         $localdb->conn->autocommit(TRUE);
         $number = $localdb->conn->real_escape_string($number);
@@ -129,7 +129,7 @@ function getuserid($number)
 **/
 function notifyAdmins($message,$notificationtype=0)
 {
-   global $db,$systemName;
+   global $db,$systemname;
 
    $result = $db->query("SELECT number,mail FROM users where privileges & 2 != 0");
    $admins = $result->fetch_all(MYSQLI_ASSOC);
@@ -141,7 +141,7 @@ function notifyAdmins($message,$notificationtype=0)
          }
       else
          {
-         sendEmail($admins[$i]["mail"],$systemName." notification",$message);
+         sendEmail($admins[$i]["mail"],$systemname." notification",$message);
          }
       }
 }
@@ -149,7 +149,7 @@ function notifyAdmins($message,$notificationtype=0)
 function sendConfirmationEmail($email)
 {
 
-        global $db, $dbPassword, $systemURL;
+        global $db, $dbpassword, $systemURL;
 
         $subject = 'registracia/registration White Bikes';
 
@@ -158,7 +158,7 @@ function sendConfirmationEmail($email)
         } else error("email not fetched");
 
         $userId =$user[0]["userId"];
-        $userKey = hash('sha256', $email.$dbPassword.rand(0,1000000));
+        $userKey = hash('sha256', $email.$dbpassword.rand(0,1000000));
 
         if ($result = $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'")) {
         } else error("insert registration failed");

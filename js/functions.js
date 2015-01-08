@@ -20,8 +20,8 @@ $(document).ready(function(){
    setInterval(getmarkers, 60000); // refresh map every 60 seconds
    setInterval(getuserstatus, 60000); // refresh map every 60 seconds
    if ("geolocation" in navigator) {
-   navigator.geolocation.getCurrentPosition(showlocation);
-   watchID=navigator.geolocation.watchPosition(changelocation);
+   navigator.geolocation.getCurrentPosition(showlocation,function(){ return; },{enableHighAccuracy:true,maximumAge:30000});
+   watchID=navigator.geolocation.watchPosition(changelocation,function(){ return; },{enableHighAccuracy:true,maximumAge:15000});
    }
 });
 
@@ -602,5 +602,8 @@ function changelocation(location)
       fillColor: '#0f0',
       fillOpacity: 0.1
       }).addTo(map);
+      map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
+      if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat")+","+$("body").data("mapcenterlong"));
+      savegeolocation();
       }
 }

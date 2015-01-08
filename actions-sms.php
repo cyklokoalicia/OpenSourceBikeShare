@@ -472,8 +472,8 @@ function freeBikes($number)
 
 function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 {
-   global $dbServer,$dbUser,$dbPassword,$dbName;
-        $localdb=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+   global $dbserver,$dbuser,$dbpassword,$dbname;
+        $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
         $localdb->connect();
         $localdb->conn->autocommit(TRUE);
 

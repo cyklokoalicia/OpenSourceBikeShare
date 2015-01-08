@@ -250,8 +250,8 @@ function checkstandname($stand)
 
 function logrequest($userid)
 {
-   global $dbServer,$dbUser,$dbPassword,$dbName;
-   $localdb=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+   global $dbserver,$dbuser,$dbpassword,$dbname;
+   $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
    $localdb->connect();
    $localdb->conn->autocommit(TRUE);
 
@@ -263,9 +263,9 @@ function logrequest($userid)
 
 function logresult($userid,$text)
 {
-   global $dbServer,$dbUser,$dbPassword,$dbName;
+   global $dbserver,$dbuser,$dbpassword,$dbname;
 
-   $localdb=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+   $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
    $localdb->connect();
    $localdb->conn->autocommit(TRUE);
    $userid = $localdb->conn->real_escape_string($userid);
@@ -489,7 +489,7 @@ function revert($userId,$bikeNum)
 
 function register($number,$code,$checkcode,$fullname,$email,$password,$password2,$existing)
 {
-   global $db, $dbPassword, $countryCode, $systemURL;
+   global $db, $dbpassword, $countrycode, $systemURL;
 
    $number=$db->conn->real_escape_string(trim($number));
    $code=$db->conn->real_escape_string(trim($code));
@@ -532,12 +532,12 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
 
 function login($number,$password)
 {
-   global $db,$systemURL,$countryCode;
+   global $db,$systemURL,$countrycode;
 
    $number=$db->conn->real_escape_string(trim($number));
    $password=$db->conn->real_escape_string(trim($password));
    $number=str_replace(" ","",$number); $number=str_replace("-","",$number); $number=str_replace("/","",$number);
-   $number=$countryCode.substr($number,1,strlen($number));
+   $number=$countrycode.substr($number,1,strlen($number));
 
    $result=$db->query("SELECT userId FROM users WHERE number='$number' AND password=SHA2('$password',512)");
    if ($result->num_rows==1)
@@ -649,11 +649,11 @@ function checkprivileges($userid)
 function smscode($number)
 {
 
-   global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $countryCode;
+   global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $countrycode;
    srand();
 
    $number=str_replace(" ","",$number); $number=str_replace("-","",$number); $number=str_replace("/","",$number);
-   $number=$countryCode.substr($number,1,strlen($number));
+   $number=$countrycode.substr($number,1,strlen($number));
    $number = $db->conn->real_escape_string($number);
    $userexists=0;
    $result=$db->query("SELECT userId FROM users WHERE number='$number'");
@@ -749,5 +749,7 @@ function mapgeolocation ($userid,$lat,$long)
    response("");
 
 }
+
+// TODO for admins: show bikes position on map depending on the user (allowed) geolocation, do not display user bikes without geoloc
 
 ?>

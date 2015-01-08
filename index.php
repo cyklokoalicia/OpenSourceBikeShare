@@ -3,7 +3,7 @@ require("config.php");
 require("db.class.php");
 require("actions-web.php");
 
-$db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 echo '<span style="display:none;"></span>'; // 2014-10-02 weird bug: map not shown, when DOCTYPE tag included, but everything OK, if this line printed here
 ?>
@@ -11,7 +11,7 @@ echo '<span style="display:none;"></span>'; // 2014-10-02 weird bug: map not sho
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title><? echo $systemName; ?></title>
+<title><? echo $systemname; ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -26,9 +26,9 @@ echo '<span style="display:none;"></span>'; // 2014-10-02 weird bug: map not sho
 <link rel="stylesheet" type="text/css" href="css/L.Control.Sidebar.css" />
 <link rel="stylesheet" type="text/css" href="css/map.css" />
 <script>
-var maplat=<?php echo $systemLat; ?>;
-var maplon=<?php echo $systemLong; ?>;
-var mapzoom=<?php echo $systemZoom; ?>;
+var maplat=<?php echo $systemlat; ?>;
+var maplon=<?php echo $systemlong; ?>;
+var mapzoom=<?php echo $systemzoom; ?>;
 var standselected=0;
 <?php
 if (isloggedin())
@@ -59,7 +59,7 @@ else
 <div class="row">
    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
    <a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
-   <h1><?php echo $systemName; ?></h1>
+   <h1><?php echo $systemname; ?></h1>
    </div>
    <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
    <ul class="nav nav-pills">

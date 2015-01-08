@@ -20,9 +20,9 @@ require("config.php");
 
 function report()
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
+	global $dbserver, $dbuser, $dbpassword, $dbname;
 	
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	$mysqli = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
 
 	if ($result = $mysqli->query("SELECT bikeNum,userName,standName,note
 	FROM bikes left join users on bikes.currentUser=users.userId left
