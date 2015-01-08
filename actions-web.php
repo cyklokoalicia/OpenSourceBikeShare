@@ -459,7 +459,7 @@ function revert($userId,$bikeNum)
       response("Bicycle $bikeNum is not rented right now. Revert not successful!",ERROR);
       return;
       }
-   $result=$db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1");
+   $result=$db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1");
    if ($result->num_rows==1)
       {
       $row = $result->fetch_assoc();
