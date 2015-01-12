@@ -177,6 +177,7 @@ function rent($number,$bike,$force=FALSE)
          }
 
    $result=$db->query("SELECT currentUser,currentCode FROM bikes WHERE bikeNum=$bikeNum");
+   if($result->num_rows!=1)
       {
       sendSMS($number,"Bike $bikeNum does not exist.");
       return;
