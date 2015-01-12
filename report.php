@@ -24,11 +24,12 @@ function report()
 	
 	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
 
-	if ($result = $mysqli->query("SELECT bikeNum,userName,standName,note
-	FROM bikes left join users on bikes.currentUser=users.userId left
-	join stands on bikes.currentStand=stands.standId order by
-	standName,bikeNum
-	LIMIT 100")) {
+	if ($result = $mysqli->query("
+	SELECT bikes.bikeNum,userName,standName,note
+        FROM bikes left join users on bikes.currentUser=users.userId left join notes on notes.bikeNum=bikes.BikeNum left
+        join stands on bikes.currentStand=stands.standId order by
+        standName,bikeNum
+        LIMIT 100")) {
 		$rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
 	} else error("rented bikes not fetched");
 
