@@ -253,6 +253,7 @@ function checklongrental()
             {
             $abusers.=" b".$bikenum." by ".$username.",";
             $found=1;
+            if ($notifyuser) sendSMS($bikenum,"Please, return your bike ".$bikenum." immediately to the closest stand! Ignoring this warning can get you banned from the system.");
             }
          }
       }
