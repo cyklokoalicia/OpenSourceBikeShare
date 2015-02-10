@@ -3,14 +3,14 @@ error_reporting(0);
 define('DEBUG',FALSE); // debug mode, TRUE to turn on
 define('ERROR',1);
 
-$systemName="OpenSourceBikeShare";
+$systemname="OpenSourceBikeShare";
 $systemURL="https://github.com/mmmaly/OpenSourceBikeShare"; // needs trailing slash!
-$systemLat="48.148154"; // default map center point - latitude
-$systemLong="17.117232"; // default map center point - longitude
-$systemZoom="15"; // default map zoom
+$systemlat="48.148154"; // default map center point - latitude
+$systemlong="17.117232"; // default map center point - longitude
+$systemzoom="15"; // default map zoom
 $systemrules="http://example.com/rules.htm"; // system rules / help URL
 
-$countryCode="421"; // international dialing code (country code prefix), no plus sign
+$countrycode="421"; // international dialing code (country code prefix), no plus sign
 
 $forcestack=0; // 0 = allow renting any bike at stand, 1 = allow renting last bicycle returned only (top of stack)
 $watches["email"]="email@example.com"; // notification email for notifications such as notes etc., blank if notifications not required
@@ -33,10 +33,12 @@ $limitincrease=0; // allow more bike rentals in addition to user limit: 0 = not 
 $credit["limitincrease"]=10; // credit needed to temporarily increase limit, applicable only when $limitincrease>0
 $credit["violation"]=5; // credit deduction for rule violations (applied by admins)
 
-$dbServer="localhost";
-$dbUser="bikeshare";
-$dbPassword="YourPassword";
-$dbName="WB";
+$notifyuser=0; // 0 = no notication send to users (when admins get notified), 1 = notification messages sent to users as well
 
-$connectors["sms"]="eurosms"; // API connector used for SMS operations (resides in connectors/ directory)
+$dbserver="localhost";
+$dbuser="bikeshare";
+$dbpassword="YourPassword";
+$dbname="WB";
+
+$connectors["sms"]="loopback"; // API connector used for SMS operations (resides in connectors/ directory)
 ?>

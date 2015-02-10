@@ -15,7 +15,7 @@ class Database
       {
       $this->conn=new mysqli($this->dbserver,$this->dbuser,$this->dbpassword,$this->dbname);
       $this->conn->autocommit(FALSE);
-      if (!$this->conn) error('DB connection error!');
+      if (!$this->conn OR $this->conn->connect_errno) error('DB connection error!');
       return $this->conn;
       }
 

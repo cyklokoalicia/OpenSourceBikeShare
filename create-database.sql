@@ -21,6 +21,15 @@ CREATE TABLE `credit` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `notes`;
+CREATE TABLE `notes` (
+  `bikeNum` int(11) NOT NULL,
+  `userId` int(11) NOT NULL,
+  `note` varchar(100),
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `geolocation`;
 CREATE TABLE `geolocation` (
   `userId` int(10) unsigned NOT NULL,

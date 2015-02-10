@@ -20,8 +20,8 @@ $(document).ready(function(){
    setInterval(getmarkers, 60000); // refresh map every 60 seconds
    setInterval(getuserstatus, 60000); // refresh map every 60 seconds
    if ("geolocation" in navigator) {
-   navigator.geolocation.getCurrentPosition(showlocation);
-   watchID=navigator.geolocation.watchPosition(changelocation);
+   navigator.geolocation.getCurrentPosition(showlocation,function(){ return; },{enableHighAccuracy:true,maximumAge:30000});
+   watchID=navigator.geolocation.watchPosition(changelocation,function(){ return; },{enableHighAccuracy:true,maximumAge:15000});
    }
 });
 
@@ -62,7 +62,6 @@ function mapinit()
 
 function getmarkers()
 {
-   markers=[]; markerdata=[];
    $.ajax({
          global: false,
          url: "command.php?action=map:markers"
@@ -509,8 +508,10 @@ function revert()
 function attachbicycleinfo(element,attachto)
 {
    $('#'+attachto+' .bikenumber').html($(element).attr('data-id'));
+   // show warning, if exists:
    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">Reported problem on this bicycle: '+$(element).attr('data-note')+'</div>');
-   //else resetconsole();
+   // or hide warning, if bike without issue is clicked
+   else if ($(element).hasClass('btn-warning')==false && $('#console div').hasClass('alert-warning')) resetconsole();
 }
 
 function checkonebikeattach()
@@ -601,5 +602,8 @@ function changelocation(location)
       fillColor: '#0f0',
       fillOpacity: 0.1
       }).addTo(map);
+      map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
+      if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat")+","+$("body").data("mapcenterlong"));
+      savegeolocation();
       }
 }

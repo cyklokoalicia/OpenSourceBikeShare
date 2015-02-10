@@ -1,7 +1,7 @@
 <?php
 require("config.php");
 require("db.class.php");
-$db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 require("actions-sms.php");
 

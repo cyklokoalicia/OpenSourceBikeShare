@@ -3,7 +3,7 @@ require("config.php");
 require("db.class.php");
 require('actions-web.php');
 
-$db=new Database($dbServer,$dbUser,$dbPassword,$dbName);
+$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
 if (isset($_COOKIE["loguserid"])) $userid=$_COOKIE["loguserid"];
