@@ -675,10 +675,13 @@ function smscode($number)
       }
    else
       {
+      sendSMS($number,$text);
+      /*
       $s = substr(md5($gatewayKey.$number),10,11);
       $text = substr($text,0,160);
       $um = urlencode($text);
       fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um","r");
+      */
       response($number,0,array("checkcode"=>$checkcode,"existing"=>$userexists));
       }
 }
