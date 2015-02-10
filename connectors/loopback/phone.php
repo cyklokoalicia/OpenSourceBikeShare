@@ -7,7 +7,9 @@ $usenumber="";
 if ($usenumber=="") exit('Please, edit this script and set $usenumber variable to number existing in the system.');
 if (isset($_POST["text"]))
    {
-   fopen("http://localhost/OpenSourceBikeShare/receive.php?sms_text=".urlencode($_POST["text"])."&sms_uuid=test&sender=".$usenumber."&receive_time=".urlencode(date("Y-m-d H:i:s")),"r");
+   $dirname=dirname($_SERVER['REQUEST_URI']);
+   $dirname=str_replace("/connectors/loopback","",$dirname);
+   fopen("http://".$_SERVER['HTTP_HOST'].$dirname."/receive.php?sms_text=".urlencode($_POST["text"])."&sms_uuid=test&sender=".$usenumber."&receive_time=".urlencode(date("Y-m-d H:i:s")),"r");
    }
 
 $sms=file_get_contents("loopback.log");

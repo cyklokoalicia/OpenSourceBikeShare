@@ -1,7 +1,7 @@
 <?php
 error_reporting(0);
 define('DEBUG',FALSE); // debug mode, TRUE to turn on
-define('ERROR',1);
+define('ERROR',0);
 
 $systemname="OpenSourceBikeShare";
 $systemURL="https://github.com/mmmaly/OpenSourceBikeShare"; // needs trailing slash!

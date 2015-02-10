@@ -4,7 +4,7 @@ Open Source Bike Share Installation Manual
 Database setup
 ----------
 1. Use `create-database.sql` file to create MariaDB/MySQL database with the system tables.
-2. Create an admin user in the table `users` with privileges 7.
+2. Create an admin user in the table `users` with privileges 7. Remember phone number you used for the user.
 3. Create the bike stands in the table `stands`, use 0 (zero) for a `serviceTag` to enable the stand or 1 to disable it. Use the same name for `standName` and `placeName`. `standPhoto` is a URL pointing to an image.
 4. Create the bicycles in the system in the table `bikes`. Use `standId` from the `stands` table for `currentStand` and set `currentCode` to random four digit code.
 
@@ -16,6 +16,13 @@ Config.php.example setup
 4. _Optional:_ Enable paid (credit) system in the `$credit` variables section, if you want charge the users for bike rental based on time and more.
 5. Edit database details and fill in correct info.
 6. _Optional:_ If you want to have SMS enable in addition to the web app, set the `$connectors["sms"]` variable to your provider's file in `connectors/` directory.
+
+Test (with loopback SMS connector)
+----------
+1. Open `connectors/loopback/phone.php` and set `$usenumber` variable to the testing number of admin user from _step 2_ of _database setup_.
+2. Open yourweb/connectors/loopback/phone.php in your browser.
+3. Test loopback connector by sending `HELP` command.
+4. If you receive message back, everything works.
 
 Watches and notifications (config.php)
 ----------
