@@ -58,6 +58,7 @@ class SMSConnector
          $log.=$message;
          }
       file_put_contents("connectors/loopback/loopback.log",$log,FILE_APPEND);
+      unset($this->store);
       }
 
    // send SMS message via API
