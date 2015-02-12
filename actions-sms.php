@@ -287,6 +287,12 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
    else
       {
       $result=$db->query("SELECT currentCode,currentUser FROM bikes WHERE bikeNum=$bikeNum");
+      if ($result->num_rows!=1)
+         {
+         sendSMS($number,"The bike $bikeNum is not rented. Saint Thomas, the patronus of all unrented bikes, prohibited returning unrented bikes.");
+         return;
+         }
+
       $row =$result->fetch_assoc();
       $currentCode = sprintf("%04d",$row["currentCode"]);
       $currentUser =$row["currentUser"];
