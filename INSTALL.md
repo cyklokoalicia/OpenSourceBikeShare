@@ -4,7 +4,7 @@ Open Source Bike Share Installation Manual
 Database setup
 ----------
 1. Use `create-database.sql` file to create MariaDB/MySQL database with the system tables.
-2. Create an admin user in the table `users` with privileges 7. Remember phone number you used for the user.
+2. Create an admin user in the table `users` with privileges 7. Remember phone `number` you used for this user.
 3. Create the bike stands in the table `stands`, use 0 (zero) for a `serviceTag` to enable the stand or 1 to disable it. Use the same name for `standName` and `placeName`. `standPhoto` is a URL pointing to an image.
 4. Create the bicycles in the system in the table `bikes`. Use `standId` from the `stands` table for `currentStand` and set `currentCode` to random four digit code.
 
@@ -19,7 +19,7 @@ Config.php.example setup
 
 Test (with loopback SMS connector)
 ----------
-1. Open `connectors/loopback/phone.php` and set `$usenumber` variable to the testing number of admin user from _step 2_ of _database setup_.
+1. Open `connectors/loopback/phone.php` and set `$usenumber` variable to the phone `number` of admin user from _step 2_ of _database setup_.
 2. Open yourweb/connectors/loopback/phone.php in your browser.
 3. Test loopback connector by sending `HELP` command.
 4. If you receive message back, everything works.
@@ -30,7 +30,7 @@ Open Source Bicycle Share is a community run system and therefore requires some 
 You can set these using `$watches` variable. Any violations from the set rules will be reported to the admins (with `privileges` 2+) by SMS and by email `$watches["email"]`.
 Watch and report:
 * if bicycle is taken out of stack, if $forcestack is enabled (see below): `$watches["stack"]`.
-* if any long rentals occur: `$watches["longrental"]`.
+* if any long rentals occur: `$watches["longrental"]`. In addition, if `$notifyuser` is set to 1, user will be notified as well to his phone.
 * if any user has rented too many bikes during a short period: `$watches["timetoomany"]` and `$watches["numbertoomany"]`.
 
 Additional variables are used by the credit system (if enabled):
@@ -53,7 +53,7 @@ You can have either credit system enabled (charging per rentals) or disabled (fr
     1. Flat price every $watches["flatpricecycle"] minutes: 1
     2. Doubled price every $watches["doublepricecycle"] minutes: 2 (with capping at $watches["doublepricecyclecap"] cycles)
 * Set additional charge for long rentals (e.g. over 24 hours) using `$credit["longrental"]` variable.
-* If you want to allow users to temporarily increase their rental limit, set `$limitincrease` to number of bikes allowed in addition to their limit. Also set `$credit["limitincrease"]` to require credits for this operation.
+* If you want to allow users to temporarily increase their rental limit, set `$limits["increase"]` to number of bikes allowed in addition to their limit. Also set `$credit["limitincrease"]` to require credits for this operation.
 * Set system violation fee using `$credit["violation"]`.
 
 CRON job
@@ -62,6 +62,7 @@ CRON job
 
 User registration
 ----------
+* Set `$limits["registration"]` to number of bikes user can rent after he registered. 0 is recommended, if you run a community system (admin can change this limit after verification).
 1. Point users to yourweb/register.php to register.
 
 Connectors (SMS provider files)

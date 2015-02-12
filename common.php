@@ -187,7 +187,7 @@ If you agree with the rules, click on the following link:
 
 function confirmUser($userKey)
 {
-        global $db;
+        global $db,$limits;
         $userKey = $db->conn->real_escape_string($userKey);
 
         if ($result = $db->query("SELECT userId FROM registration where userKey='$userKey'")) {
@@ -203,7 +203,7 @@ function confirmUser($userKey)
                 }
         } else error("key not fetched");
 
-        if ($result = $db->query("UPDATE limits SET userLimit=1 where userId=$userId")) {
+        if ($result = $db->query("UPDATE limits SET userLimit='".$limits["registration"]."' where userId=$userId")) {
         } else error("update limit failed");
 
         if ($result = $db->query("DELETE from registration where userId='$userId'")) {
@@ -238,7 +238,7 @@ function checktopofstack($standid)
 
 function checklongrental()
 {
-   global $db,$watches;
+   global $db,$watches,$notifyuser;
 
    $abusers=""; $found=0;
    $result=$db->query("SELECT bikeNum,currentUser,userName FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId WHERE currentStand IS NULL");

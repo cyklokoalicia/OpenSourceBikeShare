@@ -23,14 +23,16 @@ $watches["flatpricecycle"]=60; // in minutes (uses flat price $credit["rent"] ev
 $watches["doublepricecycle"]=60; // in minutes (doubles the rental price $credit["rent"] every $watches["doublepricecycle"] minutes after first paid period, i.e. $watches["freetime"]*2)
 $watches["doublepricecyclecap"]=3; // number of cycles after doubling of rental price $credit["rent"] is capped and stays flat (but reached cycle multiplier still applies)
 
+$limits["registration"]=0; // number of bikes user can rent after he registered: 0 = no bike, 1 = 1 bike etc.
+$limits["increase"]=0; // allow more bike rentals in addition to user limit: 0 = not allowed, otherwise: temporary limit increase - number of bikes
+
 $credit["enabled"]=1; // 0 = no credit system, 1 = apply credit system rules and deductions
 $credit["currency"]="€"; // currency used for credit system
 $credit["min"]=2; // minimum credit required to allow any bike operations
 $credit["rent"]=2; // rental fee (after $watches["freetime"])
 $credit["pricecycle"]=0; // 0 = disabled, 1 = charge flat price $credit["rent"] every $watches["flatpricecycle"] minutes, 2 = charge doubled price $credit["rent"] every $watches["doublepricecycle"] minutes
 $credit["longrental"]=5; // long rental fee ($watches["longrental"] time)
-$limitincrease=0; // allow more bike rentals in addition to user limit: 0 = not allowed, otherwise: temporary limit increase - number of bikes
-$credit["limitincrease"]=10; // credit needed to temporarily increase limit, applicable only when $limitincrease>0
+$credit["limitincrease"]=10; // credit needed to temporarily increase limit, applicable only when $limits["increase"]>0
 $credit["violation"]=5; // credit deduction for rule violations (applied by admins)
 
 $notifyuser=0; // 0 = no notication send to users (when admins get notified), 1 = notification messages sent to users as well
