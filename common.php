@@ -216,18 +216,22 @@ function confirmUser($userKey)
 function checktopofstack($standid)
 {
    global $db;
+   $currentbikes=array();
    // find current bikes at stand
    $result=$db->query("SELECT bikeNum FROM bikes LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE standId='$standid'");
    while($row=$result->fetch_assoc())
       {
       $currentbikes[]=$row["bikeNum"];
       }
-   // find last returned bike at stand
-   $result=$db->query("SELECT bikeNum FROM history WHERE action='RETURN' AND parameter='$standid' AND bikeNum IN (".implode($currentbikes,",").") ORDER BY time DESC LIMIT 1");
-   if ($result->num_rows)
+   if (count($currentbikes))
       {
-      $row=$result->fetch_assoc();
-      return $row["bikeNum"];
+      // find last returned bike at stand
+      $result=$db->query("SELECT bikeNum FROM history WHERE action='RETURN' AND parameter='$standid' AND bikeNum IN (".implode($currentbikes,",").") ORDER BY time DESC LIMIT 1");
+      if ($result->num_rows)
+         {
+         $row=$result->fetch_assoc();
+         return $row["bikeNum"];
+         }
       }
    return FALSE;
 }
