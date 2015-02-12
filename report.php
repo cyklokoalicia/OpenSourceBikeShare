@@ -20,19 +20,24 @@ require("config.php");
 
 function report()
 {
-	global $dbserver, $dbuser, $dbpassword, $dbname;
+	global $dbServer, $dbUser, $dbPassword, $dbName;
 	
-	$mysqli = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
 
-	if ($result = $mysqli->query("
-	SELECT bikes.bikeNum,userName,standName,note
-        FROM bikes left join users on bikes.currentUser=users.userId left join notes on notes.bikeNum=bikes.BikeNum left
-        join stands on bikes.currentStand=stands.standId order by
-        standName,bikeNum
-        LIMIT 100")) {
+	if ($result = $mysqli->query("SELECT bikes.bikeNum,userName,standName,note FROM bikes left join users on
+	        bikes.currentUser=users.userId left join (select * from notes
+	        where deleted is null ) as notes on notes.bikeNum=bikes.BikeNum left
+	        join stands on bikes.currentStand=stands.standId
+	                order by standName,bikeNum LIMIT 100")) 
+        {
 		$rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
-	} else error("rented bikes not fetched");
-
+	} 
+	else 
+	{
+	    echo "problem s sql dotazom";
+	    error("rented bikes not fetched");
+	}
+	
 	for($i=0; $i<count($rentedBikes);$i++)
 	{
 		echo $rentedBikes[$i]["bikeNum"],"&nbsp;",$rentedBikes[$i]["userName"],$rentedBikes[$i]["standName"],"&nbsp;",$rentedBikes[$i]["note"],"<br/>";
