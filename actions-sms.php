@@ -190,7 +190,7 @@ function rent($number,$bike,$force=FALSE)
    $note=$row["note"];
    if ($currentUser)
       {
-      $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
+      $result=$db->query("SeLECT number FROM users WHERE userId=$currentUser");
       $row =$result->fetch_assoc();
       $currentUserNumber =$row["number"];
       }
@@ -299,9 +299,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum ORDER BY time DESC LIMIT 1");
       $row=$result->fetch_assoc();
       $note=$row["note"];
-      $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
-      $row =$result->fetch_assoc();
-      $currentUserNumber =$row["number"];
+      $currentUserNumber =$number;
       }
 
    $result=$db->query("SELECT standId FROM stands where standName='$stand'");
