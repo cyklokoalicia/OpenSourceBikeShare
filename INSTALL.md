@@ -25,7 +25,7 @@ Admin user registration
 
 SMS system testing (with loopback SMS connector)
 ----------
-1. Open `connectors/loopback/phone.php` and set `$usenumber` variable to the phone `number` of admin user from _step 4_ of _admin user registration_.
+1. Open `connectors/loopback/phone.php` and set `$usenumber` variable to the phone `number` of admin user from _step 4_ of _admin user registration_. *Note*: number must be prepended by international dialing code, no plus, no zeroes!
 2. Set permissions to 777 for `connectors/loopback/loopback.log` file.
 3. Open yourweb/connectors/loopback/phone.php in your browser.
 4. Test loopback connector by sending `HELP` command.
