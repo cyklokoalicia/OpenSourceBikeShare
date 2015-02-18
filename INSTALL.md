@@ -83,7 +83,8 @@ Connectors (SMS provider / gateway API files)
 
 Statistics (in Google Analytics)
 ----------
-System is (Universal) Google Analytics ready.
+System is (Universal) Google Analytics ready:
+
 1. Create file `analytics.php` with Google Analytics Javascript code (in <script>...</script> tags).
 2. User actions will be reported as Events. This includes bicycle rentals, returns, notes etc.
 
