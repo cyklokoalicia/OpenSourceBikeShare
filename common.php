@@ -1,6 +1,13 @@
 <?php
-require("connectors/".$connectors["sms"].".php");
-$sms=new SMSConnector($connectors["sms"]);
+if (issmssystemenabled()==TRUE)
+   {
+   require("connectors/".$connectors["sms"].".php");
+   }
+else
+   {
+   require("connectors/disabled.php");
+   }
+$sms=new SMSConnector();
 
 function error($message)
 {
@@ -11,8 +18,8 @@ function error($message)
 
 function sendEmail($email,$subject,$message)
 {
-   global $db;
-   $headers = 'From: info@whitebikes.info' . "\r\n" . 'Reply-To: info@cyklokoalicia.sk' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
+   global $db, $systememail;
+   $headers = 'From: '.$systememail. "\r\n" . 'Reply-To: '.$systememail. "\r\n" . 'X-Mailer: PHP/' . phpversion();
    if (DEBUG===FALSE) mail($email, $subject, $message, $headers); // @TODO: replace with proper SMTP mailer
    else echo $email,' | ',$subject,' | ',$message;
 }
@@ -153,18 +160,15 @@ function sendConfirmationEmail($email)
 
         $subject = 'registracia/registration White Bikes';
 
-        if ($result = $db->query("SELECT userName,userId FROM users where mail='$email'")) {
-                $user = $result->fetch_all(MYSQLI_ASSOC);
-        } else error("email not fetched");
+        $result=$db->query("SELECT userName,userId FROM users where mail='$email'");
+        $user=$result->fetch_all(MYSQLI_ASSOC);
 
-        $userId =$user[0]["userId"];
-        $userKey = hash('sha256', $email.$dbpassword.rand(0,1000000));
+        $userId=$user[0]["userId"];
+        $userKey=hash('sha256', $email.$dbpassword.rand(0,1000000));
 
-        if ($result = $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'")) {
-        } else error("insert registration failed");
-
-        if ($result = $db->query("INSERT into limits SET userId='$userId',userLimit=0")) {
-        } else error("insert limit failed");
+        $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'");
+        $db->query("INSERT into limits SET userId='$userId',userLimit=0");
+        $db->query("INSERT into credit SET userId='$userId',credit=0");
 
                 $mena = preg_split("/[\s,]+/",$user[0]["userName"]);
                 $krstne = $mena[0];
@@ -187,11 +191,11 @@ If you agree with the rules, click on the following link:
 
 function confirmUser($userKey)
 {
-        global $db,$limits;
+        global $db, $limits;
         $userKey = $db->conn->real_escape_string($userKey);
 
-        if ($result = $db->query("SELECT userId FROM registration where userKey='$userKey'")) {
-                if($result->num_rows==1)
+        $result=$db->query("SELECT userId FROM registration where userKey='$userKey'");
+        if($result->num_rows==1)
                 {
                         $row = $result->fetch_assoc();
                         $userId = $row["userId"];
@@ -201,13 +205,10 @@ function confirmUser($userKey)
                         echo '<div class="alert alert-danger" role="alert">Registration key not found!</div>';
                         return FALSE;
                 }
-        } else error("key not fetched");
 
-        if ($result = $db->query("UPDATE limits SET userLimit='".$limits["registration"]."' where userId=$userId")) {
-        } else error("update limit failed");
+        $db->query("UPDATE limits SET userLimit='".$limits["registration"]."' where userId=$userId");
 
-        if ($result = $db->query("DELETE from registration where userId='$userId'")) {
-        } else error("delete registration failed");
+        $db->query("DELETE from registration where userId='$userId'");
 
         echo '<div class="alert alert-success" role="alert">Your account has been activated. Welcome!</div>';
 
@@ -241,12 +242,13 @@ function checklongrental()
    global $db,$watches,$notifyuser;
 
    $abusers=""; $found=0;
-   $result=$db->query("SELECT bikeNum,currentUser,userName FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId WHERE currentStand IS NULL");
+   $result=$db->query("SELECT bikeNum,currentUser,userName,number FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId WHERE currentStand IS NULL");
    while($row=$result->fetch_assoc())
       {
       $bikenum=$row["bikeNum"];
       $userid=$row["currentUser"];
       $username=$row["userName"];
+      $userphone=$row["number"];
       $result2=$db->query("SELECT time FROM history WHERE bikeNum=$bikenum AND userId=$userid AND action='RENT' ORDER BY time DESC LIMIT 1");
       if ($result2->num_rows)
          {
@@ -257,7 +259,7 @@ function checklongrental()
             {
             $abusers.=" b".$bikenum." by ".$username.",";
             $found=1;
-            if ($notifyuser) sendSMS($bikenum,"Please, return your bike ".$bikenum." immediately to the closest stand! Ignoring this warning can get you banned from the system.");
+            if ($notifyuser) sendSMS($userphone,"Please, return your bike ".$bikenum." immediately to the closest stand! Ignoring this warning can get you banned from the system.");
             }
          }
       }
@@ -428,6 +430,16 @@ function getcreditcurrency()
    if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
 
    return $credit["currency"];
+
+}
+
+function issmssystemenabled()
+{
+   global $connectors;
+
+   if ($connectors["sms"]=="") return FALSE;
+
+   return TRUE;
 
 }
 

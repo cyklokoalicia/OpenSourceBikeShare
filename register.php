@@ -1,6 +1,7 @@
 <?php
 require("config.php");
 require("db.class.php");
+require("common.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,8 +46,8 @@ require("db.class.php");
             <div id="console"></div>
             </div>
 
-
-       <form class="container" id="step1">
+<?php if (issmssystemenabled()==TRUE): ?>
+      <form class="container" id="step1">
        <h2>Step 1 - Confirm your phone number</h2>
          <div class="form-group">
             <label for="number" class="control-label">Phone number:</label> <input type="text" name="number" id="number" class="form-control" placeholder="09XX 123 456" />
@@ -56,8 +57,15 @@ require("db.class.php");
        </form>
       <form class="container" id="step2">
       <h2 id="step2title">Step 2 - Create account</h2>
-         <div class="form-group">
+      <div class="form-group">
             <label for="smscode" class="control-label">SMS code (received to your phone):</label> <input type="text" name="smscode" id="smscode" class="form-control" /></div>
+<?php else: ?>
+      <form class="container" id="step2">
+      <h2 id="step2title">Step 1 - Create account</h2>
+         <input type="hidden" name="validatednumber" id="validatednumber" value="" />
+         <input type="hidden" name="checkcode" id="checkcode" value="" />
+         <input type="hidden" name="existing" id="existing" value="0" />
+<?php endif; ?>
             <div id="regonly">
          <div class="form-group">
             <label for="fullname">Fullname:</label> <input type="text" name="fullname" id="fullname" class="form-control" placeholder="Firstname Lastname" /></div>
@@ -68,9 +76,6 @@ require("db.class.php");
             <label for="password">Password:</label> <input type="password" name="password" id="password" class="form-control" /></div>
          <div class="form-group">
             <label for="password2">Password confirmation:</label> <input type="password" name="password2" id="password2" class="form-control" /></div>
-         <input type="hidden" name="validatednumber" id="validatednumber" value="" />
-         <input type="hidden" name="checkcode" id="checkcode" value="" />
-         <input type="hidden" name="existing" id="existing" value="0" />
          <button type="submit" id="register" class="btn btn-primary">Create account</button>
          </form>
    <br />

@@ -9,7 +9,8 @@ $db->connect();
 if (isset($_COOKIE["loguserid"])) $userid=$_COOKIE["loguserid"];
 else $userid=0;
 if (isset($_COOKIE["logsession"])) $session=$_COOKIE["logsession"];
-$action=trim($_GET["action"]);
+$action="";
+if (isset($_GET["action"])) $action=trim($_GET["action"]);
 
 switch($action)
    {

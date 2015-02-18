@@ -46,12 +46,13 @@ $db->connect();
    <h1>Account activation</h1>
    </div>
 <?php
-$userKey=$_GET["key"];
-confirmUser($userKey);
+$userkey="";
+if (isset($_GET["key"])) $userkey=$_GET["key"];
+confirmUser($userkey);
 ?>
 <div class="alert alert-warning" role="alert">
-<p>Registráciou potvrdzujem, že som si prečítal: <a href="https://docs.google.com/document/d/1yEHbLEAU9waMiaxTqXFzZP0bLyRg7NMtN2dQUazro9o/edit">Navod</a></p>
-<p>By registering I confirm that I have read: <a href="https://docs.google.com/document/d/1RBC4BOyZSaAeoTw4pIlUkWRFZSz16NR6glTAgZWvqTQ/edit">User Guide</a></p>
+<p>Registráciou potvrdzujem, že som si prečítal: <a href="<?php echo $systemrules; ?>">Navod</a></p>
+<p>By registering I confirm that I have read: <a href="<?php echo $systemrules; ?>">User Guide</a></p>
 </div>
    <div class="panel panel-default">
   <div class="panel-body">
