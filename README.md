@@ -6,12 +6,13 @@ Bottom-up bicycle sharing system suitable for smaller communities or areas such 
 
 Features
 ----------
-* Web app (mobile-friendly) and SMS system to rent and return bicycles
+* Web app (mobile-friendly) and optional SMS system to rent and return bicycles
 * Web map with geolocation and availability of the bicycle stands
+* Optional credit system for paid rentals
 * Registration form for the new users
 * Admin to edit users, create stands or change bicycle availability
 * Google Analytics enabled for stats on web and bike usage
-* Connector system to support any provider of SMS Gateway / API (the connector for eurosms.com provided)
+* Connector system to support any provider of SMS Gateway / API
 
 Where is it working?
 ---------

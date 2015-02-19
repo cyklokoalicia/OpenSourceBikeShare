@@ -409,10 +409,10 @@ function last($userId,$bike=0)
             }
          else
             {
-            $historyInfo.=$row["userName"];
+            $historyInfo.='<span class="bg-warning">'.$row["userName"];
             $result2=$db->query("SELECT time FROM history WHERE bikeNum=".$row["bikeNum"]." AND userId=".$row["userId"]." AND action='RENT' ORDER BY time DESC");
             $row2=$result2->fetch_assoc();
-            $historyInfo.=": ".date("d/m H:i",strtotime($row2["time"]));
+            $historyInfo.=": ".date("d/m H:i",strtotime($row2["time"])).'</span>';
             }
          $result2=$db->query("SELECT note FROM notes WHERE bikeNum='".$row["bikeNum"]."' ORDER BY time DESC");
          $note="";
