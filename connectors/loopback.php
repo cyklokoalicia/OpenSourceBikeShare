@@ -3,7 +3,7 @@
 class SMSConnector
    {
 
-   function __construct($connector)
+   function __construct()
       {
       $this->CheckConfig();
       if (isset($_GET["sms_text"])) $this->message=$_GET["sms_text"];

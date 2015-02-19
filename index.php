@@ -80,12 +80,12 @@ else
 <div id="loginform">
 <h1>Log in</h1>
 <?php
-if (isset($_GET["error"]) AND $_GET["error"]==1) echo '<div class="alert alert-danger" role="alert"><h3>Phone number or password incorrect! Please, try again.</h3></div>';
+if (isset($_GET["error"]) AND $_GET["error"]==1) echo '<div class="alert alert-danger" role="alert"><h3>User / phone number or password incorrect! Please, try again.</h3></div>';
 elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert alert-danger" role="alert"><h3>Session timed out! Please, log in again.</h3></div>';
 ?>
       <form method="POST" action="command.php?action=login">
       <div class="row"><div class="col-lg-12">
-            <label for="number" class="control-label">Phone number:</label> <input type="text" name="number" id="number" class="form-control" placeholder="09XX 123 456" />
+            <label for="number" class="control-label"><?php if (issmssystemenabled()==TRUE) echo 'Phone number:'; else echo 'User number:'; ?></label> <input type="text" name="number" id="number" class="form-control" />
        </div></div>
        <div class="row"><div class="col-lg-12">
             <label for="password">Password:</label> <input type="password" name="password" id="password" class="form-control" />

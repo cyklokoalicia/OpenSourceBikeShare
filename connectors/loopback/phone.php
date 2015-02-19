@@ -3,7 +3,7 @@
 CSS bubbles from:
 https://stackoverflow.com/questions/19400183/how-to-style-chat-bubble-in-iphone-classic-style-using-css-only
 */
-$usenumber="";
+$usenumber=""; // including international dialing code, no plus, no zeroes
 if ($usenumber=="") exit('Please, edit this script and set $usenumber variable to number existing in the system.');
 if (isset($_POST["text"]))
    {

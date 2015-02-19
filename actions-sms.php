@@ -190,7 +190,7 @@ function rent($number,$bike,$force=FALSE)
    $note=$row["note"];
    if ($currentUser)
       {
-      $result=$db->query("SeLECT number FROM users WHERE userId=$currentUser");
+      $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
       $row =$result->fetch_assoc();
       $currentUserNumber =$row["number"];
       }
@@ -299,7 +299,9 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum and deleted IS null ORDER BY time DESC LIMIT 1");
       $row=$result->fetch_assoc();
       $note=$row["note"];
-      $currentUserNumber =$number;
+      $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
+      $row =$result->fetch_assoc();
+      $currentUserNumber =$row["number"];
       }
 
    $result=$db->query("SELECT standId FROM stands where standName='$stand'");
@@ -324,14 +326,14 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       // @TODO report note to admins !!!!
       }
 
-   $message = "Bike $bikeNum has been returned to stand $stand. Make sure you have set the code to $currentCode.";
+   $message = "Bike $bikeNum returned to stand $stand. Make sure the code is $currentCode.";
    if ($note or $userNote)
       {
       $tempnote=$note;
       if ($userNote) $tempnote=$userNote;
       if ($tempnote) $message.="(note:".$tempnote.")";
       }
-   $message.=" Please, rotate the lockpad to 0000.";
+   $message.=" Rotate lockpad to 0000.";
 
    if ($force==FALSE)
       {
@@ -346,7 +348,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
 
    if (iscreditenabled())
       {
-      $message.="Credit remaining: ".getusercredit($userId).getcreditcurrency();
+      $message.="Credit: ".getusercredit($userId).getcreditcurrency();
       if ($creditchange) $message.=" (-".$creditchange.")";
       $message.=".";
       }

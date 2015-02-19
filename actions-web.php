@@ -504,28 +504,39 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
       {
       response("Password do not match. Please correct and try again.",ERROR);
       }
-   $result=$db->query("SELECT parameter FROM history WHERE userId=0 AND bikeNum=0 AND action='REGISTER' AND parameter='$parametercheck' ORDER BY time DESC LIMIT 1");
-   if ($result->num_rows==1)
+   if (issmssystemenabled()==TRUE)
       {
-      if (!$existing) // new user registration
+      $result=$db->query("SELECT parameter FROM history WHERE userId=0 AND bikeNum=0 AND action='REGISTER' AND parameter='$parametercheck' ORDER BY time DESC LIMIT 1");
+      if ($result->num_rows==1)
          {
-         $result=$db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='$number',privileges=0");
-         $userId=$db->conn->insert_id;
-         sendConfirmationEmail($email);
-         response("You have been successfully registered. Please, check your email and read the instructions to finish your registration..");
+         if (!$existing) // new user registration
+            {
+            $result=$db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='$number',privileges=0");
+            $userId=$db->conn->insert_id;
+            sendConfirmationEmail($email);
+            response("You have been successfully registered. Please, check your email and read the instructions to finish your registration.");
+            }
+         else // existing user, password change
+            {
+            $result=$db->query("SELECT userId FROM users WHERE number='$number'");
+            $row=$result->fetch_assoc();
+            $userId=$row["userId"];
+            $result=$db->query("UPDATE users SET password=SHA2('$password',512) WHERE userId='$userId'");
+            response('Password successfully changed. Your username is your phone number. Continue to <a href="'.$systemURL.'">login</a>.');
+            }
          }
-      else // existing user, password change
+      else
          {
-         $result=$db->query("SELECT userId FROM users WHERE number='$number'");
-         $row=$result->fetch_assoc();
-         $userId=$row["userId"];
-         $result=$db->query("UPDATE users SET password=SHA2('$password',512) WHERE userId='$userId'");
-         response('Password successfully changed. Your username is your phone number. Continue to <a href="'.$systemURL.'">login</a>.');
+         response("Problem with the SMS code entered. Please check and try again.",ERROR);
          }
       }
-   else
+   else // SMS system disabled
       {
-      response("Problem with the SMS code entered. Please check and try again.",ERROR);
+      $result=$db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='',privileges=0");
+      $userId=$db->conn->insert_id;
+      $result=$db->query("UPDATE users SET number='$userId' WHERE userId='$userId'");
+      sendConfirmationEmail($email);
+      response("You have been successfully registered. Please, check your email and read the instructions to finish your registration. Your number for login is: ".$userId);
       }
 
 }
@@ -537,7 +548,7 @@ function login($number,$password)
    $number=$db->conn->real_escape_string(trim($number));
    $password=$db->conn->real_escape_string(trim($password));
    $number=str_replace(" ","",$number); $number=str_replace("-","",$number); $number=str_replace("/","",$number);
-   $number=$countrycode.substr($number,1,strlen($number));
+   if ($number[0]=="0") $number=$countrycode.substr($number,1,strlen($number));
 
    $result=$db->query("SELECT userId FROM users WHERE number='$number' AND password=SHA2('$password',512)");
    if ($result->num_rows==1)
@@ -649,7 +660,7 @@ function checkprivileges($userid)
 function smscode($number)
 {
 
-   global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $countrycode;
+   global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $countrycode, $connectors;
    srand();
 
    $number=str_replace(" ","",$number); $number=str_replace("-","",$number); $number=str_replace("/","",$number);
@@ -676,13 +687,8 @@ function smscode($number)
    else
       {
       sendSMS($number,$text);
-      /*
-      $s = substr(md5($gatewayKey.$number),10,11);
-      $text = substr($text,0,160);
-      $um = urlencode($text);
-      fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um","r");
-      */
-      response($number,0,array("checkcode"=>$checkcode,"existing"=>$userexists));
+      if (issmssystemenabled()==TRUE) response($number,0,array("checkcode"=>$checkcode,"existing"=>$userexists));
+      else response($number,0,array("checkcode"=>$checkcode,"existing"=>$userexists));
       }
 }
 
