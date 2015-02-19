@@ -185,7 +185,7 @@ function rent($number,$bike,$force=FALSE)
    $row =$result->fetch_assoc();
    $currentCode = sprintf("%04d",$row["currentCode"]);
    $currentUser=$row["currentUser"];
-   $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum ORDER BY time DESC LIMIT 1");
+   $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum and deleted is null ORDER BY time DESC LIMIT 1");
    $row=$result->fetch_assoc();
    $note=$row["note"];
    if ($currentUser)
@@ -280,7 +280,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
 
       $row=$result->fetch_assoc();
       $currentCode = sprintf("%04d",$row["currentCode"]);
-      $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum ORDER BY time DESC LIMIT 1");
+      $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum and deleted is NULL ORDER BY time DESC LIMIT 1");
       $row=$result->fetch_assoc();
       $note=$row["note"];
       }
@@ -296,7 +296,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       $row =$result->fetch_assoc();
       $currentCode = sprintf("%04d",$row["currentCode"]);
       $currentUser =$row["currentUser"];
-      $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum ORDER BY time DESC LIMIT 1");
+      $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum and deleted IS null ORDER BY time DESC LIMIT 1");
       $row=$result->fetch_assoc();
       $note=$row["note"];
       $currentUserNumber =$number;
@@ -372,7 +372,7 @@ function where($number,$bike)
    $phone=$row["number"];
    $userName=$row["userName"];
    $standName=$row["standName"];
-   $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum ORDER BY time DESC LIMIT 1");
+   $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum and deleted IS NULL ORDER BY time DESC LIMIT 1");
    $row=$result->fetch_assoc();
    $note=$row["note"];
    if ($note)
