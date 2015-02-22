@@ -14,8 +14,6 @@ Development
 1. Automatic installation process (incl. QR code generation for bicycles and stands)
 2. Complete admin interface on web (not part of map)
 3. New user confirmation by admins
-4. SMS system optional (cut off dependencies)
-~~5. SMS testing (loopback) interface~~
 
 ### UX and functions
 * i18n translations .po/.mo (gettext?)

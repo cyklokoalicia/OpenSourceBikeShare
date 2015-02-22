@@ -13,4 +13,6 @@ Daniel Duris, dusoft@staznosti.sk
 * Code improvements
 * Bug fixes
 
+Third party libraries used: jQuery, Bootstrap, Bootstrap Validator, Leaflet and Leaflet extensions.
+
 See LICENSE for more info.
