@@ -62,6 +62,10 @@ else
          validateReceivedSMS($sms->Number(),count($args),2,"with bike number and problem description: NOTE 47 Flat tire on front wheel");
          note($sms->Number(),$args[1],trim(urldecode($sms->Text())));
          break;
+      case "DELNOTE":
+         validateReceivedSMS($sms->Number(),count($args),1,"with bike number and an optional pattern. All messages, or all notes matching pattern, will be deleted: NOTE 47 wheel");
+         delnote($sms->Number(),$args[1],trim(urldecode($sms->Text())));
+         break;
       case "LIST":
          checkUserPrivileges($sms->Number());
          validateReceivedSMS($sms->Number(),count($args),2,"with stand name: LIST RACKO");

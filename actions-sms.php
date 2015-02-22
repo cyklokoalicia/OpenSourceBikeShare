@@ -10,7 +10,7 @@ function help($number)
       {
       $message="Commands:\nHELP\n";
       if (iscreditenabled()) $message.="CREDIT\n";
-      $message.="FREE\nRENT bikenumber\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem\n---\nFORCERENT bikenumber\nFORCERETURN bikeno stand\nLIST stand\nLAST bikeno\nREVERT bikeno\nADD email phone fullname";
+      $message.="FREE\nRENT bikenumber\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem\n---\nFORCERENT bikenumber\nFORCERETURN bikeno stand\nLIST stand\nLAST bikeno\nREVERT bikeno\nADD email phone fullname\nDELNOTE bikeno [pattern]";
       sendSMS($number,$message);
       }
    else
@@ -505,6 +505,83 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
            }
 
 }
+
+
+
+function delnote($number,$bikeNum,$message)
+{
+
+   global $db;
+   $userId = getUser($number);
+   $bikeNum = intval($bikeNum);
+    
+   checkUserPrivileges($number);
+
+   $result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
+   if ($result->num_rows!=1)
+      {
+      sendSMS($number,"Bike $bikeNum does not exist.");
+      return;
+      }
+   $row =$result->fetch_assoc();
+   $phone=$row["number"];
+   $userName=$row["userName"];
+   $standName=$row["standName"];
+
+   if ($standName!=NULL)
+      {
+      $bikeStatus = "B.$bikeNum is at $standName.";
+      }
+   else
+      {
+      $bikeStatus = "B.$bikeNum is rented by $userName (+$phone).";
+      }
+
+   $result=$db->query("SELECT userName from users where number=$number");
+   $row =$result->fetch_assoc();
+   $reportedBy=$row["userName"];
+
+   if (trim(strtoupper(preg_replace('/[0-9]+/','',$message)))=="DELNOTE") // blank, delete all notes of that bike
+   {
+ 	     $userNote="%";
+   }
+   else
+   {
+      $matches=explode(" ",$message,3);
+      $userNote=$db->conn->real_escape_string(trim($matches[2]));
+   }
+
+      $result=$db->query("UPDATE notes SET deleted=NOW() where bikeNum=$bikeNum and deleted is null and note like '%$userNote%'");
+      $count = $db->conn->affected_rows;
+      
+	if($count == 0)
+	{	
+      		if($userNote=="%")
+		{
+		    sendSMS($number,"No notes found for bike $bikeNum to delete.");
+		}
+		else
+		{
+		    sendSMS($number,"No notes matching pattern '$userNote' found for bike $bikeNum to delete.");
+		}
+	}
+	else
+	{
+      		//only admins can delete and those will receive the confirmation in the next step.
+      		//sendSMS($number,"Note for bike $bikeNum deleted.");
+      		if($userNote=="%")
+		{
+			notifyAdmins("All $count note(s) for bike $bikeNum deleted by $reportedBy.");
+		}
+		else
+		{
+			notifyAdmins("$count note(s) for bike $bikeNum matching '$userNote' deleted by $reportedBy.");
+		}
+      	}
+}
+
+
+
 
 function note($number,$bikeNum,$message)
 {
