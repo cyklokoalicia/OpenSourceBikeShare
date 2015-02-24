@@ -94,7 +94,7 @@ function rent($userId,$bike,$force=FALSE)
    $row=$result->fetch_assoc();
    $currentCode=sprintf("%04d",$row["currentCode"]);
    $currentUser=$row["currentUser"];
-   $result=$db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' ORDER BY time DESC");
+   $result=$db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC");
    $note="";
    while ($row=$result->fetch_assoc())
       {
@@ -204,7 +204,7 @@ function where($userId,$bike)
    $phone= $row["number"];
    $userName= $row["userName"];
    $standName= $row["standName"];
-   $result=$db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' ORDER BY time DESC");
+   $result=$db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC");
    $note="";
    while ($row=$result->fetch_assoc())
       {
@@ -330,7 +330,7 @@ function listbikes($stand)
    while($row=$result->fetch_assoc())
       {
       $bikenum=$row["bikeNum"];
-      $result2=$db->query("SELECT note FROM notes WHERE bikeNum='$bikenum' ORDER BY time DESC");
+      $result2=$db->query("SELECT note FROM notes WHERE bikeNum='$bikenum' AND deleted IS NULL ORDER BY time DESC");
       $note="";
       while ($row=$result2->fetch_assoc())
          {
@@ -414,7 +414,7 @@ function last($userId,$bike=0)
             $row2=$result2->fetch_assoc();
             $historyInfo.=": ".date("d/m H:i",strtotime($row2["time"])).'</span>';
             }
-         $result2=$db->query("SELECT note FROM notes WHERE bikeNum='".$row["bikeNum"]."' ORDER BY time DESC");
+         $result2=$db->query("SELECT note FROM notes WHERE bikeNum='".$row["bikeNum"]."' AND deleted IS NULL ORDER BY time DESC");
          $note="";
          while ($row=$result2->fetch_assoc())
             {
