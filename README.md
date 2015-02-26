@@ -4,7 +4,7 @@ Open Source Bike Share
 
 Bottom-up bicycle sharing system suitable for smaller communities or areas such as campuses, companies etc.
 
-[OpenSourceBikeShare.com](http://opensourcebikeshare.com)
+Website: [OpenSourceBikeShare.com](http://opensourcebikeshare.com)
 
 Features
 ----------
