@@ -4,6 +4,8 @@ Open Source Bike Share
 
 Bottom-up bicycle sharing system suitable for smaller communities or areas such as campuses, companies etc.
 
+[OpenSourceBikeShare.com](http://opensourcebikeshare.com)
+
 Features
 ----------
 * Web app (mobile-friendly) and optional SMS system to rent and return bicycles
@@ -54,3 +56,5 @@ Launch your own bike sharing system!
 We will talk to you about the expectations, situation, bicycle theft, potential users and **provide you with help to launch your own successful bike sharing system**.
 
 First consultation is free, **get in touch**: [consult@whitebikes.info](mailto:consult@whitebikes.info)
+
+Follow us on Twitter: [@OpenBikeShare](https://twitter.com/OpenBikeshare)
