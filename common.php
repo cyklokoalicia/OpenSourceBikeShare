@@ -1,4 +1,13 @@
 <?php
+require("external/htmlpurifier/HTMLPurifier.standalone.php");
+$htmlpurconfig=HTMLPurifier_Config::createDefault();
+$purifier=new HTMLPurifier($htmlpurconfig);
+@$purifier->purify($_GET);
+@$purifier->purify($_POST);
+@$purifier->purify($_COOKIE);
+@$purifier->purify($_FILES);
+@$purifier->purify($_SERVER);
+
 if (issmssystemenabled()==TRUE)
    {
    require("connectors/".$connectors["sms"].".php");
@@ -129,6 +138,121 @@ function getuserid($number)
       return $row["userId"];
       }
    return FALSE;
+}
+
+function isloggedin()
+{
+   global $db;
+   if (isset($_COOKIE["loguserid"]) AND isset($_COOKIE["logsession"]))
+      {
+      $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+      $session=$db->conn->real_escape_string(trim($_COOKIE["logsession"]));
+      $result=$db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'".time()."'");
+      if ($result->num_rows==1) return 1;
+      else return 0;
+      }
+   return 0;
+
+}
+
+function checksession()
+{
+   global $db,$systemURL;
+
+   $result=$db->query("DELETE FROM sessions WHERE timeStamp<='".time()."'");
+   if (isset($_COOKIE["loguserid"]) AND isset($_COOKIE["logsession"]))
+      {
+      $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+      $session=$db->conn->real_escape_string(trim($_COOKIE["logsession"]));
+      $result=$db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'".time()."'");
+      if ($result->num_rows==1)
+         {
+         $timestamp=time()+86400*14;
+         $result=$db->query("UPDATE sessions SET timeStamp='$timestamp' WHERE userId='$userid' AND sessionId='$session'");
+         $db->conn->commit();
+         }
+      else
+         {
+         $result=$db->query("DELETE FROM sessions WHERE userId='$userid' OR sessionId='$session'");
+         $db->conn->commit();
+         setcookie("loguserid","",time()-86400);
+         setcookie("logsession","",time()-86400);
+         header("HTTP/1.1 301 Moved permanently");
+         header("Location: ".$systemURL."?error=2");
+         header("Connection: close");
+         exit;
+         }
+      }
+   else
+      {
+      header("HTTP/1.1 301 Moved permanently");
+      header("Location: ".$systemURL."?error=2");
+      header("Connection: close");
+      exit;
+      }
+
+}
+
+function logrequest($userid)
+{
+   global $dbserver,$dbuser,$dbpassword,$dbname;
+   $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+   $localdb->connect();
+   $localdb->conn->autocommit(TRUE);
+
+   $number=getphonenumber($userid);
+
+   $result = $localdb->query("INSERT INTO received SET sender='$number',receive_time='".date("Y-m-d H:i:s")."',sms_text='".$_SERVER['REQUEST_URI']."',ip='".$_SERVER['REMOTE_ADDR']."'");
+
+}
+
+function logresult($userid,$text)
+{
+   global $dbserver,$dbuser,$dbpassword,$dbname;
+
+   $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+   $localdb->connect();
+   $localdb->conn->autocommit(TRUE);
+   $userid = $localdb->conn->real_escape_string($userid);
+   $logtext="";
+   if (is_array($text))
+      {
+      foreach ($text as $value)
+         {
+         $logtext.=$value."; ";
+         }
+      }
+   else
+      {
+      $logtext=$text;
+      }
+
+   $logtext = strip_tags($localdb->conn->real_escape_string($logtext));
+
+   $result = $localdb->query("INSERT INTO sent SET number='$userid',text='$logtext'");
+
+}
+
+function checkbikeno($bikeNum)
+{
+   global $db;
+   $bikeNum=intval($bikeNum);
+   $result=$db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
+   if (!$result->num_rows)
+      {
+      response('<h3>Bike '.$bikeNum.' does not exist!</h3>',ERROR);
+      }
+}
+
+function checkstandname($stand)
+{
+   global $db;
+   $standname=trim(strtoupper($stand));
+   $result=$db->query("SELECT standName FROM stands WHERE standName='$stand'");
+   if (!$result->num_rows)
+      {
+      response('<h3>Stand '.$stand.' does not exist!</h3>',ERROR);
+      }
 }
 
 /**

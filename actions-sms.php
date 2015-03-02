@@ -323,7 +323,22 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
    if ($userNote)
       {
       $db->query("INSERT INTO notes SET bikeNum=$bikeNum,userId=$userId,note='$userNote'");
-      // @TODO report note to admins !!!!
+      $result=$db->query("SELECT userName,number from users where userId='$userId'");
+      $row=$result->fetch_assoc();
+      $userName=$row["userName"];
+      $phone=$row["number"];
+      $result=$db->query("SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
+      $row=$result->fetch_assoc();
+      $standName=$row["standName"];
+      if ($standName!=NULL)
+         {
+         $bikeStatus="at $standName";
+         }
+         else
+         {
+         $bikeStatus="used by $userName +$phone";
+         }
+      notifyAdmins("Note b.$bikeNum (".$bikeStatus.") by $userName/$phone:".$userNote);
       }
 
    $message = "Bike $bikeNum returned to stand $stand. Make sure the code is $currentCode.";
@@ -514,7 +529,7 @@ function delnote($number,$bikeNum,$message)
    global $db;
    $userId = getUser($number);
    $bikeNum = intval($bikeNum);
-    
+
    checkUserPrivileges($number);
 
    $result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
@@ -553,9 +568,9 @@ function delnote($number,$bikeNum,$message)
 
       $result=$db->query("UPDATE notes SET deleted=NOW() where bikeNum=$bikeNum and deleted is null and note like '%$userNote%'");
       $count = $db->conn->affected_rows;
-      
+
 	if($count == 0)
-	{	
+	{
       		if($userNote=="%")
 		{
 		    sendSMS($number,"No notes found for bike $bikeNum to delete.");

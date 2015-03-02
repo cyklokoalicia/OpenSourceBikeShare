@@ -1,0 +1,185 @@
+<?php
+require("common.php");
+
+function response($message,$error=0,$log=1)
+{
+   global $db,$systemname,$systemURL;
+   if ($log==1 AND $message)
+      {
+      if (isset($_COOKIE["loguserid"]))
+         {
+         $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+         }
+      else $userid=0;
+      $number=getphonenumber($userid);
+      logresult($number,$message);
+      }
+   $db->conn->commit();
+   echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$systemname,'</title>';
+   echo '<base href="',$systemURL,'" />';
+   echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';
+   echo '<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />';
+   if (file_exists("analytics.php")) require("analytics.php");
+   echo '</head><body><div class="container">';
+   if ($error)
+      {
+      echo '<div class="alert alert-danger" role="alert">',$message,'</div>';
+      }
+   else
+      {
+      echo '<div class="alert alert-success" role="alert">',$message,'</div>';
+      }
+   echo '</div></body></html>';
+   exit;
+}
+
+function rent($userId,$bike,$force=FALSE)
+{
+
+   global $db,$forcestack,$watches,$credit;
+   $stacktopbike=FALSE;
+   $bikeNum = $bike;
+   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
+
+   $creditcheck=checkrequiredcredit($userId);
+   if ($creditcheck===FALSE)
+      {
+      response("You are below required credit ".$requiredcredit.$credit["currency"].". Please, recharge your credit.",ERROR);
+      }
+   checktoomany(0,$userId);
+
+   $result=$db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
+   $row = $result->fetch_assoc();
+   $countRented = $row["countRented"];
+
+   $result=$db->query("SELECT userLimit FROM limits where userId=$userId");
+   $row = $result->fetch_assoc();
+   $limit = $row["userLimit"];
+
+   if ($countRented>=$limit)
+      {
+      if ($limit==0)
+         {
+         response("You can not rent any bikes. Contact the admins to lift the ban.",ERROR);
+         }
+      elseif ($limit==1)
+         {
+         response("You can only rent ".$limit." bike at once.",ERROR);
+         }
+      else
+         {
+         response("You can only rent ".$limit." bikes at once and you have already rented ".$limit.".",ERROR);
+         }
+      }
+
+   if ($forcestack OR $watches["stack"])
+      {
+      $result=$db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bike'");
+      $row=$result->fetch_assoc();
+      $standid=$row["currentStand"];
+      $stacktopbike=checktopofstack($standid);
+      if ($watches["stack"] AND $stacktopbike<>$bike)
+         {
+         $result=$db->query("SELECT standName FROM stands WHERE standId='$standid'");
+         $row=$result->fetch_assoc();
+         $stand=$row["standName"];
+         $user=getusername($userId);
+         notifyAdmins("Bike ".$bike." rented out of stack by ".$user.". ".$stacktopbike." was on the top of the stack at ".$stand.".",1);
+         }
+      if ($forcestack AND $stacktopbike<>$bike)
+         {
+         response("Bike ".$bike." is not rentable now, you have to rent bike ".$stacktopbike." from this stand.",ERROR);
+         }
+      }
+
+   $result=$db->query("SELECT currentUser,currentCode FROM bikes WHERE bikeNum=$bikeNum");
+   $row=$result->fetch_assoc();
+   $currentCode=sprintf("%04d",$row["currentCode"]);
+   $currentUser=$row["currentUser"];
+   $result=$db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' ORDER BY time DESC");
+   $note="";
+   while ($row=$result->fetch_assoc())
+      {
+      $note.=$row["note"]."; ";
+      }
+   $note=substr($note,0,strlen($note)-2); // remove last two chars - comma and space
+
+   $newCode=sprintf("%04d",rand(100,9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
+
+   if ($currentUser==$userId)
+      {
+      response('You have already rented the bike '.$bikeNum.'. Code is <span class="label label-primary">'.$currentCode.'</span>. Return bike by scanning QR code on a stand.',ERROR);
+      return;
+      }
+   if ($currentUser!=0)
+      {
+      response("The bike $bikeNum is already rented.",ERROR);
+      return;
+      }
+
+   $message='<h3>Bike '.$bikeNum.': <span class="label label-primary">Open with code '.$currentCode.'.</span></h3>Change code immediately to <span class="label label-default">'.$newCode.'</span><br />(open, rotate metal part, set new code, rotate metal part back).';
+   if ($note)
+      {
+      $message.="<br />Reported issue: <em>".$note."</em>";
+      }
+
+   $result=$db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
+   $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode");
+   response($message);
+
+}
+
+
+function returnbike($userId,$stand)
+{
+
+   global $db,$connectors;
+   $stand=strtoupper($stand);
+
+   $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
+   $rentedBikes=$result->fetch_all(MYSQLI_ASSOC);
+   $bikenumber=count($rentedBikes);
+
+   if ($bikenumber==0)
+      {
+      response("You have no rented bikes currently.",ERROR);
+      }
+   elseif ($bikenumber>1)
+      {
+      $message='You have '.$bikenumber.' rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web';
+      if ($connectors["sms"]) $message.=' or SMS';
+      $message.=' to return the bikes.';
+      response($message,ERROR);
+      }
+   else
+      {
+      $result=$db->query("SELECT bikeNum,currentCode FROM bikes WHERE currentUser=$userId");
+      $row=$result->fetch_assoc();
+      $currentCode=sprintf("%04d",$row["currentCode"]);
+      $bikeNum=$row["bikeNum"];
+
+      $result=$db->query("SELECT standId FROM stands where standName='$stand'");
+      $row = $result->fetch_assoc();
+      $standId = $row["standId"];
+
+      $result=$db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
+
+      $message = '<h3>Bike '.$bikeNum.': <span class="label label-primary">Lock with code '.$currentCode.'.</span></h3>';
+      $message.= '<br />Please, <strong>rotate the lockpad to <span class="label label-default">0000</span></strong> when leaving.';
+
+      $creditchange=changecreditendrental($bikeNum,$userId);
+      if (iscreditenabled() AND $creditchange) $message.='<br />Credit change: -'.$creditchange.getcreditcurrency().'.';
+      $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
+
+      response($message);
+      }
+
+}
+
+function unrecognizedqrcode($userId)
+{
+   global $db;
+   response("<h3>Unrecognized QR code action. Try scanning the code again or report this to the system admins.</h3>",ERROR);
+}
+
+?>

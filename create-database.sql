@@ -9,8 +9,9 @@ CREATE TABLE `bikes` (
   `currentUser` int(11) DEFAULT NULL,
   `currentStand` int(11) DEFAULT NULL,
   `currentCode` int(11) NOT NULL,
-  `note` varchar(100) DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `note` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`bikeNum`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `credit`;
@@ -18,7 +19,7 @@ CREATE TABLE `credit` (
   `userId` int(11) NOT NULL,
   `credit` float(5,2) DEFAULT NULL,
   PRIMARY KEY (`userId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `notes`;
@@ -26,8 +27,9 @@ CREATE TABLE `notes` (
   `bikeNum` int(11) NOT NULL,
   `userId` int(11) NOT NULL,
   `note` varchar(100),
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted` timestamp NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `geolocation`;
@@ -48,7 +50,7 @@ CREATE TABLE `history` (
   `parameter` text NOT NULL,
   `standId` int(11) DEFAULT NULL,
   `pairAction` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `limits`;
@@ -56,7 +58,7 @@ CREATE TABLE `limits` (
   `userId` int(11) NOT NULL AUTO_INCREMENT,
   `userLimit` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`userId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `pairing`;
@@ -112,8 +114,9 @@ CREATE TABLE `stands` (
   `placeName` varchar(50) NOT NULL,
   `longitude` double(20,17) NOT NULL,
   `latitude` double(20,17) NOT NULL,
-  PRIMARY KEY (`standId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`standId`),
+  UNIQUE KEY `standName` (`standName`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `users`;
@@ -125,7 +128,7 @@ CREATE TABLE `users` (
   `number` varchar(30) NOT NULL,
   `privileges` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`userId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 -- 2014-11-20 11:19:49

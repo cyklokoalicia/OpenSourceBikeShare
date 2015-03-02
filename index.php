@@ -5,7 +5,7 @@ require("actions-web.php");
 
 $db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
-echo '<span style="display:none;"></span>'; // 2014-10-02 weird bug: map not shown, when DOCTYPE tag included, but everything OK, if this line printed here
+echo '<i></i>'; // 2014-10-02 weird bug: map not shown, when DOCTYPE tag included, but everything OK, if this line printed here
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,6 +59,7 @@ else
 <div class="row">
    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
    <a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
+   <?php // if (isloggedin() AND getprivileges($_COOKIE["loguserid"])>0) echo '<a href="admin.php"><span class="glyphicon glyphicon-cog"></span> Admin</a>'; ?>
    <h1><?php echo $systemname; ?></h1>
    </div>
    <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
@@ -66,7 +67,7 @@ else
    <?php
    if (isloggedin())
       {
-      echo '<li><span class="label label-success"><em>',getusername($_COOKIE["loguserid"]),'</em></span>';
+      echo '<li><span class="label label-success"><span class="glyphicon glyphicon-user"></span> <em>',getusername($_COOKIE["loguserid"]),'</em></span>';
       if (iscreditenabled()) echo ' (<span id="usercredit" title="Remaning credit">',getusercredit($_COOKIE["loguserid"]),'</span>',getcreditcurrency(),')';
       echo '<br /><a href="command.php?action=logout" id="logout">Log out</a></li>';
       }

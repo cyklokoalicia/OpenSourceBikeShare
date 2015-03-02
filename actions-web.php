@@ -108,7 +108,7 @@ function rent($userId,$bike,$force=FALSE)
       {
       if ($currentUser==$userId)
          {
-         response("You already rented the bike $bikeNum. Code is $currentCode. Return the bike with command: RETURN bikenumber standname.",ERROR);
+         response("You already rented the bike $bikeNum. Code is $currentCode.",ERROR);
          return;
          }
       if ($currentUser!=0)
@@ -227,73 +227,16 @@ function where($userId,$bike)
 
 }
 
-function checkbikeno($bikeNum)
-{
-   global $db;
-   $result=$db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
-   if (!$result->num_rows)
-      {
-      response('<h3>Bike '.$bikeNum.' does not exist!</h3>',ERROR);
-      }
-}
-
-function checkstandname($stand)
-{
-   global $db;
-   $standname=trim(strtoupper($stand));
-   $result=$db->query("SELECT standName FROM stands WHERE standName='$stand'");
-   if (!$result->num_rows)
-      {
-      response('<h3>Stand '.$stand.' does not exist!</h3>',ERROR);
-      }
-}
-
-function logrequest($userid)
-{
-   global $dbserver,$dbuser,$dbpassword,$dbname;
-   $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
-   $localdb->connect();
-   $localdb->conn->autocommit(TRUE);
-
-   $number=getphonenumber($userid);
-
-   $result = $localdb->query("INSERT INTO received SET sender='$number',receive_time='".date("Y-m-d H:i:s")."',sms_text='".$_SERVER['REQUEST_URI']."',ip='".$_SERVER['REMOTE_ADDR']."'");
-
-}
-
-function logresult($userid,$text)
-{
-   global $dbserver,$dbuser,$dbpassword,$dbname;
-
-   $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
-   $localdb->connect();
-   $localdb->conn->autocommit(TRUE);
-   $userid = $localdb->conn->real_escape_string($userid);
-   $logtext="";
-   if (is_array($text))
-      {
-      foreach ($text as $value)
-         {
-         $logtext.=$value."; ";
-         }
-      }
-   else
-      {
-      $logtext=$text;
-      }
-
-   $logtext = strip_tags($localdb->conn->real_escape_string($logtext));
-
-   $result = $localdb->query("INSERT INTO sent SET number='$userid',text='$logtext'");
-
-}
-
 function addnote($userId,$bikeNum,$message)
 {
 
    global $db;
    $userNote=$db->conn->real_escape_string(trim($message));
 
+   $result=$db->query("SELECT userName,number from users where userId='$userId'");
+   $row=$result->fetch_assoc();
+   $userName=$row["userName"];
+   $phone=$row["number"];
    $result=$db->query("SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
    $row=$result->fetch_assoc();
    $standName=$row["standName"];
@@ -303,12 +246,8 @@ function addnote($userId,$bikeNum,$message)
       }
       else
       {
-      $bikeStatus="rented by $userName +$phone";
+      $bikeStatus="used by $userName +$phone";
       }
-   $result=$db->query("SELECT userName,number from users where userId='$userId'");
-   $row=$result->fetch_assoc();
-   $userName=$row["userName"];
-   $phone=$row["number"];
    $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
    notifyAdmins("Note b.$bikeNum (".$bikeStatus.") by $userName/$phone:".$userNote);
 
@@ -574,59 +513,6 @@ function login($number,$password)
       header("Connection: close");
       exit;
       }
-
-}
-
-function checksession()
-{
-   global $db,$systemURL;
-
-   $result=$db->query("DELETE FROM sessions WHERE timeStamp<='".time()."'");
-   if (isset($_COOKIE["loguserid"]) AND isset($_COOKIE["logsession"]))
-      {
-      $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
-      $session=$db->conn->real_escape_string(trim($_COOKIE["logsession"]));
-      $result=$db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'".time()."'");
-      if ($result->num_rows==1)
-         {
-         $timestamp=time()+86400*14;
-         $result=$db->query("UPDATE sessions SET timeStamp='$timestamp' WHERE userId='$userid' AND sessionId='$session'");
-         $db->conn->commit();
-         }
-      else
-         {
-         $result=$db->query("DELETE FROM sessions WHERE userId='$userid' OR sessionId='$session'");
-         $db->conn->commit();
-         setcookie("loguserid","",time()-86400);
-         setcookie("logsession","",time()-86400);
-         header("HTTP/1.1 301 Moved permanently");
-         header("Location: ".$systemURL."?error=2");
-         header("Connection: close");
-         exit;
-         }
-      }
-   else
-      {
-      header("HTTP/1.1 301 Moved permanently");
-      header("Location: ".$systemURL."?error=2");
-      header("Connection: close");
-      exit;
-      }
-
-}
-
-function isloggedin()
-{
-   global $db;
-   if (isset($_COOKIE["loguserid"]) AND isset($_COOKIE["logsession"]))
-      {
-      $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
-      $session=$db->conn->real_escape_string(trim($_COOKIE["logsession"]));
-      $result=$db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'".time()."'");
-      if ($result->num_rows==1) return 1;
-      else return 0;
-      }
-   return 0;
 
 }
 
