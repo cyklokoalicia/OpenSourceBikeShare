@@ -487,7 +487,7 @@ function freeBikes($number)
       $listBikes.=$rentedBikes[$i]["placeName"].":".$rentedBikes[$i]["bikeCount"];
    }
 
-      if ($result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on
+      if ($result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes right join stands on
    bikes.currentStand=stands.standId where stands.serviceTag=0 group by
    placeName having bikeCount=0 order by placeName")) {
       $rentedBikes =$result->fetch_all(MYSQLI_ASSOC);
@@ -495,7 +495,7 @@ function freeBikes($number)
 
    if (count($rentedBikes)!=0)
    {
-        $listBikes.="Empty stands: ";
+        $listBikes.=" Empty stands: ";
    }
    
    for($i=0; $i<count($rentedBikes);$i++)
