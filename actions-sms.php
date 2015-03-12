@@ -476,11 +476,10 @@ function freeBikes($number)
 
    if (count($rentedBikes)==0)
    {
-      sendSMS($number,"No free bikes.");
-      return;
+   	$listBikes="No free bikes.";
    }
-
-   $listBikes="";
+   else $listBikes="Free bikes counts:";
+   
    for($i=0; $i<count($rentedBikes);$i++)
    {
       if ($i!=0)
@@ -488,8 +487,25 @@ function freeBikes($number)
       $listBikes.=$rentedBikes[$i]["placeName"].":".$rentedBikes[$i]["bikeCount"];
    }
 
-   $countBikes = count($rentedBikes);
-   sendSMS($number,"Free bikes counts: $listBikes");
+      if ($result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on
+   bikes.currentStand=stands.standId where stands.serviceTag=0 group by
+   placeName having bikeCount=0 order by placeName")) {
+      $rentedBikes =$result->fetch_all(MYSQLI_ASSOC);
+   } else error("bikes on stand not fetched");
+
+   if (count($rentedBikes)!=0)
+   {
+        $listBikes.="Empty stands: ";
+   }
+   
+   for($i=0; $i<count($rentedBikes);$i++)
+   {
+      if ($i!=0)
+         $listBikes.=",";
+      $listBikes.=$rentedBikes[$i]["placeName"];
+   }
+
+   sendSMS($number,$listBikes);
 }
 
 function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
