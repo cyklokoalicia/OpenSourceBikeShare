@@ -299,9 +299,12 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum and deleted IS null ORDER BY time DESC LIMIT 1");
       $row=$result->fetch_assoc();
       $note=$row["note"];
-      $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
-      $row =$result->fetch_assoc();
-      $currentUserNumber =$row["number"];
+        if($currentUser)
+        {
+    	    $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
+    	    $row =$result->fetch_assoc();
+    	    $currentUserNumber =$row["number"];
+        }
       }
 
    $result=$db->query("SELECT standId FROM stands where standName='$stand'");
@@ -358,7 +361,10 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
    else
       {
       $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId");
-      sendSMS($currentUserNumber,"System override: Your rented bike $bikeNum has been returned by admin.");
+      if($currentUserNumber)
+        {
+    	    sendSMS($currentUserNumber,"System override: Your rented bike $bikeNum has been returned by admin.");
+        }
       }
 
    if (iscreditenabled())
