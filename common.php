@@ -263,16 +263,15 @@ function notifyAdmins($message,$notificationtype=0)
    global $db,$systemname;
 
    $result = $db->query("SELECT number,mail FROM users where privileges & 2 != 0");
-   $admins = $result->fetch_all(MYSQLI_ASSOC);
-   for ($i=0; $i<count($admins);$i++)
+   while($row = $result->fetch_assoc())
       {
       if ($notificationtype==0)
          {
-         sendSMS($admins[$i]["number"],$message);
+         sendSMS($row["number"],$message);
          }
       else
          {
-         sendEmail($admins[$i]["mail"],$systemname." notification",$message);
+         sendEmail($row["mail"],$systemname." notification",$message);
          }
       }
 }
@@ -285,16 +284,16 @@ function sendConfirmationEmail($email)
         $subject = 'registracia/registration White Bikes';
 
         $result=$db->query("SELECT userName,userId FROM users where mail='$email'");
-        $user=$result->fetch_all(MYSQLI_ASSOC);
+        $row = $result->fetch_assoc();
 
-        $userId=$user[0]["userId"];
+        $userId=$row["userId"];
         $userKey=hash('sha256', $email.$dbpassword.rand(0,1000000));
 
         $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'");
         $db->query("INSERT into limits SET userId='$userId',userLimit=0");
         $db->query("INSERT into credit SET userId='$userId',credit=0");
 
-                $mena = preg_split("/[\s,]+/",$user[0]["userName"]);
+                $mena = preg_split("/[\s,]+/",$row["userName"]);
                 $krstne = $mena[0];
                 $message = "Ahoj $krstne, [EN below]\n
 bol/a si zaregistrovany/a do systemu komunitneho poziciavania bicyklov White Bikes.\n
@@ -477,7 +476,8 @@ function changecreditendrental($bike,$userid)
       $timediff=$endtime-$starttime;
       $creditchange=0;
       $changelog="";
-      if ($timediff>$watches["freetime"]*60)
+      // do not subtract, if freetime=0
+      if ($watches["freetime"]>0 AND $timediff>$watches["freetime"]*60)
          {
          $creditchange=$creditchange+$credit["rent"];
          $changelog.="overfree-".$credit["rent"].";";

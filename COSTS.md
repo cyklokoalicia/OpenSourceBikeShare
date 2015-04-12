@@ -1,4 +1,4 @@
-System setup and cost estimates
+System setup and operation cost estimates
 ============
 
 Hosting and domain registration

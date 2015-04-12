@@ -148,9 +148,9 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
    if ($force==FALSE)
       {
       $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
-      $rentedBikes = $result->fetch_all(MYSQLI_ASSOC);
+      $bikenumber=$result->num_rows;
 
-      if (count($rentedBikes)==0)
+      if ($bikenumber==0)
          {
          response("You have no rented bikes currently.",ERROR);
          }
@@ -218,7 +218,7 @@ function where($userId,$bike)
 
    if ($standName)
       {
-      response('<h3>Bike '.$bikeNum.' at <span class="label label-primary">'.$standName.'</span>.</h3>.'.$note);
+      response('<h3>Bike '.$bikeNum.' at <span class="label label-primary">'.$standName.'</span>.</h3>'.$note);
       }
    else
       {
@@ -296,6 +296,37 @@ function listbikes($stand)
 
 }
 
+function liststands()
+{
+   global $db;
+
+   response("not implemented",0,"",0); exit;
+   $result=$db->query("SELECT standId,standName,standDescription,standPhoto,serviceTag,placeName,longitude,latitude FROM stands ORDER BY standName");
+   while($row=$result->fetch_assoc())
+      {
+      $bikenum=$row["bikeNum"];
+      $result2=$db->query("SELECT note FROM notes WHERE bikeNum='$bikenum' AND deleted IS NULL ORDER BY time DESC");
+      $note="";
+      while ($row=$result2->fetch_assoc())
+         {
+         $note.=$row["note"]."; ";
+         }
+      $note=substr($note,0,strlen($note)-2); // remove last two chars - comma and space
+      if ($note)
+         {
+         $bicycles[]="*".$bikenum; // bike with note / issue
+         $notes[]=$note;
+         }
+      else
+         {
+         $bicycles[]=$bikenum;
+         $notes[]="";
+         }
+      }
+   response($stands,0,"",0);
+
+}
+
 function removenote($userId,$bikeNum)
 {
    global $db;
@@ -312,20 +343,19 @@ function last($userId,$bike=0)
    if ($bikeNum)
       {
       $result=$db->query("SELECT userName,parameter,standName,action,time FROM `history` JOIN users ON history.userid=users.userid LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum AND (action NOT LIKE '%CREDIT%') ORDER BY time DESC LIMIT 10");
-      $bikeHistory=$result->fetch_all(MYSQLI_ASSOC);
       $historyInfo="<h3>Bike $bikeNum history:</h3><ul>";
-      for($i=0; $i<count($bikeHistory);$i++)
+      while($row=$result->fetch_assoc())
          {
-         $time=strtotime($bikeHistory[$i]["time"]);
+         $time=strtotime($row["time"]);
          $historyInfo.="<li>".date("d/m H:i",$time)." - ";
-         if($bikeHistory[$i]["standName"]!=NULL)
+         if($row["standName"]!=NULL)
             {
-            $historyInfo.=$bikeHistory[$i]["standName"];
-            if ($bikeHistory[$i]["action"]=="REVERT") $historyInfo.=' <span class="label label-warning">Revert</span>';
+            $historyInfo.=$row["standName"];
+            if ($row["action"]=="REVERT") $historyInfo.=' <span class="label label-warning">Revert</span>';
             }
          else
             {
-            $historyInfo.=$bikeHistory[$i]["userName"].' (<span class="label label-default">'.str_pad($bikeHistory[$i]["parameter"],4,"0",STR_PAD_LEFT).'</span>)';
+            $historyInfo.=$row["userName"].' (<span class="label label-default">'.str_pad($row["parameter"],4,"0",STR_PAD_LEFT).'</span>)';
             }
          $historyInfo.="</li>";
          }
@@ -586,7 +616,10 @@ function trips($userId,$bike=0)
    if ($bikeNum)
       {
       $result=$db->query("SELECT longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum AND action='RETURN' ORDER BY time DESC");
-      $jsoncontent=$result->fetch_all(MYSQLI_ASSOC);
+      while($row = $result->fetch_assoc())
+         {
+         $jsoncontent[]=array("longitude"=>$row["longitude"],"latitude"=>$row["latitude"]);
+         }
       }
    else
       {
@@ -599,6 +632,62 @@ function trips($userId,$bike=0)
          }
       }
    echo json_encode($jsoncontent);
+}
+
+function getuserlist()
+{
+   global $db;
+   $result=$db->query("SELECT users.userId,username,mail,number,privileges,credit,userLimit FROM users LEFT JOIN credit ON users.userId=credit.userId LEFT JOIN limits ON users.userId=limits.userId ORDER BY username");
+   while($row = $result->fetch_assoc())
+      {
+      $jsoncontent[]=array("userid"=>$row["userId"],"username"=>utf8_encode($row["username"]),"mail"=>$row["mail"],"number"=>$row["number"],"privileges"=>$row["privileges"],"credit"=>$row["credit"],"limit"=>$row["userLimit"]);
+      }
+   echo json_encode($jsoncontent);
+}
+
+function getuserstats()
+{
+   global $db;
+   $result=$db->query("SELECT users.userId,username,count(action) AS count FROM users LEFT JOIN history ON users.userId=history.userId WHERE history.userId IS NOT NULL GROUP BY username ORDER BY count DESC");
+   while($row = $result->fetch_assoc())
+      {
+      $result2=$db->query("SELECT count(action) AS rentals FROM history WHERE action='RENT' AND userId=".$row["userId"]);
+      $row2=$result2->fetch_assoc();
+      $result2=$db->query("SELECT count(action) AS returns FROM history WHERE action='RETURN' AND userId=".$row["userId"]);
+      $row3=$result2->fetch_assoc();
+      $jsoncontent[]=array("userid"=>$row["userId"],"username"=>$row["username"],"count"=>$row["count"],"rentals"=>$row2["rentals"],"returns"=>$row3["returns"]);
+      }
+   echo json_encode($jsoncontent);
+}
+
+function edituser($userid)
+{
+   global $db;
+   $result=$db->query("SELECT users.userId,userName,mail,number,privileges,userLimit,credit FROM users LEFT JOIN limits ON users.userId=limits.userId LEFT JOIN credit ON users.userId=credit.userId WHERE users.userId=".$userid);
+   $row=$result->fetch_assoc();
+   $jsoncontent=array("userid"=>$row["userId"],"username"=>$row["userName"],"email"=>$row["mail"],"phone"=>$row["number"],"privileges"=>$row["privileges"],"limit"=>$row["userLimit"],"credit"=>$row["credit"]);
+   echo json_encode($jsoncontent);
+}
+
+function saveuser($userid,$username,$email,$phone,$privileges,$limit)
+{
+   global $db;
+   $result=$db->query("UPDATE users SET username='$username',mail='$email',privileges='$privileges' WHERE userId=".$userid);
+   if ($phone) $result=$db->query("UPDATE users SET number='$phone' WHERE userId=".$userid);
+   $result=$db->query("UPDATE limits SET userLimit='$limit' WHERE userId=".$userid);
+   response("Details of user ".$username." updated.");
+}
+
+function addcredit($userid,$creditmultiplier)
+{
+   global $db, $credit;
+   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
+   $addcreditamount=$requiredcredit*$creditmultiplier;
+   $result=$db->query("UPDATE credit SET credit=credit+".$addcreditamount." WHERE userId=".$userid);
+   $result=$db->query("INSERT INTO history SET userId=$userid,action='RENT',parameter='".$addcreditamount."|add+".$addcreditamount."'");
+   $result=$db->query("SELECT userName FROM users WHERE users.userId=".$userid);
+   $row=$result->fetch_assoc();
+   response("Added ".$addcreditamount.$credit["currency"]." credit for ".$row["userName"].".");
 }
 
 function mapgetmarkers()

@@ -111,6 +111,42 @@ switch($action)
          }
       else last($userid);
       break;
+   case "stands":
+      logrequest($userid,$action);
+      checksession();
+      checkprivileges($userid);
+      liststands();
+      break;
+   case "userlist":
+      logrequest($userid,$action);
+      checksession();
+      checkprivileges($userid);
+      getuserlist();
+      break;
+   case "userstats":
+      logrequest($userid,$action);
+      checksession();
+      checkprivileges($userid);
+      getuserstats();
+      break;
+   case "edituser":
+      logrequest($userid,$action);
+      checksession();
+      checkprivileges($userid);
+      edituser($_GET["edituserid"]);
+      break;
+   case "saveuser":
+      logrequest($userid,$action);
+      checksession();
+      checkprivileges($userid);
+      saveuser($_GET["edituserid"],$_GET["username"],$_GET["email"],$_GET["phone"],$_GET["privileges"],$_GET["limit"]);
+      break;
+   case "addcredit":
+      logrequest($userid,$action);
+      checksession();
+      checkprivileges($userid);
+      addcredit($_GET["edituserid"],$_GET["creditmultiplier"]);
+      break;
    case "trips":
       logrequest($userid,$action);
       checksession();

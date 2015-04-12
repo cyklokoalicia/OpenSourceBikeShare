@@ -1,4 +1,6 @@
 <?php
+//@TODO ANaLYTICS!!!
+
 $configfilename="../config.php.example";
 require($configfilename);
 require("../db.class.php");
@@ -231,7 +233,7 @@ foreach ($sql as $value)
          <div class="form-group"><label for="email">Email:</label> <input type="text" name="email" id="email" class="form-control" /></div>
 <?php if ($connectors["sms"]): ?>
          <div class="form-group"><label for="phone">Phone number:</label> <input type="text" name="phone" id="phone" class="form-control" /></div>
-<? endif; ?>
+<?php endif; ?>
          <button type="submit" id="register" class="btn btn-primary">Create admin user</button> and continue to step 3
          </form>
 <?php endif; ?>

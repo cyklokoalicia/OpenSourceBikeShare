@@ -20,44 +20,43 @@ require("config.php");
 
 function report()
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	global $dbserver, $dbuser, $dbpassword, $dbname;
+
+	$mysqli = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
 
 	if ($result = $mysqli->query("SELECT users.userId,userName,mail,number,privileges,userLimit,count(bikeNum) as currently_rented from users left join limits on users.userId=limits.userId left join bikes on users.userId=bikes.currentUser
-	                group by userId order by userId ")) 
+	                group by userId order by userId "))
         {
-		$users = $result->fetch_all(MYSQLI_ASSOC);
-	} 
-	else 
+
+                echo '<table style="width:100%">';
+#       echo '<caption>uzivatelia</caption>';
+
+        echo "<tr>";
+        $cols = array("userId","userName","mail","number","privileges","userLimit","currently_rented");
+        foreach($cols as $col)
+        {
+                echo "<th>$col</th>";
+        }
+        echo "</tr>";
+		while($row=$result->fetch_assoc())
+                {
+                echo "<tr>";
+                foreach($cols as $col)
+                {
+                        echo "<td>";
+                        echo $row[$col];
+                        echo "</td>";
+                }
+        echo "</tr>";
+        }
+        echo "</table>";
+	}
+	else
 	{
 	    echo "problem s sql dotazom";
 	    error("users bikes not fetched");
 	}
-	
-	echo '<table style="width:100%">';
-#	echo '<caption>uzivatelia</caption>';
-		
-	echo "<tr>";
-	$cols = array("userId","userName","mail","number","privileges","userLimit","currently_rented");
-	foreach($cols as $col)
-	{
-		echo "<th>$col</th>";		
-	} 
-	echo "</tr>";
-	 
-	for($i=0; $i<count($users);$i++)
-	{	
-		echo "<tr>";
-		foreach($cols as $col)      
-        	{
-                	echo "<td>";
-			echo $users[$i][$col];
-			echo "</td>";           
-        	}
-	echo "</tr>";
-	}
- 	echo "</table>";
+
 }
 
 report();

@@ -137,8 +137,7 @@ function returnbike($userId,$stand)
    $stand=strtoupper($stand);
 
    $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
-   $rentedBikes=$result->fetch_all(MYSQLI_ASSOC);
-   $bikenumber=count($rentedBikes);
+   $bikenumber=$result->num_rows;
 
    if ($bikenumber==0)
       {

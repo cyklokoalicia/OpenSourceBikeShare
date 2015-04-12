@@ -5,13 +5,12 @@ require("actions-web.php");
 
 $db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
-echo '<i></i>'; // 2014-10-02 weird bug: map not shown, when DOCTYPE tag included, but everything OK, if this line printed here
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title><? echo $systemname; ?></title>
+<title><?php echo $systemname; ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -19,7 +18,7 @@ echo '<i></i>'; // 2014-10-02 weird bug: map not shown, when DOCTYPE tag include
 <script type="text/javascript" src="js/leaflet.js"></script>
 <script type="text/javascript" src="js/L.Control.Sidebar.js"></script>
 <script type="text/javascript" src="js/functions.js"></script>
-<? if (date("m-d")=="04-01") echo '<script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>'; ?>
+<?php if (date("m-d")=="04-01") echo '<script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>'; ?>
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
 <link rel="stylesheet" type="text/css" href="css/leaflet.css" />
@@ -59,7 +58,7 @@ else
 <div class="row">
    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
    <a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
-   <?php // if (isloggedin() AND getprivileges($_COOKIE["loguserid"])>0) echo '<a href="admin.php"><span class="glyphicon glyphicon-cog"></span> Admin</a>'; ?>
+   <?php if (isloggedin() AND getprivileges($_COOKIE["loguserid"])>0) echo '<a href="admin.php"><span class="glyphicon glyphicon-cog"></span> Admin</a>'; ?>
    <h1><?php echo $systemname; ?></h1>
    </div>
    <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
@@ -68,7 +67,7 @@ else
    if (isloggedin())
       {
       echo '<li><span class="label label-success"><span class="glyphicon glyphicon-user"></span> <em>',getusername($_COOKIE["loguserid"]),'</em></span>';
-      if (iscreditenabled()) echo ' (<span id="usercredit" title="Remaning credit">',getusercredit($_COOKIE["loguserid"]),'</span>',getcreditcurrency(),')';
+      if (iscreditenabled()) echo ' (<span id="usercredit" title="Remaining credit">',getusercredit($_COOKIE["loguserid"]),'</span>',getcreditcurrency(),')';
       echo '<br /><a href="command.php?action=logout" id="logout">Log out</a></li>';
       }
    ?>
@@ -96,7 +95,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
        </div></div>
          </form>
 </div>
-<? endif; ?>
+<?php endif; ?>
 <h2 id="standname"><select id="stands"></select><span id="standcount"></span></h2>
 <div id="standinfo"></div>
 <div id="standphoto"></div>
@@ -130,27 +129,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
    <button type="button" class="btn btn-primary" id="return" title="Return this bicycle to the selected stand."><span class="glyphicon glyphicon-log-in"></span> Return bicycle <span class="bikenumber"></span></button> (and <a href="#" id="note" title="Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).">report problem <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
    </div></div>
 </div>
-<br /><div class="row">
-  <div class="btn-group adminactions">
-  <div class="col-lg-12">
-  <div class="input-group">
-         <input type="text" name="adminparam" id="adminparam" class="form-control">
-         <span class="input-group-btn">
-         <button class="btn btn-default" type="button" id="where" title="Display the bike stand location or name of person using it."><span class="glyphicon glyphicon-screenshot"></span> Where is?</button>
-         </span>
-  </div>
-  </div>
-</div>
-</div>
-<div class="row">
-   <div class="btn-group adminactions">
-   <div class="col-lg-12">
-   <button type="button" id="revert" class="btn btn-default" title="Be careful! Revert accidentaly rented bike in case of mistake or misread bike number."><span class="glyphicon glyphicon-fast-backward"></span> Revert</button>
-   <button type="button" id="last" class="btn btn-default" title="Display network usage (blank) or history of bike usage (number entered)."><span class="glyphicon glyphicon-stats"></span> Last usage</button>
-   <button type="button" id="trips" class="btn btn-default" title="Show history of stand to stand bike trips as lines."><span class="glyphicon glyphicon-road"></span> Trips overlay</button>
-   </div>
-   </div>
-</div>
+
 </div>
 </body>
 </html>

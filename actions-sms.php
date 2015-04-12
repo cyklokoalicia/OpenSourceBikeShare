@@ -485,7 +485,7 @@ function freeBikes($number)
    	$listBikes="No free bikes.";
    }
    else $listBikes="Free bikes counts:";
-   
+
    for($i=0; $i<count($rentedBikes);$i++)
    {
       if ($i!=0)
@@ -503,7 +503,7 @@ function freeBikes($number)
    {
         $listBikes.=" Empty stands: ";
    }
-   
+
    for($i=0; $i<count($rentedBikes);$i++)
    {
       if ($i!=0)

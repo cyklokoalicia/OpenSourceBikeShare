@@ -16,6 +16,7 @@ require("common.php");
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrapValidator.min.css" />
+<?php if (file_exists("analytics.php")) require("analytics.php"); ?>
 </head>
 <body>
     <!-- Fixed navbar -->
