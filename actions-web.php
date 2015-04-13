@@ -684,7 +684,7 @@ function addcredit($userid,$creditmultiplier)
    $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
    $addcreditamount=$requiredcredit*$creditmultiplier;
    $result=$db->query("UPDATE credit SET credit=credit+".$addcreditamount." WHERE userId=".$userid);
-   $result=$db->query("INSERT INTO history SET userId=$userid,action='RENT',parameter='".$addcreditamount."|add+".$addcreditamount."'");
+   $result=$db->query("INSERT INTO history SET userId=$userid,action='CREDITCHANGE',parameter='".$addcreditamount."|add+".$addcreditamount."'");
    $result=$db->query("SELECT userName FROM users WHERE users.userId=".$userid);
    $row=$result->fetch_assoc();
    response("Added ".$addcreditamount.$credit["currency"]." credit for ".$row["userName"].".");
