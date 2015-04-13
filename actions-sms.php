@@ -729,15 +729,20 @@ function revert($number,$bikeNum)
 
         $result=$db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser<>'NULL'");
         if (!$result->num_rows)
-                {
-                sendSMS($number,"Bicycle $bikeNum is not rented right now. Revert not successful!");
-                return;
-                }
+           {
+           sendSMS($number,"Bicycle $bikeNum is not rented right now. Revert not successful!");
+           return;
+           }
+        else
+           {
+           $row=$result->fetch_assoc();
+           $revertusernumber=getphonenumber($row["currentUser"]);
+           }
 
         $result=$db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1");
         if ($result->num_rows==1)
                 {
-                        $row =$result->fetch_assoc();
+                        $row=$result->fetch_assoc();
                         $standId=$row["parameter"];
                         $stand=$row["standName"];
                 }
@@ -749,15 +754,12 @@ function revert($number,$bikeNum)
                 }
         if ($standId and $code)
            {
-           if ($result=$db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code where bikeNum=$bikeNum")) {
-                        } else error("update failed");
-           if ($result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'")) {
-                        } else error("update failed");
-           if ($result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code")) {
-                        } else error("update failed");
-           if ($result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId")) {
-                        } else error("update failed");
+           $result=$db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code where bikeNum=$bikeNum");
+           $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'");
+           $result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code");
+           $result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
            sendSMS($number,"Bicycle $bikeNum reverted to stand $stand with code $code.");
+           sendSMS($revertusernumber,"Bicycle $bikeNum has been returned. You can now rent a new bicycle.");
            }
         else
            {

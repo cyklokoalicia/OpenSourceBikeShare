@@ -431,6 +431,11 @@ function revert($userId,$bikeNum)
       response("Bicycle $bikeNum is not rented right now. Revert not successful!",ERROR);
       return;
       }
+   else
+      {
+      $row=$result->fetch_assoc();
+      $revertusernumber=getphonenumber($row["currentUser"]);
+      }
    $result=$db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=$bikeNum AND action='RETURN' ORDER BY time DESC LIMIT 1");
    if ($result->num_rows==1)
       {
@@ -451,6 +456,7 @@ function revert($userId,$bikeNum)
       $result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code");
       $result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
       response('<h3>Bicycle '.$bikeNum.' reverted to <span class="label label-primary">'.$stand.'</span> with code <span class="label label-primary">'.$code.'</span>.</h3>');
+      sendSMS($revertusernumber,"Bicycle $bikeNum has been returned. You can now rent a new bicycle.");
       }
    else
       {
