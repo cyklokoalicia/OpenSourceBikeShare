@@ -280,7 +280,7 @@ function rentedbikes()
             {
             for (var i=0, len=jsonobject.content.length; i < len; i++)
                {
-               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'" title="You have this bicycle currently rented. The current lock code is displayed below the bike number.">'+jsonobject.content[i]+'<br /><span class="label label-default">('+jsonobject.codes[i]+')</span></button> ';
+               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'" title="You have this bicycle currently rented. The current lock code is displayed below the bike number.">'+jsonobject.content[i]+'<br /><span class="label label-primary">('+jsonobject.codes[i]+')</span><br /><span class="label"><s>('+jsonobject.oldcodes[i]+')</s></span></button> ';
                }
             $('#rentedbikes').html('<div class="btn-group">'+bikelist+'</div>');
             $('#rentedbikes .bikeid').click( function() { attachbicycleinfo(this,"return"); });

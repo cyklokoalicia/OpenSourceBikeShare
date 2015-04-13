@@ -143,6 +143,7 @@ function saveuser()
       $("#edituser").hide();
       handleresponse("userconsole",jsonobject);
    });
+   setTimeout(userlist, 2000);
 }
 
 function addcredit(creditmultiplier)

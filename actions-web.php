@@ -409,10 +409,13 @@ function userbikes($userId)
       $bikenum=$row["bikeNum"];
       $bicycles[]=$bikenum;
       $codes[]=str_pad($row["currentCode"],4,"0",STR_PAD_LEFT);
+      $result2=$db->query("SELECT parameter FROM history WHERE bikeNum=$bikenum AND action='RENT' ORDER BY time DESC LIMIT 1,1");
+      $row=$result2->fetch_assoc();
+      $oldcodes[]=str_pad($row["parameter"],4,"0",STR_PAD_LEFT);
       }
    if (!$result->num_rows) $bicycles="";
    if (!isset($codes)) $codes="";
-   else $codes=array("codes"=>$codes);
+   else $codes=array("codes"=>$codes,"oldcodes"=>$oldcodes);
    response($bicycles,0,$codes,0);
 }
 
