@@ -643,7 +643,7 @@ function getuserlist()
    $result=$db->query("SELECT users.userId,username,mail,number,privileges,credit,userLimit FROM users LEFT JOIN credit ON users.userId=credit.userId LEFT JOIN limits ON users.userId=limits.userId ORDER BY username");
    while($row = $result->fetch_assoc())
       {
-      $jsoncontent[]=array("userid"=>$row["userId"],"username"=>utf8_encode($row["username"]),"mail"=>$row["mail"],"number"=>$row["number"],"privileges"=>$row["privileges"],"credit"=>$row["credit"],"limit"=>$row["userLimit"]);
+      $jsoncontent[]=array("userid"=>$row["userId"],"username"=>$row["username"],"mail"=>$row["mail"],"number"=>$row["number"],"privileges"=>$row["privileges"],"credit"=>$row["credit"],"limit"=>$row["userLimit"]);
       }
    echo json_encode($jsoncontent);
 }
