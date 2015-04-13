@@ -8,6 +8,7 @@ $(document).ready(function(){
    $("#userstats").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-userstats'); userstats(); });
    $("#trips").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-trips'); trips(); });
    $('.nav-tabs a').each(function () { $(this).click(function () { activetab=$(this).attr('href'); $(activetab).addClass('active'); } ); });
+   $("#saveuser").click(function() { saveuser(); return false; });
    $("#addcredit").click(function() { addcredit(1); return false; });
    $("#addcredit2").click(function() { addcredit(5); return false; });
    $("#addcredit3").click(function() { addcredit(10); return false; });
