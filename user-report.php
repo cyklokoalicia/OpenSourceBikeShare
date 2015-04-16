@@ -24,7 +24,7 @@ function report()
 
 	$mysqli = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
 
-	if ($result = $mysqli->query("SELECT users.userId,userName,mail,number,privileges,userLimit,count(bikeNum) as currently_rented from users left join limits on users.userId=limits.userId left join bikes on users.userId=bikes.currentUser
+	if ($result = $mysqli->query("SELECT users.userId,userName,mail,number,privileges,userLimit,credit,count(bikeNum) as currently_rented from users left join limits on users.userId=limits.userId left join bikes on users.userId=bikes.currentUser left join credit on users.userId=credit.userId
 	                group by userId order by userId "))
         {
 
@@ -32,7 +32,7 @@ function report()
 #       echo '<caption>uzivatelia</caption>';
 
         echo "<tr>";
-        $cols = array("userId","userName","mail","number","privileges","userLimit","currently_rented");
+        $cols = array("userId","userName","mail","number","privileges","userLimit","credit","currently_rented");
         foreach($cols as $col)
         {
                 echo "<th>$col</th>";
