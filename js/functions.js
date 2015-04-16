@@ -113,7 +113,7 @@ function getuserstatus()
 
 function createstandselector()
 {
-   var selectdata='<option value="del">-- Select stand --</option>';
+   var selectdata='<option value="del">-- '+_select_stand+' --</option>';
    $.each( markerdata, function( key, value ) {
    if (value!=undefined)
       {
@@ -163,11 +163,11 @@ function showstand(e,clear)
       $('#standcount').removeClass('label label-danger').addClass('label label-success');
       if (markerdata[standid].count==1)
          {
-         $('#standcount').html(markerdata[standid].count+' bicycle:');
+         $('#standcount').html(markerdata[standid].count+' '+_bicycle+':');
          }
       else
          {
-         $('#standcount').html(markerdata[standid].count+' bicycles:');
+         $('#standcount').html(markerdata[standid].count+' '+_bicycles+':');
          }
       $.ajax({
          global: false,
@@ -226,7 +226,7 @@ function showstand(e,clear)
                }
             else // no bicyles at stand
                {
-               $('#standcount').html('No bicycles');
+               $('#standcount').html(_no_bicycles);
                $('#standcount').removeClass('label label-success').addClass('label label-danger');
                resetstandbikes();
                }
@@ -235,19 +235,19 @@ function showstand(e,clear)
       }
    else
       {
-      $('#standcount').html('No bicycles');
+      $('#standcount').html(_no_bicycles);
       $('#standcount').removeClass('label label-success').addClass('label label-danger');
       resetstandbikes();
       }
    walklink='';
    if ("geolocation" in navigator) // if geolocated, provide link to walking directions
       {
-      walklink='<a href="https://www.google.com/maps?q='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'+to:'+lat+','+long+'&saddr='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'&daddr='+lat+','+long+'&output=classic&dirflg=w&t=m" target="_blank" title="Open a map with directions to the selected stand from your current location.">walking directions</a>';
+      walklink='<a href="https://www.google.com/maps?q='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'+to:'+lat+','+long+'&saddr='+$("body").data("mapcenterlat")+','+$("body").data("mapcenterlong")+'&daddr='+lat+','+long+'&output=classic&dirflg=w&t=m" target="_blank" title="'+_open_map+'">'+_walking_directions+'</a>';
       }
    if (loggedin==1 && markerdata[standid].photo)
       {
       walklink=walklink+' | ';
-      $('#standinfo').html(markerdata[standid].desc+' ('+walklink+' <a href="'+markerdata[standid].photo+'" id="photo'+standid+'" title="Display photo of the stand.">photo</a>)');
+      $('#standinfo').html(markerdata[standid].desc+' ('+walklink+' <a href="'+markerdata[standid].photo+'" id="photo'+standid+'" title="'+_display_photo+'">'+_photo+'</a>)');
       $('#standphoto').hide();
       $('#standphoto').html('<img src="'+markerdata[standid].photo+'" alt="'+markerdata[standid].name+'" width="100%" />');
       $('#photo'+standid).click(function() { $('#standphoto').slideToggle(); return false; });
@@ -280,7 +280,7 @@ function rentedbikes()
             {
             for (var i=0, len=jsonobject.content.length; i < len; i++)
                {
-               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'" title="You have this bicycle currently rented. The current lock code is displayed below the bike number.">'+jsonobject.content[i]+'<br /><span class="label label-primary">('+jsonobject.codes[i]+')</span><br /><span class="label"><s>('+jsonobject.oldcodes[i]+')</s></span></button> ';
+               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'" title="'+_currently_rented+'">'+jsonobject.content[i]+'<br /><span class="label label-primary">('+jsonobject.codes[i]+')</span><br /><span class="label"><s>('+jsonobject.oldcodes[i]+')</s></span></button> ';
                }
             $('#rentedbikes').html('<div class="btn-group">'+bikelist+'</div>');
             $('#rentedbikes .bikeid').click( function() { attachbicycleinfo(this,"return"); });
@@ -411,7 +411,7 @@ function attachbicycleinfo(element,attachto)
 {
    $('#'+attachto+' .bikenumber').html($(element).attr('data-id'));
    // show warning, if exists:
-   if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">Reported problem on this bicycle: '+$(element).attr('data-note')+'</div>');
+   if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">'+_reported_problem+' '+$(element).attr('data-note')+'</div>');
    // or hide warning, if bike without issue is clicked
    else if ($(element).hasClass('btn-warning')==false && $('#console div').hasClass('alert-warning')) resetconsole();
 }

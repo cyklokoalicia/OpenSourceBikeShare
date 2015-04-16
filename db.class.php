@@ -15,14 +15,14 @@ class Database
       {
       $this->conn=new mysqli($this->dbserver,$this->dbuser,$this->dbpassword,$this->dbname);
       $this->conn->autocommit(FALSE);
-      if (!$this->conn OR $this->conn->connect_errno) error('DB connection error!');
+      if (!$this->conn OR $this->conn->connect_errno) error(_('DB connection error!'));
       return $this->conn;
       }
 
    function query($query)
       {
       $result=$this->conn->query($query);
-      if (!$result) error('DB error '.$this->conn->error.' in: '.$query);
+      if (!$result) error(_('DB error').' '.$this->conn->error.' '._('in').': '.$query);
       return $result;
       }
 

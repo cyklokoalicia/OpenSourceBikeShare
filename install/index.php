@@ -30,7 +30,6 @@ function changeconfigvalue($configvar,$postvar)
 function error($message)
 {
    global $db,$error;
-   //$db->conn->rollback();
    echo '<div class="alert alert-danger" role="alert">'.$message.'</div>';
    $error=1;
 }
@@ -39,7 +38,6 @@ function return_bytes($val) {
     $val = trim($val);
     $last = strtolower($val[strlen($val)-1]);
     switch($last) {
-        // The 'G' modifier is available since PHP 5.1.0
         case 'g':
             $val *= 1024;
         case 'm':
@@ -83,7 +81,7 @@ function filterconnectors(&$value,$key)
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title><?php echo $systemname; ?> Installation</title>
+<title><?php echo $systemname; ?> <?php echo _('Installation'); ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript" src="../js/bootstrap.min.js"></script>
@@ -102,7 +100,7 @@ function filterconnectors(&$value,$key)
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
+            <span class="sr-only"><?php echo _('Toggle navigation'); ?></span>
           </button>
           <a class="navbar-brand" href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
         </div>
@@ -112,16 +110,17 @@ function filterconnectors(&$value,$key)
     <div class="container">
 
       <div class="page-header">
-            <h1>Installation <span class="label label-default">Step <?php echo $step; ?></span> out of <span class="label label-default">6</span></h1>
+            <h1><?php echo _('Installation'); ?> <span class="label label-default"><?php echo _('Step'); echo " ",$step; ?></span> <?php echo _('out of'); ?> <span class="label label-default">6</span></h1>
             </div>
 <?php if (!$step): ?>
-       <h2>System requirements check</h2>
+       <h2><?php echo _('System requirements check'); ?></h2>
       <form class="container" method="post" action="index.php?step=1">
 <?php
 $check["phpversion"]=explode("-",phpversion());
 $check["phpversion"]=$check["phpversion"][0];
 $check["hash"]=array_search("hash",get_loaded_extensions());
 $check["mysqli"]=array_search("mysqli",get_loaded_extensions());
+$check["gettext"]=array_search("gettext",get_loaded_extensions());
 $check["json"]=array_search("json",get_loaded_extensions());
 $check["config"]=is_writable($configfilename);
 $check["uploads"]=is_writable("../img/uploads");
@@ -130,66 +129,70 @@ $check["purifier"]=is_writable("../external/htmlpurifier/standalone/HTMLPurifier
 $error=0;
 if (version_compare($check["phpversion"],"5")==-1)
    {
-   error('Only PHP 5.0+ supported. You are using version '.$check["phpversion"].'.');
+   error(_('Only PHP 5.0+ supported. You are using version').' '.$check["phpversion"].'. '._('Base requirement').'.');
    }
 if (!$check["hash"])
    {
-   error('Hash module not loaded! Compile or load hash module into PHP.');
+   error(_('Hash module not loaded! Compile or load hash module into PHP. Required for password encryption.'));
    }
 if (!$check["mysqli"])
    {
-   error('MySQLi / MariaDB module not loaded! Compile or load MySQL module into PHP.');
+   error(_('MySQLi / MariaDB module not loaded! Compile or load MySQL module into PHP. Required for database connections.'));
+   }
+if (!$check["gettext"])
+   {
+   error(_('gettext module not loaded! Compile or load gettext module into PHP. Required for translations.'));
    }
 if (!$check["json"])
    {
-   error('JSON module not loaded! Compile or load JSON module into PHP.');
+   error(_('JSON module not loaded! Compile or load JSON module into PHP. Required for AJAX (PHP<->JS communication).'));
    }
 if ($check["uploads"]===FALSE)
    {
-   error('img/uploads directory is not writable! Set permissions (chmod it) to 777.');
+   error('img/uploads '._('directory is not writable! Set permissions (chmod it) to 777. Required for uploads to work.'));
    }
 if ($check["config"]===FALSE)
    {
-   error($configfilename.' is not writable! Set permissions (chmod it) to 777.');
+   error($configfilename.' '._('is not writable! Set permissions (chmod it) to 777. Required for settings configuration values during the install process.'));
    }
 if ($check["purifier"]===FALSE)
    {
-   error('external/htmlpurifier/standalone/HTMLPurifier/DefinitionCache/Serializer directory is not writable! Set permissions (chmod it) to 777.');
+   error('external/htmlpurifier/standalone/HTMLPurifier/DefinitionCache/Serializer '._('directory is not writable! Set permissions (chmod it) to 777. Required for security purposes.'));
    }
 if (!$error)
    {
-   echo '<div class="alert alert-success" role="alert">All fine.</div>';
-   echo '<button type="submit" class="btn btn-primary">Continue</button> to step 1';
+   echo '<div class="alert alert-success" role="alert">'._('All fine.').'</div>';
+   echo '<button type="submit" class="btn btn-primary">'._('Continue').'</button> '._('to step').' 1';
    }
 ?>
          </form>
 <?php endif; ?>
 <?php if ($step==1): ?>
-       <h2>Set basic system and database options</h2>
+       <h2><?php echo _('Set basic system and database options'); ?></h2>
       <form class="container" method="post" action="index.php?step=2">
-      <fieldset><legend>System</legend>
-         <div class="form-group"><label for="systemname" class="control-label">System name:</label> <input type="text" name="systemname" id="systemname" class="form-control" /></div>
+      <fieldset><legend><?php echo _('System'); ?></legend>
+         <div class="form-group"><label for="systemname" class="control-label"><?php echo _('System name:'); ?></label> <input type="text" name="systemname" id="systemname" class="form-control" /></div>
          <div class="row"><div class="col-lg-6">
-         <div class="form-group"><label for="systemlat" class="control-label">System latitude center point:</label> <input type="text" name="systemlat" id="systemlat" class="form-control" /></div>
-         <div class="form-group"><label for="systemlong" class="control-label">System longitude center point:</label> <input type="text" name="systemlong" id="systemlong" class="form-control" /></div>
+         <div class="form-group"><label for="systemlat" class="control-label"><?php echo _('System latitude center point:'); ?></label> <input type="text" name="systemlat" id="systemlat" class="form-control" /></div>
+         <div class="form-group"><label for="systemlong" class="control-label"><?php echo _('System longitude center point:'); ?></label> <input type="text" name="systemlong" id="systemlong" class="form-control" /></div>
          </div><div class="col-lg-6">
          <div id="map"></div>
          </div></div>
-         <div class="form-group"><label for="systemrules" class="control-label">System rules URL:</label> <input type="text" name="systemrules" id="systemrules" class="form-control" /></div>
-         <div class="form-group"><label for="smsconnector" class="control-label">SMS system connector:</label>
+         <div class="form-group"><label for="systemrules" class="control-label"><?php echo _('System rules URL:'); ?></label> <input type="text" name="systemrules" id="systemrules" class="form-control" /></div>
+         <div class="form-group"><label for="smsconnector" class="control-label"><?php echo _('SMS system connector:'); ?></label>
             <select class="form-control" name="smsconnector" id="smsconnector">
-            <option value="">Disable SMS system</option>
+            <option value=""><?php echo _('Disable SMS system'); ?></option>
             <?php foreach($files as $value) { echo '<option value="',$value,'">',$value,'</option>'; } ?>
             </select></div>
-         <div class="form-group" id="countrycodeblock"><label for="countrycode" class="control-label">International dialing code (no plus, no zeroes):</label> <input type="text" name="countrycode" id="countrycode" class="form-control" /></div>
+         <div class="form-group" id="countrycodeblock"><label for="countrycode" class="control-label"><?php echo _('International dialing code (no plus, no zeroes):'); ?></label> <input type="text" name="countrycode" id="countrycode" class="form-control" /></div>
       </fieldset>
-      <fieldset><legend>Database</legend>
-         <div class="form-group"><label for="dbserver" class="control-label">Database server:</label> <input type="text" name="dbserver" id="dbserver" class="form-control" /></div>
-         <div class="form-group"><label for="dbuser">Database user:</label> <input type="text" name="dbuser" id="dbuser" class="form-control" /></div>
-         <div class="form-group"><label for="dbpassword">Database password:</label> <input type="password" name="dbpassword" id="dbpassword" class="form-control" /></div>
-         <div class="form-group"><label for="dbname">Database name:</label> <input type="text" name="dbname" id="dbname" class="form-control" /></div>
+      <fieldset><legend><?php echo _('Database'); ?></legend>
+         <div class="form-group"><label for="dbserver" class="control-label"><?php echo _('Database server:'); ?></label> <input type="text" name="dbserver" id="dbserver" class="form-control" /></div>
+         <div class="form-group"><label for="dbuser"><?php echo _('Database user:'); ?></label> <input type="text" name="dbuser" id="dbuser" class="form-control" /></div>
+         <div class="form-group"><label for="dbpassword"><?php echo _('Database password:'); ?></label> <input type="password" name="dbpassword" id="dbpassword" class="form-control" /></div>
+         <div class="form-group"><label for="dbname"><?php echo _('Database name:'); ?></label> <input type="text" name="dbname" id="dbname" class="form-control" /></div>
       </fieldset>
-         <button type="submit" id="register" class="btn btn-primary">Create database</button> and continue to step 2
+         <button type="submit" id="register" class="btn btn-primary"><?php echo _('Create database'); ?></button> <?php echo _('and continue to step'); ?> 2
          </form>
 <?php endif; ?>
 <?php if ($step==2):
@@ -225,16 +228,16 @@ foreach ($sql as $value)
       }
    }
 ?>
-       <h2>Create admin user</h2>
-       <?php echo '<div class="alert alert-success" role="alert">Config file values set and database created.</div>'; ?>
+       <h2><?php echo _('Create admin user'); ?></h2>
+       <?php echo '<div class="alert alert-success" role="alert">',_('Config file values set and database created.'),'</div>'; ?>
       <form class="container" method="post" action="index.php?step=3">
-         <div class="form-group"><label for="username" class="control-label">Fullname:</label> <input type="text" name="username" id="username" class="form-control" /></div>
-         <div class="form-group"><label for="password">Password:</label> <input type="text" name="password" id="password" class="form-control" /></div>
-         <div class="form-group"><label for="email">Email:</label> <input type="text" name="email" id="email" class="form-control" /></div>
+         <div class="form-group"><label for="username" class="control-label"><?php echo _('Fullname:'); ?></label> <input type="text" name="username" id="username" class="form-control" /></div>
+         <div class="form-group"><label for="password"><?php echo _('Password:'); ?></label> <input type="text" name="password" id="password" class="form-control" /></div>
+         <div class="form-group"><label for="email"><?php echo _('Email:'); ?></label> <input type="text" name="email" id="email" class="form-control" /></div>
 <?php if ($connectors["sms"]): ?>
-         <div class="form-group"><label for="phone">Phone number:</label> <input type="text" name="phone" id="phone" class="form-control" /></div>
+         <div class="form-group"><label for="phone"><?php echo _('Phone number:'); ?></label> <input type="text" name="phone" id="phone" class="form-control" /></div>
 <?php endif; ?>
-         <button type="submit" id="register" class="btn btn-primary">Create admin user</button> and continue to step 3
+         <button type="submit" id="register" class="btn btn-primary"><?php echo _('Create admin user'); ?></button> <?php echo _('and continue to step'); ?> 3
          </form>
 <?php endif; ?>
 <?php if ($step==3):
@@ -249,12 +252,12 @@ if (!$connectors["sms"])
 $result=$db->query("REPLACE INTO limits SET userId='$userid',userLimit='100'");
 $db->conn->commit();
 ?>
-      <h2>Create bicycles and stands</h2>
-       <?php echo '<div class="alert alert-success" role="alert">Admin user ',$_POST["username"],' created with password: ',$_POST["password"]; if (!$connectors["sms"]) { echo '. Use number <span class="label label-default">',$userid,'</span> for login.'; } echo '</div>'; ?>
+      <h2><?php echo _('Create bicycles and stands'); ?></h2>
+       <?php echo '<div class="alert alert-success" role="alert">',_('Admin user'),' ',$_POST["username"],' ',_('created with password:'),' ',$_POST["password"]; if (!$connectors["sms"]) { echo '. ',_('Use number'),' <span class="label label-default">',$userid,'</span> ',_('for login'),'.'; } echo '</div>'; ?>
       <form class="container" method="post" action="index.php?step=4">
-         <div class="form-group"><label for="bicyclestotal" class="control-label">How many bicycles to create:</label> <input type="text" name="bicyclestotal" id="bicyclestotal" class="form-control" /></div>
-         <div class="form-group"><label for="stands" class="control-label">Stands to create (comma separated):</label> <input type="text" name="stands" id="stands" class="form-control" /></div>
-         <button type="submit" id="register" class="btn btn-primary">Create bicycles and stands</button> and continue to step 4
+         <div class="form-group"><label for="bicyclestotal" class="control-label"><?php echo _('How many bicycles to create:'); ?></label> <input type="text" name="bicyclestotal" id="bicyclestotal" class="form-control" /></div>
+         <div class="form-group"><label for="stands" class="control-label"><?php echo _('Stands to create (comma separated):'); ?></label> <input type="text" name="stands" id="stands" class="form-control" /></div>
+         <button type="submit" id="register" class="btn btn-primary"><?php echo _('Create bicycles and stands'); ?></button> <?php echo _('and continue to step'); ?> 4
          </form>
 
 <?php endif; ?>
@@ -274,11 +277,11 @@ for ($i=1;$i<=$_POST["bicyclestotal"];$i++)
    }
 $db->conn->commit();
 ?>
-      <h2>Set up stands</h2>
+      <h2><?php echo _('Set up stands'); ?></h2>
 <?php
-echo '<div class="alert alert-success" role="alert">',$_POST["bicyclestotal"],' bicycles and the following stands created: ',strtoupper(str_replace(",",", ",$_POST["stands"])),'.</div>';
-echo '<div class="alert alert-info" role="alert"><form class="container" method="get" action="generate.php"><button type="submit" id="generate" class="btn btn-primary">Download QR codes</button> for the bikes and the stands for printing or laser engraving.</form></div>';
-if ($connectors["sms"]) echo '<div class="alert alert-warning" role="alert">Note: <span class="label label-default">Place</span> is used instead of <span class="label label-default">Stand</span> for SMS <span class="label label-default">FREE</span> command only. Multiple stands close to each other can be grouped in this way to send total number of bicycles available at that location.</div>';
+echo '<div class="alert alert-success" role="alert">',$_POST["bicyclestotal"],' ',_('bicycles and the following stands created'),': ',strtoupper(str_replace(",",", ",$_POST["stands"])),'.</div>';
+echo '<div class="alert alert-info" role="alert"><form class="container" method="get" action="generate.php"><button type="submit" id="generate" class="btn btn-primary">',_('Download QR codes'),'</button> ',_('for the bikes and the stands for printing or laser engraving'),'.</form></div>';
+if ($connectors["sms"]) echo '<div class="alert alert-warning" role="alert">',_('Note'),': <span class="label label-default">',_('Place'),'</span> ',_('is used instead of'),' <span class="label label-default">',_('Stand'),'</span> ',_('for SMS'),' <span class="label label-default">FREE</span> ',_('command only. Multiple stands close to each other can be grouped in this way to send total number of bicycles available at that location.'),'</div>';
 ?>
 <form class="container" method="post" enctype="multipart/form-data" action="index.php?step=5">
 <script type="text/javascript">
@@ -291,23 +294,23 @@ while ($row=$result->fetch_assoc())
    {
    $standid=$row["standId"];
 ?>
-         <fieldset><legend>Stand <?php echo $row["standName"]; ?></legend>
+         <fieldset><legend><?php echo _('Stand'); echo $row["standName"]; ?></legend>
          <div class="row"><div class="col-lg-6">
 <?php
 if ($connectors["sms"]):
 ?>
-         <div class="form-group"><label for="placename-<?php echo $standid; ?>" class="control-label">Place:</label> <input type="text" name="placename[<?php echo $standid; ?>]" id="placename-<?php echo $standid; ?>" class="form-control" value="<?php echo $row["placeName"]; ?>" /></div>
+         <div class="form-group"><label for="placename-<?php echo $standid; ?>" class="control-label"><?php echo _('Place:'); ?></label> <input type="text" name="placename[<?php echo $standid; ?>]" id="placename-<?php echo $standid; ?>" class="form-control" value="<?php echo $row["placeName"]; ?>" /></div>
 <?php endif; ?>
-         <div class="form-group"><label for="standdesc-<?php echo $standid; ?>" class="control-label">Stand description:</label><textarea name="standdesc[<?php echo $standid; ?>]" id="standdesc-<?php echo $standid; ?>" class="form-control" rows="3" cols="39"></textarea></div>
-         <div class="form-group"><label for="standphoto-<?php echo $standid; ?>" class="control-label">Stand photo:</label><input type="file" name="standphoto[<?php echo $standid; ?>]" id="standphoto-<?php echo $standid; ?>" class="form-control" /></div>
-         <div class="form-group"><label for="servicetag-<?php echo $standid; ?>" class="control-label">Stand status:</label>
+         <div class="form-group"><label for="standdesc-<?php echo $standid; ?>" class="control-label"><?php echo _('Stand description:'); ?></label><textarea name="standdesc[<?php echo $standid; ?>]" id="standdesc-<?php echo $standid; ?>" class="form-control" rows="3" cols="39"></textarea></div>
+         <div class="form-group"><label for="standphoto-<?php echo $standid; ?>" class="control-label"><?php echo _('Stand photo:'); ?></label><input type="file" name="standphoto[<?php echo $standid; ?>]" id="standphoto-<?php echo $standid; ?>" class="form-control" /></div>
+         <div class="form-group"><label for="servicetag-<?php echo $standid; ?>" class="control-label"><?php echo _('Stand status:'); ?></label>
          <select name="servicetag[<?php echo $standid; ?>]" id="servicetag-<?php echo $standid; ?>" class="form-control" />
-         <option value="0">Active</option>
-         <option value="1">Not used / hidden</option>
+         <option value="0"><?php echo _('Active'); ?></option>
+         <option value="1"><?php echo _('Not used / hidden'); ?></option>
          </select></div>
          </div>
          <div class="col-lg-6">
-         <label for="map<?php echo $standid; ?>" class="control-label">Stand location:</label>
+         <label for="map<?php echo $standid; ?>" class="control-label"><?php echo _('Stand location:'); ?></label>
          <div id="map<?php echo $standid; ?>" class="map"></div>
          <input type="hidden" name="standlat[<?php echo $standid; ?>]" id="standlat-<?php echo $standid; ?>" value="" />
          <input type="hidden" name="standlong[<?php echo $standid; ?>]" id="standlong-<?php echo $standid; ?>" value="" />
@@ -318,7 +321,7 @@ if ($connectors["sms"]):
 <?php
    }
 ?>
-         <button type="submit" id="register" class="btn btn-primary">Set up stands</button> and continue to step 5
+         <button type="submit" id="register" class="btn btn-primary"><?php echo _('Set up stands'); ?></button> <?php echo _('and continue to step'); ?> 5
          </form>
 <?php endif; ?>
 <?php if ($step==5):
@@ -339,7 +342,7 @@ foreach ($_POST["standdesc"] as $standid=>$value)
    if (isset($_POST["placename"][$standid])) $result=$db->query("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE standId='$standid'");
    }
 $db->conn->commit();
-echo '<div class="alert alert-success" role="alert">',count($_POST["standdesc"]),' stands set up and ',$uploadtotal,' photos uploaded.</div>';
+echo '<div class="alert alert-success" role="alert">',ngettext('%d stand','%d stands',count($_POST["standdesc"])),' ',_('set up and'),' ',ngettext('%d photo','%d photos',$uploadtotal),' ',_('uploaded'),'</div>';
 ?>
       <form class="container" method="post" action="index.php?step=6">
 <?php
@@ -387,7 +390,7 @@ foreach ($configfile as $line)
       }
    }
 ?>
-         <button type="submit" id="register" class="btn btn-primary">Set system options</button> and finish
+         <button type="submit" id="register" class="btn btn-primary"><?php echo _('Set system options'); ?></button> <?php echo _('and finish'); ?>
          </form>
 <?php endif; ?>
 <?php if ($step==6):
@@ -421,10 +424,10 @@ if ($credit["enabled"]==1)
 $db->conn->commit();
 ?>
       <h2>Installation finished</h2>
-      <div class="alert alert-success" role="alert">System options set.</div>
-      <div class="alert alert-warning" role="alert">Rename <?php echo $configfilename ?> to config.php.</div>
+      <div class="alert alert-success" role="alert"><?php echo _('System options set.'); ?></div>
+      <div class="alert alert-warning" role="alert"><?php echo _('Rename'); echo $configfilename; echo _('to'); ?> config.php.</div>
       <form class="container" method="post" action="../">
-      <button type="submit" id="register" class="btn btn-primary">Launch <?php echo $systemname; ?>!</button>
+      <button type="submit" id="register" class="btn btn-primary"><?php echo _('Launch'); echo $systemname; ?>!</button>
       </form>
 <?php endif; ?>
    <br />
@@ -432,7 +435,7 @@ $db->conn->commit();
   <div class="panel-body">
     <i class="glyphicon glyphicon-copyright-mark"></i> <?php echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
   </div>
-  <div class="panel-footer"><strong>Privacy policy:</strong> We will use your details for <?php echo $systemname; ?>-related activities only.</div>
+  <div class="panel-footer"><strong><?php echo _('Privacy policy'); ?>:</strong> <?php echo _('We will use your details for'); ?> <?php echo $systemname; ?>-<?php echo _('related activities only'); ?>.</div>
    </div>
 
     </div><!-- /.container -->

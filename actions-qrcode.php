@@ -44,7 +44,7 @@ function rent($userId,$bike,$force=FALSE)
    $creditcheck=checkrequiredcredit($userId);
    if ($creditcheck===FALSE)
       {
-      response("You are below required credit ".$requiredcredit.$credit["currency"].". Please, recharge your credit.",ERROR);
+      response(_('You are below required credit')." ".$requiredcredit.$credit["currency"].". "._('Please, recharge your credit.'),ERROR);
       }
    checktoomany(0,$userId);
 
@@ -60,15 +60,15 @@ function rent($userId,$bike,$force=FALSE)
       {
       if ($limit==0)
          {
-         response("You can not rent any bikes. Contact the admins to lift the ban.",ERROR);
+         response(_('You can not rent any bikes. Contact the admins to lift the ban.'),ERROR);
          }
       elseif ($limit==1)
          {
-         response("You can only rent ".$limit." bike at once.",ERROR);
+         response(_('You can only rent')." ".sprintf(ngettext('%d bike','%d bikes',$limit),$limit)." "._('at once').".",ERROR);
          }
       else
          {
-         response("You can only rent ".$limit." bikes at once and you have already rented ".$limit.".",ERROR);
+         response(_('You can only rent')." ".sprintf(ngettext('%d bike','%d bikes',$limit),$limit)." "._('at once and you have already rented')." ".$limit.".",ERROR);
          }
       }
 
@@ -84,11 +84,11 @@ function rent($userId,$bike,$force=FALSE)
          $row=$result->fetch_assoc();
          $stand=$row["standName"];
          $user=getusername($userId);
-         notifyAdmins("Bike ".$bike." rented out of stack by ".$user.". ".$stacktopbike." was on the top of the stack at ".$stand.".",1);
+         notifyAdmins(_('Bike')." ".$bike." "._('rented out of stack by')." ".$user.". ".$stacktopbike." "._('was on the top of the stack at')." ".$stand.".",ERROR);
          }
       if ($forcestack AND $stacktopbike<>$bike)
          {
-         response("Bike ".$bike." is not rentable now, you have to rent bike ".$stacktopbike." from this stand.",ERROR);
+         response(_('Bike')." ".$bike." "._('is not rentable now, you have to rent bike')." ".$stacktopbike." "._('from this stand').".",ERROR);
          }
       }
 
@@ -108,19 +108,19 @@ function rent($userId,$bike,$force=FALSE)
 
    if ($currentUser==$userId)
       {
-      response('You have already rented the bike '.$bikeNum.'. Code is <span class="label label-primary">'.$currentCode.'</span>. Return bike by scanning QR code on a stand.',ERROR);
+      response(_('You have already rented the bike').' '.$bikeNum.'. '._('Code is').' <span class="label label-primary">'.$currentCode.'</span>. '._('Return bike by scanning QR code on a stand').'.',ERROR);
       return;
       }
    if ($currentUser!=0)
       {
-      response("The bike $bikeNum is already rented.",ERROR);
+      response(_('Bike')." ".$bikeNum." "._('is already rented').".",ERROR);
       return;
       }
 
-   $message='<h3>Bike '.$bikeNum.': <span class="label label-primary">Open with code '.$currentCode.'.</span></h3>Change code immediately to <span class="label label-default">'.$newCode.'</span><br />(open, rotate metal part, set new code, rotate metal part back).';
+   $message='<h3>'._('Bike').' '.$bikeNum.': <span class="label label-primary">'._('Open with code').' '.$currentCode.'.</span></h3>'._('Change code immediately to').' <span class="label label-default">'.$newCode.'</span><br />'._('(open, rotate metal part, set new code, rotate metal part back)').'.';
    if ($note)
       {
-      $message.="<br />Reported issue: <em>".$note."</em>";
+      $message.="<br />"._('Reported issue:')." <em>".$note."</em>";
       }
 
    $result=$db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
@@ -141,13 +141,13 @@ function returnbike($userId,$stand)
 
    if ($bikenumber==0)
       {
-      response("You have no rented bikes currently.",ERROR);
+      response(_('You have no rented bikes currently.'),ERROR);
       }
    elseif ($bikenumber>1)
       {
-      $message='You have '.$bikenumber.' rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web';
-      if ($connectors["sms"]) $message.=' or SMS';
-      $message.=' to return the bikes.';
+      $message=_('You have').' '.$bikenumber.' '._('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
+      if ($connectors["sms"]) $message.=_(' or SMS');
+      $message.=_(' to return the bikes.');
       response($message,ERROR);
       }
    else
@@ -163,11 +163,11 @@ function returnbike($userId,$stand)
 
       $result=$db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
 
-      $message = '<h3>Bike '.$bikeNum.': <span class="label label-primary">Lock with code '.$currentCode.'.</span></h3>';
-      $message.= '<br />Please, <strong>rotate the lockpad to <span class="label label-default">0000</span></strong> when leaving.';
+      $message = '<h3>'._('Bike').' '.$bikeNum.': <span class="label label-primary">'._('Lock with code').' '.$currentCode.'.</span></h3>';
+      $message.= '<br />'._('Please').', <strong>'._('rotate the lockpad to').' <span class="label label-default">0000</span></strong> '._('when leaving').'.';
 
       $creditchange=changecreditendrental($bikeNum,$userId);
-      if (iscreditenabled() AND $creditchange) $message.='<br />Credit change: -'.$creditchange.getcreditcurrency().'.';
+      if (iscreditenabled() AND $creditchange) $message.='<br />'._('Credit change').': -'.$creditchange.getcreditcurrency().'.';
       $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
 
       response($message);
@@ -178,7 +178,7 @@ function returnbike($userId,$stand)
 function unrecognizedqrcode($userId)
 {
    global $db;
-   response("<h3>Unrecognized QR code action. Try scanning the code again or report this to the system admins.</h3>",ERROR);
+   response("<h3>"._('Unrecognized QR code action. Try scanning the code again or report this to the system admins.')."</h3>",ERROR);
 }
 
 ?>

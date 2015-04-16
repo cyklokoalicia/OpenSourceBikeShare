@@ -251,7 +251,7 @@ function checkstandname($stand)
    $result=$db->query("SELECT standName FROM stands WHERE standName='$stand'");
    if (!$result->num_rows)
       {
-      response('<h3>Stand '.$stand.' does not exist!</h3>',ERROR);
+      response('<h3>'._('Stand').' '.$stand.' '._('does not exist').'!</h3>',ERROR);
       }
 }
 
@@ -271,7 +271,7 @@ function notifyAdmins($message,$notificationtype=0)
          }
       else
          {
-         sendEmail($row["mail"],$systemname." notification",$message);
+         sendEmail($row["mail"],$systemname." "._('notification'),$message);
          }
       }
 }
@@ -279,9 +279,9 @@ function notifyAdmins($message,$notificationtype=0)
 function sendConfirmationEmail($email)
 {
 
-        global $db, $dbpassword, $systemURL;
+        global $db, $dbpassword, $systemname, $systemURL;
 
-        $subject = 'registracia/registration White Bikes';
+        $subject = _('Registration').' '.$systemname;
 
         $result=$db->query("SELECT userName,userId FROM users where mail='$email'");
         $row = $result->fetch_assoc();
@@ -305,10 +305,7 @@ Dear $krstne,
 you were registered to the community bikesharing White Bikes.
 The current guide (in English) for White Bikes can be found at http://v.gd/introWB
 
-If you agree with the rules, click on the following link:
-
-".$systemURL."agree.php?key=$userKey
-";
+"._('If you agree with the rules, click on the following link:')."\n".$systemURL."agree.php?key=".$userKey;
                 sendEmail($email, $subject, $message);
 }
 
@@ -317,7 +314,7 @@ function confirmUser($userKey)
         global $db, $limits;
         $userKey = $db->conn->real_escape_string($userKey);
 
-        $result=$db->query("SELECT userId FROM registration where userKey='$userKey'");
+        $result=$db->query("SELECT userId FROM registration WHERE userKey='$userKey'");
         if($result->num_rows==1)
                 {
                         $row = $result->fetch_assoc();
@@ -325,15 +322,15 @@ function confirmUser($userKey)
                 }
                 else
                 {
-                        echo '<div class="alert alert-danger" role="alert">Registration key not found!</div>';
+                        echo '<div class="alert alert-danger" role="alert">',_('Registration key not found!'),'</div>';
                         return FALSE;
                 }
 
-        $db->query("UPDATE limits SET userLimit='".$limits["registration"]."' where userId=$userId");
+        $db->query("UPDATE limits SET userLimit='".$limits["registration"]."' WHERE userId=$userId");
 
-        $db->query("DELETE from registration where userId='$userId'");
+        $db->query("DELETE FROM registration WHERE userId='$userId'");
 
-        echo '<div class="alert alert-success" role="alert">Your account has been activated. Welcome!</div>';
+        echo '<div class="alert alert-success" role="alert">',_('Your account has been activated. Welcome!'),'</div>';
 
 }
 
@@ -380,16 +377,16 @@ function checklongrental()
          $time=strtotime($time);
          if ($time+($watches["longrental"]*3600)<=time())
             {
-            $abusers.=" b".$bikenum." by ".$username.",";
+            $abusers.=" b".$bikenum." "._('by')." ".$username.",";
             $found=1;
-            if ($notifyuser) sendSMS($userphone,"Please, return your bike ".$bikenum." immediately to the closest stand! Ignoring this warning can get you banned from the system.");
+            if ($notifyuser) sendSMS($userphone,_('Please, return your bike ').$bikenum._(' immediately to the closest stand! Ignoring this warning can get you banned from the system.'));
             }
          }
       }
    if ($found)
       {
       $abusers=substr($abusers,0,strlen($abusers)-1);
-      notifyAdmins($watches["longrental"]."+ hour rental:".$abusers);
+      notifyAdmins($watches["longrental"]."+ "._('hour rental').":".$abusers);
       }
 
 }
@@ -413,7 +410,7 @@ function checktoomany($cron=1,$userid=0)
          $result2=$db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
          if ($result2->num_rows>=($userlimit+$watches["numbertoomany"]))
             {
-            $abusers.=" ".$result2->num_rows." (limit ".$userlimit.") by ".$username.",";
+            $abusers.=" ".$result2->num_rows." ("._('limit')." ".$userlimit.") "._('by')." ".$username.",";
             $found=1;
             }
          }
@@ -428,14 +425,14 @@ function checktoomany($cron=1,$userid=0)
       $result=$db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
       if ($result->num_rows>=($userlimit+$watches["numbertoomany"]))
          {
-         $abusers.=" ".$result->num_rows." (limit ".$userlimit.") by ".$username.",";
+         $abusers.=" ".$result->num_rows." ("._('limit')." ".$userlimit.") "._('by')." ".$username.",";
          $found=1;
          }
       }
    if ($found)
       {
       $abusers=substr($abusers,0,strlen($abusers)-1);
-      notifyAdmins("Over limit in ".$watches["timetoomany"]." hs:".$abusers);
+      notifyAdmins(_('Over limit in')." ".$watches["timetoomany"]." "._('hs').":".$abusers);
       }
 
 }

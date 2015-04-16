@@ -69,8 +69,8 @@ function userlist()
    url: "command.php?action=userlist"
    }).done(function(jsonresponse) {
       jsonobject=$.parseJSON(jsonresponse);
-      if (jsonobject.length>0) code='<table class="table table-striped"><tr><th>User</th><th>Privileges</th><th>Limit</th>';
-      if (creditenabled==1) code=code+'<th>Credit</th>';
+      if (jsonobject.length>0) code='<table class="table table-striped"><tr><th>'+_user+'</th><th>'+_privileges+'</th><th>'+_limit+'</th>';
+      if (creditenabled==1) code=code+'<th>'+_credit+'</th>';
       code=code+'</tr>';
       for (var i=0, len=jsonobject.length; i < len; i++)
          {

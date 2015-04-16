@@ -41,7 +41,7 @@ function rent($userId,$bike,$force=FALSE)
       $creditcheck=checkrequiredcredit($userId);
       if ($creditcheck===FALSE)
          {
-         response("You are below required credit ".$requiredcredit.$credit["currency"].". Please, recharge your credit.",ERROR);
+         response(_('You are below required credit')." ".$requiredcredit.$credit["currency"].". "._('Please, recharge your credit.'),ERROR);
          }
       checktoomany(0,$userId);
 
@@ -57,15 +57,15 @@ function rent($userId,$bike,$force=FALSE)
          {
          if ($limit==0)
             {
-            response("You can not rent any bikes. Contact the admins to lift the ban.",ERROR);
+            response(_('You can not rent any bikes. Contact the admins to lift the ban.'),ERROR);
             }
          elseif ($limit==1)
             {
-            response("You can only rent ".$limit." bike at once.",ERROR);
+            response(_('You can only rent')." ".sprintf(ngettext('%d bike','%d bikes',$limit),$limit)." "._('at once').".",ERROR);
             }
          else
             {
-            response("You can only rent ".$limit." bikes at once and you have already rented ".$limit.".",ERROR);
+            response(_('You can only rent')." ".sprintf(ngettext('%d bike','%d bikes',$limit),$limit)." "._('at once')." "._('and you have already rented')." ".$limit.".",ERROR);
             }
          }
 
@@ -81,11 +81,11 @@ function rent($userId,$bike,$force=FALSE)
             $row=$result->fetch_assoc();
             $stand=$row["standName"];
             $user=getusername($userId);
-            notifyAdmins("Bike ".$bike." rented out of stack by ".$user.". ".$stacktopbike." was on the top of the stack at ".$stand.".",1);
+            notifyAdmins(_('Bike')." ".$bike." "._('rented out of stack by')." ".$user.". ".$stacktopbike." "._('was on the top of the stack at')." ".$stand.".",1);
             }
          if ($forcestack AND $stacktopbike<>$bike)
             {
-            response("Bike ".$bike." is not rentable now, you have to rent bike ".$stacktopbike." from this stand.",ERROR);
+            response(_('Bike')." ".$bike." "._('is not rentable now, you have to rent bike')." ".$stacktopbike." "._('from this stand').".",ERROR);
             }
          }
       }
@@ -108,20 +108,20 @@ function rent($userId,$bike,$force=FALSE)
       {
       if ($currentUser==$userId)
          {
-         response("You already rented the bike $bikeNum. Code is $currentCode.",ERROR);
+         response(_('You already rented bike')." ".$bikeNum.". "._('Code is')." ".$currentCode.".",ERROR);
          return;
          }
       if ($currentUser!=0)
          {
-         response("The bike $bikeNum is already rented.",ERROR);
+         response(_('Bike')." ".$bikeNum." "._('is already rented').".",ERROR);
          return;
          }
       }
 
-   $message='<h3>Bike '.$bikeNum.': <span class="label label-primary">Open with code '.$currentCode.'.</span></h3>Change code immediately to <span class="label label-default">'.$newCode.'</span><br />(open, rotate metal part, set new code, rotate metal part back).';
+   $message='<h3>'._('Bike').' '.$bikeNum.': <span class="label label-primary">'._('Open with code').' '.$currentCode.'.</span></h3>'._('Change code immediately to').' <span class="label label-default">'.$newCode.'</span><br />'._('(open, rotate metal part, set new code, rotate metal part back)').'.';
    if ($note)
       {
-      $message.="<br />Reported issue: <em>".$note."</em>";
+      $message.="<br />"._('Reported issue').": <em>".$note."</em>";
       }
 
    $result=$db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
@@ -152,7 +152,7 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
 
       if ($bikenumber==0)
          {
-         response("You have no rented bikes currently.",ERROR);
+         response(_('Youh currently have no rented bikes.'),ERROR);
          }
       }
 
@@ -174,14 +174,14 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
    $result=$db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
    if ($note) addNote($userId,$bikeNum,$note);
 
-   $message = '<h3>Bike '.$bikeNum.': <span class="label label-primary">Lock with code '.$currentCode.'.</span></h3>';
-   $message.= '<br />Please, <strong>rotate the lockpad to <span class="label label-default">0000</span></strong> when leaving.';
-   if ($note) $message.='<br />You have also reported this problem: '.$note.'.';
+   $message = '<h3>'._('Bike').' '.$bikeNum.': <span class="label label-primary">'._('Lock with code').' '.$currentCode.'.</span></h3>';
+   $message.= '<br />'._('Please').', <strong>'._('rotate the lockpad to').' <span class="label label-default">0000</span></strong> '._('when leaving').'.';
+   if ($note) $message.='<br />'._('You have also reported this problem:').' '.$note.'.';
 
    if ($force==FALSE)
       {
       $creditchange=changecreditendrental($bikeNum,$userId);
-      if (iscreditenabled() AND $creditchange) $message.='<br />Credit change: -'.$creditchange.getcreditcurrency().'.';
+      if (iscreditenabled() AND $creditchange) $message.='<br />'._('Credit change').': -'.$creditchange.getcreditcurrency().'.';
       $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
       }
    else
@@ -213,16 +213,16 @@ function where($userId,$bike)
    $note=substr($note,0,strlen($note)-2); // remove last two chars - comma and space
    if ($note)
       {
-      $note="Bike note: $note";
+      $note=_('Bike note:')." ".$note;
       }
 
    if ($standName)
       {
-      response('<h3>Bike '.$bikeNum.' at <span class="label label-primary">'.$standName.'</span>.</h3>'.$note);
+      response('<h3>'._('Bike').' '.$bikeNum.' '._('at').' <span class="label label-primary">'.$standName.'</span>.</h3>'.$note);
       }
    else
       {
-      response('<h3>Bike '.$bikeNum.' rented by <span class="label label-primary">'.$userName.'</span>.</h3>Phone: <a href="tel:+'.$phone.'">+'.$phone.'</a>. '.$note);
+      response('<h3>'._('Bike').' '.$bikeNum.' '._('rented by').' <span class="label label-primary">'.$userName.'</span>.</h3>'._('Phone').': <a href="tel:+'.$phone.'">+'.$phone.'</a>. '.$note);
       }
 
 }
@@ -242,14 +242,14 @@ function addnote($userId,$bikeNum,$message)
    $standName=$row["standName"];
    if ($standName!=NULL)
       {
-      $bikeStatus="at $standName";
+      $bikeStatus=_('at')." ".$standName;
       }
       else
       {
-      $bikeStatus="used by $userName +$phone";
+      $bikeStatus=_('used by')." ".$userName." +".$phone;
       }
    $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
-   notifyAdmins("Note b.$bikeNum (".$bikeStatus.") by $userName/$phone:".$userNote);
+   notifyAdmins(_('Note')." b.".$bikeNum." (".$bikeStatus.") "._('by')." ".$userName."/".$phone.":".$userNote);
 
 }
 
@@ -300,7 +300,7 @@ function liststands()
 {
    global $db;
 
-   response("not implemented",0,"",0); exit;
+   response(_('not implemented'),0,"",0); exit;
    $result=$db->query("SELECT standId,standName,standDescription,standPhoto,serviceTag,placeName,longitude,latitude FROM stands ORDER BY standName");
    while($row=$result->fetch_assoc())
       {
@@ -332,7 +332,7 @@ function removenote($userId,$bikeNum)
    global $db;
 
    $result=$db->query("DELETE FROM notes WHERE bikeNum=$bikeNum LIMIT XXXX");
-   response("Note for bike $bikeNum deleted.");
+   response(_('Note for bike')." ".$bikeNum." "._('deleted').".");
 }
 
 function last($userId,$bike=0)
@@ -343,7 +343,7 @@ function last($userId,$bike=0)
    if ($bikeNum)
       {
       $result=$db->query("SELECT userName,parameter,standName,action,time FROM `history` JOIN users ON history.userid=users.userid LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum AND (action NOT LIKE '%CREDIT%') ORDER BY time DESC LIMIT 10");
-      $historyInfo="<h3>Bike $bikeNum history:</h3><ul>";
+      $historyInfo="<h3>"._('Bike')." ".$bikeNum." "._('history').":</h3><ul>";
       while($row=$result->fetch_assoc())
          {
          $time=strtotime($row["time"]);
@@ -351,7 +351,7 @@ function last($userId,$bike=0)
          if($row["standName"]!=NULL)
             {
             $historyInfo.=$row["standName"];
-            if ($row["action"]=="REVERT") $historyInfo.=' <span class="label label-warning">Revert</span>';
+            if ($row["action"]=="REVERT") $historyInfo.=' <span class="label label-warning">'._('Revert').'</span>';
             }
          else
             {
@@ -367,8 +367,8 @@ function last($userId,$bike=0)
       $inuse=$result->num_rows;
       $result=$db->query("SELECT bikeNum,userName,standName,users.userId FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId LEFT JOIN stands ON bikes.currentStand=stands.standId ORDER BY bikeNum");
       $total=$result->num_rows;
-      $historyInfo="<h3>Current network usage:</h3>";
-      $historyInfo.="<h4>".$total." bicycles, ".$inuse." in use</h4><ul>";
+      $historyInfo="<h3>"._('Current network usage:')."</h3>";
+      $historyInfo.="<h4>".sprintf(ngettext('%d bicycle','%d bicycles',$total),$total).", ".$inuse." "._('in use')."</h4><ul>";
       while($row=$result->fetch_assoc())
          {
          $historyInfo.="<li>".$row["bikeNum"]." - ";
@@ -428,7 +428,7 @@ function revert($userId,$bikeNum)
    $result=$db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser IS NOT NULL");
    if (!$result->num_rows)
       {
-      response("Bicycle $bikeNum is not rented right now. Revert not successful!",ERROR);
+      response(_('Bicycle')." ".$bikeNum." "._('is not rented right now. Revert not successful!'),ERROR);
       return;
       }
    else
@@ -455,12 +455,12 @@ function revert($userId,$bikeNum)
       $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'");
       $result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code");
       $result=$db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
-      response('<h3>Bicycle '.$bikeNum.' reverted to <span class="label label-primary">'.$stand.'</span> with code <span class="label label-primary">'.$code.'</span>.</h3>');
-      sendSMS($revertusernumber,"Bicycle $bikeNum has been returned. You can now rent a new bicycle.");
+      response('<h3>'._('Bicycle').' '.$bikeNum.' '._('reverted to').' <span class="label label-primary">'.$stand.'</span> '._('with code').' <span class="label label-primary">'.$code.'</span>.</h3>');
+      sendSMS($revertusernumber,_('Bike')." ".$bikeNum." "._('has been returned. You can now rent a new bicycle.'));
       }
    else
       {
-      response("No last stand or code for bicycle $bikeNum found. Revert not successful!",ERROR);
+      response(_('No last stand or code for bicycle')." ".$bikeNum." "._('found. Revert not successful!'),ERROR);
       }
 
 }
@@ -480,7 +480,7 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
    $parametercheck=$number.";".str_replace(" ","",$code).";".$checkcode;
    if ($password<>$password2)
       {
-      response("Password do not match. Please correct and try again.",ERROR);
+      response(_('Password do not match. Please correct and try again.'),ERROR);
       }
    if (issmssystemenabled()==TRUE)
       {
@@ -492,7 +492,7 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
             $result=$db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='$number',privileges=0");
             $userId=$db->conn->insert_id;
             sendConfirmationEmail($email);
-            response("You have been successfully registered. Please, check your email and read the instructions to finish your registration.");
+            response(_('You have been successfully registered. Please, check your email and read the instructions to finish your registration.'));
             }
          else // existing user, password change
             {
@@ -500,12 +500,12 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
             $row=$result->fetch_assoc();
             $userId=$row["userId"];
             $result=$db->query("UPDATE users SET password=SHA2('$password',512) WHERE userId='$userId'");
-            response('Password successfully changed. Your username is your phone number. Continue to <a href="'.$systemURL.'">login</a>.');
+            response(_('Password successfully changed. Your username is your phone number. Continue to').' <a href="'.$systemURL.'">'._('login').'</a>.');
             }
          }
       else
          {
-         response("Problem with the SMS code entered. Please check and try again.",ERROR);
+         response(_('Problem with the SMS code entered. Please check and try again.'),ERROR);
          }
       }
    else // SMS system disabled
@@ -514,7 +514,7 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
       $userId=$db->conn->insert_id;
       $result=$db->query("UPDATE users SET number='$userId' WHERE userId='$userId'");
       sendConfirmationEmail($email);
-      response("You have been successfully registered. Please, check your email and read the instructions to finish your registration. Your number for login is: ".$userId);
+      response(_('You have been successfully registered. Please, check your email and read the instructions to finish your registration. Your number for login is:')." ".$userId);
       }
 
 }
@@ -577,7 +577,7 @@ function checkprivileges($userid)
    $privileges=getprivileges($userid);
    if ($privileges<1)
       {
-      response("Sorry, this command is only available for the privileged users.",ERROR);
+      response(_('Sorry, this command is only available for the privileged users.'),ERROR);
       exit;
       }
 }
@@ -598,8 +598,8 @@ function smscode($number)
    $smscode=chr(rand(65,90)).chr(rand(65,90))." ".rand(100000,999999);
    $smscodenormalized=str_replace(" ","",$smscode);
    $checkcode=md5("WB".$number.$smscodenormalized);
-   if (!$userexists) $text="Enter this code to register: ".$smscode;
-   else $text="Enter this code to change password: ".$smscode;
+   if (!$userexists) $text=_('Enter this code to register:')." ".$smscode;
+   else $text=_('Enter this code to change password:')." ".$smscode;
    $text=$db->conn->real_escape_string($text);
 
    $result=$db->query("INSERT INTO sent SET number='$number',text='$text'");
@@ -640,7 +640,7 @@ function trips($userId,$bike=0)
          $jsoncontent[$bikenum][]=array("longitude"=>$row["longitude"],"latitude"=>$row["latitude"]);
          }
       }
-   echo json_encode($jsoncontent);
+   echo json_encode($jsoncontent); // TODO change to response function
 }
 
 function getuserlist()
@@ -651,7 +651,7 @@ function getuserlist()
       {
       $jsoncontent[]=array("userid"=>$row["userId"],"username"=>$row["username"],"mail"=>$row["mail"],"number"=>$row["number"],"privileges"=>$row["privileges"],"credit"=>$row["credit"],"limit"=>$row["userLimit"]);
       }
-   echo json_encode($jsoncontent);
+   echo json_encode($jsoncontent);// TODO change to response function
 }
 
 function getuserstats()
@@ -666,7 +666,7 @@ function getuserstats()
       $row3=$result2->fetch_assoc();
       $jsoncontent[]=array("userid"=>$row["userId"],"username"=>$row["username"],"count"=>$row["count"],"rentals"=>$row2["rentals"],"returns"=>$row3["returns"]);
       }
-   echo json_encode($jsoncontent);
+   echo json_encode($jsoncontent);// TODO change to response function
 }
 
 function edituser($userid)
@@ -675,7 +675,7 @@ function edituser($userid)
    $result=$db->query("SELECT users.userId,userName,mail,number,privileges,userLimit,credit FROM users LEFT JOIN limits ON users.userId=limits.userId LEFT JOIN credit ON users.userId=credit.userId WHERE users.userId=".$userid);
    $row=$result->fetch_assoc();
    $jsoncontent=array("userid"=>$row["userId"],"username"=>$row["userName"],"email"=>$row["mail"],"phone"=>$row["number"],"privileges"=>$row["privileges"],"limit"=>$row["userLimit"],"credit"=>$row["credit"]);
-   echo json_encode($jsoncontent);
+   echo json_encode($jsoncontent);// TODO change to response function
 }
 
 function saveuser($userid,$username,$email,$phone,$privileges,$limit)
@@ -684,7 +684,7 @@ function saveuser($userid,$username,$email,$phone,$privileges,$limit)
    $result=$db->query("UPDATE users SET username='$username',mail='$email',privileges='$privileges' WHERE userId=".$userid);
    if ($phone) $result=$db->query("UPDATE users SET number='$phone' WHERE userId=".$userid);
    $result=$db->query("UPDATE limits SET userLimit='$limit' WHERE userId=".$userid);
-   response("Details of user ".$username." updated.");
+   response(_('Details of user')." ".$username." "._('updated').".");
 }
 
 function addcredit($userid,$creditmultiplier)
@@ -696,7 +696,7 @@ function addcredit($userid,$creditmultiplier)
    $result=$db->query("INSERT INTO history SET userId=$userid,action='CREDITCHANGE',parameter='".$addcreditamount."|add+".$addcreditamount."'");
    $result=$db->query("SELECT userName FROM users WHERE users.userId=".$userid);
    $row=$result->fetch_assoc();
-   response("Added ".$addcreditamount.$credit["currency"]." credit for ".$row["userName"].".");
+   response(_('Added')." ".$addcreditamount.$credit["currency"]." "._('credit for')." ".$row["userName"].".");
 }
 
 function mapgetmarkers()
@@ -709,7 +709,7 @@ function mapgetmarkers()
       {
       $jsoncontent[]=$row;
       }
-   echo json_encode($jsoncontent);
+   echo json_encode($jsoncontent); // TODO proper response function
 }
 
 function mapgetlimit($userId)

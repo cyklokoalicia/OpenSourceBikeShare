@@ -10,7 +10,7 @@ $db->connect();
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title><? echo $systemname; ?> registration</title>
+<title><? echo $systemname; ?> <?php echo _('account activation'); ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -26,7 +26,7 @@ $db->connect();
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
+            <span class="sr-only"><?php echo _('Toggle navigation'); ?></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
@@ -35,7 +35,7 @@ $db->connect();
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li><a href="<?php echo $systemURL; ?>">Map</a></li>
+            <li><a href="<?php echo $systemURL; ?>"><?php echo _('Map'); ?></a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -43,7 +43,7 @@ $db->connect();
 <br />
 <div class="container">
    <div class="page-header">
-   <h1>Account activation</h1>
+   <h1><?php echo _('Account activation'); ?></h1>
    </div>
 <?php
 $userkey="";
@@ -51,14 +51,13 @@ if (isset($_GET["key"])) $userkey=$_GET["key"];
 confirmUser($userkey);
 ?>
 <div class="alert alert-warning" role="alert">
-<p>Registráciou potvrdzujem, že som si prečítal: <a href="<?php echo $systemrules; ?>">Navod</a></p>
-<p>By registering I confirm that I have read: <a href="<?php echo $systemrules; ?>">User Guide</a></p>
+<p><?php echo _('By registering I confirm that I have read:'); ?> <a href="<?php echo $systemrules; ?>"><?php echo _('User Guide'); ?></a></p>
 </div>
    <div class="panel panel-default">
   <div class="panel-body">
     <i class="glyphicon glyphicon-copyright-mark"></i> <? echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
   </div>
-  <div class="panel-footer"><strong>Privacy policy:</strong> We will use your details for <?php echo $systemname; ?>-related activities only.</div>
+  <div class="panel-footer"><strong><?php echo _('Privacy policy:'); ?></strong> <?php echo _('We will use your details for'); echo $systemname,'-'; <?php echo _('related activities only'); ?>.</div>
    </div>
 
     </div><!-- /.container -->

@@ -17,6 +17,7 @@ $db->connect();
 <script type="text/javascript" src="js/viewportDetect.js"></script>
 <script type="text/javascript" src="js/leaflet.js"></script>
 <script type="text/javascript" src="js/L.Control.Sidebar.js"></script>
+<script type="text/javascript" src="js/translations.php"></script>
 <script type="text/javascript" src="js/functions.js"></script>
 <?php if (date("m-d")=="04-01") echo '<script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>'; ?>
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
@@ -58,7 +59,7 @@ else
 <div class="row">
    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
    <a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
-   <?php if (isloggedin() AND getprivileges($_COOKIE["loguserid"])>0) echo '<a href="admin.php"><span class="glyphicon glyphicon-cog"></span> Admin</a>'; ?>
+   <?php if (isloggedin() AND getprivileges($_COOKIE["loguserid"])>0) echo '<a href="admin.php"><span class="glyphicon glyphicon-cog"></span> ',_('Admin'),'</a>'; ?>
    <h1><?php echo $systemname; ?></h1>
    </div>
    <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
@@ -67,8 +68,8 @@ else
    if (isloggedin())
       {
       echo '<li><span class="label label-success"><span class="glyphicon glyphicon-user"></span> <em>',getusername($_COOKIE["loguserid"]),'</em></span>';
-      if (iscreditenabled()) echo ' (<span id="usercredit" title="Remaining credit">',getusercredit($_COOKIE["loguserid"]),'</span>',getcreditcurrency(),')';
-      echo '<br /><a href="command.php?action=logout" id="logout">Log out</a></li>';
+      if (iscreditenabled()) echo ' (<span id="usercredit" title="',_('Remaining credit'),'">',getusercredit($_COOKIE["loguserid"]),'</span>',getcreditcurrency(),')';
+      echo '<br /><a href="command.php?action=logout" id="logout">',_('Log out'),'</a></li>';
       }
    ?>
    </ul>
@@ -80,18 +81,18 @@ else
 <div id="loginform">
 <h1>Log in</h1>
 <?php
-if (isset($_GET["error"]) AND $_GET["error"]==1) echo '<div class="alert alert-danger" role="alert"><h3>User / phone number or password incorrect! Please, try again.</h3></div>';
-elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert alert-danger" role="alert"><h3>Session timed out! Please, log in again.</h3></div>';
+if (isset($_GET["error"]) AND $_GET["error"]==1) echo '<div class="alert alert-danger" role="alert"><h3>',_('User / phone number or password incorrect! Please, try again.'),'</h3></div>';
+elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert alert-danger" role="alert"><h3>',_('Session timed out! Please, log in again.'),'</h3></div>';
 ?>
       <form method="POST" action="command.php?action=login">
       <div class="row"><div class="col-lg-12">
-            <label for="number" class="control-label"><?php if (issmssystemenabled()==TRUE) echo 'Phone number:'; else echo 'User number:'; ?></label> <input type="text" name="number" id="number" class="form-control" />
+            <label for="number" class="control-label"><?php if (issmssystemenabled()==TRUE) echo _('Phone number:'); else echo _('User number:'); ?></label> <input type="text" name="number" id="number" class="form-control" />
        </div></div>
        <div class="row"><div class="col-lg-12">
-            <label for="password">Password:</label> <input type="password" name="password" id="password" class="form-control" />
+            <label for="password"><?php echo _('Password:'); ?></label> <input type="password" name="password" id="password" class="form-control" />
        </div></div><br />
        <div class="row"><div class="col-lg-12">
-         <button type="submit" id="register" class="btn btn-lg btn-block btn-primary">Log in</button>
+         <button type="submit" id="register" class="btn btn-lg btn-block btn-primary"><?php echo _('Log in'); ?></button>
        </div></div>
          </form>
 </div>
@@ -109,7 +110,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <div class="row">
 <div id="standactions" class="btn-group">
   <div class="col-lg-12">
-         <button class="btn btn-primary" type="button" id="rent" title="Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set."><span class="glyphicon glyphicon-log-out"></span> Rent <span class="bikenumber"></span></button>
+         <button class="btn btn-primary" type="button" id="rent" title="<?php echo _('Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'); ?>"><span class="glyphicon glyphicon-log-out"></span> <?php echo _('Rent'); ?> <span class="bikenumber"></span></button>
   </div>
 </div>
 </div>
@@ -119,14 +120,14 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <div class="row">
    <div class="input-group">
    <div class="col-lg-12">
-   <input type="text" name="notetext" id="notetext" class="form-control" placeholder="Describe problem">
+   <input type="text" name="notetext" id="notetext" class="form-control" placeholder="<?php echo _('Describe problem'); ?>">
    </div>
    </div>
 </div>
 <div class="row">
    <div class="btn-group bicycleactions">
    <div class="col-lg-12">
-   <button type="button" class="btn btn-primary" id="return" title="Return this bicycle to the selected stand."><span class="glyphicon glyphicon-log-in"></span> Return bicycle <span class="bikenumber"></span></button> (and <a href="#" id="note" title="Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).">report problem <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
+   <button type="button" class="btn btn-primary" id="return" title="<?php echo _('Return this bicycle to the selected stand.'); ?>"><span class="glyphicon glyphicon-log-in"></span> <?php echo _('Return bicycle'); ?> <span class="bikenumber"></span></button> (and <a href="#" id="note" title="<?php echo _('Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).'); ?>"><?php echo _('report problem'); ?> <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
    </div></div>
 </div>
 

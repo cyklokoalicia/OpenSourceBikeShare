@@ -11,7 +11,7 @@ $(document).ready(function(){
             smscode: {
                 validators: {
                     callback: {
-                        message: 'SMS code is in AB 123456 format.',
+                        message: _sms_code,
                         callback: function(value, validator) {
                                   smscode=$("#smscode").val();
                                   smscode=smscode.replace(/ /g,"");
@@ -19,24 +19,24 @@ $(document).ready(function(){
                                   else return false;
                                   } },
                     notEmpty: {
-                        message: 'Please, enter SMS code received to your phone.'
+                        message: _enter_sms_code
                     }
                 }
             },
             fullname: {
                 validators: {
                     notEmpty: {
-                        message: 'Please, enter your firstname and lastname.'
+                        message: _enter_names
                     }
                 }
             },
             email: {
                 validators: {
                     emailAddress: {
-                        message: 'Email address is incorrect.'
+                        message: _email_incorrect
                     },
                     notEmpty: {
-                        message: 'Please, enter your email.'
+                        message: _enter_email
                     }
                 }
             },
@@ -44,10 +44,10 @@ $(document).ready(function(){
                 validators: {
                     identical: {
                         field: 'password2',
-                        message: 'Passwords do not match.'
+                        message: _passwords_nomatch
                     },
                     notEmpty: {
-                        message: 'Please, enter your password.'
+                        message: _enter_password
                     }
                 }
             },
@@ -55,10 +55,10 @@ $(document).ready(function(){
                 validators: {
                     identical: {
                         field: 'password',
-                        message: 'Passwords do not match.'
+                        message: _passwords_nomatch
                     },
                     notEmpty: {
-                        message: 'Please, confirm your password.'
+                        message: _enter_password
                     }
                 }
             }
@@ -83,9 +83,9 @@ function getsmscode()
    $("#step1").fadeOut();
    if (jsonobject.existing==1)
       {
-      $('h1').html('Existing user password change').fadeIn();
-      $('#step2title').html('Step 2 - Change password').fadeIn();
-      $('#register').html('Set password');
+      $('h1').html(_existing_user).fadeIn();
+      $('#step2title').html(_step2).fadeIn();
+      $('#register').html(_set_password);
       $('#regonly').fadeOut();
       }
    });
