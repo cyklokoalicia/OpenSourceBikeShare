@@ -68,8 +68,12 @@ else
          break;
       case "LIST":
          //checkUserPrivileges($sms->Number()); //allowed for all users as agreed
+<<<<<<< HEAD
          checkUserPrivileges($sms->Number());
          validateReceivedSMS($sms->Number(),count($args),2,_('with stand name:')." LIST RACKO");
+=======
+         validateReceivedSMS($sms->Number(),count($args),2,"with stand name: LIST RACKO");
+>>>>>>> f03a1b5ce1ab950cccb4bede5c86fb9e11026896
          listBikes($sms->Number(),$args[1]);
          break;
       case "ADD":
