@@ -67,7 +67,7 @@ else
          delnote($sms->Number(),$args[1],trim(urldecode($sms->Text())));
          break;
       case "LIST":
-         checkUserPrivileges($sms->Number());
+         //checkUserPrivileges($sms->Number()); //allowed for all users as agreed
          validateReceivedSMS($sms->Number(),count($args),2,"with stand name: LIST RACKO");
          listBikes($sms->Number(),$args[1]);
          break;
