@@ -68,11 +68,12 @@ if ($step==5)
    }
 
 $files=scandir("../connectors/");
+$files=array_diff($files,array('..', '.'));
 array_walk($files,'filterconnectors');
 function filterconnectors(&$value,$key)
    {
    global $files;
-   if (strpos($value,".php")==FALSE) unset($files[$key]);
+   if (strpos($value,".php")===FALSE) unset($files[$key]);
    elseif (strpos($value,"disabled.php")!==FALSE) unset($files[$key]);
    else $files[$key]=str_replace(".php","",$files[$key]);
    }
@@ -279,7 +280,7 @@ $db->conn->commit();
 ?>
       <h2><?php echo _('Set up stands'); ?></h2>
 <?php
-echo '<div class="alert alert-success" role="alert">',$_POST["bicyclestotal"],' ',_('bicycles and the following stands created'),': ',strtoupper(str_replace(",",", ",$_POST["stands"])),'.</div>';
+echo '<div class="alert alert-success" role="alert">',sprintf(ngettext('%d bicycle','%d bicycles',$_POST["bicyclestotal"]),$_POST["bicyclestotal"]),' ',_('and the following stands created'),': ',strtoupper(str_replace(",",", ",$_POST["stands"])),'.</div>';
 echo '<div class="alert alert-info" role="alert"><form class="container" method="get" action="generate.php"><button type="submit" id="generate" class="btn btn-primary">',_('Download QR codes'),'</button> ',_('for the bikes and the stands for printing or laser engraving'),'.</form></div>';
 if ($connectors["sms"]) echo '<div class="alert alert-warning" role="alert">',_('Note'),': <span class="label label-default">',_('Place'),'</span> ',_('is used instead of'),' <span class="label label-default">',_('Stand'),'</span> ',_('for SMS'),' <span class="label label-default">FREE</span> ',_('command only. Multiple stands close to each other can be grouped in this way to send total number of bicycles available at that location.'),'</div>';
 ?>
@@ -294,7 +295,7 @@ while ($row=$result->fetch_assoc())
    {
    $standid=$row["standId"];
 ?>
-         <fieldset><legend><?php echo _('Stand'); echo $row["standName"]; ?></legend>
+         <fieldset><legend><?php echo _('Stand'); echo ' ',$row["standName"]; ?></legend>
          <div class="row"><div class="col-lg-6">
 <?php
 if ($connectors["sms"]):
@@ -342,7 +343,7 @@ foreach ($_POST["standdesc"] as $standid=>$value)
    if (isset($_POST["placename"][$standid])) $result=$db->query("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE standId='$standid'");
    }
 $db->conn->commit();
-echo '<div class="alert alert-success" role="alert">',ngettext('%d stand','%d stands',count($_POST["standdesc"])),' ',_('set up and'),' ',ngettext('%d photo','%d photos',$uploadtotal),' ',_('uploaded'),'</div>';
+echo '<div class="alert alert-success" role="alert">',sprintf(ngettext('%d stand','%d stands',count($_POST["standdesc"])),count($_POST["standdesc"])),' ',_('set up and'),' ',sprintf(ngettext('%d photo','%d photos',$uploadtotal),$uploadtotal),' ',_('uploaded'),'</div>';
 ?>
       <form class="container" method="post" action="index.php?step=6">
 <?php
@@ -425,9 +426,9 @@ $db->conn->commit();
 ?>
       <h2>Installation finished</h2>
       <div class="alert alert-success" role="alert"><?php echo _('System options set.'); ?></div>
-      <div class="alert alert-warning" role="alert"><?php echo _('Rename'); echo $configfilename; echo _('to'); ?> config.php.</div>
+      <div class="alert alert-warning" role="alert"><strong><?php echo _('Rename'); echo ' ',$configfilename,' '; echo _('to'); ?> config.php.</strong></div>
       <form class="container" method="post" action="../">
-      <button type="submit" id="register" class="btn btn-primary"><?php echo _('Launch'); echo $systemname; ?>!</button>
+      <button type="submit" id="register" class="btn btn-primary"><?php echo _('Launch'); echo ' ',$systemname; ?>!</button>
       </form>
 <?php endif; ?>
    <br />
