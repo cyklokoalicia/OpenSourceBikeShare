@@ -1,4 +1,5 @@
 <?php
+require("external/PHPMailer/PHPMailerAutoload.php");
 require("external/htmlpurifier/HTMLPurifier.standalone.php");
 $htmlpurconfig=HTMLPurifier_Config::createDefault();
 $purifier=new HTMLPurifier($htmlpurconfig);
@@ -25,11 +26,26 @@ function error($message)
    exit($message);
 }
 
-function sendEmail($email,$subject,$message)
+function sendEmail($toemail,$subject,$message)
 {
-   global $db, $systememail;
-   $headers = 'From: '.$systememail. "\r\n" . 'Reply-To: '.$systememail. "\r\n" . 'X-Mailer: PHP/' . phpversion();
-   if (DEBUG===FALSE) mail($email, $subject, $message, $headers); // @TODO: replace with proper SMTP mailer
+   global $db, $systemname, $systememail, $email;
+   $mail=new PHPMailer;
+   $mail->isSMTP(); // Set mailer to use SMTP
+   $mail->Host=$mail["smtp"]; // Specify main and backup SMTP servers
+   $mail->Username=$mail["user"]; // SMTP username
+   $mail->Password=$mail["password"]; // SMTP password
+   $mail->SMTPAuth=true; // Enable SMTP authentication
+   $mail->SMTPSecure="ssl"; // Enable SSL
+   $mail->Port=465; // TCP port to connect to
+   $mail->CharSet="UTF-8";
+   $mail->From=$systememail;
+   $mail->FromName=$systemname;
+   $mail->addAddress($toemail);     // Add a recipient
+   $mail->Subject=$subject;
+   if (DEBUG===FALSE)
+      {
+      $mail->send();
+      }
    else echo $email,' | ',$subject,' | ',$message;
 }
 
@@ -279,34 +295,27 @@ function notifyAdmins($message,$notificationtype=0)
 function sendConfirmationEmail($email)
 {
 
-        global $db, $dbpassword, $systemname, $systemURL;
+   global $db, $dbpassword, $systemname, $systemrules, $systemURL;
 
-        $subject = _('Registration').' '.$systemname;
+   $subject = _('Registration').' '.$systemname;
 
-        $result=$db->query("SELECT userName,userId FROM users where mail='$email'");
-        $row = $result->fetch_assoc();
+   $result=$db->query("SELECT userName,userId FROM users WHERE mail='".$email."'");
+   $row = $result->fetch_assoc();
 
-        $userId=$row["userId"];
-        $userKey=hash('sha256', $email.$dbpassword.rand(0,1000000));
+   $userId=$row["userId"];
+   $userKey=hash('sha256', $email.$dbpassword.rand(0,1000000));
 
-        $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'");
-        $db->query("INSERT into limits SET userId='$userId',userLimit=0");
-        $db->query("INSERT into credit SET userId='$userId',credit=0");
+   $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'");
+   $db->query("INSERT into limits SET userId='$userId',userLimit=0");
+   $db->query("INSERT into credit SET userId='$userId',credit=0");
 
-                $mena = preg_split("/[\s,]+/",$row["userName"]);
-                $krstne = $mena[0];
-                $message = "Ahoj $krstne, [EN below]\n
-bol/a si zaregistrovany/a do systemu komunitneho poziciavania bicyklov White Bikes.\n
-Navod k Bielym Bicyklom najdes na http://v.gd/navod
-
-Ak suhlasis s pravidlami, klikni na linku dole v maili.
-
-Dear $krstne,
-you were registered to the community bikesharing White Bikes.
-The current guide (in English) for White Bikes can be found at http://v.gd/introWB
-
-"._('If you agree with the rules, click on the following link:')."\n".$systemURL."agree.php?key=".$userKey;
-                sendEmail($email, $subject, $message);
+   $names=preg_split("/[\s,]+/",$row["userName"]);
+   $firstname=$names[0];
+   $message=_('Hello').$firstname."\n".
+   _('you have been registered into community bike share system').$systemname.".\n\n".
+   _('System rules are available here:')."\n".$systemrules.
+   _('By clicking the following link you agree to the System rules:')."\n".$systemURL."agree.php?key=".$userKey;
+   sendEmail($email, $subject, $message);
 }
 
 function confirmUser($userKey)

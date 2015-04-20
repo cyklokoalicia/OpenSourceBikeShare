@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Open Source Bike Share\n"
-"POT-Creation-Date: 2015-04-16 23:50+0100\n"
-"PO-Revision-Date: 2015-04-19 23:28+0100\n"
+"POT-Creation-Date: 2015-04-20 22:16+0100\n"
+"PO-Revision-Date: 2015-04-20 22:16+0100\n"
 "Last-Translator: Daniel Duris <dusoft@staznosti.sk>\n"
 "Language-Team: Open Source Bike Share <consult@whitebikes.info>\n"
 "Language: Slovak\n"
@@ -39,7 +39,7 @@ msgstr ""
 #: /www/OpenSourceBikeShare/index.php:89
 #: /www/OpenSourceBikeShare/admin.php:114
 #: /www/OpenSourceBikeShare/register.php:55
-#: /www/OpenSourceBikeShare/install/index.php:238
+#: /www/OpenSourceBikeShare/install/index.php:239
 msgid "Phone number:"
 msgstr ""
 
@@ -49,7 +49,7 @@ msgstr ""
 
 #: /www/OpenSourceBikeShare/index.php:92
 #: /www/OpenSourceBikeShare/register.php:78
-#: /www/OpenSourceBikeShare/install/index.php:235
+#: /www/OpenSourceBikeShare/install/index.php:236
 msgid "Password:"
 msgstr ""
 
@@ -96,8 +96,8 @@ msgstr ""
 #: /www/OpenSourceBikeShare/receive.php:35
 #: /www/OpenSourceBikeShare/receive.php:44
 #: /www/OpenSourceBikeShare/receive.php:54
-#: /www/OpenSourceBikeShare/receive.php:81
-#: /www/OpenSourceBikeShare/receive.php:89
+#: /www/OpenSourceBikeShare/receive.php:83
+#: /www/OpenSourceBikeShare/receive.php:91
 msgid "with bike number:"
 msgstr ""
 
@@ -107,7 +107,7 @@ msgid "with bike number and stand name:"
 msgstr ""
 
 #: /www/OpenSourceBikeShare/receive.php:58
-#: /www/OpenSourceBikeShare/receive.php:71
+#: /www/OpenSourceBikeShare/receive.php:72
 msgid "with stand name:"
 msgstr ""
 
@@ -125,7 +125,7 @@ msgid ""
 "pattern will be deleted:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/receive.php:76
+#: /www/OpenSourceBikeShare/receive.php:78
 msgid "with email, phone, fullname:"
 msgstr ""
 
@@ -343,7 +343,7 @@ msgstr ""
 
 #: /www/OpenSourceBikeShare/admin.php:47 /www/OpenSourceBikeShare/agree.php:29
 #: /www/OpenSourceBikeShare/register.php:28
-#: /www/OpenSourceBikeShare/install/index.php:103
+#: /www/OpenSourceBikeShare/install/index.php:104
 msgid "Toggle navigation"
 msgstr ""
 
@@ -413,13 +413,13 @@ msgstr ""
 
 #: /www/OpenSourceBikeShare/admin.php:111
 #: /www/OpenSourceBikeShare/register.php:73
-#: /www/OpenSourceBikeShare/install/index.php:234
+#: /www/OpenSourceBikeShare/install/index.php:235
 msgid "Fullname:"
 msgstr ""
 
 #: /www/OpenSourceBikeShare/admin.php:112
 #: /www/OpenSourceBikeShare/register.php:75
-#: /www/OpenSourceBikeShare/install/index.php:236
+#: /www/OpenSourceBikeShare/install/index.php:237
 msgid "Email:"
 msgstr ""
 
@@ -481,9 +481,9 @@ msgstr ""
 #: /www/OpenSourceBikeShare/actions-sms.php:306
 #: /www/OpenSourceBikeShare/actions-sms.php:428
 #: /www/OpenSourceBikeShare/actions-sms.php:444
-#: /www/OpenSourceBikeShare/common.php:254
-#: /www/OpenSourceBikeShare/install/index.php:284
-#: /www/OpenSourceBikeShare/install/index.php:297
+#: /www/OpenSourceBikeShare/common.php:270
+#: /www/OpenSourceBikeShare/install/index.php:285
+#: /www/OpenSourceBikeShare/install/index.php:298
 msgid "Stand"
 msgstr ""
 
@@ -566,7 +566,7 @@ msgstr ""
 #: /www/OpenSourceBikeShare/actions-sms.php:546
 #: /www/OpenSourceBikeShare/actions-sms.php:619
 #: /www/OpenSourceBikeShare/actions-sms.php:679
-#: /www/OpenSourceBikeShare/common.php:254
+#: /www/OpenSourceBikeShare/common.php:270
 msgid "does not exist"
 msgstr ""
 
@@ -583,16 +583,16 @@ msgstr ""
 
 #: /www/OpenSourceBikeShare/actions-sms.php:337
 #: /www/OpenSourceBikeShare/actions-web.php:252
-#: /www/OpenSourceBikeShare/install/index.php:284
+#: /www/OpenSourceBikeShare/install/index.php:285
 msgid "Note"
 msgstr ""
 
 #: /www/OpenSourceBikeShare/actions-sms.php:337
 #: /www/OpenSourceBikeShare/actions-sms.php:664
 #: /www/OpenSourceBikeShare/actions-web.php:252
-#: /www/OpenSourceBikeShare/common.php:380
-#: /www/OpenSourceBikeShare/common.php:413
-#: /www/OpenSourceBikeShare/common.php:428
+#: /www/OpenSourceBikeShare/common.php:389
+#: /www/OpenSourceBikeShare/common.php:422
+#: /www/OpenSourceBikeShare/common.php:437
 msgid "by"
 msgstr ""
 
@@ -798,13 +798,13 @@ msgstr ""
 
 #: /www/OpenSourceBikeShare/agree.php:60
 #: /www/OpenSourceBikeShare/register.php:88
-#: /www/OpenSourceBikeShare/install/index.php:438
+#: /www/OpenSourceBikeShare/install/index.php:439
 msgid "We will use your details for"
 msgstr ""
 
 #: /www/OpenSourceBikeShare/agree.php:60
 #: /www/OpenSourceBikeShare/register.php:88
-#: /www/OpenSourceBikeShare/install/index.php:438
+#: /www/OpenSourceBikeShare/install/index.php:439
 msgid "related activities only"
 msgstr ""
 
@@ -853,6 +853,7 @@ msgid "Current network usage:"
 msgstr ""
 
 #: /www/OpenSourceBikeShare/actions-web.php:371
+#: /www/OpenSourceBikeShare/install/index.php:283
 #, php-format
 msgid "%d bicycle"
 msgid_plural "%d bicycles"
@@ -936,7 +937,7 @@ msgstr ""
 
 #: /www/OpenSourceBikeShare/register.php:38
 #: /www/OpenSourceBikeShare/register.php:47
-#: /www/OpenSourceBikeShare/common.php:284
+#: /www/OpenSourceBikeShare/common.php:300
 msgid "Registration"
 msgstr ""
 
@@ -977,50 +978,62 @@ msgid "Create account"
 msgstr ""
 
 #: /www/OpenSourceBikeShare/register.php:88
-#: /www/OpenSourceBikeShare/install/index.php:438
+#: /www/OpenSourceBikeShare/install/index.php:439
 msgid "Privacy policy"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:274
+#: /www/OpenSourceBikeShare/common.php:290
 msgid "notification"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:308
-msgid "If you agree with the rules, click on the following link:"
+#: /www/OpenSourceBikeShare/common.php:314
+msgid "Hello"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:325
+#: /www/OpenSourceBikeShare/common.php:315
+msgid "you have been registered into community bike share system"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:316
+msgid "System rules are available here:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:317
+msgid "By clicking the following link you agree to the System rules:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:334
 msgid "Registration key not found!"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:333
+#: /www/OpenSourceBikeShare/common.php:342
 msgid "Your account has been activated. Welcome!"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:382
+#: /www/OpenSourceBikeShare/common.php:391
 msgid "Please, return your bike "
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:382
+#: /www/OpenSourceBikeShare/common.php:391
 msgid ""
 " immediately to the closest stand! Ignoring this warning can get you banned "
 "from the system."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:389
+#: /www/OpenSourceBikeShare/common.php:398
 msgid "hour rental"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:413
-#: /www/OpenSourceBikeShare/common.php:428
+#: /www/OpenSourceBikeShare/common.php:422
+#: /www/OpenSourceBikeShare/common.php:437
 msgid "limit"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:435
+#: /www/OpenSourceBikeShare/common.php:444
 msgid "Over limit in"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:435
+#: /www/OpenSourceBikeShare/common.php:444
 msgid "hs"
 msgstr ""
 
@@ -1036,296 +1049,296 @@ msgstr ""
 msgid "in"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:84
-#: /www/OpenSourceBikeShare/install/index.php:113
+#: /www/OpenSourceBikeShare/install/index.php:85
+#: /www/OpenSourceBikeShare/install/index.php:114
 msgid "Installation"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:113
+#: /www/OpenSourceBikeShare/install/index.php:114
 msgid "Step"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:113
+#: /www/OpenSourceBikeShare/install/index.php:114
 msgid "out of"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:116
+#: /www/OpenSourceBikeShare/install/index.php:117
 msgid "System requirements check"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:132
+#: /www/OpenSourceBikeShare/install/index.php:133
 msgid "Only PHP 5.0+ supported. You are using version"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:132
+#: /www/OpenSourceBikeShare/install/index.php:133
 msgid "Base requirement"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:136
+#: /www/OpenSourceBikeShare/install/index.php:137
 msgid ""
 "Hash module not loaded! Compile or load hash module into PHP. Required for "
 "password encryption."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:140
+#: /www/OpenSourceBikeShare/install/index.php:141
 msgid ""
 "MySQLi / MariaDB module not loaded! Compile or load MySQL module into PHP. "
 "Required for database connections."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:144
+#: /www/OpenSourceBikeShare/install/index.php:145
 msgid ""
 "gettext module not loaded! Compile or load gettext module into PHP. Required "
 "for translations."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:148
+#: /www/OpenSourceBikeShare/install/index.php:149
 msgid ""
 "JSON module not loaded! Compile or load JSON module into PHP. Required for "
 "AJAX (PHP<->JS communication)."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:152
+#: /www/OpenSourceBikeShare/install/index.php:153
 msgid ""
 "directory is not writable! Set permissions (chmod it) to 777. Required for "
 "uploads to work."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:156
+#: /www/OpenSourceBikeShare/install/index.php:157
 msgid ""
 "is not writable! Set permissions (chmod it) to 777. Required for settings "
 "configuration values during the install process."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:160
+#: /www/OpenSourceBikeShare/install/index.php:161
 msgid ""
 "directory is not writable! Set permissions (chmod it) to 777. Required for "
 "security purposes."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:164
+#: /www/OpenSourceBikeShare/install/index.php:165
 msgid "All fine."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:165
+#: /www/OpenSourceBikeShare/install/index.php:166
 msgid "Continue"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:165
+#: /www/OpenSourceBikeShare/install/index.php:166
 msgid "to step"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:171
+#: /www/OpenSourceBikeShare/install/index.php:172
 msgid "Set basic system and database options"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:173
+#: /www/OpenSourceBikeShare/install/index.php:174
 msgid "System"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:174
+#: /www/OpenSourceBikeShare/install/index.php:175
 msgid "System name:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:176
+#: /www/OpenSourceBikeShare/install/index.php:177
 msgid "System latitude center point:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:177
+#: /www/OpenSourceBikeShare/install/index.php:178
 msgid "System longitude center point:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:181
+#: /www/OpenSourceBikeShare/install/index.php:182
 msgid "System rules URL:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:182
+#: /www/OpenSourceBikeShare/install/index.php:183
 msgid "SMS system connector:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:184
+#: /www/OpenSourceBikeShare/install/index.php:185
 msgid "Disable SMS system"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:187
+#: /www/OpenSourceBikeShare/install/index.php:188
 msgid "International dialing code (no plus, no zeroes):"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:189
+#: /www/OpenSourceBikeShare/install/index.php:190
 msgid "Database"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:190
+#: /www/OpenSourceBikeShare/install/index.php:191
 msgid "Database server:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:191
+#: /www/OpenSourceBikeShare/install/index.php:192
 msgid "Database user:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:192
+#: /www/OpenSourceBikeShare/install/index.php:193
 msgid "Database password:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:193
+#: /www/OpenSourceBikeShare/install/index.php:194
 msgid "Database name:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:195
+#: /www/OpenSourceBikeShare/install/index.php:196
 msgid "Create database"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:195
-#: /www/OpenSourceBikeShare/install/index.php:240
-#: /www/OpenSourceBikeShare/install/index.php:260
-#: /www/OpenSourceBikeShare/install/index.php:324
+#: /www/OpenSourceBikeShare/install/index.php:196
+#: /www/OpenSourceBikeShare/install/index.php:241
+#: /www/OpenSourceBikeShare/install/index.php:261
+#: /www/OpenSourceBikeShare/install/index.php:325
 msgid "and continue to step"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:231
-#: /www/OpenSourceBikeShare/install/index.php:240
+#: /www/OpenSourceBikeShare/install/index.php:232
+#: /www/OpenSourceBikeShare/install/index.php:241
 msgid "Create admin user"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:232
+#: /www/OpenSourceBikeShare/install/index.php:233
 msgid "Config file values set and database created."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:255
-#: /www/OpenSourceBikeShare/install/index.php:260
+#: /www/OpenSourceBikeShare/install/index.php:256
+#: /www/OpenSourceBikeShare/install/index.php:261
 msgid "Create bicycles and stands"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:256
+#: /www/OpenSourceBikeShare/install/index.php:257
 msgid "Admin user"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:256
+#: /www/OpenSourceBikeShare/install/index.php:257
 msgid "created with password:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:256
+#: /www/OpenSourceBikeShare/install/index.php:257
 msgid "Use number"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:256
+#: /www/OpenSourceBikeShare/install/index.php:257
 msgid "for login"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:258
+#: /www/OpenSourceBikeShare/install/index.php:259
 msgid "How many bicycles to create:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:259
+#: /www/OpenSourceBikeShare/install/index.php:260
 msgid "Stands to create (comma separated):"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:280
-#: /www/OpenSourceBikeShare/install/index.php:324
+#: /www/OpenSourceBikeShare/install/index.php:281
+#: /www/OpenSourceBikeShare/install/index.php:325
 msgid "Set up stands"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:282
-msgid "bicycles and the following stands created"
+#: /www/OpenSourceBikeShare/install/index.php:283
+msgid "and the following stands created"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:283
+#: /www/OpenSourceBikeShare/install/index.php:284
 msgid "Download QR codes"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:283
+#: /www/OpenSourceBikeShare/install/index.php:284
 msgid "for the bikes and the stands for printing or laser engraving"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:284
+#: /www/OpenSourceBikeShare/install/index.php:285
 msgid "Place"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:284
+#: /www/OpenSourceBikeShare/install/index.php:285
 msgid "is used instead of"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:284
+#: /www/OpenSourceBikeShare/install/index.php:285
 msgid "for SMS"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:284
+#: /www/OpenSourceBikeShare/install/index.php:285
 msgid ""
 "command only. Multiple stands close to each other can be grouped in this way "
 "to send total number of bicycles available at that location."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:302
+#: /www/OpenSourceBikeShare/install/index.php:303
 msgid "Place:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:304
+#: /www/OpenSourceBikeShare/install/index.php:305
 msgid "Stand description:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:305
+#: /www/OpenSourceBikeShare/install/index.php:306
 msgid "Stand photo:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:306
+#: /www/OpenSourceBikeShare/install/index.php:307
 msgid "Stand status:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:308
+#: /www/OpenSourceBikeShare/install/index.php:309
 msgid "Active"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:309
+#: /www/OpenSourceBikeShare/install/index.php:310
 msgid "Not used / hidden"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:313
+#: /www/OpenSourceBikeShare/install/index.php:314
 msgid "Stand location:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:345
+#: /www/OpenSourceBikeShare/install/index.php:346
 #, php-format
 msgid "%d stand"
 msgid_plural "%d stands"
 msgstr[0] ""
 msgstr[1] ""
 
-#: /www/OpenSourceBikeShare/install/index.php:345
+#: /www/OpenSourceBikeShare/install/index.php:346
 msgid "set up and"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:345
+#: /www/OpenSourceBikeShare/install/index.php:346
 #, php-format
 msgid "%d photo"
 msgid_plural "%d photos"
 msgstr[0] ""
 msgstr[1] ""
 
-#: /www/OpenSourceBikeShare/install/index.php:345
+#: /www/OpenSourceBikeShare/install/index.php:346
 msgid "uploaded"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:393
+#: /www/OpenSourceBikeShare/install/index.php:394
 msgid "Set system options"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:393
+#: /www/OpenSourceBikeShare/install/index.php:394
 msgid "and finish"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:427
+#: /www/OpenSourceBikeShare/install/index.php:428
 msgid "System options set."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:428
+#: /www/OpenSourceBikeShare/install/index.php:429
 msgid "Rename"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:428
+#: /www/OpenSourceBikeShare/install/index.php:429
 msgid "to"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/install/index.php:430
+#: /www/OpenSourceBikeShare/install/index.php:431
 msgid "Launch"
 msgstr ""
 
