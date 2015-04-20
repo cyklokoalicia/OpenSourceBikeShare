@@ -1,0 +1,1421 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Open Source Bike Share\n"
+"POT-Creation-Date: 2015-04-16 23:50+0100\n"
+"PO-Revision-Date: 2015-04-19 23:28+0100\n"
+"Last-Translator: Daniel Duris <dusoft@staznosti.sk>\n"
+"Language-Team: Open Source Bike Share <consult@whitebikes.info>\n"
+"Language: Slovak\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Basepath: /www/OpenSourceBikeShare\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: /www/OpenSourceBikeShare\n"
+
+#: /www/OpenSourceBikeShare/index.php:62 /www/OpenSourceBikeShare/admin.php:54
+msgid "Admin"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:71
+msgid "Remaining credit"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:72 /www/OpenSourceBikeShare/admin.php:56
+msgid "Log out"
+msgstr "Odhlásiť"
+
+#: /www/OpenSourceBikeShare/index.php:84
+msgid "User / phone number or password incorrect! Please, try again."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:85
+msgid "Session timed out! Please, log in again."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:89
+#: /www/OpenSourceBikeShare/admin.php:114
+#: /www/OpenSourceBikeShare/register.php:55
+#: /www/OpenSourceBikeShare/install/index.php:238
+msgid "Phone number:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:89
+msgid "User number:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:92
+#: /www/OpenSourceBikeShare/register.php:78
+#: /www/OpenSourceBikeShare/install/index.php:235
+msgid "Password:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:95
+msgid "Log in"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:113
+msgid ""
+"Choose bike number and rent bicycle. You will receive a code to unlock the "
+"bike and the new code to set."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:113
+msgid "Rent"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:123
+msgid "Describe problem"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:130
+msgid "Return this bicycle to the selected stand."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:130
+msgid "Return bicycle"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:130
+msgid ""
+"Use this link to open a text field to write in any issues with the bicycle "
+"you are returning (flat tire, chain stuck etc.)."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:130
+msgid "report problem"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/receive.php:14
+msgid "Your number is not registered."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/receive.php:35
+#: /www/OpenSourceBikeShare/receive.php:44
+#: /www/OpenSourceBikeShare/receive.php:54
+#: /www/OpenSourceBikeShare/receive.php:81
+#: /www/OpenSourceBikeShare/receive.php:89
+msgid "with bike number:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/receive.php:39
+#: /www/OpenSourceBikeShare/receive.php:49
+msgid "with bike number and stand name:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/receive.php:58
+#: /www/OpenSourceBikeShare/receive.php:71
+msgid "with stand name:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/receive.php:62
+msgid "with bike number and problem description:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/receive.php:62
+msgid "Flat tire on front wheel"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/receive.php:66
+msgid ""
+"with bike number and optional pattern. All messages or notes matching "
+"pattern will be deleted:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/receive.php:76
+msgid "with email, phone, fullname:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:47
+#: /www/OpenSourceBikeShare/actions-web.php:44
+msgid "You are below required credit"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:47
+#: /www/OpenSourceBikeShare/actions-web.php:44
+msgid "Please, recharge your credit."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:63
+#: /www/OpenSourceBikeShare/actions-sms.php:139
+#: /www/OpenSourceBikeShare/actions-web.php:60
+msgid "You can not rent any bikes. Contact the admins to lift the ban."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:67
+#: /www/OpenSourceBikeShare/actions-qrcode.php:71
+#: /www/OpenSourceBikeShare/actions-sms.php:143
+#: /www/OpenSourceBikeShare/actions-sms.php:147
+#: /www/OpenSourceBikeShare/actions-web.php:64
+#: /www/OpenSourceBikeShare/actions-web.php:68
+msgid "You can only rent"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:67
+#: /www/OpenSourceBikeShare/actions-qrcode.php:71
+#: /www/OpenSourceBikeShare/actions-sms.php:143
+#: /www/OpenSourceBikeShare/actions-sms.php:147
+#: /www/OpenSourceBikeShare/actions-sms.php:270
+#: /www/OpenSourceBikeShare/actions-sms.php:458
+#: /www/OpenSourceBikeShare/actions-web.php:64
+#: /www/OpenSourceBikeShare/actions-web.php:68
+#, php-format
+msgid "%d bike"
+msgid_plural "%d bikes"
+msgstr[0] "bicykel"
+msgstr[1] "bicykle"
+msgstr[2] "bicyklov"
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:67
+#: /www/OpenSourceBikeShare/actions-sms.php:143
+#: /www/OpenSourceBikeShare/actions-sms.php:147
+#: /www/OpenSourceBikeShare/actions-web.php:64
+#: /www/OpenSourceBikeShare/actions-web.php:68
+msgid "at once"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:71
+msgid "at once and you have already rented"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:87
+#: /www/OpenSourceBikeShare/actions-qrcode.php:91
+#: /www/OpenSourceBikeShare/actions-qrcode.php:116
+#: /www/OpenSourceBikeShare/actions-qrcode.php:120
+#: /www/OpenSourceBikeShare/actions-qrcode.php:166
+#: /www/OpenSourceBikeShare/actions-sms.php:165
+#: /www/OpenSourceBikeShare/actions-sms.php:169
+#: /www/OpenSourceBikeShare/actions-sms.php:205
+#: /www/OpenSourceBikeShare/actions-sms.php:210
+#: /www/OpenSourceBikeShare/actions-sms.php:285
+#: /www/OpenSourceBikeShare/actions-sms.php:340
+#: /www/OpenSourceBikeShare/actions-sms.php:384
+#: /www/OpenSourceBikeShare/actions-sms.php:401
+#: /www/OpenSourceBikeShare/actions-sms.php:405
+#: /www/OpenSourceBikeShare/actions-sms.php:546
+#: /www/OpenSourceBikeShare/actions-sms.php:619
+#: /www/OpenSourceBikeShare/actions-sms.php:679
+#: /www/OpenSourceBikeShare/actions-sms.php:717
+#: /www/OpenSourceBikeShare/actions-sms.php:745
+#: /www/OpenSourceBikeShare/actions-sms.php:746
+#: /www/OpenSourceBikeShare/actions-web.php:84
+#: /www/OpenSourceBikeShare/actions-web.php:88
+#: /www/OpenSourceBikeShare/actions-web.php:116
+#: /www/OpenSourceBikeShare/actions-web.php:121
+#: /www/OpenSourceBikeShare/actions-web.php:177
+#: /www/OpenSourceBikeShare/actions-web.php:221
+#: /www/OpenSourceBikeShare/actions-web.php:225
+#: /www/OpenSourceBikeShare/actions-web.php:346
+#: /www/OpenSourceBikeShare/actions-web.php:459
+msgid "Bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:87
+#: /www/OpenSourceBikeShare/actions-sms.php:165
+#: /www/OpenSourceBikeShare/actions-web.php:84
+msgid "rented out of stack by"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:87
+#: /www/OpenSourceBikeShare/actions-sms.php:165
+#: /www/OpenSourceBikeShare/actions-web.php:84
+msgid "was on the top of the stack at"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:91
+#: /www/OpenSourceBikeShare/actions-sms.php:169
+#: /www/OpenSourceBikeShare/actions-web.php:88
+msgid "is not rentable now, you have to rent bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:91
+#: /www/OpenSourceBikeShare/actions-sms.php:169
+#: /www/OpenSourceBikeShare/actions-web.php:88
+msgid "from this stand"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:111
+#: /www/OpenSourceBikeShare/actions-sms.php:200
+msgid "You have already rented the bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:111
+#: /www/OpenSourceBikeShare/actions-sms.php:200
+#: /www/OpenSourceBikeShare/actions-web.php:111
+msgid "Code is"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:111
+msgid "Return bike by scanning QR code on a stand"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:116
+#: /www/OpenSourceBikeShare/actions-sms.php:205
+#: /www/OpenSourceBikeShare/actions-web.php:116
+msgid "is already rented"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:120
+#: /www/OpenSourceBikeShare/actions-sms.php:210
+#: /www/OpenSourceBikeShare/actions-web.php:121
+msgid "Open with code"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:120
+#: /www/OpenSourceBikeShare/actions-sms.php:210
+#: /www/OpenSourceBikeShare/actions-web.php:121
+msgid "Change code immediately to"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:120
+#: /www/OpenSourceBikeShare/actions-web.php:121
+msgid "(open, rotate metal part, set new code, rotate metal part back)"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:123
+msgid "Reported issue:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:144
+#: /www/OpenSourceBikeShare/actions-sms.php:253
+msgid "You have no rented bikes currently."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:148
+msgid "You have"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:148
+msgid ""
+"rented bikes currently. QR code return can be used only when 1 bike is "
+"rented. Please, use web"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:149
+msgid " or SMS"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:150
+msgid " to return the bikes."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:166
+#: /www/OpenSourceBikeShare/actions-web.php:177
+msgid "Lock with code"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:167
+#: /www/OpenSourceBikeShare/actions-web.php:178
+msgid "Please"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:167
+#: /www/OpenSourceBikeShare/actions-web.php:178
+msgid "rotate the lockpad to"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:167
+#: /www/OpenSourceBikeShare/actions-web.php:178
+msgid "when leaving"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:170
+#: /www/OpenSourceBikeShare/actions-web.php:184
+msgid "Credit change"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-qrcode.php:181
+msgid ""
+"Unrecognized QR code action. Try scanning the code again or report this to "
+"the system admins."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:10
+msgid "You need admin privileges to access this page."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:16
+msgid "administration"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:47 /www/OpenSourceBikeShare/agree.php:29
+#: /www/OpenSourceBikeShare/register.php:28
+#: /www/OpenSourceBikeShare/install/index.php:103
+msgid "Toggle navigation"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:53 /www/OpenSourceBikeShare/agree.php:38
+msgid "Map"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:66
+msgid "Administration"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:76
+msgid "Fleet"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:77
+msgid "Stands"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:78
+msgid "Users"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:79
+msgid "Reports"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:88
+msgid "Display the bike stand location or name of person using it."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:88
+msgid "Where is?"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:89
+msgid ""
+"Be careful! Revert accidentaly rented bike in case of mistake or misread "
+"bike number."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:89
+#: /www/OpenSourceBikeShare/actions-web.php:354
+msgid "Revert"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:90
+msgid ""
+"Display network usage (blank) or history of bike usage (number entered)."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:90
+msgid "Last usage"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:99
+msgid "Stand situation"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:107
+msgid "Show list of users."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:107
+msgid "User list"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:111
+#: /www/OpenSourceBikeShare/register.php:73
+#: /www/OpenSourceBikeShare/install/index.php:234
+msgid "Fullname:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:112
+#: /www/OpenSourceBikeShare/register.php:75
+#: /www/OpenSourceBikeShare/install/index.php:236
+msgid "Email:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:116
+msgid "Privileges:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:117
+msgid "Bike limit:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:119
+msgid "Save"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:123
+#: /www/OpenSourceBikeShare/admin.php:124
+#: /www/OpenSourceBikeShare/admin.php:125
+msgid "Add"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:133
+msgid "Show user stats."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:133
+msgid "User stats"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:134
+msgid "Show history of stand to stand bike trips as lines."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/admin.php:134
+msgid "Trips overlay"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:28
+msgid "Error. The command"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:28
+msgid "does not exist. If you need help, send:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:54
+#: /www/OpenSourceBikeShare/actions-sms.php:242
+#: /www/OpenSourceBikeShare/actions-sms.php:421
+msgid "Stand name"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:54
+#: /www/OpenSourceBikeShare/actions-sms.php:242
+#: /www/OpenSourceBikeShare/actions-sms.php:421
+msgid "has not been recognized. Stands are marked by CAPITALLETTERS."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:60
+#: /www/OpenSourceBikeShare/actions-sms.php:306
+#: /www/OpenSourceBikeShare/actions-sms.php:428
+#: /www/OpenSourceBikeShare/actions-sms.php:444
+#: /www/OpenSourceBikeShare/common.php:254
+#: /www/OpenSourceBikeShare/install/index.php:284
+#: /www/OpenSourceBikeShare/install/index.php:297
+msgid "Stand"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:60
+msgid "does not exist."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:89
+msgid "Error. More arguments needed, use command"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:102
+msgid "Your remaining credit:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:121
+msgid "Please, recharge your credit:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:121
+msgid "Credit required:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:147
+#: /www/OpenSourceBikeShare/actions-web.php:68
+msgid "and you have already rented"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:200
+msgid "Return bike with command:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:200
+msgid "bikenumber"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:200
+msgid "standname"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:210
+msgid "(open,rotate metal part,set new code,rotate metal part back)"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:213
+msgid "bike note"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:226
+#: /www/OpenSourceBikeShare/actions-sms.php:359
+msgid "System override"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:226
+#: /www/OpenSourceBikeShare/actions-sms.php:359
+msgid "Your rented bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:226
+msgid "has been rented by admin"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:270
+msgid "You does not have bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:270
+msgid "You have rented the following"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:285
+msgid ""
+"is not rented. Saint Thomas, the patronus of all unrented bikes, prohibited "
+"returning unrented bikes."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:306
+#: /www/OpenSourceBikeShare/actions-sms.php:384
+#: /www/OpenSourceBikeShare/actions-sms.php:428
+#: /www/OpenSourceBikeShare/actions-sms.php:546
+#: /www/OpenSourceBikeShare/actions-sms.php:619
+#: /www/OpenSourceBikeShare/actions-sms.php:679
+#: /www/OpenSourceBikeShare/common.php:254
+msgid "does not exist"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:331
+#: /www/OpenSourceBikeShare/actions-web.php:221
+#: /www/OpenSourceBikeShare/actions-web.php:245
+msgid "at"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:335
+#: /www/OpenSourceBikeShare/actions-web.php:249
+msgid "used by"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:337
+#: /www/OpenSourceBikeShare/actions-web.php:252
+#: /www/OpenSourceBikeShare/install/index.php:284
+msgid "Note"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:337
+#: /www/OpenSourceBikeShare/actions-sms.php:664
+#: /www/OpenSourceBikeShare/actions-web.php:252
+#: /www/OpenSourceBikeShare/common.php:380
+#: /www/OpenSourceBikeShare/common.php:413
+#: /www/OpenSourceBikeShare/common.php:428
+msgid "by"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:340
+msgid "returned to stand"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:340
+msgid "Make sure you set code to"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:347
+msgid "Rotate lockpad to 0000."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:359
+msgid "has been returned by admin"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:365
+#: /www/OpenSourceBikeShare/js/translations.php:26
+msgid "Credit"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:396
+msgid "Bike note"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:401
+msgid "is at stand"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:405
+#: /www/OpenSourceBikeShare/actions-sms.php:560
+msgid "is rented by"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:444
+msgid "is empty"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:454
+msgid "(first)"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:458
+msgid "on stand"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:475
+msgid "No free bikes."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:477
+msgid "Free bikes counts"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:493
+msgid "Empty stands"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:522
+msgid "Problem with SMS"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:556
+#: /www/OpenSourceBikeShare/actions-sms.php:629
+msgid "is at"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:584
+msgid "No notes found for bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:584
+#: /www/OpenSourceBikeShare/actions-sms.php:588
+msgid "to delete"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:588
+msgid "No notes matching pattern"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:588
+msgid "found for bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:597
+msgid "All"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:597
+#: /www/OpenSourceBikeShare/actions-sms.php:601
+#, php-format
+msgid "%d note"
+msgid_plural "%d notes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:597
+#: /www/OpenSourceBikeShare/actions-sms.php:601
+msgid "for bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:597
+#: /www/OpenSourceBikeShare/actions-sms.php:601
+#: /www/OpenSourceBikeShare/actions-sms.php:657
+msgid "deleted by"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:601
+msgid "matching"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:633
+msgid "is rented"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:657
+#: /www/OpenSourceBikeShare/actions-sms.php:663
+#: /www/OpenSourceBikeShare/actions-web.php:335
+msgid "Note for bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:663
+msgid "saved"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:664
+msgid "Note #"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:717
+#: /www/OpenSourceBikeShare/actions-web.php:431
+msgid "is not rented right now. Revert not successful!"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:745
+msgid "reverted to stand"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:745
+#: /www/OpenSourceBikeShare/actions-web.php:458
+msgid "with code"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:746
+#: /www/OpenSourceBikeShare/actions-web.php:459
+msgid "has been returned. You can now rent a new bicycle."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:750
+msgid "No last code for bicycle"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:750
+#: /www/OpenSourceBikeShare/actions-web.php:463
+msgid "found. Revert not successful!"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:776
+msgid "Contact information conflict: This number already registered:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:782
+msgid "Contact information is in incorrect format. Use:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:792
+#: /www/OpenSourceBikeShare/js/translations.php:23
+msgid "User"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:792
+msgid ""
+"added. They need to read email and agree to rules before using the system."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-sms.php:804
+#: /www/OpenSourceBikeShare/actions-web.php:580
+msgid "Sorry, this command is only available for the privileged users."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/agree.php:13
+msgid "account activation"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/agree.php:46
+msgid "Account activation"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/agree.php:54
+msgid "By registering I confirm that I have read:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/agree.php:54
+msgid "User Guide"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/agree.php:60
+msgid "Privacy policy:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/agree.php:60
+#: /www/OpenSourceBikeShare/register.php:88
+#: /www/OpenSourceBikeShare/install/index.php:438
+msgid "We will use your details for"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/agree.php:60
+#: /www/OpenSourceBikeShare/register.php:88
+#: /www/OpenSourceBikeShare/install/index.php:438
+msgid "related activities only"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:111
+msgid "You already rented bike"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:124
+msgid "Reported issue"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:155
+msgid "Youh currently have no rented bikes."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:179
+msgid "You have also reported this problem:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:216
+msgid "Bike note:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:225
+msgid "rented by"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:225
+msgid "Phone"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:303
+msgid "not implemented"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:335
+msgid "deleted"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:346
+msgid "history"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:370
+msgid "Current network usage:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:371
+#, php-format
+msgid "%d bicycle"
+msgid_plural "%d bicycles"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:371
+msgid "in use"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:431
+#: /www/OpenSourceBikeShare/actions-web.php:458
+msgid "Bicycle"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:458
+msgid "reverted to"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:463
+msgid "No last stand or code for bicycle"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:483
+msgid "Password do not match. Please correct and try again."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:495
+msgid ""
+"You have been successfully registered. Please, check your email and read the "
+"instructions to finish your registration."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:503
+msgid ""
+"Password successfully changed. Your username is your phone number. Continue "
+"to"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:503
+msgid "login"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:508
+msgid "Problem with the SMS code entered. Please check and try again."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:517
+msgid ""
+"You have been successfully registered. Please, check your email and read the "
+"instructions to finish your registration. Your number for login is:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:601
+msgid "Enter this code to register:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:602
+msgid "Enter this code to change password:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:687
+msgid "Details of user"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:687
+msgid "updated"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:699
+msgid "Added"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:699
+msgid "credit for"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:10
+msgid "registration"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:38
+#: /www/OpenSourceBikeShare/register.php:47
+#: /www/OpenSourceBikeShare/common.php:284
+msgid "Registration"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:53
+msgid "Step 1 - Confirm your phone number"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:57
+msgid "You will receive SMS code to this phone number."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:58
+msgid "Validate this phone number"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:61
+msgid "Step 2 - Create account"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:63
+msgid "SMS code (received to your phone):"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:66
+msgid "Step 1 - Create account"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:73
+msgid "Firstname Lastname"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:80
+msgid "Password confirmation:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:81
+msgid "Create account"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/register.php:88
+#: /www/OpenSourceBikeShare/install/index.php:438
+msgid "Privacy policy"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:274
+msgid "notification"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:308
+msgid "If you agree with the rules, click on the following link:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:325
+msgid "Registration key not found!"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:333
+msgid "Your account has been activated. Welcome!"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:382
+msgid "Please, return your bike "
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:382
+msgid ""
+" immediately to the closest stand! Ignoring this warning can get you banned "
+"from the system."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:389
+msgid "hour rental"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:413
+#: /www/OpenSourceBikeShare/common.php:428
+msgid "limit"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:435
+msgid "Over limit in"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/common.php:435
+msgid "hs"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/db.class.php:18
+msgid "DB connection error!"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/db.class.php:25
+msgid "DB error"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/db.class.php:25
+msgid "in"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:84
+#: /www/OpenSourceBikeShare/install/index.php:113
+msgid "Installation"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:113
+msgid "Step"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:113
+msgid "out of"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:116
+msgid "System requirements check"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:132
+msgid "Only PHP 5.0+ supported. You are using version"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:132
+msgid "Base requirement"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:136
+msgid ""
+"Hash module not loaded! Compile or load hash module into PHP. Required for "
+"password encryption."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:140
+msgid ""
+"MySQLi / MariaDB module not loaded! Compile or load MySQL module into PHP. "
+"Required for database connections."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:144
+msgid ""
+"gettext module not loaded! Compile or load gettext module into PHP. Required "
+"for translations."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:148
+msgid ""
+"JSON module not loaded! Compile or load JSON module into PHP. Required for "
+"AJAX (PHP<->JS communication)."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:152
+msgid ""
+"directory is not writable! Set permissions (chmod it) to 777. Required for "
+"uploads to work."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:156
+msgid ""
+"is not writable! Set permissions (chmod it) to 777. Required for settings "
+"configuration values during the install process."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:160
+msgid ""
+"directory is not writable! Set permissions (chmod it) to 777. Required for "
+"security purposes."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:164
+msgid "All fine."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:165
+msgid "Continue"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:165
+msgid "to step"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:171
+msgid "Set basic system and database options"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:173
+msgid "System"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:174
+msgid "System name:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:176
+msgid "System latitude center point:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:177
+msgid "System longitude center point:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:181
+msgid "System rules URL:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:182
+msgid "SMS system connector:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:184
+msgid "Disable SMS system"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:187
+msgid "International dialing code (no plus, no zeroes):"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:189
+msgid "Database"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:190
+msgid "Database server:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:191
+msgid "Database user:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:192
+msgid "Database password:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:193
+msgid "Database name:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:195
+msgid "Create database"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:195
+#: /www/OpenSourceBikeShare/install/index.php:240
+#: /www/OpenSourceBikeShare/install/index.php:260
+#: /www/OpenSourceBikeShare/install/index.php:324
+msgid "and continue to step"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:231
+#: /www/OpenSourceBikeShare/install/index.php:240
+msgid "Create admin user"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:232
+msgid "Config file values set and database created."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:255
+#: /www/OpenSourceBikeShare/install/index.php:260
+msgid "Create bicycles and stands"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:256
+msgid "Admin user"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:256
+msgid "created with password:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:256
+msgid "Use number"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:256
+msgid "for login"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:258
+msgid "How many bicycles to create:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:259
+msgid "Stands to create (comma separated):"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:280
+#: /www/OpenSourceBikeShare/install/index.php:324
+msgid "Set up stands"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:282
+msgid "bicycles and the following stands created"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:283
+msgid "Download QR codes"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:283
+msgid "for the bikes and the stands for printing or laser engraving"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:284
+msgid "Place"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:284
+msgid "is used instead of"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:284
+msgid "for SMS"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:284
+msgid ""
+"command only. Multiple stands close to each other can be grouped in this way "
+"to send total number of bicycles available at that location."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:302
+msgid "Place:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:304
+msgid "Stand description:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:305
+msgid "Stand photo:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:306
+msgid "Stand status:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:308
+msgid "Active"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:309
+msgid "Not used / hidden"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:313
+msgid "Stand location:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:345
+#, php-format
+msgid "%d stand"
+msgid_plural "%d stands"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /www/OpenSourceBikeShare/install/index.php:345
+msgid "set up and"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:345
+#, php-format
+msgid "%d photo"
+msgid_plural "%d photos"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /www/OpenSourceBikeShare/install/index.php:345
+msgid "uploaded"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:393
+msgid "Set system options"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:393
+msgid "and finish"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:427
+msgid "System options set."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:428
+msgid "Rename"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:428
+msgid "to"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/install/index.php:430
+msgid "Launch"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:1
+msgid "Select stand"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:2
+msgid "bicycle"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:3
+msgid "bicycles"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:4
+msgid "No bicycles"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:5
+msgid ""
+"Open a map with directions to the selected stand from your current location."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:6
+msgid "walking directions"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:7
+msgid "Display photo of the stand."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:8
+msgid "photo"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:9
+msgid ""
+"You have this bicycle currently rented. The current lock code is displayed "
+"below the bike number."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:10
+msgid "Reported problem on this bicycle:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:12
+msgid "SMS code is in AB 123456 format."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:13
+msgid "Please, enter SMS code received to your phone."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:14
+msgid "Please, enter your firstname and lastname."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:15
+msgid "Email address is incorrect."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:16
+msgid "Please, enter your email."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:17
+msgid "Passwords do not match."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:18
+msgid "Please, enter your password."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:19
+msgid "Existing user password change"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:20
+msgid "Step 2 - Change password"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:21
+msgid "Set password"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:24
+msgid "Privileges"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/js/translations.php:25
+msgid "Limit"
+msgstr ""
