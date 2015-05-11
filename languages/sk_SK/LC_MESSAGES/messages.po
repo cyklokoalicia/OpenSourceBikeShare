@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Open Source Bike Share\n"
-"POT-Creation-Date: 2015-04-20 22:16+0100\n"
-"PO-Revision-Date: 2015-04-20 22:16+0100\n"
+"POT-Creation-Date: 2015-05-11 23:45+0100\n"
+"PO-Revision-Date: 2015-05-12 00:19+0100\n"
 "Last-Translator: Daniel Duris <dusoft@staznosti.sk>\n"
 "Language-Team: Open Source Bike Share <consult@whitebikes.info>\n"
 "Language: Slovak\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #: /www/OpenSourceBikeShare/index.php:62 /www/OpenSourceBikeShare/admin.php:54
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: /www/OpenSourceBikeShare/index.php:71
 msgid "Remaining credit"
@@ -51,11 +51,11 @@ msgstr ""
 #: /www/OpenSourceBikeShare/register.php:78
 #: /www/OpenSourceBikeShare/install/index.php:236
 msgid "Password:"
-msgstr ""
+msgstr "Heslo:"
 
 #: /www/OpenSourceBikeShare/index.php:95
 msgid "Log in"
-msgstr ""
+msgstr "Prihlásiť"
 
 #: /www/OpenSourceBikeShare/index.php:113
 msgid ""
@@ -162,7 +162,7 @@ msgstr ""
 #: /www/OpenSourceBikeShare/actions-sms.php:458
 #: /www/OpenSourceBikeShare/actions-web.php:64
 #: /www/OpenSourceBikeShare/actions-web.php:68
-#, php-format
+#, fuzzy, php-format
 msgid "%d bike"
 msgid_plural "%d bikes"
 msgstr[0] "bicykel"
@@ -211,7 +211,7 @@ msgstr ""
 #: /www/OpenSourceBikeShare/actions-web.php:346
 #: /www/OpenSourceBikeShare/actions-web.php:459
 msgid "Bike"
-msgstr ""
+msgstr "Bicykel"
 
 #: /www/OpenSourceBikeShare/actions-qrcode.php:87
 #: /www/OpenSourceBikeShare/actions-sms.php:165
@@ -775,6 +775,11 @@ msgstr ""
 #: /www/OpenSourceBikeShare/actions-web.php:580
 msgid "Sorry, this command is only available for the privileged users."
 msgstr ""
+
+#: /www/OpenSourceBikeShare/config.php:61
+#, fuzzy, php-format
+msgid "bike"
+msgstr "bicykel"
 
 #: /www/OpenSourceBikeShare/agree.php:13
 msgid "account activation"

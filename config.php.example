@@ -51,4 +51,11 @@ $email["pass"]="pass";
 $connectors["sms"]=""; // API connector used for SMS operations (connectors/ directory); empty to disable SMS system, "loopback" to simulate dummy gateway API for testing
 $countrycode=""; // international dialing code (country code prefix), no plus sign
 
+/*** Translation / language ***/
+$locale="en_US.utf8";
+setlocale(LC_ALL, $locale);
+putenv("LANG=".$locale);
+bindtextdomain("messages", dirname(__FILE__).'/languages');
+textdomain("messages");
+
 ?>
