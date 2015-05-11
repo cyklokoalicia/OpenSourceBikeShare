@@ -68,15 +68,14 @@ if ($step==5)
    }
 
 $files=scandir("../connectors/");
-$files=array_diff($files,array('..', '.'));
-array_walk($files,'filterconnectors');
-function filterconnectors(&$value,$key)
+$files=array_diff($files,array('..','.','loopback'));
+print_r($files);
+foreach ($files as $key=>$value)
    {
-   global $files;
-   if (strpos($value,".php")===FALSE) unset($files[$key]);
-   elseif (strpos($value,"disabled.php")!==FALSE) unset($files[$key]);
-   else $files[$key]=str_replace(".php","",$files[$key]);
+   if (strpos($value,"disabled.php")!==FALSE) unset($files[$key]);
+   else $files[$key]=str_replace(".php","",$value);
    }
+   print_r($files);
 ?>
 <!DOCTYPE html>
 <html lang="en">
