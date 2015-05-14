@@ -246,20 +246,20 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
    if ($force==FALSE)
       {
       $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
-      $rentedBikes =$result->fetch_all(MYSQLI_ASSOC);
+      $bikenumber=$result->num_rows;
 
-      if (count($rentedBikes)==0)
+      if ($bikenumber==0)
          {
          sendSMS($number,_('You have no rented bikes currently.'));
          return;
          }
 
       $listBikes="";
-      for($i=0; $i<count($rentedBikes);$i++)
+      while ($row=$result->fetch_assoc())
          {
-         $listBikes.=$rentedBikes[$i]["bikeNum"];
-         if ($i+1<count($rentedBikes)) $listBikes.=",";
+         $listBikes.=$row["bikeNum"].",";
          }
+      if ($bikenumber>1) $listBikes=substr($listBikes,0,strlen($listBikes-1));
       }
 
    if ($force==FALSE)
@@ -267,7 +267,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       $result=$db->query("SELECT currentCode FROM bikes WHERE currentUser=$userId AND bikeNum=$bikeNum");
       if ($result->num_rows!=1)
          {
-         sendSMS($number,_('You does not have bike')." ".$bikeNum." rented. "._('You have rented the following')." ".sprintf(ngettext('%d bike','%d bikes',$result->num_rows),$result->num_rows).": $listBikes");
+         sendSMS($number,_('You does not have bike')." ".$bikeNum." rented. "._('You have rented the following')." ".sprintf(ngettext('%d bike','%d bikes',$bikenumber),$bikenumber).": $listBikes");
          return;
          }
 
@@ -411,25 +411,25 @@ function where($number,$bike)
 function listBikes($number,$stand)
 {
 
-        global $db,$forcestack;
-        $stacktopbike=FALSE;
+   global $db,$forcestack;
+   $stacktopbike=FALSE;
    $userId = getUser($number);
    $stand = strtoupper($stand);
 
    if (!preg_match("/^[A-Z]+[0-9]*$/",$stand))
-   {
+
       sendSMS($number,_('Stand name')." '$stand' "._('has not been recognized. Stands are marked by CAPITALLETTERS.'));
       return;
    }
 
    $result=$db->query("SELECT standId FROM stands WHERE standName='$stand'");
-          if ($result->num_rows!=1)
+   if ($result->num_rows!=1)
       {
-         sendSMS($number,_('Stand')." '$stand' "._('does not exist').".");
-         return;
+      sendSMS($number,_('Stand')." '$stand' "._('does not exist').".");
+      return;
       }
-          $row =$result->fetch_assoc();
-      $standId =$row["standId"];
+    $row=$result->fetch_assoc();
+    $standId=$row["standId"];
 
    if ($forcestack)
             {
@@ -437,68 +437,64 @@ function listBikes($number,$stand)
             }
 
    $result=$db->query("SELECT bikeNum FROM bikes where currentStand=$standId ORDER BY bikeNum");
-      $rentedBikes =$result->fetch_all(MYSQLI_ASSOC);
+   $rentedBikes=$result->num_rows;
 
-   if (count($rentedBikes)==0)
-   {
+   if ($rentedBikes==0)
+      {
       sendSMS($number,_('Stand')." ".$stand." "._('is empty').".");
       return;
-   }
+      }
 
    $listBikes="";
-   for($i=0; $i<count($rentedBikes);$i++)
-   {
-      if ($i!=0)
-         $listBikes.=",";
-      $listBikes.=$rentedBikes[$i]["bikeNum"];
-      if ($stacktopbike==$rentedBikes[$i]["bikeNum"]) $listBikes.=" "._('(first)');
-   }
+  while ($row=$result->fetch_assoc())
+    {
+    $listBikes.=$row["bikeNum"];
+    if ($stacktopbike==$row["bikeNum"]) $listBikes.=" "._('(first)');
+    $listBikes.=",";
+    }
+   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes-1));
 
-   $countBikes = count($rentedBikes);
-   sendSMS($number,sprintf(ngettext('%d bike','%d bikes',$countBikes),$countBikes)." "._('on stand')." ".$stand.": ".$listBikes);
+   sendSMS($number,sprintf(ngettext('%d bike','%d bikes',$rentedBikes),$rentedBikes)." "._('on stand')." ".$stand.": ".$listBikes);
 }
 
 
 function freeBikes($number)
 {
 
-        global $db;
+   global $db;
    $userId = getUser($number);
 
-   $result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on
-   bikes.currentStand=stands.standId where stands.serviceTag=0 group by
-   placeName having bikeCount>0 order by placeName");
-      $rentedBikes =$result->fetch_all(MYSQLI_ASSOC);
+   $result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount>0 order by placeName");
+   $rentedBikes=$result->num_rows;
 
-   if (count($rentedBikes)==0)
+   if ($rentedBikes==0)
    {
    	$listBikes=_('No free bikes.');
    }
    else $listBikes=_('Free bikes counts').":";
 
-   for($i=0; $i<count($rentedBikes);$i++)
-   {
-      if ($i!=0)
-         $listBikes.=",";
-      $listBikes.=$rentedBikes[$i]["placeName"].":".$rentedBikes[$i]["bikeCount"];
-   }
+   $listBikes="";
+   while ($row=$result->fetch_assoc())
+      {
+      $listBikes.=$row["placeName"].":".$row["bikeCount"];
+      $listBikes.=",";
+      }
+   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes-1));
 
-      $result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes right join stands on
-   bikes.currentStand=stands.standId where stands.serviceTag=0 group by
-   placeName having bikeCount=0 order by placeName");
-      $rentedBikes =$result->fetch_all(MYSQLI_ASSOC);
+   $result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes right join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount=0 order by placeName");
+   $rentedBikes=$result->num_rows;
 
-   if (count($rentedBikes)!=0)
+   if (rentedBikes!=0)
    {
         $listBikes.=" "._('Empty stands').": ";
    }
 
-   for($i=0; $i<count($rentedBikes);$i++)
-   {
-      if ($i!=0)
-         $listBikes.=",";
-      $listBikes.=$rentedBikes[$i]["placeName"];
-   }
+   while ($row=$result->fetch_assoc())
+      {
+      $listBikes.=$row["placeName"];
+      $listBikes.=",";
+      }
+   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes-1));
 
    sendSMS($number,$listBikes);
 }
@@ -681,24 +677,22 @@ function last($number,$bike)
       }
 
    $result=$db->query("SELECT userName,parameter,standName,action FROM `history` join users on history.userid=users.userid left join stands on stands.standid=history.parameter where bikenum=$bikeNum and action in ('RETURN','RENT','REVERT') order by time desc LIMIT 10");
-      $bikeHistory=$result->fetch_all(MYSQLI_ASSOC);
 
    $historyInfo="B.$bikeNum:";
-   for($i=0; $i<count($bikeHistory);$i++)
+   while($row=$result->fetch_assoc())
    {
-      if ($i!=0)
-         $historyInfo.=",";
-
-      if (($standName=$bikeHistory[$i]["standName"])!=NULL)
+     if (($standName=$row["standName"])!=NULL)
       {
-         if ($bikeHistory[$i]["action"]=="REVERT") $historyInfo.="*";
+         if ($row["action"]=="REVERT") $historyInfo.="*";
          $historyInfo.=$standName;
       }
       else
       {
-         $historyInfo.=$bikeHistory[$i]["userName"]."(".$bikeHistory[$i]["parameter"].")";
+         $historyInfo.=$row["userName"]."(".$row["parameter"].")";
       }
+      if ($result->num_rows>1) $historyInfo.=",";
    }
+   if ($rentedBikes>1) $historyInfo=substr($historyInfo,0,strlen($historyInfo-1));
 
    sendSMS($number,$historyInfo);
 

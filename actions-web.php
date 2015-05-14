@@ -164,7 +164,7 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
       {
       $result=$db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
       }
-   $row = $result->fetch_assoc();
+   $row=$result->fetch_assoc();
    $currentCode = sprintf("%04d",$row["currentCode"]);
 
    $result=$db->query("SELECT standId FROM stands where standName='$stand'");
