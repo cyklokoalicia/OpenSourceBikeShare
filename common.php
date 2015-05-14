@@ -31,9 +31,9 @@ function sendEmail($toemail,$subject,$message)
    global $db, $systemname, $systememail, $email;
    $mail=new PHPMailer;
    $mail->isSMTP(); // Set mailer to use SMTP
-   $mail->Host=$mail["smtp"]; // Specify main and backup SMTP servers
-   $mail->Username=$mail["user"]; // SMTP username
-   $mail->Password=$mail["password"]; // SMTP password
+   $mail->Host=$email["smtp"]; // Specify main and backup SMTP servers
+   $mail->Username=$email["user"]; // SMTP username
+   $mail->Password=$email["password"]; // SMTP password
    $mail->SMTPAuth=true; // Enable SMTP authentication
    $mail->SMTPSecure="ssl"; // Enable SSL
    $mail->Port=465; // TCP port to connect to
