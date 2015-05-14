@@ -417,7 +417,7 @@ function listBikes($number,$stand)
    $stand = strtoupper($stand);
 
    if (!preg_match("/^[A-Z]+[0-9]*$/",$stand))
-
+   {
       sendSMS($number,_('Stand name')." '$stand' "._('has not been recognized. Stands are marked by CAPITALLETTERS.'));
       return;
    }
