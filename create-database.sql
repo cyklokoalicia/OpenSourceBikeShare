@@ -108,12 +108,12 @@ DROP TABLE IF EXISTS `stands`;
 CREATE TABLE `stands` (
   `standId` int(11) NOT NULL AUTO_INCREMENT,
   `standName` varchar(50) NOT NULL,
-  `standDescription` varchar(255) DEFAULT NULL,
-  `standPhoto` varchar(255) DEFAULT NULL,
-  `serviceTag` int(10) NOT NULL,
+  `standDescription` varchar(255),
+  `standPhoto` varchar(255),
+  `serviceTag` int(10),
   `placeName` varchar(50) NOT NULL,
-  `longitude` double(20,17) NOT NULL,
-  `latitude` double(20,17) NOT NULL,
+  `longitude` double(20,17),
+  `latitude` double(20,17),
   PRIMARY KEY (`standId`),
   UNIQUE KEY `standName` (`standName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -127,6 +127,8 @@ CREATE TABLE `users` (
   `mail` varchar(30) NOT NULL,
   `number` varchar(30) NOT NULL,
   `privileges` int(11) NOT NULL DEFAULT '0',
+  `note` text NOT NULL,
+  `recommendations` text NOT NULL,
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

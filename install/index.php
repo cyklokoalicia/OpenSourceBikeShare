@@ -346,7 +346,7 @@ echo '<div class="alert alert-success" role="alert">',sprintf(ngettext('%d stand
 ?>
       <form class="container" method="post" action="index.php?step=6">
 <?php
-// @TODO watches"freetime" dissapears, $credit["rent"]=2 without quotes, so is not used?
+// @TODO watches"freetime" dissapears, $credit["rent"]=2 without quotes, so it is not used?
 $configfile=file($configfilename);
 foreach ($configfile as $line)
    {
