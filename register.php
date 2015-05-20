@@ -64,9 +64,6 @@ require("common.php");
 <?php else: ?>
       <form class="container" id="step2">
       <h2 id="step2title"><?php echo _('Step 1 - Create account'); ?></h2>
-         <input type="hidden" name="validatednumber" id="validatednumber" value="" />
-         <input type="hidden" name="checkcode" id="checkcode" value="" />
-         <input type="hidden" name="existing" id="existing" value="0" />
 <?php endif; ?>
             <div id="regonly">
          <div class="form-group">
@@ -78,6 +75,9 @@ require("common.php");
             <label for="password"><?php echo _('Password:'); ?></label> <input type="password" name="password" id="password" class="form-control" /></div>
          <div class="form-group">
             <label for="password2"><?php echo _('Password confirmation:'); ?></label> <input type="password" name="password2" id="password2" class="form-control" /></div>
+         <input type="hidden" name="validatednumber" id="validatednumber" value="" />
+         <input type="hidden" name="checkcode" id="checkcode" value="" />
+         <input type="hidden" name="existing" id="existing" value="0" />
          <button type="submit" id="register" class="btn btn-primary"><?php echo _('Create account'); ?></button>
          </form>
    <br />
