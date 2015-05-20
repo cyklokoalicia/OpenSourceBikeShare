@@ -8,6 +8,11 @@ $purifier=new HTMLPurifier($htmlpurconfig);
 @$purifier->purify($_COOKIE);
 @$purifier->purify($_FILES);
 @$purifier->purify($_SERVER);
+$locale=$systemlang.".utf8";
+setlocale(LC_ALL, $locale);
+putenv("LANG=".$locale);
+bindtextdomain("messages", dirname(__FILE__).'/languages');
+textdomain("messages");
 
 if (issmssystemenabled()==TRUE)
    {
@@ -102,6 +107,19 @@ function log_sendsms($number, $text)
 
         $result = $localdb->query("INSERT INTO sent SET number='$number',text='$text'");
 
+}
+
+function generatecodes($numcodes,$codelength,$wastage=25)
+{
+   // exclude problem chars: B8G6I1l0OQDS5Z2
+   // acceptable characters:
+   $goodchars='ACEFHJKMNPRTUVWXY4937';
+   // build array allowing for possible wastage through duplicate values
+   for ($i=0;$i<=$numcodes+$wastage+1;$i++)
+      {
+      $codes[]=substr(str_shuffle($goodchars),0,$codelength);
+      }
+   return array_slice($codes,0,($numcodes+1));
 }
 
 function getprivileges($userid)

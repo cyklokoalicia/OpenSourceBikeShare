@@ -24,3 +24,8 @@ _user = "<?php echo _('User'); ?>";
 _privileges = "<?php echo _('Privileges'); ?>";
 _limit = "<?php echo _('Limit'); ?>";
 _credit = "<?php echo _('Credit'); ?>";
+
+_coupon = "<?php echo _('Coupon'); ?>";
+_value = "<?php echo _('Value'); ?>";
+_status = "<?php echo _('Status'); ?>";
+_set_sold = "<?php echo _('Mark as sold'); ?>";

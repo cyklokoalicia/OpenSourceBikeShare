@@ -21,6 +21,13 @@ CREATE TABLE `credit` (
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `coupons`;
+CREATE TABLE `coupons` (
+  `coupon` varchar(6) NOT NULL,
+  `value` float(5,2),
+  `status` int(11) DEFAULT '0',
+  UNIQUE KEY `coupon` (`coupon`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `notes`;
 CREATE TABLE `notes` (

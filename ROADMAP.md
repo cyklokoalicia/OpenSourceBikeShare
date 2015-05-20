@@ -9,12 +9,10 @@ Real-life testing
 
 Development
 ----------
-
 ### Priorities
 * Complete admin interface on web (not part of map)
 
 ### UX and functions
-* i18n translations .po/.mo (gettext?)
 * terms of use
 * notes for stands (e.g. problem with stand)
 

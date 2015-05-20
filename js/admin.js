@@ -6,6 +6,10 @@ $(document).ready(function(){
    $("#stands").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-stands'); stands(); });
    $("#userlist").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-userlist'); userlist(); });
    $("#userstats").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-userstats'); userstats(); });
+   $("#listcoupons").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-couponlist'); couponlist(); });
+   $("#generatecoupons1").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons'); generatecoupons(1); });
+   $("#generatecoupons2").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons'); generatecoupons(5); });
+   $("#generatecoupons3").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons'); generatecoupons(10); });
    $("#trips").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-trips'); trips(); });
    $('.nav-tabs a').each(function () { $(this).click(function () { activetab=$(this).attr('href'); $(activetab).addClass('active'); } ); });
    $("#saveuser").click(function() { saveuser(); return false; });
@@ -155,6 +159,48 @@ function addcredit(creditmultiplier)
       jsonobject=$.parseJSON(jsonresponse);
       $("#edituser").hide();
       handleresponse("userconsole",jsonobject);
+   });
+}
+
+function couponlist()
+{
+   var code="";
+   $.ajax({
+   url: "command.php?action=couponlist"
+   }).done(function(jsonresponse) {
+      jsonobject=$.parseJSON(jsonresponse);
+      if (jsonobject.length>0) code='<table class="table table-striped"><tr><th>'+_coupon+'</th><th>'+_value+'</th><th>'+_status+'</th></tr>';
+      for (var i=0, len=jsonobject.length; i < len; i++)
+         {
+         code=code+'<tr><td>'+jsonobject[i]["coupon"]+'</td><td>'+jsonobject[i]["value"]+' '+creditcurrency+'</td><td><button type="button" class="btn btn-warning sellcoupon" data-coupon="'+jsonobject[i]["coupon"]+'"><span class="glyphicon glyphicon-share-alt"></span> '+_set_sold+'</button></td></tr>';
+         }
+      if (jsonobject.length>0) code=code+'</table>';
+      $('#creditconsole').html(code);
+      $('.sellcoupon').each(function () { $(this).click(function () { sellcoupon($(this).attr('data-coupon')); } ); });
+   });
+}
+
+function generatecoupons(multiplier)
+{
+   var code="";
+   $.ajax({
+   url: "command.php?action=generatecoupons&multiplier="+multiplier
+   }).done(function(jsonresponse) {
+      jsonobject=$.parseJSON(jsonresponse);
+      handleresponse("creditconsole",jsonobject);
+      couponlist();
+   });
+}
+
+function sellcoupon(coupon)
+{
+   var code="";
+   $.ajax({
+   url: "command.php?action=sellcoupon&coupon="+coupon
+   }).done(function(jsonresponse) {
+      jsonobject=$.parseJSON(jsonresponse);
+      handleresponse("creditconsole",jsonobject);
+      couponlist();
    });
 }
 

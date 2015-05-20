@@ -699,6 +699,40 @@ function addcredit($userid,$creditmultiplier)
    response(_('Added')." ".$addcreditamount.$credit["currency"]." "._('credit for')." ".$row["userName"].".");
 }
 
+function getcouponlist()
+{
+   global $db, $credit;
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+   $result=$db->query("SELECT coupon,value FROM coupons WHERE status='0' ORDER BY status,value,coupon");
+   while($row=$result->fetch_assoc())
+      {
+      $jsoncontent[]=array("coupon"=>$row["coupon"],"value"=>$row["value"]);
+      }
+   echo json_encode($jsoncontent);// TODO change to response function
+}
+
+function generatecoupons($multiplier)
+{
+   global $db, $credit;
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
+   $value=$requiredcredit*$multiplier;
+   $codes=generatecodes(10,6);
+   foreach ($codes as $code)
+      {
+      $result=$db->query("INSERT IGNORE INTO coupons SET coupon='".$code."',value='".$value."',status='0'");
+      }
+   response(_('Generated 10 new').' '.$value.' '.$credit["currency"].' '._('coupons').'.',0,array("coupons"=>$codes));
+}
+
+function sellcoupon($coupon)
+{
+   global $db, $credit;
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+   $result=$db->query("UPDATE coupons SET status='1' WHERE coupon='".$coupon."'");
+   response(_('Coupon').' '.$coupon.' '._('sold').'.');
+}
+
 function mapgetmarkers()
 {
    global $db;

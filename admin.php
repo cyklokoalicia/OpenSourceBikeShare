@@ -30,6 +30,7 @@ if (iscreditenabled())
    {
    echo 'var creditenabled=1;',"\n";
    echo 'var creditcurrency="',$credit["currency"],'"',";\n";
+   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
    }
 else
    {
@@ -76,6 +77,11 @@ if (isloggedin()):
     <li role="presentation" class="active"><a href="#fleet" aria-controls="fleet" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> <?php echo _('Fleet'); ?></a></li>
     <li role="presentation"><a href="#stands" aria-controls="stands" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> <?php echo _('Stands'); ?></a></li>
     <li role="presentation"><a href="#users" aria-controls="users" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> <?php echo _('Users'); ?></a></li>
+<?php
+if (iscreditenabled()):
+?>
+    <li role="presentation"><a href="#credit" aria-controls="credit" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-euro" aria-hidden="true"></span> <?php echo _('Credit system'); ?></a></li>
+<?php endif; ?>
     <li role="presentation"><a href="#reports" aria-controls="reports" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span> <?php echo _('Reports'); ?></a></li>
   </ul>
 
@@ -101,6 +107,21 @@ if (isloggedin()):
          </div>
       </div>
     </div>
+<?php
+if (iscreditenabled()):
+?>
+    <div role="tabpanel" class="tab-pane" id="credit">
+      <div class="row">
+         <div class="col-lg-12">
+         <button type="button" id="listcoupons" class="btn btn-default" title="<?php echo _('Display existing coupons.'); ?>"><span class="glyphicon glyphicon-list-alt"></span> <?php echo _('List coupons'); ?></button>
+         <button type="button" id="generatecoupons1" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$requiredcredit,$credit["currency"],' '; echo _('coupons'); ?></button>
+         <button type="button" id="generatecoupons2" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$requiredcredit*5,$credit["currency"],' '; echo _('coupons'); ?></button>
+         <button type="button" id="generatecoupons3" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$requiredcredit*10,$credit["currency"],' '; echo _('coupons'); ?></button>
+         <div id="creditconsole"></div>
+         </div>
+      </div>
+    </div>
+<?php endif; ?>
     <div role="tabpanel" class="tab-pane" id="users">
       <div class="row">
          <div class="col-lg-12">
@@ -116,14 +137,10 @@ if (isloggedin()):
          <div class="form-group"><label for="privileges"><?php echo _('Privileges:'); ?></label> <input type="text" name="privileges" id="privileges" class="form-control" /></div>
          <div class="form-group"><label for="limit"><?php echo _('Bike limit:'); ?></label> <input type="text" name="limit" id="limit" class="form-control" /></div>
          <input type="hidden" name="userid" id="userid" value="" />
-         <button type="submit" id="saveuser" class="btn btn-primary"><?php echo _('Save'); ?></button>
-         <?php if (iscreditenabled()):
-            $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
-         ?>
-         or <button type="submit" id="addcredit" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit,$credit["currency"]; ?></button>
-         <button type="submit" id="addcredit2" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit*5,$credit["currency"]; ?></button>
-         <button type="submit" id="addcredit3" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit*10,$credit["currency"]; ?></button>
-         <? endif; ?>
+         <button type="button" id="saveuser" class="btn btn-primary"><?php echo _('Save'); ?></button>
+         or <button type="button" id="addcredit" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit,$credit["currency"]; ?></button>
+         <button type="button" id="addcredit2" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit*5,$credit["currency"]; ?></button>
+         <button type="button" id="addcredit3" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit*10,$credit["currency"]; ?></button>
       </form>
       <div id="userconsole"></div>
     </div>
