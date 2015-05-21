@@ -259,7 +259,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
          {
          $listBikes.=$row["bikeNum"].",";
          }
-      if ($bikenumber>1) $listBikes=substr($listBikes,0,strlen($listBikes-1));
+      if ($bikenumber>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
       }
 
    if ($force==FALSE)
@@ -452,7 +452,7 @@ function listBikes($number,$stand)
     if ($stacktopbike==$row["bikeNum"]) $listBikes.=" "._('(first)');
     $listBikes.=",";
     }
-   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes-1));
+   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
 
    sendSMS($number,sprintf(ngettext('%d bike','%d bikes',$rentedBikes),$rentedBikes)." "._('on stand')." ".$stand.": ".$listBikes);
 }
@@ -479,7 +479,7 @@ function freeBikes($number)
       $listBikes.=$row["placeName"].":".$row["bikeCount"];
       $listBikes.=",";
       }
-   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes-1));
+   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
 
    $result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes right join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount=0 order by placeName");
    $rentedBikes=$result->num_rows;
@@ -494,7 +494,7 @@ function freeBikes($number)
       $listBikes.=$row["placeName"];
       $listBikes.=",";
       }
-   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes-1));
+   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
 
    sendSMS($number,$listBikes);
 }
@@ -692,7 +692,7 @@ function last($number,$bike)
       }
       if ($result->num_rows>1) $historyInfo.=",";
    }
-   if ($rentedBikes>1) $historyInfo=substr($historyInfo,0,strlen($historyInfo-1));
+   if ($rentedBikes>1) $historyInfo=substr($historyInfo,0,strlen($historyInfo)-1);
 
    sendSMS($number,$historyInfo);
 
