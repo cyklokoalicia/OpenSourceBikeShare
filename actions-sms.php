@@ -237,9 +237,10 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
    $bikeNum = intval($bike);
    $stand = strtoupper($stand);
 
-   if (!preg_match("/^[A-Z]+[0-9]*$/",$stand))
+   $result=$db->query("SELECT standId FROM stands WHERE standName='$stand'");
+   if (!$result->num_rows)
       {
-      sendSMS($number,_('Stand name')." '".$stand."' "._('has not been recognized. Stands are marked by CAPITALLETTERS.'));
+      sendSMS($number,_('Stand name')." '".$stand."' "._('does not exist. Stands are marked by CAPITALLETTERS.'));
       return;
       }
 
@@ -309,7 +310,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       $row =$result->fetch_assoc();
       $standId =$row["standId"];
 
-   if (!preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z]+[\s,\.]+(.*)/i",$message ,$matches))
+   if (!preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i",$message ,$matches))
       {
       $userNote="";
       }
