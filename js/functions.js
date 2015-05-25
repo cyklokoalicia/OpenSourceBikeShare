@@ -5,12 +5,18 @@ $(document).ready(function(){
    $('#standactions').hide();
    $('.bicycleactions').hide();
    $('#notetext').hide();
+   $('#couponblock').hide();
    $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" id="loading" />'); });
    $(document).ajaxComplete(function() { $('#loading').remove(); });
    $("#rent").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
    $("#return").click(function(e) { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-return'); returnbike(); });
    $("#note").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-note'); note(); });
    $('#stands').change(function() { showstand($('#stands').val()); }).keyup(function() { showstand($('#stands').val()); });
+   if ($('usercredit'))
+      {
+      $("#opencredit").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'credit-enter'); $('#couponblock').toggle(); });
+      $("#validatecoupon").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'credit-add'); validatecoupon(); });
+      }
    mapinit();
    setInterval(getmarkers, 60000); // refresh map every 60 seconds
    setInterval(getuserstatus, 60000); // refresh map every 60 seconds
@@ -404,6 +410,27 @@ function returnbike()
       getmarkers();
       getuserstatus();
       showstand(standid,0);
+   });
+}
+
+function validatecoupon()
+{
+   $.ajax({
+   url: "command.php?action=validatecoupon&coupon="+$('#coupon').val()
+   }).done(function(jsonresponse) {
+      jsonobject=$.parseJSON(jsonresponse);
+      temp=$('#couponblock').html();
+      if (jsonobject.error==1)
+         {
+         $('#couponblock').html('<div class="alert alert-danger" role="alert">'+jsonobject.content+'</div>');
+         setTimeout(function() { $('#couponblock').html(temp); $("#validatecoupon").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'credit-add'); validatecoupon(); }); },2500);
+         }
+      else
+         {
+         $('#couponblock').html('<div class="alert alert-success" role="alert">'+jsonobject.content+'</div>');
+         getuserstatus();
+         setTimeout(function() { $('#couponblock').html(temp); $('#couponblock').toggle(); $("#validatecoupon").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'credit-add'); validatecoupon(); }); },2500);
+         }
    });
 }
 

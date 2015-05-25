@@ -57,22 +57,26 @@ else
 <div id="map"></div>
 <div id="sidebar">
 <div class="row">
-   <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-   <a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
-   <?php if (isloggedin() AND getprivileges($_COOKIE["loguserid"])>0) echo '<a href="admin.php"><span class="glyphicon glyphicon-cog"></span> ',_('Admin'),'</a>'; ?>
-   <h1><?php echo $systemname; ?></h1>
-   </div>
-   <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
-   <ul class="nav nav-pills">
-   <?php
-   if (isloggedin())
-      {
-      echo '<li><span class="label label-success"><span class="glyphicon glyphicon-user"></span> <em>',getusername($_COOKIE["loguserid"]),'</em></span>';
-      if (iscreditenabled()) echo ' (<span id="usercredit" title="',_('Remaining credit'),'">',getusercredit($_COOKIE["loguserid"]),'</span>',getcreditcurrency(),')';
-      echo '<br /><a href="command.php?action=logout" id="logout">',_('Log out'),'</a></li>';
-      }
-   ?>
+   <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
+   <ul class="list-inline">
+      <li><a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
+<?php
+if (isloggedin() AND getprivileges($_COOKIE["loguserid"])>0) echo '<li><a href="admin.php"><span class="glyphicon glyphicon-cog"></span> ',_('Admin'),'</a></li>';
+if (isloggedin())
+   {
+   echo '<li><span class="glyphicon glyphicon-user"></span> <small>',getusername($_COOKIE["loguserid"]),'</small>';
+   if (iscreditenabled()) echo ' (<span id="usercredit" title="',_('Remaining credit'),'">',getusercredit($_COOKIE["loguserid"]),'</span> ',getcreditcurrency(),' <button type="button" class="btn btn-success btn-xs" id="opencredit" title="',_('Add credit'),'"><span class="glyphicon glyphicon-plus"></span></button>)<span id="couponblock"><br /><span class="form-inline"><input type="text" class="form-control input-sm" id="coupon" placeholder="XXXXXX" /><button type="button" class="btn btn-primary btn-sm" id="validatecoupon" title="',_('Confirm coupon'),'"><span class="glyphicon glyphicon-plus"></span></button></span></span></li>';
+   echo '<li><a href="command.php?action=logout" id="logout"><span class="glyphicon glyphicon-log-out"></span> ',_('Log out'),'</a></li>';
+   }
+?>
    </ul>
+   </div>
+   <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
+   </div>
+</div>
+<div class="row">
+   <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
+   <h1 class="pull-left"><?php echo $systemname; ?></h1>
    </div>
    <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
    </div>

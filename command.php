@@ -58,6 +58,12 @@ switch($action)
       checkbikeno($bikeno); checkstandname($stand);
       returnBike($userid,$bikeno,$stand,$note);
       break;
+   case "validatecoupon":
+      logrequest($userid,$action);
+      checksession();
+      $coupon=trim($_GET["coupon"]);
+      validatecoupon($userid,$coupon);
+      break;
    case "forcerent":
       logrequest($userid,$action);
       checksession();
