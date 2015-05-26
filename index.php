@@ -49,6 +49,14 @@ else
    {
    echo 'var creditsystem=0;',"\n";
    }
+if (issmssystemenabled()==TRUE)
+   {
+   echo 'var sms=1;',"\n";
+   }
+else
+   {
+   echo 'var sms=0;',"\n";
+   }
 ?>
 </script>
 <?php if (file_exists("analytics.php")) require("analytics.php"); ?>
@@ -93,7 +101,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
             <label for="number" class="control-label"><?php if (issmssystemenabled()==TRUE) echo _('Phone number:'); else echo _('User number:'); ?></label> <input type="text" name="number" id="number" class="form-control" />
        </div></div>
        <div class="row"><div class="col-lg-12">
-            <label for="password"><?php echo _('Password:'); ?></label> <input type="password" name="password" id="password" class="form-control" />
+            <label for="password"><?php echo _('Password:'); ?> <small id="passwordresetblock">(<a id="resetpassword"><?php echo _('Forgotten? Reset password'); ?></a>)</small></label> <input type="password" name="password" id="password" class="form-control" />
        </div></div><br />
        <div class="row"><div class="col-lg-12">
          <button type="submit" id="register" class="btn btn-lg btn-block btn-primary"><?php echo _('Log in'); ?></button>

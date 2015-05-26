@@ -1,5 +1,11 @@
 $(document).ready(function(){
 
+   if (window.location.hash)
+      {
+      hash=window.location.hash.replace("#reset","");
+      $('#number').val(hash);
+      getsmscode();
+      }
 
    $('#step2').bootstrapValidator({
         feedbackIcons: {

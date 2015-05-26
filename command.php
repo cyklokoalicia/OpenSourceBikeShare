@@ -37,6 +37,9 @@ switch($action)
    case "logout":
       logout();
       break;
+   case "resetpassword":
+      resetpassword($_GET["number"]);
+      break;
    case "list":
       $stand=trim($_GET["stand"]);
       listbikes($stand);

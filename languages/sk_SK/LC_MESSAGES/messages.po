@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Open Source Bike Share\n"
-"POT-Creation-Date: 2015-05-26 01:21+0100\n"
-"PO-Revision-Date: 2015-05-26 01:21+0100\n"
+"POT-Creation-Date: 2015-05-27 00:16+0100\n"
+"PO-Revision-Date: 2015-05-27 00:16+0100\n"
 "Last-Translator: Daniel Duris <dusoft@staznosti.sk>\n"
 "Language-Team: Open Source Bike Share <consult@whitebikes.info>\n"
 "Language: Slovak\n"
@@ -16,84 +16,88 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: /www/OpenSourceBikeShare\n"
 
-#: /www/OpenSourceBikeShare/index.php:64 /www/OpenSourceBikeShare/admin.php:55
+#: /www/OpenSourceBikeShare/index.php:72 /www/OpenSourceBikeShare/admin.php:55
 msgid "Admin"
 msgstr "Admin"
 
-#: /www/OpenSourceBikeShare/index.php:68
+#: /www/OpenSourceBikeShare/index.php:76
 msgid "Remaining credit"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:68
+#: /www/OpenSourceBikeShare/index.php:76
 msgid "Add credit"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:68
+#: /www/OpenSourceBikeShare/index.php:76
 msgid "Confirm coupon"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:69 /www/OpenSourceBikeShare/admin.php:57
+#: /www/OpenSourceBikeShare/index.php:77 /www/OpenSourceBikeShare/admin.php:57
 msgid "Log out"
 msgstr "Odhlásiť"
 
-#: /www/OpenSourceBikeShare/index.php:88
+#: /www/OpenSourceBikeShare/index.php:96
 msgid "User / phone number or password incorrect! Please, try again."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:89
+#: /www/OpenSourceBikeShare/index.php:97
 msgid "Session timed out! Please, log in again."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:93
+#: /www/OpenSourceBikeShare/index.php:101
 #: /www/OpenSourceBikeShare/admin.php:135
 #: /www/OpenSourceBikeShare/register.php:55
 #: /www/OpenSourceBikeShare/install/index.php:238
 msgid "Phone number:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:93
+#: /www/OpenSourceBikeShare/index.php:101
 msgid "User number:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:96
+#: /www/OpenSourceBikeShare/index.php:104
 #: /www/OpenSourceBikeShare/register.php:75
 #: /www/OpenSourceBikeShare/install/index.php:235
 msgid "Password:"
 msgstr "Heslo:"
 
-#: /www/OpenSourceBikeShare/index.php:99
+#: /www/OpenSourceBikeShare/index.php:104
+msgid "Forgotten? Reset password"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/index.php:107
 msgid "Log in"
 msgstr "Prihlásiť"
 
-#: /www/OpenSourceBikeShare/index.php:117
+#: /www/OpenSourceBikeShare/index.php:125
 msgid ""
 "Choose bike number and rent bicycle. You will receive a code to unlock the "
 "bike and the new code to set."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:117
+#: /www/OpenSourceBikeShare/index.php:125
 msgid "Rent"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:127
+#: /www/OpenSourceBikeShare/index.php:135
 msgid "Describe problem"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:134
+#: /www/OpenSourceBikeShare/index.php:142
 msgid "Return this bicycle to the selected stand."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:134
+#: /www/OpenSourceBikeShare/index.php:142
 msgid "Return bicycle"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:134
+#: /www/OpenSourceBikeShare/index.php:142
 msgid ""
 "Use this link to open a text field to write in any issues with the bicycle "
 "you are returning (flat tire, chain stuck etc.)."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/index.php:134
+#: /www/OpenSourceBikeShare/index.php:142
 msgid "report problem"
 msgstr ""
 
@@ -519,7 +523,7 @@ msgstr ""
 #: /www/OpenSourceBikeShare/actions-sms.php:307
 #: /www/OpenSourceBikeShare/actions-sms.php:429
 #: /www/OpenSourceBikeShare/actions-sms.php:445
-#: /www/OpenSourceBikeShare/common.php:288
+#: /www/OpenSourceBikeShare/common.php:289
 #: /www/OpenSourceBikeShare/install/index.php:284
 #: /www/OpenSourceBikeShare/install/index.php:297
 msgid "Stand"
@@ -608,7 +612,7 @@ msgstr ""
 #: /www/OpenSourceBikeShare/actions-sms.php:543
 #: /www/OpenSourceBikeShare/actions-sms.php:616
 #: /www/OpenSourceBikeShare/actions-sms.php:676
-#: /www/OpenSourceBikeShare/common.php:288
+#: /www/OpenSourceBikeShare/common.php:289
 msgid "does not exist"
 msgstr ""
 
@@ -632,9 +636,9 @@ msgstr ""
 #: /www/OpenSourceBikeShare/actions-sms.php:338
 #: /www/OpenSourceBikeShare/actions-sms.php:661
 #: /www/OpenSourceBikeShare/actions-web.php:252
-#: /www/OpenSourceBikeShare/common.php:407
-#: /www/OpenSourceBikeShare/common.php:440
-#: /www/OpenSourceBikeShare/common.php:455
+#: /www/OpenSourceBikeShare/common.php:408
+#: /www/OpenSourceBikeShare/common.php:441
+#: /www/OpenSourceBikeShare/common.php:456
 msgid "by"
 msgstr ""
 
@@ -995,13 +999,40 @@ msgstr ""
 msgid "Invalid coupon, try again."
 msgstr ""
 
+#: /www/OpenSourceBikeShare/actions-web.php:758
+msgid "No such user found."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:763
+#, fuzzy
+msgid "Password reset"
+msgstr "Heslo:"
+
+#: /www/OpenSourceBikeShare/actions-web.php:772
+#: /www/OpenSourceBikeShare/common.php:333
+msgid "Hello"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:773
+#: /www/OpenSourceBikeShare/actions-web.php:777
+msgid "Your password has been reset successfully."
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:774
+msgid "Your new password is:"
+msgstr ""
+
+#: /www/OpenSourceBikeShare/actions-web.php:777
+msgid "Check your email."
+msgstr ""
+
 #: /www/OpenSourceBikeShare/register.php:10
 msgid "registration"
 msgstr ""
 
 #: /www/OpenSourceBikeShare/register.php:38
 #: /www/OpenSourceBikeShare/register.php:47
-#: /www/OpenSourceBikeShare/common.php:318
+#: /www/OpenSourceBikeShare/common.php:319
 msgid "Registration"
 msgstr ""
 
@@ -1046,58 +1077,54 @@ msgstr ""
 msgid "Privacy policy"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:308
+#: /www/OpenSourceBikeShare/common.php:309
 msgid "notification"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:332
-msgid "Hello"
-msgstr ""
-
-#: /www/OpenSourceBikeShare/common.php:333
+#: /www/OpenSourceBikeShare/common.php:334
 msgid "you have been registered into community bike share system"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:334
+#: /www/OpenSourceBikeShare/common.php:335
 msgid "System rules are available here:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:335
+#: /www/OpenSourceBikeShare/common.php:336
 msgid "By clicking the following link you agree to the System rules:"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:352
+#: /www/OpenSourceBikeShare/common.php:353
 msgid "Registration key not found!"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:360
+#: /www/OpenSourceBikeShare/common.php:361
 msgid "Your account has been activated. Welcome!"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:409
+#: /www/OpenSourceBikeShare/common.php:410
 msgid "Please, return your bike "
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:409
+#: /www/OpenSourceBikeShare/common.php:410
 msgid ""
 " immediately to the closest stand! Ignoring this warning can get you banned "
 "from the system."
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:416
+#: /www/OpenSourceBikeShare/common.php:417
 msgid "hour rental"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:440
-#: /www/OpenSourceBikeShare/common.php:455
+#: /www/OpenSourceBikeShare/common.php:441
+#: /www/OpenSourceBikeShare/common.php:456
 msgid "limit"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:462
+#: /www/OpenSourceBikeShare/common.php:463
 msgid "Over limit in"
 msgstr ""
 
-#: /www/OpenSourceBikeShare/common.php:462
+#: /www/OpenSourceBikeShare/common.php:463
 msgid "hs"
 msgstr ""
 

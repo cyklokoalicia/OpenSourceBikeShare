@@ -38,7 +38,7 @@ function sendEmail($toemail,$subject,$message)
    $mail->isSMTP(); // Set mailer to use SMTP
    $mail->Host=$email["smtp"]; // Specify main and backup SMTP servers
    $mail->Username=$email["user"]; // SMTP username
-   $mail->Password=$email["password"]; // SMTP password
+   $mail->Password=$email["pass"]; // SMTP password
    $mail->SMTPAuth=true; // Enable SMTP authentication
    $mail->SMTPSecure="ssl"; // Enable SSL
    $mail->Port=465; // TCP port to connect to
@@ -47,6 +47,7 @@ function sendEmail($toemail,$subject,$message)
    $mail->FromName=$systemname;
    $mail->addAddress($toemail);     // Add a recipient
    $mail->Subject=$subject;
+   $mail->Body=$message;
    if (DEBUG===FALSE)
       {
       $mail->send();
@@ -165,7 +166,7 @@ function getuserid($number)
 {
    global $db;
 
-   $result = $db->query("SELECT userId FROM users where number='$number'");
+   $result = $db->query("SELECT userId FROM users WHERE number='$number'");
    if ($result->num_rows==1)
       {
       $row = $result->fetch_assoc();
@@ -315,7 +316,7 @@ function sendConfirmationEmail($email)
 
    global $db, $dbpassword, $systemname, $systemrules, $systemURL;
 
-   $subject = _('Registration').' '.$systemname;
+   $subject = _('Registration');
 
    $result=$db->query("SELECT userName,userId FROM users WHERE mail='".$email."'");
    $row = $result->fetch_assoc();
@@ -329,8 +330,8 @@ function sendConfirmationEmail($email)
 
    $names=preg_split("/[\s,]+/",$row["userName"]);
    $firstname=$names[0];
-   $message=_('Hello').$firstname."\n".
-   _('you have been registered into community bike share system').$systemname.".\n\n".
+   $message=_('Hello').' '.$firstname.",\n\n".
+   _('you have been registered into community bike share system').' '.$systemname.".\n\n".
    _('System rules are available here:')."\n".$systemrules.
    _('By clicking the following link you agree to the System rules:')."\n".$systemURL."agree.php?key=".$userKey;
    sendEmail($email, $subject, $message);

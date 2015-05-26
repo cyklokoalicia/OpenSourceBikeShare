@@ -6,8 +6,11 @@ $(document).ready(function(){
    $('.bicycleactions').hide();
    $('#notetext').hide();
    $('#couponblock').hide();
+   $('#passwordresetblock').hide();
    $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" id="loading" />'); });
    $(document).ajaxComplete(function() { $('#loading').remove(); });
+   $("#password").focus(function() { $('#passwordresetblock').show(); });
+   $("#resetpassword").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'password-reset'); resetpassword(); });
    $("#rent").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
    $("#return").click(function(e) { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-return'); returnbike(); });
    $("#note").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-note'); note(); });
@@ -432,6 +435,24 @@ function validatecoupon()
          setTimeout(function() { $('#couponblock').html(temp); $('#couponblock').toggle(); $("#validatecoupon").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'credit-add'); validatecoupon(); }); },2500);
          }
    });
+}
+
+function resetpassword()
+{
+   $('#passwordresetblock').hide();
+   if (sms==0 && $('#number').val()>0)
+      {
+      $.ajax({
+      url: "command.php?action=resetpassword&number="+$('#number').val()
+      }).done(function(jsonresponse) {
+         jsonobject=$.parseJSON(jsonresponse);
+         handleresponse(jsonobject);
+         });
+      }
+   else if (sms==1 && $('#number').val()>0)
+      {
+      window.location="register.php#reset"+$('#number').val();
+      }
 }
 
 function attachbicycleinfo(element,attachto)
