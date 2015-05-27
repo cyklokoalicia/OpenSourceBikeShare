@@ -243,6 +243,8 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       sendSMS($number,_('Stand name')." '".$stand."' "._('does not exist. Stands are marked by CAPITALLETTERS.'));
       return;
       }
+   $row=$result->fetch_assoc();
+   $standId=$row["standId"];
 
    if ($force==FALSE)
       {
@@ -300,15 +302,6 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
     	    $currentUserNumber =$row["number"];
         }
       }
-
-   $result=$db->query("SELECT standId FROM stands WHERE standName='$stand'");
-   if ($result->num_rows!=1)
-      {
-      sendSMS($number,_('Stand')." '$stand' "._('does not exist').".");
-      return;
-      }
-      $row =$result->fetch_assoc();
-      $standId =$row["standId"];
 
    if (!preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i",$message ,$matches))
       {

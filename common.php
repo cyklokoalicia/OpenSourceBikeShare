@@ -375,7 +375,7 @@ function checktopofstack($standid)
    if (count($currentbikes))
       {
       // find last returned bike at stand
-      $result=$db->query("SELECT bikeNum FROM history WHERE action='RETURN' AND parameter='$standid' AND bikeNum IN (".implode($currentbikes,",").") ORDER BY time DESC LIMIT 1");
+      $result=$db->query("SELECT bikeNum FROM history WHERE action IN ('RETURN','FORCERETURN') AND parameter='$standid' AND bikeNum IN (".implode($currentbikes,",").") ORDER BY time DESC LIMIT 1");
       if ($result->num_rows)
          {
          $row=$result->fetch_assoc();
