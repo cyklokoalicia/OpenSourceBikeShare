@@ -46,6 +46,7 @@ function sendEmail($emailto,$subject,$message)
    $mail->From=$systememail;
    $mail->FromName=$systemname;
    $mail->addAddress($emailto);     // Add a recipient
+   $mail->addBCC($systememail);     // Add a recipient
    $mail->Subject=$subject;
    $mail->Body=$message;
    if (DEBUG===FALSE)
@@ -324,9 +325,9 @@ function sendConfirmationEmail($emailto)
    $userId=$row["userId"];
    $userKey=hash('sha256', $emailto.$dbpassword.rand(0,1000000));
 
-   $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'");
-   $db->query("INSERT into limits SET userId='$userId',userLimit=0");
-   $db->query("INSERT into credit SET userId='$userId',credit=0");
+   $db->query("INSERT INTO registration SET userKey='$userKey',userId='$userId'");
+   $db->query("INSERT INTO limits SET userId='$userId',userLimit=0");
+   $db->query("INSERT INTO credit SET userId='$userId',credit=0");
 
    $names=preg_split("/[\s,]+/",$row["userName"]);
    $firstname=$names[0];
