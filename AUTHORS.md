@@ -24,6 +24,11 @@ https://jquery.com
 Copyright jQuery Foundation and other contributors, https://jquery.org/
 Released under the MIT License (MIT).
 
+### DataTables
+http://datatables.net
+Copyright (c) 2008-2013 SpryMedia Limited
+Released under the MIT License (MIT).
+
 ### Bootstrap
 http://getbootstrap.com
 Copyright (c) 2011+ Twitter, Inc

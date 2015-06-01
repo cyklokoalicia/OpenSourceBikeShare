@@ -73,9 +73,9 @@ function userlist()
    url: "command.php?action=userlist"
    }).done(function(jsonresponse) {
       jsonobject=$.parseJSON(jsonresponse);
-      if (jsonobject.length>0) code='<table class="table table-striped"><tr><th>'+_user+'</th><th>'+_privileges+'</th><th>'+_limit+'</th>';
+      if (jsonobject.length>0) code='<table class="table table-striped" id="usertable"><thead><tr><th>'+_user+'</th><th>'+_privileges+'</th><th>'+_limit+'</th>';
       if (creditenabled==1) code=code+'<th>'+_credit+'</th>';
-      code=code+'</tr>';
+      code=code+'</tr></thead>';
       for (var i=0, len=jsonobject.length; i < len; i++)
          {
          code=code+'<tr><td><a href="#" class="edituser" data-userid="'+jsonobject[i]["userid"]+'">'+jsonobject[i]["username"]+'</a><br />'+jsonobject[i]["number"]+'<br />'+jsonobject[i]["mail"]+'</td><td>'+jsonobject[i]["privileges"]+'</td><td>'+jsonobject[i]["limit"]+'</td>';
@@ -87,6 +87,11 @@ function userlist()
       if (jsonobject.length>0) code=code+'</table>';
       $('#userconsole').html(code);
       createeditlinks();
+      $('#usertable').dataTable({
+        "paging":   false,
+        "ordering": false,
+        "info":     false
+      });
    });
 }
 
@@ -97,7 +102,7 @@ function userstats()
    url: "command.php?action=userstats"
    }).done(function(jsonresponse) {
       jsonobject=$.parseJSON(jsonresponse);
-      if (jsonobject.length>0) code='<table class="table table-striped"><tr><th>User</th><th>Actions</th><th>Rentals</th><th>Returns</th></tr>';
+      if (jsonobject.length>0) code='<table class="table table-striped" id="userstatstable"><thead><tr><th>User</th><th>Actions</th><th>Rentals</th><th>Returns</th></tr></thead>';
       for (var i=0, len=jsonobject.length; i < len; i++)
          {
          code=code+'<tr><td><a href="#" class="edituser" data-userid="'+jsonobject[i]["userid"]+'">'+jsonobject[i]["username"]+'</a></td><td>'+jsonobject[i]["count"]+'</td><td>'+jsonobject[i]["rentals"]+'</td><td>'+jsonobject[i]["returns"]+'</td></tr>';
@@ -105,6 +110,11 @@ function userstats()
       if (jsonobject.length>0) code=code+'</table>';
       $('#reportsconsole').html(code);
       createeditlinks();
+      $('#userstatstable').dataTable({
+        "paging":   false,
+        "ordering": false,
+        "info":     false
+      });
    });
 }
 
