@@ -31,7 +31,7 @@ function error($message)
    exit($message);
 }
 
-function sendEmail($toemail,$subject,$message)
+function sendEmail($emailto,$subject,$message)
 {
    global $db, $systemname, $systememail, $email;
    $mail=new PHPMailer;
@@ -45,7 +45,7 @@ function sendEmail($toemail,$subject,$message)
    $mail->CharSet="UTF-8";
    $mail->From=$systememail;
    $mail->FromName=$systemname;
-   $mail->addAddress($toemail);     // Add a recipient
+   $mail->addAddress($emailto);     // Add a recipient
    $mail->Subject=$subject;
    $mail->Body=$message;
    if (DEBUG===FALSE)
@@ -311,18 +311,18 @@ function notifyAdmins($message,$notificationtype=0)
       }
 }
 
-function sendConfirmationEmail($email)
+function sendConfirmationEmail($emailto)
 {
 
    global $db, $dbpassword, $systemname, $systemrules, $systemURL;
 
    $subject = _('Registration');
 
-   $result=$db->query("SELECT userName,userId FROM users WHERE mail='".$email."'");
+   $result=$db->query("SELECT userName,userId FROM users WHERE mail='".$emailto."'");
    $row = $result->fetch_assoc();
 
    $userId=$row["userId"];
-   $userKey=hash('sha256', $email.$dbpassword.rand(0,1000000));
+   $userKey=hash('sha256', $emailto.$dbpassword.rand(0,1000000));
 
    $db->query("INSERT into registration SET userKey='$userKey',userId='$userId'");
    $db->query("INSERT into limits SET userId='$userId',userLimit=0");
@@ -332,9 +332,9 @@ function sendConfirmationEmail($email)
    $firstname=$names[0];
    $message=_('Hello').' '.$firstname.",\n\n".
    _('you have been registered into community bike share system').' '.$systemname.".\n\n".
-   _('System rules are available here:')."\n".$systemrules.
+   _('System rules are available here:')."\n".$systemrules."\n\n".
    _('By clicking the following link you agree to the System rules:')."\n".$systemURL."agree.php?key=".$userKey;
-   sendEmail($email, $subject, $message);
+   sendEmail($emailto,$subject,$message);
 }
 
 function confirmUser($userKey)

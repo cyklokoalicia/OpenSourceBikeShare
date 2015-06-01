@@ -36,7 +36,7 @@ $(document).ready(function(){
                     }
                 }
             },
-            email: {
+            useremail: {
                 validators: {
                     emailAddress: {
                         message: _email_incorrect
@@ -102,7 +102,7 @@ function register()
    $("#console").fadeOut();
    $("#register").prop("disabled", true);
    $.ajax({
-   url: "command.php?action=register&validatednumber="+$('#validatednumber').val()+"&checkcode="+$('#checkcode').val()+"&smscode="+$('#smscode').val()+"&fullname="+$('#fullname').val()+"&email="+$('#email').val()+"&password="+$('#password').val()+"&password2="+$('#password2').val()+"&existing="+$('#existing').val()
+   url: "command.php?action=register&validatednumber="+$('#validatednumber').val()+"&checkcode="+$('#checkcode').val()+"&smscode="+$('#smscode').val()+"&fullname="+$('#fullname').val()+"&useremail="+$('#useremail').val()+"&password="+$('#password').val()+"&password2="+$('#password2').val()+"&existing="+$('#existing').val()
    }).done(function(jsonresponse) {
    jsonobject=$.parseJSON(jsonresponse);
    if (jsonobject.error==1)

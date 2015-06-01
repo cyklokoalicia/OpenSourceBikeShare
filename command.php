@@ -23,11 +23,11 @@ switch($action)
       $smscode=trim($_GET["smscode"]);
       $checkcode=trim($_GET["checkcode"]);
       $fullname=trim($_GET["fullname"]);
-      $email=trim($_GET["email"]);
+      $useremail=trim($_GET["useremail"]);
       $password=trim($_GET["password"]);
       $password2=trim($_GET["password2"]);
       $existing=trim($_GET["existing"]);
-      register($number,$smscode,$checkcode,$fullname,$email,$password,$password2,$existing);
+      register($number,$smscode,$checkcode,$fullname,$useremail,$password,$password2,$existing);
       break;
    case "login":
       $number=trim($_POST["number"]);

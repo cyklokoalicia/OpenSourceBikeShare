@@ -69,7 +69,7 @@ require("common.php");
          <div class="form-group">
             <label for="fullname"><?php echo _('Fullname:'); ?></label> <input type="text" name="fullname" id="fullname" class="form-control" placeholder="<?php echo _('Firstname Lastname'); ?>" /></div>
          <div class="form-group">
-            <label for="email"><?php echo _('Email:'); ?></label> <input type="text" name="email" id="email" class="form-control" placeholder="email@domain.com" /></div>
+            <label for="useremail"><?php echo _('Email:'); ?></label> <input type="text" name="useremail" id="useremail" class="form-control" placeholder="email@domain.com" /></div>
             </div>
          <div class="form-group">
             <label for="password"><?php echo _('Password:'); ?></label> <input type="password" name="password" id="password" class="form-control" /></div>
