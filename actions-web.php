@@ -585,12 +585,11 @@ function checkprivileges($userid)
 function smscode($number)
 {
 
-   global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $countrycode, $connectors;
+   global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $connectors;
    srand();
 
-   $number=str_replace(" ","",$number); $number=str_replace("-","",$number); $number=str_replace("/","",$number);
-   $number=$countrycode.substr($number,1,strlen($number));
-   $number = $db->conn->real_escape_string($number);
+   $number=$normalizephonenumber($number);
+   $number=$db->conn->real_escape_string($number);
    $userexists=0;
    $result=$db->query("SELECT userId FROM users WHERE number='$number'");
    if ($result->num_rows) $userexists=1;

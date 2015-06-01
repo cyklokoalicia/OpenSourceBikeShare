@@ -593,4 +593,18 @@ function issmssystemenabled()
 
 }
 
+
+function normalizephonenumber($number)
+{
+   global $countrycode;
+   $number=str_replace("+","",$number);
+   $number=str_replace(" ","",$number);
+   $number=str_replace("-","",$number);
+   $number=str_replace("/","",$number);
+   $number=str_replace(".","",$number);
+   if (substr($number,0,1)=="0") $number=substr($number,1);
+   if (substr($number,0,3)<>$countrycode) $number=$countrycode.$number;
+   return $number;
+}
+
 ?>
