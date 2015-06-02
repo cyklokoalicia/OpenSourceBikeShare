@@ -746,7 +746,7 @@ function add($number,$email,$phone,$message)
         global $db, $countrycode;
    $userId = getUser($number);
 
-   $phone=normalizephonenumber($phone)
+   $phone=normalizephonenumber($phone);
 
    $result=$db->query("SELECT number,mail,userName FROM users where number=$phone OR mail='$email'");
           if ($result->num_rows!=0)

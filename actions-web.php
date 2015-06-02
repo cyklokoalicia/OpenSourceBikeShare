@@ -588,7 +588,7 @@ function smscode($number)
    global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $connectors;
    srand();
 
-   $number=$normalizephonenumber($number);
+   $number=normalizephonenumber($number);
    $number=$db->conn->real_escape_string($number);
    $userexists=0;
    $result=$db->query("SELECT userId FROM users WHERE number='$number'");
