@@ -1,3 +1,5 @@
+var oTable;
+
 $(document).ready(function(){
    $("#edituser").hide();
    $("#where").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-where'); where(); });
@@ -87,11 +89,15 @@ function userlist()
       if (jsonobject.length>0) code=code+'</table>';
       $('#userconsole').html(code);
       createeditlinks();
-      $('#usertable').dataTable({
+      oTable=$('#usertable').dataTable({
+        "dom": 'f<"filtertoolbar">prti',
         "paging":   false,
         "ordering": false,
         "info":     false
       });
+      $('div.filtertoolbar').html('<select id="columnfilter"><option></option></select>');
+      $('#usertable th').each(function() { $('#columnfilter').append($("<option></option>").attr('value',$(this).text()).text($(this).text())); } );
+      $('#usertable_filter input').keyup(function() { x=$('#columnfilter').prop("selectedIndex")-1; if (x==-1) fnResetAllFilters(); else oTable.fnFilter( $(this).val(), x ); });
    });
 }
 
@@ -156,8 +162,8 @@ function saveuser()
       jsonobject=$.parseJSON(jsonresponse);
       $("#edituser").hide();
       handleresponse("userconsole",jsonobject);
+      setTimeout(userlist, 2000);
    });
-   setTimeout(userlist, 2000);
 }
 
 function addcredit(creditmultiplier)
@@ -169,6 +175,7 @@ function addcredit(creditmultiplier)
       jsonobject=$.parseJSON(jsonresponse);
       $("#edituser").hide();
       handleresponse("userconsole",jsonobject);
+      setTimeout(userlist, 2000);
    });
 }
 
@@ -269,4 +276,12 @@ function revert()
       jsonobject=$.parseJSON(jsonresponse);
       handleresponse("fleetconsole",jsonobject);
    });
+}
+
+function fnResetAllFilters() {
+    var oSettings = oTable.fnSettings();
+    for(iCol = 0; iCol < oSettings.aoPreSearchCols.length; iCol++) {
+        oSettings.aoPreSearchCols[ iCol ].sSearch = '';
+    }
+    oTable.fnDraw();
 }
