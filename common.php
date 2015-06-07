@@ -296,7 +296,7 @@ function checkstandname($stand)
 **/
 function notifyAdmins($message,$notificationtype=0)
 {
-   global $db,$systemname;
+   global $db,$systemname,$watches;
 
    $result = $db->query("SELECT number,mail FROM users where privileges & 2 != 0");
    while($row = $result->fetch_assoc())
@@ -304,6 +304,7 @@ function notifyAdmins($message,$notificationtype=0)
       if ($notificationtype==0)
          {
          sendSMS($row["number"],$message);
+         sendEmail($watches["email"],$systemname." "._('notification'),$message);
          }
       else
          {
