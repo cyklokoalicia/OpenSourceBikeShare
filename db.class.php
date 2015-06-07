@@ -14,6 +14,7 @@ class Database
    function connect()
       {
       $this->conn=new mysqli($this->dbserver,$this->dbuser,$this->dbpassword,$this->dbname);
+      $this->conn->set_charset("utf8");
       $this->conn->autocommit(FALSE);
       if (!$this->conn OR $this->conn->connect_errno) error(_('DB connection error!'));
       return $this->conn;

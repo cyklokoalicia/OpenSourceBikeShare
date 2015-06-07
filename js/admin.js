@@ -98,6 +98,7 @@ function userlist()
       $('div.filtertoolbar').html('<select id="columnfilter"><option></option></select>');
       $('#usertable th').each(function() { $('#columnfilter').append($("<option></option>").attr('value',$(this).text()).text($(this).text())); } );
       $('#usertable_filter input').keyup(function() { x=$('#columnfilter').prop("selectedIndex")-1; if (x==-1) fnResetAllFilters(); else oTable.fnFilter( $(this).val(), x ); });
+      $('#columnfilter').change(function() { x=$('#columnfilter').prop("selectedIndex")-1; if (x==-1) fnResetAllFilters(); else oTable.fnFilter( $('#usertable_filter input').val(), x ); });
    });
 }
 
