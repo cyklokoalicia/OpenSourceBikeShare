@@ -1,6 +1,6 @@
 <?php
 require("../external/tcpdf/tcpdf.php");
-if (file_exists("../config.php.example.bak")) require("../config.php.example.bak");
+if (file_exists("../config.php.example")) require("../config.php.example");
 else require("../config.php");
 require("../db.class.php");
 $db=new Database($dbserver,$dbuser,$dbpassword,$dbname);

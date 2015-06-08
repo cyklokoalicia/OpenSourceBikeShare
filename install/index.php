@@ -17,7 +17,7 @@ function changeconfigvalue($configvar,$postvar)
 {
    global $configfile;
    $lineno=array_filter($configfile,function($el) use ($configvar) {
-        return (strpos($el,$configvar)!==FALSE);
+        return (strpos($el,$configvar)===1); // variable name should always start on line at 1st position (2nd character)
     });
    $key=array_keys($lineno);
    $lineno=$key[0];
@@ -61,7 +61,7 @@ if ($step==5)
       if ($_FILES["standphoto"]["type"][$standid]<>"image/jpeg" AND $_FILES["standphoto"]["type"][$standid]<>"image/pjpeg" AND $_FILES["standphoto"]["type"][$standid]<>"image/png" AND $_FILES["standphoto"]["type"][$standid]<>"image/gif" AND $_FILES["standphoto"]["type"][$standid]<>"") $uploads[$standid]["errortype"]=1;
       if ($_FILES["standphoto"]["name"][$standid] AND !isset($uploads[$standid]["errorsize"]) AND !isset($uploads[$standid]["errortype"]))
          {
-         move_uploaded_file($_FILES["standphoto"]["tmp_name"][$standid],'../img/uploads/'.str_replace($_FILES["standphoto"]["name"][$standid]));
+         move_uploaded_file($_FILES["standphoto"]["tmp_name"][$standid],'../img/uploads/'.$_FILES["standphoto"]["name"][$standid]);
          $uploads[$standid]["filename"]=$systemURL."img/uploads/".$_FILES["standphoto"]["name"][$standid];
          }
       }
@@ -69,13 +69,11 @@ if ($step==5)
 
 $files=scandir("../connectors/");
 $files=array_diff($files,array('..','.','loopback'));
-print_r($files);
 foreach ($files as $key=>$value)
    {
    if (strpos($value,"disabled.php")!==FALSE) unset($files[$key]);
    else $files[$key]=str_replace(".php","",$value);
    }
-   print_r($files);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -227,6 +225,7 @@ foreach ($sql as $value)
       //echo $value,'<br />';
       }
    }
+require($configfilename);
 ?>
        <h2><?php echo _('Create admin user'); ?></h2>
        <?php echo '<div class="alert alert-success" role="alert">',_('Config file values set and database created.'),'</div>'; ?>
@@ -350,7 +349,7 @@ echo '<div class="alert alert-success" role="alert">',sprintf(ngettext('%d stand
 $configfile=file($configfilename);
 foreach ($configfile as $line)
    {
-   if (strpos($line,'$watches')!==FALSE OR strpos($line,'$limits')!==FALSE OR strpos($line,'$credit')!==FALSE OR strpos($line,'$forcestack')!==FALSE OR strpos($line,'$notifyuser')!==FALSE)
+   if (strpos($line,'$watches')!==FALSE OR strpos($line,'$limits')!==FALSE OR strpos($line,'$credit')!==FALSE OR strpos($line,'$forcestack')!==FALSE OR strpos($line,'$notifyuser')!==FALSE OR strpos($line,'$email')!==FALSE)
       {
       unset($variable); unset($arraykey); unset($variablevalue); unset($comment);
       $tokens=token_get_all('<?php '.$line.' ?>');
@@ -364,7 +363,7 @@ foreach ($configfile as $line)
             $variable=$tokenparam;
             $previoustoken="var";
             }
-         elseif ($tokenname=="T_CONSTANT_ENCAPSED_STRING" AND $previoustoken=="var" AND (strpos($line,'$watches["')!==FALSE OR strpos($line,'$limits["')!==FALSE OR strpos($line,'$credit["')!==FALSE))
+         elseif ($tokenname=="T_CONSTANT_ENCAPSED_STRING" AND $previoustoken=="var" AND (strpos($line,'$watches["')!==FALSE OR strpos($line,'$limits["')!==FALSE OR strpos($line,'$credit["')!==FALSE OR strpos($line,'$email["')!==FALSE))
             {
             $arraykey=$tokenparam;
             unset($previoustoken);

@@ -43,16 +43,16 @@ $dbpassword="YourPassword";
 $dbname="WB";
 
 /*** Email ***/
-$email["smtp"]="mail.example.com";
-$email["user"]="user";
-$email["pass"]="pass";
+$email["smtp"]="mail.example.com"; // SMTP mail server for notifications
+$email["user"]="user"; // mail server username
+$email["pass"]="pass"; // mail server password
 
 /*** SMS related ***/
 $connectors["sms"]=""; // API connector used for SMS operations (connectors/ directory); empty to disable SMS system, "loopback" to simulate dummy gateway API for testing
 $countrycode=""; // international dialing code (country code prefix), no plus sign
 
 /*** Translation / language ***/
-$locale="en_US.utf8";
+$locale="en_US.utf8"; // system language (translation must exist, defaults to English)
 setlocale(LC_ALL, $locale);
 putenv("LANG=".$locale);
 bindtextdomain("messages", dirname(__FILE__).'/languages');
