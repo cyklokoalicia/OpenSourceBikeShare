@@ -651,7 +651,7 @@ function note($number,$bikeNum,$message)
       $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
       $noteid=$db->conn->insert_id;
       sendSMS($number,_('Note for bike')." ".$bikeNum." "._('saved').".");
-      notifyAdmins(_('Note #').$noteid.": b.$bikeNum "._('by')." $reportedBy ($number):".$userNote." ".$bikeStatus);
+      notifyAdmins(_('Note #').$noteid.": b.".$bikeNum." (".$bikeStatus.") "._('by')." ".$reportedBy." (".$number."):".$userNote);
       }
 
 }

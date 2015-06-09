@@ -249,7 +249,8 @@ function addnote($userId,$bikeNum,$message)
       $bikeStatus=_('used by')." ".$userName." +".$phone;
       }
    $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
-   notifyAdmins(_('Note')." b.".$bikeNum." (".$bikeStatus.") "._('by')." ".$userName."/".$phone.":".$userNote);
+   $noteid=$db->conn->insert_id;
+   notifyAdmins(_('Note #').$noteid.": b.".$bikeNum." (".$bikeStatus.") "._('by')." ".$userName."/".$phone.":".$userNote);
 
 }
 
