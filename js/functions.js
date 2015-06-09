@@ -1,14 +1,15 @@
 var markers=[]; var markerdata=[]; var iconsize=60; var sidebar; var firstrun=1;
-var watchID, circle, polyline;
+var watchID, circle, polyline; var temp="";
 
 $(document).ready(function(){
+   $('#overlay').hide();
    $('#standactions').hide();
    $('.bicycleactions').hide();
    $('#notetext').hide();
    $('#couponblock').hide();
    $('#passwordresetblock').hide();
-   $(document).ajaxStart(function() { $('#console').html('<img src="img/loading.gif" alt="loading" id="loading" />'); });
-   $(document).ajaxComplete(function() { $('#loading').remove(); });
+   $(document).ajaxStart(function() { $('#overlay').show(); });
+   $(document).ajaxComplete(function() { $('#overlay').hide(); });
    $("#password").focus(function() { $('#passwordresetblock').show(); });
    $("#resetpassword").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'password-reset'); resetpassword(); });
    $("#rent").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
