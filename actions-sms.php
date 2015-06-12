@@ -639,13 +639,17 @@ function note($number,$bikeNum,$message)
 
    if ($userNote=="")
       {
-      checkUserPrivileges($number);
-      // @TODO remove SMS from deleting completely?
+      sendSMS($number,_('Empty note for bike')." ".$bikeNum." "._('not saved, for deleting notes use DELNOTE (for admins)').".");
+      /*checkUserPrivileges($number);
+      sendSMS($number,_('Empty note for bike')." ".$bikeNum." "._('not saved, for deleting notes use DELNOTE.').".");
+      
+	// @TODO remove SMS from deleting completely?
       $result=$db->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum");
       //only admins can delete and those will receive the confirmation in the next step.
       //sendSMS($number,"Note for bike $bikeNum deleted.");
       notifyAdmins(_('Note for bike')." ".$bikeNum." "._('deleted by')." ".$reportedBy.".");
-      }
+      */
+	}
    else
       {
       $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
