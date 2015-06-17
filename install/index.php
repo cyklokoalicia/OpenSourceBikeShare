@@ -68,7 +68,7 @@ if ($step==5)
    }
 
 $files=scandir("../connectors/");
-$files=array_diff($files,array('..','.','loopback'));
+$files=array_diff($files,array('..','.','loopback','smsGateway.me.class.php'));
 foreach ($files as $key=>$value)
    {
    if (strpos($value,"disabled.php")!==FALSE) unset($files[$key]);

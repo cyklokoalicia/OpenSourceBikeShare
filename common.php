@@ -36,6 +36,7 @@ function sendEmail($emailto,$subject,$message)
    global $db, $systemname, $systememail, $email;
    $mail=new PHPMailer;
    $mail->isSMTP(); // Set mailer to use SMTP
+   //$mail->SMTPDebug  = 2;
    $mail->Host=$email["smtp"]; // Specify main and backup SMTP servers
    $mail->Username=$email["user"]; // SMTP username
    $mail->Password=$email["pass"]; // SMTP password
