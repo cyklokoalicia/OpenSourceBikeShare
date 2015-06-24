@@ -604,7 +604,7 @@ function smscode($number)
    else $text=_('Enter this code to change password:')." ".$smscode;
    $text=$db->conn->real_escape_string($text);
 
-   $result=$db->query("INSERT INTO sent SET number='$number',text='$text'");
+   if (!issmssystemenabled()) $result=$db->query("INSERT INTO sent SET number='$number',text='$text'");
    $result=$db->query("INSERT INTO history SET userId=0,bikeNum=0,action='REGISTER',parameter='$number;$smscodenormalized;$checkcode'");
 
    if (DEBUG===TRUE)

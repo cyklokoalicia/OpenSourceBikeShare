@@ -504,12 +504,12 @@ function changecreditendrental($bike,$userid)
       $timediff=$endtime-$starttime;
       $creditchange=0;
       $changelog="";
-      // do not subtract, if freetime=0
-      if ($watches["freetime"]>0 AND $timediff>$watches["freetime"]*60)
+      if ($timediff>$watches["freetime"]*60)
          {
          $creditchange=$creditchange+$credit["rent"];
          $changelog.="overfree-".$credit["rent"].";";
          }
+      if ($watches["freetime"]==0) $watches["freetime"]=1; // for further calculations
       if ($credit["pricecycle"] AND $timediff>$watches["freetime"]*60*2) // after first paid period, i.e. freetime*2; if pricecycle enabled
          {
          $temptimediff=$timediff-($watches["freetime"]*60*2);
