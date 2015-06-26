@@ -1,10 +1,14 @@
 Open Source Bike Share Installation Manual
 ============
+
+Easy web install
+----------
 Point your browser to: yourweb/install/
 and follow the user-friendly web install process.
 
 
-Manual installation - possibly outdated:
+Manual installation - not kept up to date (!):
+----------
 
 Database setup
 ----------
