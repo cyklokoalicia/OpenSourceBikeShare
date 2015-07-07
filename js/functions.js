@@ -8,8 +8,9 @@ $(document).ready(function(){
    $('#notetext').hide();
    $('#couponblock').hide();
    $('#passwordresetblock').hide();
+   $("#rent").hide();
    $(document).ajaxStart(function() { $('#overlay').show(); });
-   $(document).ajaxComplete(function() { $('#overlay').hide(); });
+   $(document).ajaxStop(function() { $('#overlay').hide(); });
    $("#password").focus(function() { $('#passwordresetblock').show(); });
    $("#resetpassword").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'password-reset'); resetpassword(); });
    $("#rent").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-rent'); rent(); });
@@ -27,13 +28,11 @@ $(document).ready(function(){
    if ("geolocation" in navigator) {
    navigator.geolocation.getCurrentPosition(showlocation,function(){ return; },{enableHighAccuracy:true,maximumAge:30000});
    watchID=navigator.geolocation.watchPosition(changelocation,function(){ return; },{enableHighAccuracy:true,maximumAge:15000});
-   $('.nav-tabs a').each(function () { console.log($(this)); $(this).click(function () { console.log($(this).attr('href')); $($(this).attr('href')).show(); } ); });
    }
 });
 
 function mapinit()
 {
-   // var viewport = $.viewportDetect(); // ("xs", "sm", "md", or "lg");
 
    $("body").data("mapcenterlat", maplat);
    $("body").data("mapcenterlong", maplon);
@@ -44,7 +43,7 @@ function mapinit()
    // create the tile layer with correct attribution
    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
    var osmAttrib='Map data (c) <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
-   var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 19, attribution: osmAttrib});
+   var osm = new L.TileLayer(osmUrl, {minZoom: 2, maxZoom: 19, attribution: osmAttrib});
 
    var today = new Date();
    if (today.getMonth()+'.'+today.getDate()=='3.1') // april fools
@@ -59,6 +58,25 @@ function mapinit()
         });
    map.addControl(sidebar);
    getmarkers();
+   $('link[rel="points"]').each(function() {
+      geojsonurl=$(this).attr("href");
+      $.getJSON(geojsonurl, function(data) {
+         var geojson = L.geoJson(data, {
+            onEachFeature: function (feature, layer) { layer.bindPopup(feature.properties.name); },
+            pointToLayer: function (feature, latlng) {
+               return L.circleMarker(latlng, {
+                  radius: 8,
+                  fillColor: "#ff7800",
+                  color: "#000",
+                  weight: 1,
+                  opacity: 1,
+                  fillOpacity: 0.8
+               });
+            }
+         });
+      geojson.addTo(map);
+      });
+   });
    getuserstatus();
    resetconsole();
    rentedbikes();
@@ -463,6 +481,7 @@ function attachbicycleinfo(element,attachto)
    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">'+_reported_problem+' '+$(element).attr('data-note')+'</div>');
    // or hide warning, if bike without issue is clicked
    else if ($(element).hasClass('btn-warning')==false && $('#console div').hasClass('alert-warning')) resetconsole();
+   $('#rent').show();
 }
 
 function checkonebikeattach()
