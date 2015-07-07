@@ -20,7 +20,7 @@ $db->connect();
 <script type="text/javascript" src="js/translations.php"></script>
 <script type="text/javascript" src="js/functions.js"></script>
 <?php
-if (is_array($geojson))
+if (isset($geojson))
    {
    foreach($geojson as $url)
       {
