@@ -5,6 +5,7 @@ define('ERROR',0);
 
 $systemname="OpenSourceBikeShare";
 $systemURL="https://github.com/mmmaly/OpenSourceBikeShare"; // needs trailing slash!
+$systemlang="en_EN"; // language code such as en_EN, de_DE etc. - translation must be in languages/ directory, defaults to English if non-existent
 $systemlat="48.148154"; // default map center point - latitude
 $systemlong="17.117232"; // default map center point - longitude
 $systemzoom="15"; // default map zoom
@@ -51,11 +52,7 @@ $email["pass"]="pass"; // mail server password
 $connectors["sms"]=""; // API connector used for SMS operations (connectors/ directory); empty to disable SMS system, "loopback" to simulate dummy gateway API for testing
 $countrycode=""; // international dialing code (country code prefix), no plus sign
 
-/*** Translation / language ***/
-$locale="en_US.utf8"; // system language (translation must exist, defaults to English)
-setlocale(LC_ALL, $locale);
-putenv("LANG=".$locale);
-bindtextdomain("messages", dirname(__FILE__).'/languages');
-textdomain("messages");
+/*** geoJSON files - uncomment line below to use, any number of geoJSON files can be included ***/
+// $geojson[]="http://example.com/poi.json"; // example geojson file with points of interests to be displayed on the map
 
 ?>
