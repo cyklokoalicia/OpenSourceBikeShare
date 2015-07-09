@@ -495,7 +495,7 @@ function changecreditendrental($bike,$userid)
 
    $usercredit=getusercredit($userid);
 
-   $result=$db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND action='RENT' ORDER BY time DESC LIMIT 1");
+   $result=$db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RENT' OR action='FORCERENT') ORDER BY time DESC LIMIT 1");
    if ($result->num_rows==1)
       {
       $row=$result->fetch_assoc();
