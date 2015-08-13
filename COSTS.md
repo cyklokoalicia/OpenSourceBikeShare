@@ -10,6 +10,7 @@ SMS system (API gateway)
 ------------
 * 140€ / year + 0.03€ / SMS
 * alternative: Android phone with open source gateway + 0.06€ / SMS (depending on your monthly rates)
+* alternative 2: no SMS system (only via web interface) - 0€
 
 Installation
 ------------
