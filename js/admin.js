@@ -8,6 +8,7 @@ $(document).ready(function(){
    $("#stands").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-stands'); stands(); });
    $("#userlist").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-userlist'); userlist(); });
    $("#userstats").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-userstats'); userstats(); });
+   $("#usagestats").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-usagestats'); usagestats(); });
    $("#listcoupons").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-couponlist'); couponlist(); });
    $("#generatecoupons1").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons'); generatecoupons(1); });
    $("#generatecoupons2").click(function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons'); generatecoupons(5); });
@@ -122,6 +123,23 @@ function userstats()
         "ordering": false,
         "info":     false
       });
+   });
+}
+
+function usagestats()
+{
+   var code="";
+   $.ajax({
+   url: "command.php?action=usagestats"
+   }).done(function(jsonresponse) {
+      jsonobject=$.parseJSON(jsonresponse);
+      if (jsonobject.length>0) code='<table class="table table-striped" id="usagestatstable"><thead><tr><th>Day</th><th>Action</th><th>Count</th></tr></thead>';
+      for (var i=0, len=jsonobject.length; i < len; i++)
+         {
+         code=code+'<tr><td>'+jsonobject[i]["day"]+'</td><td>'+jsonobject[i]["action"]+'</td><td>'+jsonobject[i]["count"]+'</td></tr>';
+         }
+      if (jsonobject.length>0) code=code+'</table>';
+      $('#reportsconsole').html(code);
    });
 }
 

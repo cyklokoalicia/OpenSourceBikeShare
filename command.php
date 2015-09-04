@@ -138,6 +138,12 @@ switch($action)
       checkprivileges($userid);
       getuserstats();
       break;
+   case "usagestats":
+      logrequest($userid,$action);
+      checksession();
+      checkprivileges($userid);
+      getusagestats();
+      break;
    case "edituser":
       logrequest($userid,$action);
       checksession();
