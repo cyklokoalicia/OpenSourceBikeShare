@@ -6,7 +6,7 @@ Hosting and domain registration
 * domain registration - 5€ / year
 * hosting - 15€ / year
 
-SMS system (API gateway)
+SMS system (API gateway) - _optional_
 ------------
 * 140€ / year + 0.03€ / SMS
 * alternative: Android phone with open source gateway + 0.06€ / SMS (depending on your monthly rates)
