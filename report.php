@@ -43,7 +43,53 @@ function report()
 
 }
 
+function reportStands()
+{
+	global $dbServer, $dbUser, $dbPassword, $dbName;
+	
+	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+
+	if ($result = $mysqli->query("
+SELECT stands.standName,note FROM stands join (select * from notes
+	        where deleted is null ) as notes on notes.standId=stands.standId
+	                order by standName,note LIMIT 100	")) 
+        {
+		$data = $result->fetch_all(MYSQLI_ASSOC);
+	} 
+	else 
+	{
+	    echo "problem s sql dotazom";
+	    error("users bikes not fetched");
+	}
+	
+	echo '<table style="width:50%">';
+#	echo '<caption>last usage</caption>';
+		
+	echo "<tr>";
+	$cols = array("standName","note");
+	foreach($cols as $col)
+	{
+		echo "<th>$col</th>";		
+	} 
+	echo "</tr>";
+	 
+	for($i=0; $i<count($data);$i++)
+	{	
+		echo "<tr>";
+		foreach($cols as $col)      
+        	{
+                	echo "<td>";
+			echo $data[$i][$col];
+			echo "</td>";           
+        	}
+	echo "</tr>";
+	}
+ 	echo "</table>";
+}
+
 report();
+
+reportStands();
 
 
 
