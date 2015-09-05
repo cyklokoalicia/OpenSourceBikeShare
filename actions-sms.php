@@ -526,6 +526,24 @@ function delnote($number,$bikeNum,$message)
 
    global $db;
    $userId = getUser($number);
+   
+    $bikeNum=trim($bikeNum);
+	if(preg_match("/^[0-9]*$/",$bikeNum))
+   	{
+		$bikeNum = intval($bikeNum);
+   	}
+	else if (preg_match("/^[A-Z]+[0-9]*$/i",$bikeNum))
+	{
+		$standName = $bikeNum;
+		delstandnote($number,$standName,$message);
+		return;
+	}
+	else
+	{
+      	sendSMS($number,_('Error in bike number / stand name specification:'.$db->conn->real_escape_string($bikeNum)));
+		return;
+	}
+	   
    $bikeNum = intval($bikeNum);
 
    checkUserPrivileges($number);
@@ -554,15 +572,13 @@ function delnote($number,$bikeNum,$message)
    $row =$result->fetch_assoc();
    $reportedBy=$row["userName"];
 
-   if (trim(strtoupper(preg_replace('/[0-9]+/','',$message)))=="DELNOTE") // blank, delete all notes of that bike
-   {
- 	     $userNote="%";
-   }
-   else
-   {
       $matches=explode(" ",$message,3);
       $userNote=$db->conn->real_escape_string(trim($matches[2]));
-   }
+
+	if($userNote=='')
+	{
+		$userNote='%';
+	}
 
       $result=$db->query("UPDATE notes SET deleted=NOW() where bikeNum=$bikeNum and deleted is null and note like '%$userNote%'");
       $count = $db->conn->affected_rows;
@@ -594,6 +610,110 @@ function delnote($number,$bikeNum,$message)
 }
 
 
+function delstandnote($number,$standName,$message)
+{
+
+   global $db;
+   $userId = getUser($number);
+
+	checkUserPrivileges($number);
+	$result=$db->query("SELECT standId FROM stands where standName='$standName'");
+	if ($result->num_rows!=1)
+    {
+      sendSMS($number,_("Stand")." ".$standName._("does not exist").".");
+      return;
+    }
+
+   $row =$result->fetch_assoc();
+   $standId=$row["standId"];
+    
+   $result=$db->query("SELECT userName FROM users WHERE number=$number");
+   $row =$result->fetch_assoc();
+   $reportedBy=$row["userName"];
+
+
+      $matches=explode(" ",$message,3);
+      $userNote=$db->conn->real_escape_string(trim($matches[2]));
+
+	if($userNote=='')
+	{
+		$userNote='%';
+	}
+
+      $result=$db->query("UPDATE notes SET deleted=NOW() where standId=$standId and deleted is null and note like '%$userNote%'");
+      $count = $db->conn->affected_rows;
+
+	if($count == 0)
+	{
+      		if($userNote=="%")
+		{
+		    sendSMS($number,_('No notes found for stand')." ".$standName." "._('to delete').".");
+		}
+		else
+		{
+		    sendSMS($number,_('No notes matching pattern')." '".$userNote."' "._('found on stand')." ".$standName." "._('to delete').".");
+		}
+	}
+	else
+	{
+      		//only admins can delete and those will receive the confirmation in the next step.
+      		//sendSMS($number,"Note for bike $bikeNum deleted.");
+      		if($userNote=="%")
+		{
+			notifyAdmins(_('All')." ".sprintf(ngettext('%d note','%d notes',$count),$count)." "._('on stand')." ".$standName." "._('deleted by')." ".$reportedBy.".");
+		}
+		else
+		{
+			notifyAdmins(sprintf(ngettext('%d note','%d notes',$count),$count)." "._('on stand')." ".$standName." "._('matching')." '".$userNote."' "._('deleted by')." ".$reportedBy.".");
+		}
+      	}
+}
+
+function standNote($number,$standName,$message)
+{
+
+   global $db;
+   $userId = getUser($number);
+
+
+	$result=$db->query("SELECT standId FROM stands where standName='$standName'");
+   if ($result->num_rows!=1)
+      {
+      sendSMS($number,_("Stand")." ".$standName._("does not exist").".");
+      return;
+      }
+
+   $row =$result->fetch_assoc();
+   $standId=$row["standId"];
+
+   $result=$db->query("SELECT userName from users where number=$number");
+   $row =$result->fetch_assoc();
+   $reportedBy=$row["userName"];
+
+
+    $matches=explode(" ",$message,3);
+    $userNote=$db->conn->real_escape_string(trim($matches[2]));
+
+   if ($userNote=="") //deletemmm
+      {
+      		sendSMS($number,_('Empty note for stand')." ".$standName." "._('not saved, for deleting notes use DELNOTE (for admins)').".");
+
+      //checkUserPrivileges($number);
+      // @TODO remove SMS from deleting completely?
+      //$result=$db->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum");
+      //only admins can delete and those will receive the confirmation in the next step.
+      //sendSMS($number,"Note for bike $bikeNum deleted.");
+      //notifyAdmins("Note for bike $bikeNum deleted by $reportedBy.");
+      }
+   else
+      {
+      $db->query("INSERT INTO notes SET standId='$standId',userId='$userId',note='$userNote'");
+      $noteid=$db->conn->insert_id;
+      sendSMS($number,_('Note for stand')." ".$standName." "._('saved').".");
+      notifyAdmins(_('Note #').$noteid.": "._("on stand")." ".$standName." "._('by')." ".$reportedBy." (".$number."):".$userNote);
+      }
+
+}
 
 
 function note($number,$bikeNum,$message)
@@ -601,8 +721,26 @@ function note($number,$bikeNum,$message)
 
    global $db;
    $userId = getUser($number);
+   
+    $bikeNum=trim($bikeNum);
+	if(preg_match("/^[0-9]*$/",$bikeNum))
+   	{
+		$bikeNum = intval($bikeNum);
+   	}
+	else if (preg_match("/^[A-Z]+[0-9]*$/i",$bikeNum))
+	{
+		$standName = $bikeNum;
+		standnote($number,$standName,$message);
+		return;
+	}
+	else
+	{
+      	sendSMS($number,_('Error in bike number / stand name specification:'.$db->conn->real_escape_string($bikeNum)));
+		return;
+	}
+	   
    $bikeNum = intval($bikeNum);
-
+   
    $result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
    if ($result->num_rows!=1)
       {
