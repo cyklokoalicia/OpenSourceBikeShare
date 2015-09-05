@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Open Source Bike Share\n"
-"POT-Creation-Date: 2015-09-05 10:18+0200\n"
-"PO-Revision-Date: 2015-09-05 10:18+0200\n"
+"POT-Creation-Date: 2015-09-05 11:46+0200\n"
+"PO-Revision-Date: 2015-09-05 11:48+0200\n"
 "Last-Translator: Nico Heßler <ex@devtal.de>\n"
 "Language-Team: Open Source Bike Share <consult@whitebikes.info>\n"
 "Language: de\n"
@@ -27,6 +27,8 @@ msgstr "Bitte lade Guthaben auf."
 #: actions-qrcode.php:63 actions-sms.php:139 actions-web.php:60
 msgid "You can not rent any bikes. Contact the admins to lift the ban."
 msgstr ""
+"Du kannst keine Fahrräder leihen. Melde dich bei einem Admin, um die Sperre "
+"aufzuheben."
 
 #: actions-qrcode.php:67 actions-qrcode.php:71 actions-sms.php:143
 #: actions-sms.php:147 actions-web.php:64 actions-web.php:68
@@ -74,7 +76,7 @@ msgstr ""
 
 #: actions-qrcode.php:91 actions-sms.php:169 actions-web.php:88
 msgid "is not rentable now, you have to rent bike"
-msgstr ""
+msgstr "ist gerade nicht verleihbar. Du musst folgendes Fahrrad nehmen"
 
 #: actions-qrcode.php:91 actions-sms.php:169 actions-web.php:88
 msgid "from this stand"
@@ -107,7 +109,7 @@ msgstr "Ändere den Code jetzt auf"
 #: actions-qrcode.php:120 actions-web.php:121
 msgid "(open, rotate metal part, set new code, rotate metal part back)"
 msgstr ""
-"(öffnen, Metallteil drehen, neuen Code setzten, Metallteil zurückdrehen))"
+"(öffnen, Metallteil drehen, neuen Code setzten, Metallteil zurückdrehen)"
 
 #: actions-qrcode.php:123
 msgid "Reported issue:"
@@ -177,7 +179,7 @@ msgstr "Standortname"
 
 #: actions-sms.php:54 actions-sms.php:415
 msgid "has not been recognized. Stands are marked by CAPITALLETTERS."
-msgstr ""
+msgstr "ist nicht vorhanden. Fahrradständer sind Groß geschrieben."
 
 #: actions-sms.php:60 actions-sms.php:422 actions-sms.php:438 common.php:291
 #: install/index.php:283 install/index.php:296
@@ -190,7 +192,7 @@ msgstr "existiert nicht."
 
 #: actions-sms.php:89
 msgid "Error. More arguments needed, use command"
-msgstr ""
+msgstr "Fehler. Mehr Parameter werden benötigt, nutze den Befehl"
 
 #: actions-sms.php:102
 msgid "Your remaining credit:"
@@ -223,6 +225,7 @@ msgstr "Standort Name"
 #: actions-sms.php:210
 msgid "(open,rotate metal part,set new code,rotate metal part back)"
 msgstr ""
+"(öffnen, Metallteil drehen, neuen Code setzten, Metallteil zurückdrehen)"
 
 #: actions-sms.php:213
 msgid "bike note"
@@ -234,7 +237,7 @@ msgstr ""
 
 #: actions-sms.php:226 actions-sms.php:353
 msgid "Your rented bike"
-msgstr ""
+msgstr "Dein ausgeliehendes Fahrrad"
 
 #: actions-sms.php:226
 msgid "has been rented by admin"
@@ -242,7 +245,7 @@ msgstr "ist vom Admin ausgeliehen"
 
 #: actions-sms.php:243
 msgid "does not exist. Stands are marked by CAPITALLETTERS."
-msgstr ""
+msgstr "ist nicht vorhanden. Fahrradständer sind Groß geschrieben."
 
 #: actions-sms.php:273
 msgid "You does not have bike"
@@ -257,10 +260,12 @@ msgid ""
 "is not rented. Saint Thomas, the patronus of all unrented bikes, prohibited "
 "returning unrented bikes."
 msgstr ""
+"ist nicht verliehen. Saint Thomas, der Pate von allen nicht verliehen "
+"Fahrrädern, verbietet das zurück bringen von nicht verliehenden Fahrräder."
 
 #: actions-sms.php:325 actions-web.php:221 actions-web.php:245
 msgid "at"
-msgstr ""
+msgstr "am"
 
 #: actions-sms.php:329 actions-web.php:249
 msgid "used by"
@@ -277,19 +282,19 @@ msgstr "von"
 
 #: actions-sms.php:334
 msgid "returned to stand"
-msgstr ""
+msgstr "zurückgegeben zum Fahrradständer"
 
 #: actions-sms.php:334
 msgid "Make sure you set code to"
-msgstr ""
+msgstr "Vergewissere dich, dass der Code folgender ist"
 
 #: actions-sms.php:341
 msgid "Rotate lockpad to 0000."
-msgstr ""
+msgstr "dreh das Schloss auf 0000"
 
 #: actions-sms.php:353
 msgid "has been returned by admin"
-msgstr ""
+msgstr "wurde zurückgegeben von einem Admin"
 
 #: actions-sms.php:359 js/translations.php:30
 msgid "Credit"
@@ -318,11 +323,11 @@ msgstr "ist leer"
 
 #: actions-sms.php:446
 msgid "(first)"
-msgstr ""
+msgstr "(erster)"
 
 #: actions-sms.php:451
 msgid "on stand"
-msgstr ""
+msgstr "beim Fahrradständer"
 
 #: actions-sms.php:466
 msgid "No free bikes."
@@ -330,11 +335,11 @@ msgstr "Keine Fahrräder verfügbar."
 
 #: actions-sms.php:468
 msgid "Free bikes counts"
-msgstr ""
+msgstr "Anzahl verfügbare Fahrräder"
 
 #: actions-sms.php:483
 msgid "Empty stands"
-msgstr ""
+msgstr "Leere Fahrradständer"
 
 #: actions-sms.php:512
 msgid "Problem with SMS"
@@ -342,7 +347,7 @@ msgstr "Problem mit der SMS"
 
 #: actions-sms.php:546 actions-sms.php:619
 msgid "is at"
-msgstr ""
+msgstr "ist"
 
 #: actions-sms.php:574
 msgid "No notes found for bike"
@@ -362,7 +367,7 @@ msgstr "gefunden für Fahrrad"
 
 #: actions-sms.php:587
 msgid "All"
-msgstr ""
+msgstr "Alle"
 
 #: actions-sms.php:587 actions-sms.php:591
 #, php-format
@@ -389,7 +394,7 @@ msgstr "ist ausgeliehen"
 
 #: actions-sms.php:642
 msgid "Empty note for bike"
-msgstr ""
+msgstr "Leere Bemerkung für Fahrrad"
 
 #: actions-sms.php:642
 msgid "not saved, for deleting notes use DELNOTE (for admins)"
@@ -409,11 +414,11 @@ msgstr "Bemerkung #"
 
 #: actions-sms.php:709 actions-web.php:434
 msgid "is not rented right now. Revert not successful!"
-msgstr ""
+msgstr "ist gerade nicht verliehen. Zurückgeben fehlgeschlagen!"
 
 #: actions-sms.php:737
 msgid "reverted to stand"
-msgstr ""
+msgstr "zurück zum Fahrradständer"
 
 #: actions-sms.php:737 actions-web.php:461
 msgid "with code"
@@ -421,7 +426,7 @@ msgstr "mit dem Code"
 
 #: actions-sms.php:738 actions-web.php:462
 msgid "has been returned. You can now rent a new bicycle."
-msgstr ""
+msgstr "ist zurückgegeben. Du kannst jetzt ein neues Fahrrad ausleihen."
 
 #: actions-sms.php:742
 msgid "No last code for bicycle"
@@ -433,11 +438,11 @@ msgstr "gefunden. Zurücksetzten nicht erfolgreich!"
 
 #: actions-sms.php:764
 msgid "Contact information conflict: This number already registered:"
-msgstr ""
+msgstr "Kontaktinformationen Fehler: Diese Nummer ist bereits registriert:"
 
 #: actions-sms.php:770
 msgid "Contact information is in incorrect format. Use:"
-msgstr ""
+msgstr "Kontakt Informationen sind im falschen Format. Nutze:"
 
 #: actions-sms.php:780 js/translations.php:27
 msgid "User"
@@ -446,11 +451,12 @@ msgstr "Benutzer"
 #: actions-sms.php:780
 msgid ""
 "added. They need to read email and agree to rules before using the system."
-msgstr ""
+msgstr "hinzugefügt. Sie müssen die Emal lesen und den Regeln zustimmen."
 
 #: actions-sms.php:792 actions-web.php:583
 msgid "Sorry, this command is only available for the privileged users."
 msgstr ""
+"Sorry, dieser Befehl steht nur Benutzer mit höheren Rechten zur Verfügung."
 
 #: actions-web.php:111
 msgid "You already rented bike"
@@ -461,8 +467,8 @@ msgid "Reported issue"
 msgstr "Ein Problem melden"
 
 #: actions-web.php:155
-msgid "Youh currently have no rented bikes."
-msgstr ""
+msgid "You currently have no rented bikes."
+msgstr "Du hast gerade kein Fahrrad."
 
 #: actions-web.php:179
 msgid "You have also reported this problem:"
@@ -521,11 +527,12 @@ msgstr "zurückgesetzt zu"
 
 #: actions-web.php:466
 msgid "No last stand or code for bicycle"
-msgstr ""
+msgstr "Kein letzter Fahrradständer oder Code für dieses Fahrrad"
 
 #: actions-web.php:486
 msgid "Password do not match. Please correct and try again."
 msgstr ""
+"Passwort stimmt nicht überein. Bitte korrigieren und noch mal versuchen."
 
 #: actions-web.php:498
 msgid ""
@@ -1026,31 +1033,31 @@ msgstr "System"
 
 #: install/index.php:172
 msgid "System name:"
-msgstr ""
+msgstr "System Name:"
 
 #: install/index.php:174
 msgid "System latitude center point:"
-msgstr ""
+msgstr "System latitude Mittelpunkt:"
 
 #: install/index.php:175
 msgid "System longitude center point:"
-msgstr ""
+msgstr "System longitude Mittelpunkt"
 
 #: install/index.php:179
 msgid "System rules URL:"
-msgstr ""
+msgstr "Systemregeln URL:"
 
 #: install/index.php:180
 msgid "SMS system connector:"
-msgstr ""
+msgstr "SMS System Connector"
 
 #: install/index.php:182
 msgid "Disable SMS system"
-msgstr ""
+msgstr "SMS System deaktivieren"
 
 #: install/index.php:185
 msgid "International dialing code (no plus, no zeroes):"
-msgstr ""
+msgstr "Internationale Vorwahl (kein Plus, keine Nullen):"
 
 #: install/index.php:187
 msgid "Database"
@@ -1087,7 +1094,7 @@ msgstr "Admin Benutzer anlegen"
 
 #: install/index.php:231
 msgid "Config file values set and database created."
-msgstr ""
+msgstr "Konfiguration geschrieben und Datenbank angelegt."
 
 #: install/index.php:254 install/index.php:259
 msgid "Create bicycles and stands"
@@ -1115,23 +1122,23 @@ msgstr "Wie viele Fahrräder anlegen?"
 
 #: install/index.php:258
 msgid "Stands to create (comma separated):"
-msgstr ""
+msgstr "anzulegende Fahrradständer (Komma separiert):"
 
 #: install/index.php:279 install/index.php:323
 msgid "Set up stands"
-msgstr ""
+msgstr "Fahrradständer einrichten"
 
 #: install/index.php:281
 msgid "and the following stands created"
-msgstr ""
+msgstr "und folgende Fahrradständer angelegt"
 
 #: install/index.php:282
 msgid "Download QR codes"
-msgstr ""
+msgstr "Download QR Codes"
 
 #: install/index.php:282
 msgid "for the bikes and the stands for printing or laser engraving"
-msgstr ""
+msgstr "für Fahrräder und -ständer zum ausdrucken oder lasern."
 
 #: install/index.php:283
 msgid "Place"
@@ -1139,7 +1146,7 @@ msgstr "Ort"
 
 #: install/index.php:283
 msgid "is used instead of"
-msgstr ""
+msgstr "ist benutzt anstatt"
 
 #: install/index.php:283
 msgid "for SMS"
@@ -1169,7 +1176,7 @@ msgstr "Standort Status:"
 
 #: install/index.php:307
 msgid "Active"
-msgstr ""
+msgstr "Aktiv"
 
 #: install/index.php:308
 msgid "Not used / hidden"
@@ -1183,35 +1190,35 @@ msgstr "Fahrradständer Standort:"
 #, php-format
 msgid "%d stand"
 msgid_plural "%d stands"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d Fahrradständer"
+msgstr[1] "%d Fahrradständer"
 
 #: install/index.php:344
 msgid "set up and"
-msgstr ""
+msgstr "aufbauen und"
 
 #: install/index.php:344
 #, php-format
 msgid "%d photo"
 msgid_plural "%d photos"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d Foto"
+msgstr[1] "%d Fotos"
 
 #: install/index.php:344
 msgid "uploaded"
-msgstr ""
+msgstr "hochgeladen"
 
 #: install/index.php:392
 msgid "Set system options"
-msgstr ""
+msgstr "System Option setzten"
 
 #: install/index.php:392
 msgid "and finish"
-msgstr ""
+msgstr "und beenden"
 
 #: install/index.php:426
 msgid "System options set."
-msgstr ""
+msgstr "System Option gesetzt."
 
 #: install/index.php:427
 msgid "Rename"
@@ -1219,11 +1226,11 @@ msgstr "Umbenennen"
 
 #: install/index.php:427
 msgid "to"
-msgstr ""
+msgstr "zu"
 
 #: install/index.php:429
 msgid "Launch"
-msgstr ""
+msgstr "gründen"
 
 #: install/index.php:437 register.php:88
 msgid "Privacy policy"
@@ -1257,57 +1264,59 @@ msgstr "Fußweg"
 
 #: js/translations.php:11
 msgid "Display photo of the stand."
-msgstr ""
+msgstr "Zeige ein Foto von diesem Fahrradständer"
 
 #: js/translations.php:12
 msgid "photo"
-msgstr ""
+msgstr "Foto"
 
 #: js/translations.php:13
 msgid ""
 "You have this bicycle currently rented. The current lock code is displayed "
 "below the bike number."
 msgstr ""
+"Du hast gerade schon dieses Fahrrad ausgeliehen. Der Aktuelle Code wird dir "
+"unter der Fahrradnummer angezeigt."
 
 #: js/translations.php:14
 msgid "Reported problem on this bicycle:"
-msgstr ""
+msgstr "Gemeldete Probleme an diesem Fahrrad:"
 
 #: js/translations.php:16
 msgid "SMS code is in AB 123456 format."
-msgstr ""
+msgstr "SMS Code hat das Format AB 123456."
 
 #: js/translations.php:17
 msgid "Please, enter SMS code received to your phone."
-msgstr ""
+msgstr "Bitte gib den SMS Code ein."
 
 #: js/translations.php:18
 msgid "Please, enter your firstname and lastname."
-msgstr ""
+msgstr "Bitte gib deinen Vor- und Nachnamen ein."
 
 #: js/translations.php:19
 msgid "Email address is incorrect."
-msgstr ""
+msgstr "Email Adresse ist falsch."
 
 #: js/translations.php:20
 msgid "Please, enter your email."
-msgstr ""
+msgstr "Bitte Email eingeben."
 
 #: js/translations.php:21
 msgid "Passwords do not match."
-msgstr ""
+msgstr "Passwort stimmt nicht überein."
 
 #: js/translations.php:22
 msgid "Please, enter your password."
-msgstr ""
+msgstr "Bitte Passwort eingeben."
 
 #: js/translations.php:23
 msgid "Existing user password change"
-msgstr ""
+msgstr "Benutzer Passwort ändern"
 
 #: js/translations.php:24
 msgid "Step 2 - Change password"
-msgstr ""
+msgstr "Schritt - Passwort ändern"
 
 #: js/translations.php:25
 msgid "Set password"
@@ -1315,7 +1324,7 @@ msgstr "Passwort setzten"
 
 #: js/translations.php:28
 msgid "Privileges"
-msgstr ""
+msgstr "Rechte"
 
 #: js/translations.php:29
 msgid "Limit"

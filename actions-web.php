@@ -152,7 +152,7 @@ function returnBike($userId,$bike,$stand,$note="",$force=FALSE)
 
       if ($bikenumber==0)
          {
-         response(_('Youh currently have no rented bikes.'),ERROR);
+         response(_('You currently have no rented bikes.'),ERROR);
          }
       }
 
