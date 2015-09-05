@@ -76,7 +76,7 @@ else
 <div class="row">
    <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
    <ul class="list-inline">
-      <li><a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
+      <li><a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> <?php echo _('Help'); ?></a></li>
 <?php
 if (isloggedin() AND getprivileges($_COOKIE["loguserid"])>0) echo '<li><a href="admin.php"><span class="glyphicon glyphicon-cog"></span> ',_('Admin'),'</a></li>';
 if (isloggedin())
@@ -148,7 +148,7 @@ elseif (isset($_GET["error"]) AND $_GET["error"]==2) echo '<div class="alert ale
 <div class="row">
    <div class="btn-group bicycleactions">
    <div class="col-lg-12">
-   <button type="button" class="btn btn-primary" id="return" title="<?php echo _('Return this bicycle to the selected stand.'); ?>"><span class="glyphicon glyphicon-log-in"></span> <?php echo _('Return bicycle'); ?> <span class="bikenumber"></span></button> (and <a href="#" id="note" title="<?php echo _('Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).'); ?>"><?php echo _('report problem'); ?> <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
+   <button type="button" class="btn btn-primary" id="return" title="<?php echo _('Return this bicycle to the selected stand.'); ?>"><span class="glyphicon glyphicon-log-in"></span> <?php echo _('Return bicycle'); ?> <span class="bikenumber"></span></button> (<?php echo _('and'); ?> <a href="#" id="note" title="<?php echo _('Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).'); ?>"><?php echo _('report problem'); ?> <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
    </div></div>
 </div>
 
