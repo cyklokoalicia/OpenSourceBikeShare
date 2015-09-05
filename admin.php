@@ -165,7 +165,7 @@ if (iscreditenabled()):
   <div class="panel-body">
     <i class="glyphicon glyphicon-copyright-mark"></i> <? echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
   </div>
-  <div class="panel-footer"><strong>Privacy policy:</strong> We will use your details for <?php echo $systemname; ?>-related activities only.</div>
+  <div class="panel-footer"><strong><?php echo _('Privacy policy:'); ?></strong> <?php echo _('We will use your details for'); echo $systemname,'-'; echo _('related activities only'); ?>.</div>
    </div>
 
     </div><!-- /.container -->
