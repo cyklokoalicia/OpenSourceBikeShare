@@ -640,7 +640,7 @@ function untag($number,$standName,$message)
 		$userNote='%';
 	}
 
-    $result=$db->query("update notes join bikes on notes.bikeNum = bikes.bikeNum set deleted=now() where bikes.currentStand='$standId' and note like '%$userNote%'");
+    $result=$db->query("update notes join bikes on notes.bikeNum = bikes.bikeNum set deleted=now() where bikes.currentStand='$standId' and note like '%$userNote%' and deleted is null");
     $count = $db->conn->affected_rows;
 
 	if($count == 0)
