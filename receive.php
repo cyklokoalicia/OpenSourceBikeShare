@@ -59,12 +59,20 @@ else
          info($sms->Number(),$args[1]);
          break;
       case "NOTE":
-         validateReceivedSMS($sms->Number(),count($args),2,_('with bike number and problem description:')." NOTE 47 "._('Flat tire on front wheel'));
+         validateReceivedSMS($sms->Number(),count($args),2,_('with bike number/stand name and problem description:')." NOTE 47 "._('Flat tire on front wheel'));
          note($sms->Number(),$args[1],trim(urldecode($sms->Text())));
+         break;
+	  case "TAG":
+         validateReceivedSMS($sms->Number(),count($args),2,_('with stand name and problem description:')." TAG MAINSQUARE "._('vandalism'));
+         tag($sms->Number(),$args[1],trim(urldecode($sms->Text())));
          break;
       case "DELNOTE":
          validateReceivedSMS($sms->Number(),count($args),1,_('with bike number and optional pattern. All messages or notes matching pattern will be deleted:')." NOTE 47 wheel");
          delnote($sms->Number(),$args[1],trim(urldecode($sms->Text())));
+         break;
+      case "UNTAG":
+         validateReceivedSMS($sms->Number(),count($args),1,_('with stand name and optional pattern. All notes matching pattern will be deleted for all bikes on that stand:')." UNTAG SAFKO1 pohoda");
+         untag($sms->Number(),$args[1],trim(urldecode($sms->Text())));
          break;
       case "LIST":
          //checkUserPrivileges($sms->Number()); //allowed for all users as agreed
