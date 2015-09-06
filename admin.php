@@ -148,6 +148,7 @@ if (iscreditenabled()):
     <div role="tabpanel" class="tab-pane" id="reports">
       <div class="row">
          <div class="col-lg-12">
+         <button type="button" id="usagestats" class="btn btn-default" title="<?php echo _('Show usage stats by day.'); ?>"><span class="glyphicon glyphicon-road"></span> <?php echo _('Daily stats'); ?></button>
          <button type="button" id="userstats" class="btn btn-default" title="<?php echo _('Show user stats.'); ?>"><span class="glyphicon glyphicon-road"></span> <?php echo _('User stats'); ?></button>
          <!-- button type="button" id="trips" class="btn btn-default" title="<?php echo _('Show history of stand to stand bike trips as lines.'); ?>"><span class="glyphicon glyphicon-road"></span> <?php echo _('Trips overlay'); ?></button -->
          <div id="reportsconsole"></div>

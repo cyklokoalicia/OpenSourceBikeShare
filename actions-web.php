@@ -671,6 +671,17 @@ function getuserstats()
    echo json_encode($jsoncontent);// TODO change to response function
 }
 
+function getusagestats()
+{
+   global $db;
+   $result=$db->query("SELECT count(action) AS count,DATE(time) AS day,action FROM history WHERE userId IS NOT NULL AND action IN ('RENT','RETURN') GROUP BY day,action ORDER BY day DESC LIMIT 60");
+   while($row=$result->fetch_assoc())
+      {
+      $jsoncontent[]=array("day"=>$row["day"],"count"=>$row["count"],"action"=>$row["action"]);
+      }
+   echo json_encode($jsoncontent);// TODO change to response function
+}
+
 function edituser($userid)
 {
    global $db;
