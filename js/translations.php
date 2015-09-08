@@ -1,3 +1,7 @@
+<?php
+require("../config.php");
+require("../common.php");
+?>
 _select_stand = "<?php echo _('Select stand'); ?>";
 _bicycle = "<?php echo _('bicycle'); ?>";
 _bicycles = "<?php echo _('bicycles'); ?>";
