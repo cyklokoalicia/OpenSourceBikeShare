@@ -352,8 +352,11 @@ function last($userId,$bike=0)
          if($row["standName"]!=NULL)
             {
             $historyInfo.=$row["standName"];
-            $revertcode=explode("|",$row["parameter"]);
-            $revertcode=$revertcode[1];
+            if (strpos($row["parameter"],"|"))
+               {
+               $revertcode=explode("|",$row["parameter"]);
+               $revertcode=$revertcode[1];
+               }
             if ($row["action"]=="REVERT") $historyInfo.=' <span class="label label-warning">'._('Revert').' ('.str_pad($revertcode,4,"0",STR_PAD_LEFT).')</span>';
             }
          else
