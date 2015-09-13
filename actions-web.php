@@ -533,8 +533,9 @@ function login($number,$password)
    $password=$db->conn->real_escape_string(trim($password));
    $number=str_replace(" ","",$number); $number=str_replace("-","",$number); $number=str_replace("/","",$number);
    if ($number[0]=="0") $number=$countrycode.substr($number,1,strlen($number));
+   $altnumber=$countrycode.$number;
 
-   $result=$db->query("SELECT userId FROM users WHERE number='$number' AND password=SHA2('$password',512)");
+   $result=$db->query("SELECT userId FROM users WHERE (number='$number' OR number='$altnumber') AND password=SHA2('$password',512)");
    if ($result->num_rows==1)
       {
       $row=$result->fetch_assoc();
