@@ -1,13 +1,20 @@
 <?php
 require("config.php");
-require("db.class.php");
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
+require("external/rb.php");
+R::setup('mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword);
+R::freeze( TRUE );
+R::debug( TRUE,2 );
+R::addDatabase('localdb','mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword,TRUE);
+R::begin();
 require("actions-sms.php");
 
 log_sms($sms->UUID(),$sms->Number(),$sms->Time(),$sms->Text(),$sms->IPAddress());
 
 $args=preg_split("/\s+/",$sms->ProcessedText());//preg_split must be used instead of explode because of multiple spaces
+
+/**
+TODO validation of bike / stand for commands
+*/
 
 if(!validateNumber($sms->Number()))
    {
@@ -33,21 +40,37 @@ else
          break;
       case "RENT":
          validateReceivedSMS($sms->Number(),count($args),2,_('with bike number:')." RENT 47");
-         rent($sms->Number(),$args[1]);//intval
+         rentbike($sms->Number(),$args[1]);//intval
          break;
       case "RETURN":
          validateReceivedSMS($sms->Number(),count($args),3,_('with bike number and stand name:')." RETURN 47 RACKO");
-         returnBike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())));
+         /*
+         if (!preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i",$message ,$matches))
+            {
+            $userNote="";
+            }
+         else $userNote=$db->conn->real_escape_string(trim($matches[1]));
+         pass note only or empty string if no note sent
+         */
+         returnbike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())));
          break;
       case "FORCERENT":
          checkUserPrivileges($sms->Number());
          validateReceivedSMS($sms->Number(),count($args),2,_('with bike number:')." FORCERENT 47");
-         rent($sms->Number(),$args[1],TRUE);
+         rentbike($sms->Number(),$args[1],TRUE);
          break;
       case "FORCERETURN":
          checkUserPrivileges($sms->Number());
          validateReceivedSMS($sms->Number(),count($args),3,_('with bike number and stand name:')." FORCERETURN 47 RACKO");
-         returnBike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())),TRUE);
+         /*
+         if (!preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i",$message ,$matches))
+            {
+            $userNote="";
+            }
+         else $userNote=$db->conn->real_escape_string(trim($matches[1]));
+         pass note only or empty string if no note sent
+         */
+         returnbike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())),TRUE);
          break;
       case "WHERE":
       case "WHO":
@@ -78,7 +101,6 @@ else
          //checkUserPrivileges($sms->Number()); //allowed for all users as agreed
          checkUserPrivileges($sms->Number());
          validateReceivedSMS($sms->Number(),count($args),2,_('with stand name:')." LIST RACKO");
-         validateReceivedSMS($sms->Number(),count($args),2,"with stand name: LIST RACKO");
          listBikes($sms->Number(),$args[1]);
          break;
       case "ADD":
@@ -104,7 +126,8 @@ else
       }
    }
 
-$db->conn->commit();
+R::commit();
 $sms->Respond();
+R::close();
 
 ?>

@@ -1,6 +1,137 @@
 <?php
 require("common.php");
 
+function status($action,$result,$values=FALSE)
+{
+if ($action=='CREDIT')
+   {
+   if ($result==OK)
+      {
+      sendSMS($number,_('Your remaining credit:')." ".$values->usercredit.getcreditcurrency());
+      }
+   }
+elseif ($action=='LISTBIKES')
+   {
+   if ($result==OK)
+      {
+      $listbikes="";
+      foreach ($values->bicycles as $bicycle)
+         {
+         $listbikes.=$bicycle;
+         if ($values->stacktopbike==$bicycle) $listbikes.=" "._('(first)');
+         $listbikes.=",";
+         }
+      if ($values->standcount>1) $listbikes=substr($listbikes,0,strlen($listbikes)-1);
+      sendSMS($number,sprintf(ngettext('%d bike','%d bikes',$values->standcount),$values->standcount)." "._('on stand')." ".$values->standname.": ".$listbikes);
+      }
+   elseif ($result==100)
+      {
+      sendSMS($number,_('Stand')." ".$values->standname." "._('is empty').".");
+      }
+   }
+elseif ($action=='RENT')
+   {
+   if ($result==OK)
+      {
+      $message=_('Bike')." ".$values->bikenum.": "._('Open with code')." ".$values->currentcode.". "._('Change code immediately to')." ".$values->newcode." "._('(open,rotate metal part,set new code,rotate metal part back)').".";
+      if ($values->note)  $message.="("._('Reported issue:').":".$values->note.")";
+      sendSMS($number,$message);
+      if (isset($values->currentusernumber)) sendSMS($values->currentusernumber,_('System override').": "._('Your rented bike')." ".$bikeNum." "._('has been rented by admin').".");
+      }
+   elseif ($result==100)
+      {
+      sendSMS($number,_('You can not rent any bikes. Contact the admins to lift the ban.'));
+      }
+   elseif ($result==101)
+      {
+      sendSMS($number,_('You can only rent')." ".sprintf(ngettext('%d bike','%d bikes',$values->userlimit),$values->userlimit)." "._('at once').".");
+      }
+   elseif ($result==102)
+      {
+      sendSMS($number,_('You can only rent')." ".sprintf(ngettext('%d bike','%d bikes',$values->userlimit),$values->userlimit)." "._('at once')." "._('and you have already rented')." ".$values->userlimit.".");
+      }
+   elseif ($result==110)
+      {
+      sendSMS($number,_('Bike')." ".$values->bikenum." "._('is not rentable now, you have to rent bike')." ".$values->stacktopbike." "._('from this stand').".");
+      }
+   elseif ($result==120)
+      {
+      sendSMS($number,_('You have already rented the bike')." ".$values->bikenum.". "._('Code is')." ".$values->currentcode.". "._('Return bike with command:')." RETURN "._('bikenumber')." "._('standname').".");
+      }
+   elseif ($result==121)
+      {
+      sendSMS($number,_('Bike')." ".$values->bikenum." "._('is already rented by someone else').".");
+      }
+   elseif ($result==130)
+      {
+      sendSMS($number,_('Please, recharge your credit:')." ".$values->credit.getcreditcurrency().". "._('Credit required:')." ".$values->requiredcredit.getcreditcurrency().".");
+      }
+   }
+elseif ($action=='RETURN')
+   {
+   if ($result==OK)
+      {
+      $message=_('Bike')." ".$values->bikenum." "._('returned to stand')." ".$values->standname.". "._('Make sure you set code to')." ".$currentCode.".";
+      $message.=" "._('Rotate lockpad to 0000.');
+      if (iscreditenabled())
+         {
+         $message.=" "._('Credit').": ".getusercredit($values->userid).getcreditcurrency();
+         if (isset($values->creditchange)) $message.=" (-".$values->creditchange.")";
+         $message.=".";
+         }
+      if (isset($values->note)) $message.=" ("._('note').":".$tempnote.")";
+      sendSMS($number,$message);
+      if (isset($values->currentusernumber)) sendSMS($values->currentusernumber,_('System override').": "._('Your rented bike')." ".$values->bikenum." "._('has been returned by admin').".");
+      }
+   elseif ($result==100)
+      {
+      sendSMS($number,_('You have no rented bikes currently.'));
+      }
+  elseif ($result==102)
+      {
+      $message=_('You do not have the bike')." ".$values->bikenum." rented.";
+      if (isset($values->bikelist)) $message.=" "._('You have rented the following')." ".sprintf(ngettext('%d bike','%d bikes',$values->countrented),$values->countrented).": ".$values->bikelist.".";
+      sendSMS($number,$message);
+      }
+  elseif ($result==103)
+      {
+      sendSMS($number,_('Bike')." ".$values->bikenum." "._('is not rented. Saint Thomas, the patron of unrented bikes, prohibited returning it.'));
+      }
+   }
+elseif ($action=='CHECKBIKE')
+   {
+   if ($result==100)
+      {
+      response('<h3>Bike '.$bikenum.' does not exist!</h3>',ERROR);
+      }
+   }
+elseif ($action=='CHECKSTAND')
+   {
+   if ($result==100)
+      {
+      sendSMS($values->number,_("Stand")." ".$values->standname._("does not exist")."."._("Stands are marked by CAPITALLETTERS").".");
+      }
+   }
+elseif ($action=='WHERE')
+   {
+   if ($result==100)
+      {
+      $message=_('Bike')." ".$values->bikenum." "._('is at stand')." ".$values->standname.".";
+      if (isset($values->note)) $message.=" ("._('Reported issue:').":".$values->note.")";
+      sendSMS($number,$message);
+      }
+   elseif ($result==101)
+      {
+      $message=_('Bike')." ".$values->bikenum." "._('is rented by')." ".$values->username." (+".$values->phone.").";
+      if (isset($values->note)) $message.=" ("._('Reported issue:').":".$values->note.")";
+      sendSMS($number,$message);
+      }
+   }
+
+response('Unhandled status '.$result.' in '.$action.' in file '.__FILE__.'.',ERROR);
+
+}
+
 function help($number)
 {
    global $db;
@@ -28,13 +159,6 @@ function unknownCommand($number,$command)
    sendSMS($number,_('Error. The command')." ".$command." "._('does not exist. If you need help, send:')." HELP");
 }
 
-/**
- * @deprecated, call getuserid() directly
- */
-function getUser($number)
-{
-   return getuserid($number);
-}
 
 function validateNumber($number)
 {
@@ -93,364 +217,6 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
    // if more arguments provided than required, they will be silently ignored
    return TRUE;
 }
-
-function credit($number)
-{
-   global $db;
-   $userid=getUser($number);
-   $usercredit=getusercredit($userid).getcreditcurrency();
-   sendSMS($number,_('Your remaining credit:')." ".$usercredit);
-}
-
-function rent($number,$bike,$force=FALSE)
-{
-
-        global $db,$forcestack,$watches,$credit;
-        $stacktopbike=FALSE;
-   $userId = getUser($number);
-   $bikeNum = intval($bike);
-   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
-
-   if ($force==FALSE)
-           {
-           $creditcheck=checkrequiredcredit($userId);
-            if ($creditcheck===FALSE)
-               {
-               $result=$db->query("SELECT credit FROM credit WHERE userId=$userId");
-               $row=$result->fetch_assoc();
-               sendSMS($number,_('Please, recharge your credit:')." ".$row["credit"].$credit["currency"].". "._('Credit required:')." ".$requiredcredit.$credit["currency"].".");
-               return;
-               }
-
-         checktoomany(0,$userId);
-
-         $result=$db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
-                  $row =$result->fetch_assoc();
-                  $countRented =$row["countRented"];
-
-         $result=$db->query("SELECT userLimit FROM limits where userId=$userId");
-                  $row =$result->fetch_assoc();
-                  $limit =$row["userLimit"];
-
-         if ($countRented >=$limit)
-         {
-                  if ($limit==0)
-                     {
-                     sendSMS($number,_('You can not rent any bikes. Contact the admins to lift the ban.'));
-                     }
-                  elseif ($limit==1)
-                     {
-                     sendSMS($number,_('You can only rent')." ".sprintf(ngettext('%d bike','%d bikes',$limit),$limit)." "._('at once').".");
-                     }
-                  else
-                     {
-                     sendSMS($number,_('You can only rent')." ".sprintf(ngettext('%d bike','%d bikes',$limit),$limit)." "._('at once')." "._('and you have already rented')." ".$limit.".");
-                     }
-
-                  return;
-         }
-
-         if ($forcestack OR $watches["stack"])
-         {
-            $result=$db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bike'");
-            $row=$result->fetch_assoc();
-            $standid=$row["currentStand"];
-            $stacktopbike=checktopofstack($standid);
-            if ($watches["stack"] AND $stacktopbike<>$bike)
-               {
-               $result=$db->query("SELECT standName FROM stands WHERE standId='$standid'");
-               $row=$result->fetch_assoc();
-               $stand=$row["standName"];
-               $user=getusername($userId);
-               notifyAdmins(_('Bike')." ".$bike." "._('rented out of stack by')." ".$user.". ".$stacktopbike." "._('was on the top of the stack at')." ".$stand.".",ERROR);
-               }
-            if ($forcestack AND $stacktopbike<>$bikeNum)
-               {
-               response(_('Bike')." ".$bike." "._('is not rentable now, you have to rent bike')." ".$stacktopbike." "._('from this stand').".",ERROR);
-               return;
-               }
-            }
-         }
-
-   $result=$db->query("SELECT currentUser,currentCode FROM bikes WHERE bikeNum=$bikeNum");
-   if($result->num_rows!=1)
-      {
-      sendSMS($number,"Bike $bikeNum does not exist.");
-      return;
-      }
-   $row =$result->fetch_assoc();
-   $currentCode = sprintf("%04d",$row["currentCode"]);
-   $currentUser=$row["currentUser"];
-   $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
-   $row=$result->fetch_assoc();
-   $note=$row["note"];
-   if ($currentUser)
-      {
-      $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
-      $row =$result->fetch_assoc();
-      $currentUserNumber =$row["number"];
-      }
-
-   $newCode = sprintf("%04d",rand(100,9900));//do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
-
-   if ($force==FALSE)
-          {
-            if ($currentUser==$userId)
-            {
-                     sendSMS($number,_('You have already rented the bike')." ".$bikeNum.". "._('Code is')." ".$currentCode.". "._('Return bike with command:')." RETURN "._('bikenumber')." "._('standname').".");
-                     return;
-            }
-            if ($currentUser!=0)
-            {
-                     sendSMS($number,_('Bike')." ".$bikeNum." "._('is already rented').".");
-                     return;
-            }
-         }
-
-   $message=_('Bike')." ".$bikeNum.": "._('Open with code')." ".$currentCode.". "._('Change code immediately to')." ".$newCode." "._('(open,rotate metal part,set new code,rotate metal part back)').".";
-   if ($note)
-   {
-      $message.="("._('bike note').":".$note.")";
-   }
-   sendSMS($number,$message);
-
-   $result=$db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
-
-   if ($force==FALSE)
-          {
-            $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode");
-          }
-        else
-         {
-           $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
-            if ($currentUser) { sendSMS($currentUserNumber,_('System override').": "._('Your rented bike')." ".$bikeNum." "._('has been rented by admin')."."); }
-         }
-
-
-}
-
-function returnBike($number,$bike,$stand,$message="",$force=FALSE)
-{
-
-   global $db;
-   $userId = getUser($number);
-   $bikeNum = intval($bike);
-   $stand = strtoupper($stand);
-
-   $result=$db->query("SELECT standId FROM stands WHERE standName='$stand'");
-   if (!$result->num_rows)
-      {
-      sendSMS($number,_('Stand name')." '".$stand."' "._('does not exist. Stands are marked by CAPITALLETTERS.'));
-      return;
-      }
-   $row=$result->fetch_assoc();
-   $standId=$row["standId"];
-
-   if ($force==FALSE)
-      {
-      $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
-      $bikenumber=$result->num_rows;
-
-      if ($bikenumber==0)
-         {
-         sendSMS($number,_('You have no rented bikes currently.'));
-         return;
-         }
-
-      $listBikes="";
-      while ($row=$result->fetch_assoc())
-         {
-         $listBikes.=$row["bikeNum"].",";
-         }
-      if ($bikenumber>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
-      }
-
-   if ($force==FALSE)
-      {
-      $result=$db->query("SELECT currentCode FROM bikes WHERE currentUser=$userId AND bikeNum=$bikeNum");
-      if ($result->num_rows!=1)
-         {
-         sendSMS($number,_('You does not have bike')." ".$bikeNum." rented. "._('You have rented the following')." ".sprintf(ngettext('%d bike','%d bikes',$bikenumber),$bikenumber).": $listBikes");
-         return;
-         }
-
-      $row=$result->fetch_assoc();
-      $currentCode = sprintf("%04d",$row["currentCode"]);
-      $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
-      $row=$result->fetch_assoc();
-      $note=$row["note"];
-      }
-   else
-      {
-      $result=$db->query("SELECT currentCode,currentUser FROM bikes WHERE bikeNum=$bikeNum");
-      if ($result->num_rows!=1)
-         {
-         sendSMS($number,_('Bike')." ".$bikeNum." "._('is not rented. Saint Thomas, the patronus of all unrented bikes, prohibited returning unrented bikes.'));
-         return;
-         }
-
-      $row =$result->fetch_assoc();
-      $currentCode = sprintf("%04d",$row["currentCode"]);
-      $currentUser =$row["currentUser"];
-      $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
-      $row=$result->fetch_assoc();
-      $note=$row["note"];
-        if($currentUser)
-        {
-    	    $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
-    	    $row =$result->fetch_assoc();
-    	    $currentUserNumber =$row["number"];
-        }
-      }
-
-   if (!preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i",$message ,$matches))
-      {
-      $userNote="";
-      }
-   else $userNote=$db->conn->real_escape_string(trim($matches[1]));
-
-   $result=$db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum");
-   if ($userNote)
-      {
-      $db->query("INSERT INTO notes SET bikeNum=$bikeNum,userId=$userId,note='$userNote'");
-      $result=$db->query("SELECT userName,number FROM users WHERE userId='$userId'");
-      $row=$result->fetch_assoc();
-      $userName=$row["userName"];
-      $phone=$row["number"];
-      $result=$db->query("SELECT stands.standName FROM bikes LEFT JOIN users ON bikes.currentUser=users.userID LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
-      $row=$result->fetch_assoc();
-      $standName=$row["standName"];
-      if ($standName!=NULL)
-         {
-         $bikeStatus=_('at')." ".$standName;
-         }
-         else
-         {
-         $bikeStatus=_('used by')." ".$userName." +".$phone;
-         }
-      notifyAdmins(_('Note')." b.$bikeNum (".$bikeStatus.") "._('by')." $userName/$phone:".$userNote);
-      }
-
-   $message=_('Bike')." ".$bikeNum." "._('returned to stand')." ".$stand.". "._('Make sure you set code to')." ".$currentCode.".";
-   if ($note or $userNote)
-      {
-      $tempnote=$note;
-      if ($userNote) $tempnote=$userNote;
-      if ($tempnote) $message.="(note:".$tempnote.")";
-      }
-   $message.=" "._('Rotate lockpad to 0000.');
-
-   if ($force==FALSE)
-      {
-      $creditchange=changecreditendrental($bikeNum,$userId);
-      $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
-      }
-   else
-      {
-      $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId");
-      if($currentUserNumber)
-        {
-    	    sendSMS($currentUserNumber,_('System override').": "._('Your rented bike')." ".$bikeNum." "._('has been returned by admin').".");
-        }
-      }
-
-   if (iscreditenabled())
-      {
-      $message.=_('Credit').": ".getusercredit($userId).getcreditcurrency();
-      if ($creditchange) $message.=" (-".$creditchange.")";
-      $message.=".";
-      }
-   sendSMS($number,$message);
-
-}
-
-
-function where($number,$bike)
-{
-
-   global $db;
-   $userId = getUser($number);
-   $bikeNum = intval($bike);
-
-   $result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
-   if ($result->num_rows!=1)
-      {
-      sendSMS($number,_('Bike')." ".$bikeNum." "._('does not exist').".");
-      return;
-      }
-   $row =$result->fetch_assoc();
-   $phone=$row["number"];
-   $userName=$row["userName"];
-   $standName=$row["standName"];
-   $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
-   $row=$result->fetch_assoc();
-   $note=$row["note"];
-   if ($note)
-      {
-      $note=" "._('Bike note').": $note";
-      }
-
-   if ($standName!=NULL)
-      {
-      sendSMS($number,_('Bike')." ".$bikeNum." "._('is at stand')." ".$standName.$note);
-      }
-   else
-      {
-      sendSMS($number,_('Bike')." ".$bikeNum." "._('is rented by')." ".$userName." (+".$phone.").".$note);
-      }
-
-}
-
-
-function listBikes($number,$stand)
-{
-
-   global $db,$forcestack;
-   $stacktopbike=FALSE;
-   $userId = getUser($number);
-   $stand = strtoupper($stand);
-
-   if (!preg_match("/^[A-Z]+[0-9]*$/",$stand))
-   {
-      sendSMS($number,_('Stand name')." '$stand' "._('has not been recognized. Stands are marked by CAPITALLETTERS.'));
-      return;
-   }
-
-   $result=$db->query("SELECT standId FROM stands WHERE standName='$stand'");
-   if ($result->num_rows!=1)
-      {
-      sendSMS($number,_('Stand')." '$stand' "._('does not exist').".");
-      return;
-      }
-    $row=$result->fetch_assoc();
-    $standId=$row["standId"];
-
-   if ($forcestack)
-            {
-            $stacktopbike=checktopofstack($standId);
-            }
-
-   $result=$db->query("SELECT bikeNum FROM bikes where currentStand=$standId ORDER BY bikeNum");
-   $rentedBikes=$result->num_rows;
-
-   if ($rentedBikes==0)
-      {
-      sendSMS($number,_('Stand')." ".$stand." "._('is empty').".");
-      return;
-      }
-
-   $listBikes="";
-  while ($row=$result->fetch_assoc())
-    {
-    $listBikes.=$row["bikeNum"];
-    if ($stacktopbike==$row["bikeNum"]) $listBikes.=" "._('(first)');
-    $listBikes.=",";
-    }
-   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
-
-   sendSMS($number,sprintf(ngettext('%d bike','%d bikes',$rentedBikes),$rentedBikes)." "._('on stand')." ".$stand.": ".$listBikes);
-}
-
 
 function freeBikes($number)
 {
@@ -526,7 +292,7 @@ function delnote($number,$bikeNum,$message)
 
    global $db;
    $userId = getUser($number);
-   
+
     $bikeNum=trim($bikeNum);
 	if(preg_match("/^[0-9]*$/",$bikeNum))
    	{
@@ -543,7 +309,7 @@ function delnote($number,$bikeNum,$message)
       	sendSMS($number,_('Error in bike number / stand name specification:'.$db->conn->real_escape_string($bikeNum)));
 		return;
 	}
-	   
+
    $bikeNum = intval($bikeNum);
 
    checkUserPrivileges($number);
@@ -626,7 +392,7 @@ function untag($number,$standName,$message)
 
    $row =$result->fetch_assoc();
    $standId=$row["standId"];
-    
+
    $result=$db->query("SELECT userName FROM users WHERE number=$number");
    $row =$result->fetch_assoc();
    $reportedBy=$row["userName"];
@@ -685,7 +451,7 @@ function delstandnote($number,$standName,$message)
 
    $row =$result->fetch_assoc();
    $standId=$row["standId"];
-    
+
    $result=$db->query("SELECT userName FROM users WHERE number=$number");
    $row =$result->fetch_assoc();
    $reportedBy=$row["userName"];
@@ -827,7 +593,7 @@ function note($number,$bikeNum,$message)
 
    global $db;
    $userId = getUser($number);
-   
+
     $bikeNum=trim($bikeNum);
 	if(preg_match("/^[0-9]*$/",$bikeNum))
    	{
@@ -844,9 +610,9 @@ function note($number,$bikeNum,$message)
       	sendSMS($number,_('Error in bike number / stand name specification:'.$db->conn->real_escape_string($bikeNum)));
 		return;
 	}
-	   
+
    $bikeNum = intval($bikeNum);
-   
+
    $result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
    if ($result->num_rows!=1)
       {
@@ -886,7 +652,7 @@ function note($number,$bikeNum,$message)
       sendSMS($number,_('Empty note for bike')." ".$bikeNum." "._('not saved, for deleting notes use DELNOTE (for admins)').".");
       /*checkUserPrivileges($number);
       sendSMS($number,_('Empty note for bike')." ".$bikeNum." "._('not saved, for deleting notes use DELNOTE.').".");
-      
+
 	// @TODO remove SMS from deleting completely?
       $result=$db->query("UPDATE bikes SET note=NULL where bikeNum=$bikeNum");
       //only admins can delete and those will receive the confirmation in the next step.

@@ -1,10 +1,12 @@
 <?php
 require("config.php");
-require("db.class.php");
+require("external/rb.php");
+R::setup('mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword);
+R::freeze( TRUE );
+R::debug( TRUE,2 );
+R::addDatabase('localdb','mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword,TRUE);
+R::begin();
 require('actions-qrcode.php');
-
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
 
 if (isset($_COOKIE["loguserid"])) $userid=$_COOKIE["loguserid"];
 else $userid=0;
@@ -20,19 +22,22 @@ switch($action)
    case "rent":
       logrequest($userid,$action);
       checksession();
-      $bikeno=$parameter;
-      checkbikeno($bikeno);
-      rent($userid,$bikeno);
+      $bikenum=$parameter;
+      checkbikeno($bikenum);
+      rentbike($userid,$bikenum);
       break;
    case "return":
       logrequest($userid,$action);
       checksession();
       $stand=$parameter;
       checkstandname($stand);
-      returnbike($userid,$stand);
+      returnbike($userid,0,$stand);
       break;
    default:
+      logrequest($userid,$action);
       unrecognizedqrcode($userid);
    }
+
+R::close();
 
 ?>

@@ -1,10 +1,12 @@
 <?php
 require("config.php");
-require("db.class.php");
+require("external/rb.php");
+R::setup('mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword);
+R::freeze( TRUE );
+R::debug( TRUE,2 );
+R::addDatabase('localdb','mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword,TRUE);
+R::begin();
 require('actions-web.php');
-
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
 
 if (isset($_COOKIE["loguserid"])) $userid=$_COOKIE["loguserid"];
 else $userid=0;
@@ -47,19 +49,19 @@ switch($action)
    case "rent":
       logrequest($userid,$action);
       checksession();
-      $bikeno=trim($_GET["bikeno"]);
-      checkbikeno($bikeno);
-      rent($userid,$bikeno);
+      $bikenum=trim($_GET["bikeno"]);
+      checkbikeno($bikenum);
+      rentbike($userid,$bikenum);
       break;
    case "return":
       logrequest($userid,$action);
       checksession();
-      $bikeno=trim($_GET["bikeno"]);
+      $bikenum=trim($_GET["bikeno"]);
       $stand=trim($_GET["stand"]);
       $note="";
       if (isset($_GET["note"])) $note=trim($_GET["note"]);
-      checkbikeno($bikeno); checkstandname($stand);
-      returnBike($userid,$bikeno,$stand,$note);
+      checkbikeno($bikenum); checkstandname($stand);
+      returnbike($userid,$bikenum,$stand,$note);
       break;
    case "validatecoupon":
       logrequest($userid,$action);
@@ -71,42 +73,42 @@ switch($action)
       logrequest($userid,$action);
       checksession();
       checkprivileges($userid);
-      $bikeno=trim($_GET["bikeno"]);
-      checkbikeno($bikeno);
-      rent($userid,$bikeno,TRUE);
+      $bikenum=trim($_GET["bikeno"]);
+      checkbikeno($bikenum);
+      rent($userid,$bikenum,TRUE);
       break;
    case "forcereturn":
       logrequest($userid,$action);
       checksession();
       checkprivileges($userid);
-      $bikeno=trim($_GET["bikeno"]);
+      $bikenum=trim($_GET["bikeno"]);
       $stand=trim($_GET["stand"]);
       $note="";
       if (isset($_GET["note"])) $note=trim($_GET["note"]);
-      checkbikeno($bikeno); checkstandname($stand);
-      returnBike($userid,$bikeno,$stand,$note,TRUE);
+      checkbikeno($bikenum); checkstandname($stand);
+      returnBike($userid,$bikenum,$stand,$note,TRUE);
       break;
    case "where":
       logrequest($userid,$action);
       checksession();
-      $bikeno=trim($_GET["bikeno"]);
-      checkbikeno($bikeno);
-      where($userid,$bikeno);
+      $bikenum=trim($_GET["bikeno"]);
+      checkbikeno($bikenum);
+      where($userid,$bikenum);
       break;
    case "removenote":
       logrequest($userid,$action);
       checksession();
       checkprivileges($userid);
-      checkbikeno($bikeno);
-      removenote($userid,$bikeno);
+      checkbikeno($bikenum);
+      removenote($userid,$bikenum);
       break;
    case "revert":
       logrequest($userid,$action);
       checksession();
-      $bikeno=trim($_GET["bikeno"]);
+      $bikenum=trim($_GET["bikeno"]);
       checkprivileges($userid);
-      checkbikeno($bikeno);
-      revert($userid,$bikeno);
+      checkbikeno($bikenum);
+      revert($userid,$bikenum);
       break;
    case "last":
       logrequest($userid,$action);
@@ -114,9 +116,9 @@ switch($action)
       checkprivileges($userid);
       if ($_GET["bikeno"])
          {
-         $bikeno=trim($_GET["bikeno"]);
-         checkbikeno($bikeno);
-         last($userid,$bikeno);
+         $bikenum=trim($_GET["bikeno"]);
+         checkbikeno($bikenum);
+         last($userid,$bikenum);
          }
       else last($userid);
       break;
@@ -168,9 +170,9 @@ switch($action)
       checkprivileges($userid);
       if ($_GET["bikeno"])
          {
-         $bikeno=trim($_GET["bikeno"]);
-         checkbikeno($bikeno);
-         trips($userid,$bikeno);
+         $bikenum=trim($_GET["bikeno"]);
+         checkbikeno($bikenum);
+         trips($userid,$bikenum);
          }
       else trips($userid);
       break;

@@ -209,10 +209,9 @@ function showstand(e,clear)
                for (var i=0, len=jsonobject.content.length; i < len; i++)
                   {
                   bikeissue=0;
-                  if (jsonobject.content[i][0]=="*")
+                  if (jsonobject.notes[i]!="")
                      {
                      bikeissue=1;
-                     jsonobject.content[i]=jsonobject.content[i].replace("*","");
                      }
                   if (jsonobject.stacktopbike==false) // bike stack is disabled, allow renting any bike
                      {
