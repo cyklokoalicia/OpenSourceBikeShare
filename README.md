@@ -6,6 +6,10 @@ Bottom-up bicycle sharing system suitable for smaller communities or areas such 
 
 Website: [OpenSourceBikeShare.com](http://opensourcebikeshare.com)
 
+NOTE: Undergoing complete rewrite!
+---------
+Use *fully functional* ["breakthrough" version](https://github.com/mmmaly/OpenSourceBikeShare/tree/breakthrough) in the meantime.
+
 Features
 ----------
 * Web app (mobile-friendly)
