@@ -303,6 +303,152 @@ function listbikes($stand)
 
 }
 
+function addnote($userid,$bikenum,$message)
+{
+
+   $values=new stdClass;
+   $user=R::load('users',$userid);
+   $stand=R::getRow('SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userId LEFT JOIN stands on bikes.currentStand=stands.standId WHERE bikeNum=?',[$bikenum]);
+   if (!empty($stand))
+      {
+      $bikestatus=_('at')." ".$stand->standname;
+      }
+      else
+      {
+      $bikestatus=_('used by')." ".$user->username." +".$user->phone;
+      }
+   $note=R::dispense('notes');
+   $note->bikenum=$bikenum;
+   $note->userid=$userid;
+   $note->note=$message;
+   $noteid=R::store($note);
+   notifyAdmins(_('Note #').$noteid.": b.".$bikenum." (".$bikestatus.") "._('by')." ".$user->username."/".$user->phone.":".$message);
+
+}
+
+function removenote($userid,$bikenum)
+{
+   $values=new stdClass;
+   $values->bikenum=$bikenum;
+   $note=R::findOne('notes','bikenum=?',[$bikenum]);
+   R::trash($note)
+   status('DELNOTE',OK,$values);
+}
+
+function saveuser($userid,$username,$email,$phone,$privileges,$userlimit)
+{
+   $user=R::load('users',$userid);
+   if ($user->id)
+      {
+      $user->username=$username;
+      $user->mail=$email;
+      if ($phone) $user->phone=$phone;
+      $user->privileges=$privileges;
+      R::store($user);
+      $limit=findOne('limits','userid=?',[$userid]);
+      $limit->limit=$userlimit;
+      R::store($limit);
+      response(_('Details of user')." ".$user->username." "._('updated').".");
+      }
+}
+
+function addcredit($userid,$creditmultiplier)
+{
+   $addcreditamount=getrequiredcredit()*$creditmultiplier;
+   $credit->findOne('credit','userid=?',[$userid]);
+   $credit->credit=$credit->credit+$addcreditamount;
+   R::store($credit);
+   $history=R::dispense('history');
+   $history->userid=$userid;
+   $history->action='CREDITCHANGE';
+   $history->parameter=$addcreditamount.'|add+'.$addcreditamount);
+   R::store($history);
+   response(_('Added')." ".$addcreditamount.getcreditcurrency()." "._('credit for')." ".getusername($userid).".");
+}
+
+function getcouponlist()
+{
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+   $coupons=R::find('coupons','status=0 ORDER BY status,value,coupon');
+   foreach($coupons as $coupon)
+      {
+      $jsoncontent[]=array("coupon"=>$coupon->coupon,"value"=>$coupon->value);
+      }
+   echo json_encode($jsoncontent);// TODO change to response function
+}
+
+function generatecoupons($multiplier)
+{
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+   $value=getrequiredcredit()*$multiplier;
+   $codes=generatecodes(10,6);
+   foreach ($codes as $code)
+      {
+      $coupon=findOne('coupons','coupon=?',$code);
+      if (empty($coupon))
+         {
+         $coupon=R::dispense('coupons');
+         $coupon->coupon=$code;
+         $coupon->value=$value;
+         $coupon->status=0;
+         R::store($coupon)
+         }
+      }
+   response(_('Generated 10 new').' '.$value.' '.getcreditcurrency().' '._('coupons').'.',0,array("coupons"=>$codes));
+}
+
+function sellcoupon($couponcode)
+{
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+   $coupon=R::findOne('coupons','coupon=?',[$couponcode]);
+   $coupon->status=1;
+   R::store($coupon);
+   response(_('Coupon').' '.$coupon->coupon.' '._('sold').'.');
+}
+
+function validatecoupon($userid,$couponcode)
+{
+   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+   $coupon=R::findOne('coupons','coupon=? AND status<2',[$couponcode]);
+   if (!empty($coupon))
+      {
+      $credit=findOne('credit','userid=?',$userid);
+      $credit->credit=$credit->credit+$coupon->value;
+      R::store($credit);
+      $history=R::dispense('history');
+      $history->userid=$userid;
+      $history->action='CREDITCHANGE';
+      $history->parameter=$coupon->value.'|add+'.$coupon->value.'|'.$coupon->coupon;
+      R::store($history);
+      $coupon->status=2;
+      R::store($coupon);
+      response('+'.$coupon->value.' '.getcreditcurrency().'. '._('Coupon').' '.$coupon->coupon.' '._('has been redeemed').'.');
+      }
+   response(_('Invalid coupon, try again.'),1);
+}
+
+function resetpassword($number)
+{
+   $user=findOne('users','number=?',[$number]);
+   if (empty($user)) response(_('No such user found.'),1);
+
+   $subject=_('Password reset');
+
+   mt_srand(crc32(microtime()));
+   $user->password=substr(md5(mt_rand().microtime().$user->mail),0,8);
+
+   R::store($user);
+
+   $names=preg_split("/[\s,]+/",$user->username);
+   $firstname=$names[0];
+   $message=_('Hello').' '.$firstname.",\n\n".
+   _('Your password has been reset successfully.')."\n\n".
+   _('Your new password is:')."\n".$user->password;
+
+   sendEmail($user->mail, $subject, $message);
+   response(_('Your password has been reset successfully.').' '._('Check your email.'));
+}
+
 
 function credit($number)
 {
@@ -333,6 +479,19 @@ function checkstandname($standname)
       $values->standname=$standname;
       status('CHECKSTAND',100,$values);
       }
+}
+
+function mapgeolocation ($userid,$lat,$long)
+{
+
+   $geolocation=R::dispense('geolocation');
+   $geolocation->userid=$userid;
+   $geolocation->latitude=$lat;
+   $geolocation->longitude=$long;
+   R::store($geolocation);
+
+   response("");
+
 }
 
 ?>

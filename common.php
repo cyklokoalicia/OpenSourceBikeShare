@@ -214,6 +214,16 @@ function checksession()
 
 }
 
+function checkprivileges($userid)
+{
+   $privileges=getprivileges($userid);
+   if ($privileges<1)
+      {
+      status('PRIVILEGES',101);
+      exit;
+      }
+}
+
 function logrequest($userid)
 {
    R::selectDatabase('localdb');

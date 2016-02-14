@@ -10,7 +10,6 @@ R::addDatabase('localdb','mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbp
 R::freeze( TRUE );
 R::debug( TRUE,2 );
 $values=new stdClass;
-if ($values->currentusernumber) exit('hu');
 // exit;
 ?>
 <!DOCTYPE html>

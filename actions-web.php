@@ -75,7 +75,7 @@ elseif ($action=='RENT')
       }
    elseif ($result==130)
       {
-      response(_('You are below required credit')." ".$requiredcredit.$credit["currency"].". "._('Please, recharge your credit.'),ERROR);
+      response(_('You are below required credit')." ".getrequiredcredit().getcreditcurrency().". "._('Please, recharge your credit.'),ERROR);
       }
    }
 elseif ($action=='RETURN')
@@ -122,75 +122,20 @@ elseif ($action=='WHERE')
       response($message);
       }
    }
+elseif ($action=='DELNOTE')
+   {
+   if ($result==OK)
+      {
+      response('<h3>'._('Note for bike')." ".$values->bikenum." "._('deleted').'.</h3>');
+      }
+   }
+
+   response(_('Note for bike')." ".$bikeNum." "._('deleted').".");
 response('Unhandled status '.$result.' in '.$action.' in file '.__FILE__.'.',ERROR);
 
 }
 
-function addnote($userId,$bikeNum,$message)
-{
 
-   global $db;
-   $userNote=$db->conn->real_escape_string(trim($message));
-
-   $result=$db->query("SELECT userName,number from users where userId='$userId'");
-   $row=$result->fetch_assoc();
-   $userName=$row["userName"];
-   $phone=$row["number"];
-   $result=$db->query("SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
-   $row=$result->fetch_assoc();
-   $standName=$row["standName"];
-   if ($standName!=NULL)
-      {
-      $bikeStatus=_('at')." ".$standName;
-      }
-      else
-      {
-      $bikeStatus=_('used by')." ".$userName." +".$phone;
-      }
-   $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
-   $noteid=$db->conn->insert_id;
-   notifyAdmins(_('Note #').$noteid.": b.".$bikeNum." (".$bikeStatus.") "._('by')." ".$userName."/".$phone.":".$userNote);
-
-}
-
-function liststands()
-{
-   global $db;
-
-   response(_('not implemented'),0,"",0); exit;
-   $result=$db->query("SELECT standId,standName,standDescription,standPhoto,serviceTag,placeName,longitude,latitude FROM stands ORDER BY standName");
-   while($row=$result->fetch_assoc())
-      {
-      $bikenum=$row["bikeNum"];
-      $result2=$db->query("SELECT note FROM notes WHERE bikeNum='$bikenum' AND deleted IS NULL ORDER BY time DESC");
-      $note="";
-      while ($row=$result2->fetch_assoc())
-         {
-         $note.=$row["note"]."; ";
-         }
-      $note=substr($note,0,strlen($note)-2); // remove last two chars - comma and space
-      if ($note)
-         {
-         $bicycles[]="*".$bikenum; // bike with note / issue
-         $notes[]=$note;
-         }
-      else
-         {
-         $bicycles[]=$bikenum;
-         $notes[]="";
-         }
-      }
-   response($stands,0,"",0);
-
-}
-
-function removenote($userId,$bikeNum)
-{
-   global $db;
-
-   $result=$db->query("DELETE FROM notes WHERE bikeNum=$bikeNum LIMIT XXXX");
-   response(_('Note for bike')." ".$bikeNum." "._('deleted').".");
-}
 
 function last($userId,$bike=0)
 {
@@ -383,26 +328,30 @@ function register($number,$code,$checkcode,$fullname,$email,$password,$password2
 
 function login($number,$password)
 {
-   global $db,$systemURL,$countrycode;
+   global $systemURL,$countrycode;
 
-   $number=$db->conn->real_escape_string(trim($number));
-   $password=$db->conn->real_escape_string(trim($password));
    $number=str_replace(" ","",$number); $number=str_replace("-","",$number); $number=str_replace("/","",$number);
+   $number=str_replace(".","",$number);
    if ($number[0]=="0") $number=$countrycode.substr($number,1,strlen($number));
    $altnumber=$countrycode.$number;
 
-   $result=$db->query("SELECT userId FROM users WHERE (number='$number' OR number='$altnumber') AND password=SHA2('$password',512)");
-   if ($result->num_rows==1)
+   $user=R::findOne('users','(number=:number OR number=:altnumber) AND password=SHA2(:password,512)',[':number'=>$number,':altnumber'=>$altnumber,':password'=>$password]);
+   if (!empty($user))
       {
-      $row=$result->fetch_assoc();
-      $userId=$row["userId"];
-      $sessionId=hash('sha256',$userId.$number.time());
-      $timeStamp=time()+86400*14; // 14 days to keep user logged in
-      $result=$db->query("DELETE FROM sessions WHERE userId='$userId'");
-      $result=$db->query("INSERT INTO sessions SET userId='$userId',sessionId='$sessionId',timeStamp='$timeStamp'");
-      $db->conn->commit();
-      setcookie("loguserid",$userId,time()+86400*14);
-      setcookie("logsession",$sessionId,time()+86400*14);
+      $timestamp=time()+86400*14; // 14 days to keep user logged in
+      $session=R::findOne('sessions','userid=?',[$user->id]);
+      if (!empty($session))
+         {
+         R::trash($session);
+         }
+      $session=R::dispense('sessions');
+      $session->userid=$user->id;
+      $session->sessionid=hash('sha256',$user->id.$user->number.time());
+      $session->timestamp=time();
+      R::store($session);
+      R::commit();
+      setcookie("loguserid",$user->id,time()+86400*14);
+      setcookie("logsession",$session->sessionid,time()+86400*14);
       header("HTTP/1.1 301 Moved permanently");
       header("Location: ".$systemURL);
       header("Connection: close");
@@ -420,13 +369,15 @@ function login($number,$password)
 
 function logout()
 {
-   global $db,$systemURL;
+   global $systemURL;
    if (isset($_COOKIE["loguserid"]) AND isset($_COOKIE["logsession"]))
       {
-      $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
-      $session=$db->conn->real_escape_string(trim($_COOKIE["logsession"]));
-      $result=$db->query("DELETE FROM sessions WHERE userId='$userid'");
-      $db->conn->commit();
+      $session=R::findOne('sessions','userid=?',[$_COOKIE["loguserid"]]);
+      if (!empty($session))
+         {
+         R::trash($session);
+         R::commit();
+         }
       }
    header("HTTP/1.1 301 Moved permanently");
    header("Location: ".$systemURL);
@@ -434,16 +385,7 @@ function logout()
    exit;
 }
 
-function checkprivileges($userid)
-{
-   global $db;
-   $privileges=getprivileges($userid);
-   if ($privileges<1)
-      {
-      response(_('Sorry, this command is only available for the privileged users.'),ERROR);
-      exit;
-      }
-}
+
 
 function smscode($number)
 {
@@ -551,104 +493,7 @@ function edituser($userid)
    echo json_encode($jsoncontent);// TODO change to response function
 }
 
-function saveuser($userid,$username,$email,$phone,$privileges,$limit)
-{
-   global $db;
-   $result=$db->query("UPDATE users SET username='$username',mail='$email',privileges='$privileges' WHERE userId=".$userid);
-   if ($phone) $result=$db->query("UPDATE users SET number='$phone' WHERE userId=".$userid);
-   $result=$db->query("UPDATE limits SET userLimit='$limit' WHERE userId=".$userid);
-   response(_('Details of user')." ".$username." "._('updated').".");
-}
 
-function addcredit($userid,$creditmultiplier)
-{
-   global $db, $credit;
-   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
-   $addcreditamount=$requiredcredit*$creditmultiplier;
-   $result=$db->query("UPDATE credit SET credit=credit+".$addcreditamount." WHERE userId=".$userid);
-   $result=$db->query("INSERT INTO history SET userId=$userid,action='CREDITCHANGE',parameter='".$addcreditamount."|add+".$addcreditamount."'");
-   $result=$db->query("SELECT userName FROM users WHERE users.userId=".$userid);
-   $row=$result->fetch_assoc();
-   response(_('Added')." ".$addcreditamount.$credit["currency"]." "._('credit for')." ".$row["userName"].".");
-}
-
-function getcouponlist()
-{
-   global $db, $credit;
-   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
-   $result=$db->query("SELECT coupon,value FROM coupons WHERE status='0' ORDER BY status,value,coupon");
-   while($row=$result->fetch_assoc())
-      {
-      $jsoncontent[]=array("coupon"=>$row["coupon"],"value"=>$row["value"]);
-      }
-   echo json_encode($jsoncontent);// TODO change to response function
-}
-
-function generatecoupons($multiplier)
-{
-   global $db, $credit;
-   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
-   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
-   $value=$requiredcredit*$multiplier;
-   $codes=generatecodes(10,6);
-   foreach ($codes as $code)
-      {
-      $result=$db->query("INSERT IGNORE INTO coupons SET coupon='".$code."',value='".$value."',status='0'");
-      }
-   response(_('Generated 10 new').' '.$value.' '.$credit["currency"].' '._('coupons').'.',0,array("coupons"=>$codes));
-}
-
-function sellcoupon($coupon)
-{
-   global $db, $credit;
-   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
-   $result=$db->query("UPDATE coupons SET status='1' WHERE coupon='".$coupon."'");
-   response(_('Coupon').' '.$coupon.' '._('sold').'.');
-}
-
-function validatecoupon($userid,$coupon)
-{
-   global $db, $credit;
-   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
-   $result=$db->query("SELECT coupon,value FROM coupons WHERE coupon='".$coupon."' AND status<'2'");
-   if ($result->num_rows==1)
-      {
-      $row=$result->fetch_assoc();
-      $value=$row["value"];
-      $result=$db->query("UPDATE credit SET credit=credit+'".$value."' WHERE userId='".$userid."'");
-      $result=$db->query("INSERT INTO history SET userId=$userid,action='CREDITCHANGE',parameter='".$value."|add+".$value."|".$coupon."'");
-      $result=$db->query("UPDATE coupons SET status='2' WHERE coupon='".$coupon."'");
-      response('+'.$value.' '.$credit["currency"].'. '._('Coupon').' '.$coupon.' '._('has been redeemed').'.');
-      }
-   response(_('Invalid coupon, try again.'),1);
-}
-
-function resetpassword($number)
-{
-   global $db, $systemname, $systemrules, $systemURL;
-
-   $result=$db->query("SELECT mail,userName FROM users WHERE number='$number'");
-   if (!$result->num_rows) response(_('No such user found.'),1);
-   $row=$result->fetch_assoc();
-   $email=$row["mail"];
-   $username=$row["userName"];
-
-   $subject = _('Password reset');
-
-   mt_srand(crc32(microtime()));
-   $password=substr(md5(mt_rand().microtime().$email),0,8);
-
-   $result=$db->query("UPDATE users SET password=SHA2('$password',512) WHERE number='".$number."'");
-
-   $names=preg_split("/[\s,]+/",$username);
-   $firstname=$names[0];
-   $message=_('Hello').' '.$firstname.",\n\n".
-   _('Your password has been reset successfully.')."\n\n".
-   _('Your new password is:')."\n".$password;
-
-   sendEmail($email, $subject, $message);
-   response(_('Your password has been reset successfully.').' '._('Check your email.'));
-}
 
 function mapgetmarkers()
 {
@@ -684,15 +529,7 @@ function mapgetlimit($userId)
    echo json_encode(array("limit"=>$currentlimit,"rented"=>$rented,"usercredit"=>$usercredit));
 }
 
-function mapgeolocation ($userid,$lat,$long)
-{
-   global $db;
 
-   $result=$db->query("INSERT INTO geolocation SET userId='$userid',latitude='$lat',longitude='$long'");
-
-   response("");
-
-}
 
 // TODO for admins: show bikes position on map depending on the user (allowed) geolocation, do not display user bikes without geoloc
 

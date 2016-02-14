@@ -127,6 +127,20 @@ elseif ($action=='WHERE')
       sendSMS($number,$message);
       }
    }
+elseif ($action=='DELNOTE')
+   {
+   if ($result==OK)
+      {
+      $message=_('Note for bike').' '.$values->bikenum.' '._('deleted').'.';
+      sendSMS($number,$message);
+      }
+   elseif ($result==100)
+      {
+
+      }
+   }
+}
+
 
 response('Unhandled status '.$result.' in '.$action.' in file '.__FILE__.'.',ERROR);
 
