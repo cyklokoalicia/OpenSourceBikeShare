@@ -1,9 +1,9 @@
 <?php
 require("common.php");
+require("base.php");
 
 function response($message,$error=0,$additional="",$log=1)
 {
-   global $db;
    $json=array("error"=>$error,"content"=>$message);
    if (is_array($additional))
       {
@@ -17,13 +17,13 @@ function response($message,$error=0,$additional="",$log=1)
       {
       if (isset($_COOKIE["loguserid"]))
          {
-         $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+         $userid=$_COOKIE["loguserid"];
          }
       else $userid=0;
       $number=getphonenumber($userid);
       logresult($number,$message);
       }
-   $db->conn->commit();
+   R::commit();
    echo $json;
    exit;
 }
@@ -34,7 +34,7 @@ if ($action=='LISTBIKES')
    {
    if ($result==OK)
       {
-      response($values->bicycles,0,array("notes"=>$values->notes,"stacktopbike"=>$values->stacktopbike),0);
+      response('',0,array("bicycles"=>$values)); //array("notes"=>$values->notes,"stacktopbike"=>$values->stacktopbike)
       }
    elseif ($result==100)
       {
@@ -45,7 +45,7 @@ elseif ($action=='RENT')
    {
    if ($result==OK)
       {
-      $message='<h3>'._('Bike').' '.$values->bikenum.': <span class="label label-primary">'._('Open with code').' '.$values->bike->currentcode.'.</span></h3>'._('Change code immediately to').' <span class="label label-default">'.$values->newcode.'</span><br />'._('(open, rotate metal part, set new code, rotate metal part back)').'.';
+      $message='<h3>'._('Bike').' '.$values->bikenum.': <span class="label label-primary">'._('Open with code').' '.$values->currentcode.'.</span></h3>'._('Change code immediately to').' <span class="label label-default">'.$values->newcode.'</span><br />'._('(open, rotate metal part, set new code, rotate metal part back)').'.';
       if (isset($values->note)) $message.="<br />"._('Reported issue:')." <em>".$values->note."</em>";
       response($message);
       }
@@ -63,7 +63,7 @@ elseif ($action=='RENT')
       }
    elseif ($result==110)
       {
-      response(_('Bike')." ".$values->bikenum." "._('is not rentable now, you have to rent bike')." ".$values->stacktopbike." "._('from this stand').".",ERROR);
+      response(_('Bike')." ".$values->bikenum." "._('is no$user->t rentable now, you have to rent bike')." ".$values->stacktopbike." "._('from this stand').".",ERROR);
       }
    elseif ($result==120)
       {
@@ -91,6 +91,12 @@ elseif ($action=='RETURN')
    elseif ($result==100)
       {
       response(_('You have no rented bikes currently.'),ERROR);
+      }
+   elseif ($result==102)
+      {
+         $message=_('You do not have the bike')." ".$values->bikenum." rented.";
+      if (isset($values->bikelist)) $message.=" "._('You have rented the following')." ".sprintf(ngettext('%d bike','%d bikes',$values->countrented),$values->countrented).": ".$values->bikelist.".";
+      response($message,ERROR);
       }
    }
 elseif ($action=='CHECKBIKE')
@@ -130,7 +136,6 @@ elseif ($action=='DELNOTE')
       }
    }
 
-   response(_('Note for bike')." ".$bikeNum." "._('deleted').".");
 response('Unhandled status '.$result.' in '.$action.' in file '.__FILE__.'.',ERROR);
 
 }
@@ -205,26 +210,6 @@ function last($userId,$bike=0)
    response($historyInfo,0,"",0);
 }
 
-
-function userbikes($userId)
-{
-   global $db;
-   if (!isloggedin()) response("");
-   $result=$db->query("SELECT bikeNum,currentCode FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
-   while ($row=$result->fetch_assoc())
-      {
-      $bikenum=$row["bikeNum"];
-      $bicycles[]=$bikenum;
-      $codes[]=str_pad($row["currentCode"],4,"0",STR_PAD_LEFT);
-      $result2=$db->query("SELECT parameter FROM history WHERE bikeNum=$bikenum AND action='RENT' ORDER BY time DESC LIMIT 1,1");
-      $row=$result2->fetch_assoc();
-      $oldcodes[]=str_pad($row["parameter"],4,"0",STR_PAD_LEFT);
-      }
-   if (!$result->num_rows) $bicycles="";
-   if (!isset($codes)) $codes="";
-   else $codes=array("codes"=>$codes,"oldcodes"=>$oldcodes);
-   response($bicycles,0,$codes,0);
-}
 
 function revert($userId,$bikeNum)
 {
@@ -330,12 +315,9 @@ function login($number,$password)
 {
    global $systemURL,$countrycode;
 
-   $number=str_replace(" ","",$number); $number=str_replace("-","",$number); $number=str_replace("/","",$number);
-   $number=str_replace(".","",$number);
-   if ($number[0]=="0") $number=$countrycode.substr($number,1,strlen($number));
-   $altnumber=$countrycode.$number;
+   $number=normalizephonenumber($number);
 
-   $user=R::findOne('users','(number=:number OR number=:altnumber) AND password=SHA2(:password,512)',[':number'=>$number,':altnumber'=>$altnumber,':password'=>$password]);
+   $user=R::findOne('users','(number=:number) AND password=SHA2(:password,512)',[':number'=>$number,':password'=>$password]);
    if (!empty($user))
       {
       $timestamp=time()+86400*14; // 14 days to keep user logged in
@@ -347,7 +329,7 @@ function login($number,$password)
       $session=R::dispense('sessions');
       $session->userid=$user->id;
       $session->sessionid=hash('sha256',$user->id.$user->number.time());
-      $session->timestamp=time();
+      $session->timestamp=time()+86400*14;
       R::store($session);
       R::commit();
       setcookie("loguserid",$user->id,time()+86400*14);
@@ -495,39 +477,7 @@ function edituser($userid)
 
 
 
-function mapgetmarkers()
-{
-   global $db;
 
-   $jsoncontent=array();
-   $result=$db->query("SELECT standId,count(bikeNum) AS bikecount,standDescription,standName,standPhoto,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.standId WHERE stands.serviceTag=0 GROUP BY standName ORDER BY standName");
-   while($row = $result->fetch_assoc())
-      {
-      $jsoncontent[]=$row;
-      }
-   echo json_encode($jsoncontent); // TODO proper response function
-}
-
-function mapgetlimit($userId)
-{
-   global $db;
-
-   if (!isloggedin()) response("");
-   $result=$db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
-   $row = $result->fetch_assoc();
-   $rented= $row["countRented"];
-
-   $result=$db->query("SELECT userLimit FROM limits where userId=$userId");
-   $row = $result->fetch_assoc();
-   $limit = $row["userLimit"];
-
-   $currentlimit=$limit-$rented;
-
-   $usercredit=0;
-   $usercredit=getusercredit($userId);
-
-   echo json_encode(array("limit"=>$currentlimit,"rented"=>$rented,"usercredit"=>$usercredit));
-}
 
 
 

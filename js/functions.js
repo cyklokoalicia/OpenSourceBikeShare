@@ -91,16 +91,16 @@ function getmarkers()
          url: "command.php?action=map:markers"
          }).done(function(jsonresponse) {
             jsonobject=$.parseJSON(jsonresponse);
-            for (var i=0, len=jsonobject.length; i < len; i++)
+            for (var i=0, len=jsonobject.markers.length; i < len; i++)
                {
 
-               if (jsonobject[i].bikecount==0)
+               if (jsonobject.markers[i].bikecount==0)
                   {
                   tempicon=L.divIcon({
                      iconSize: [iconsize, iconsize],
                      iconAnchor: [iconsize/2, 0],
-                     html: '<dl class="icondesc none" id="stand-'+jsonobject[i].standName+'"><dt class="bikecount">'+jsonobject[i].bikecount+'</dt><dd class="standname">'+jsonobject[i].standName+'</dd></dl>',
-                     standid: jsonobject[i].standId
+                     html: '<dl class="icondesc none" id="stand-'+jsonobject.markers[i].standName+'"><dt class="bikecount">'+jsonobject.markers[i].bikecount+'</dt><dd class="standname">'+jsonobject.markers[i].standName+'</dd></dl>',
+                     standid: jsonobject.markers[i].id
                   });
                   }
                else
@@ -108,13 +108,13 @@ function getmarkers()
                   tempicon=L.divIcon({
                      iconSize: [iconsize, iconsize],
                      iconAnchor: [iconsize/2, 0],
-                     html: '<dl class="icondesc" id="stand-'+jsonobject[i].standName+'"><dt class="bikecount">'+jsonobject[i].bikecount+'</dt><dd class="standname">'+jsonobject[i].standName+'</dd></dl>',
-                     standid: jsonobject[i].standId
+                     html: '<dl class="icondesc" id="stand-'+jsonobject.markers[i].standName+'"><dt class="bikecount">'+jsonobject.markers[i].bikecount+'</dt><dd class="standname">'+jsonobject.markers[i].standName+'</dd></dl>',
+                     standid: jsonobject.markers[i].id
                   });
                   }
 
-               markerdata[jsonobject[i].standId]={name:jsonobject[i].standName,desc:jsonobject[i].standDescription,photo:jsonobject[i].standPhoto,count:jsonobject[i].bikecount};
-               markers[jsonobject[i].standId] = L.marker([jsonobject[i].lat, jsonobject[i].lon], { icon: tempicon }).addTo(map).on("click", showstand );
+               markerdata[jsonobject.markers[i].id]={name:jsonobject.markers[i].standName,desc:jsonobject.markers[i].standDescription,photo:jsonobject.markers[i].standPhoto,count:jsonobject.markers[i].bikecount};
+               markers[jsonobject.markers[i].id] = L.marker([jsonobject.markers[i].lat, jsonobject.markers[i].lon], { icon: tempicon }).addTo(map).on("click", showstand );
                $('body').data('markerdata',markerdata);
                }
             if (firstrun==1)
@@ -204,47 +204,47 @@ function showstand(e,clear)
             jsonobject=$.parseJSON(jsonresponse);
             handleresponse(jsonobject,0);
             bikelist="";
-            if (jsonobject.content!="")
+            if (jsonobject.bicycles!="")
                {
-               for (var i=0, len=jsonobject.content.length; i < len; i++)
+               for (var i=0, len=jsonobject.bicycles.standcount; i < len; i++)
                   {
                   bikeissue=0;
-                  if (jsonobject.notes[i]!="")
+                  if (jsonobject.bicycles.notes[i]!="")
                      {
                      bikeissue=1;
                      }
-                  if (jsonobject.stacktopbike==false) // bike stack is disabled, allow renting any bike
+                  if (jsonobject.bicycles.stacktopbike==false) // bike stack is disabled, allow renting any bike
                      {
                      if (bikeissue==1 && $("body").data("limit")>0)
                         {
-                        bikelist=bikelist+' <button type="button" class="btn btn-warning bikeid" data-id="'+jsonobject.content[i]+'" data-note="'+jsonobject.notes[i]+'">'+jsonobject.content[i]+'</button>';
+                        bikelist=bikelist+' <button type="button" class="btn btn-warning bikeid" data-id="'+jsonobject.bicycles.id[i]+'" data-note="'+jsonobject.bicycles.notes[i]+'">'+jsonobject.bicycles.id[i]+'</button>';
                         }
                      else if (bikeissue==1 && $("body").data("limit")==0)
                         {
-                        bikelist=bikelist+' <button type="button" class="btn btn-default bikeid" data-id="'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
+                        bikelist=bikelist+' <button type="button" class="btn btn-default bikeid" data-id="'+jsonobject.bicycles.id[i]+'">'+jsonobject.bicycles.id[i]+'</button>';
                         }
-                     else if ($("body").data("limit")>0) bikelist=bikelist+' <button type="button" class="btn btn-success bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
-                     else bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.content[i]+'</button>';
+                     else if ($("body").data("limit")>0) bikelist=bikelist+' <button type="button" class="btn btn-success bikeid b'+jsonobject.bicycles.id[i]+'" data-id="'+jsonobject.bicycles.id[i]+'">'+jsonobject.bicycles.id[i]+'</button>';
+                     else bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.bicycles.id[i]+'</button>';
                      }
                   else  // bike stack is enabled, allow renting top of the stack bike only
                      {
-                     if (jsonobject.stacktopbike==jsonobject.content[i] && bikeissue==1 && $("body").data("limit")>0)
+                     if (jsonobject.bicycles.stacktopbike==jsonobject.bicycles.id[i] && bikeissue==1 && $("body").data("limit")>0)
                         {
-                        bikelist=bikelist+' <button type="button" class="btn btn-warning bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'" data-note="'+jsonobject.notes[i]+'">'+jsonobject.content[i]+'</button>';
+                        bikelist=bikelist+' <button type="button" class="btn btn-warning bikeid b'+jsonobject.bicycles.id[i]+'" data-id="'+jsonobject.bicycles.id[i]+'" data-note="'+jsonobject.bicycles.notes[i]+'">'+jsonobject.bicycles.id[i]+'</button>';
                         }
-                     else if (jsonobject.stacktopbike==jsonobject.content[i] && bikeissue==1 && $("body").data("limit")==0)
+                     else if (jsonobject.bicycles.stacktopbike==jsonobject.bicycles.id[i] && bikeissue==1 && $("body").data("limit")==0)
                         {
-                        bikelist=bikelist+' <button type="button" class="btn btn-default bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
+                        bikelist=bikelist+' <button type="button" class="btn btn-default bikeid b'+jsonobject.bicycles.id[i]+'" data-id="'+jsonobject.bicycles.id[i]+'">'+jsonobject.bicycles.id[i]+'</button>';
                         }
-                     else if (jsonobject.stacktopbike==jsonobject.content[i] && $("body").data("limit")>0) bikelist=bikelist+' <button type="button" class="btn btn-success bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'">'+jsonobject.content[i]+'</button>';
-                     else bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.content[i]+'</button>';
+                     else if (jsonobject.bicycles.stacktopbike==jsonobject.bicycles.id[i] && $("body").data("limit")>0) bikelist=bikelist+' <button type="button" class="btn btn-success bikeid b'+jsonobject.bicycles.id[i]+'" data-id="'+jsonobject.bicycles.id[i]+'">'+jsonobject.bicycles.id[i]+'</button>';
+                     else bikelist=bikelist+' <button type="button" class="btn btn-default bikeid">'+jsonobject.bicycles.id[i]+'</button>';
                      }
                   }
                $('#standbikes').html('<div class="btn-group">'+bikelist+'</div>');
-               if (jsonobject.stacktopbike!=false) // bike stack is enabled, allow renting top of the stack bike only
+               if (jsonobject.bicycles.stacktopbike!=false) // bike stack is enabled, allow renting top of the stack bike only
                   {
-                  $('.b'+jsonobject.stacktopbike).click( function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-number'); attachbicycleinfo(this,"rent"); });
-                  $('body').data('stacktopbike',jsonobject.stacktopbike);
+                  $('.b'+jsonobject.bicycles.stacktopbike).click( function() { if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-number'); attachbicycleinfo(this,"rent"); });
+                  $('body').data('stacktopbike',jsonobject.bicycles.stacktopbike);
                   }
                else // bike stack is disabled, allow renting any bike
                   {
@@ -303,11 +303,11 @@ function rentedbikes()
          jsonobject=$.parseJSON(jsonresponse);
          handleresponse(jsonobject,0);
          bikelist="";
-         if (jsonobject.content!="")
+         if (jsonobject.userbikes!="")
             {
-            for (var i=0, len=jsonobject.content.length; i < len; i++)
+            for (var i=0, len=jsonobject.userbikes.bicycles.length; i < len; i++)
                {
-               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.content[i]+'" data-id="'+jsonobject.content[i]+'" title="'+_currently_rented+'">'+jsonobject.content[i]+'<br /><span class="label label-primary">('+jsonobject.codes[i]+')</span><br /><span class="label"><s>('+jsonobject.oldcodes[i]+')</s></span></button> ';
+               bikelist=bikelist+' <button type="button" class="btn btn-info bikeid b'+jsonobject.userbikes.bicycles[i]+'" data-id="'+jsonobject.userbikes.bicycles[i]+'" title="'+_currently_rented+'">'+jsonobject.userbikes.bicycles[i]+'<br /><span class="label label-primary">('+jsonobject.userbikes.codes[i]+')</span><br /><span class="label"><s>('+jsonobject.userbikes.oldcodes[i]+')</s></span></button> ';
                }
             $('#rentedbikes').html('<div class="btn-group">'+bikelist+'</div>');
             $('#rentedbikes .bikeid').click( function() { attachbicycleinfo(this,"return"); });

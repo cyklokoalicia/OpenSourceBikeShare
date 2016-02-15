@@ -5,10 +5,10 @@ require("actions-web.php");
 
 R::setup('mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword);
 R::freeze( TRUE );
-R::debug( TRUE,2 );
+//R::debug( TRUE,2 );
 R::addDatabase('localdb','mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword,TRUE);
 R::freeze( TRUE );
-R::debug( TRUE,2 );
+//R::debug( TRUE,2 );
 $values=new stdClass;
 // exit;
 ?>

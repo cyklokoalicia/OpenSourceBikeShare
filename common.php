@@ -165,10 +165,9 @@ function getuserid($number)
 
 function isloggedin()
 {
-   global $userid, $sessionid;
    if (isset($_COOKIE["loguserid"]) AND isset($_COOKIE["logsession"]))
       {
-      $session=R::findOne('sessions','userid=:userid AND sessionid=:sessionid AND timestamp>:timestamp',[':userid'=>$userid,':sessionid'=>$sessionid,':timestamp'=>time()]);
+      $session=R::findOne('sessions','userid=:userid AND sessionid=:sessionid AND timestamp>:timestamp',[':userid'=>$_COOKIE["loguserid"],':sessionid'=>$_COOKIE["logsession"],':timestamp'=>time()]);
       if (!empty($session)) return 1;
       else return 0;
       }
@@ -278,7 +277,8 @@ function checkstandname($standname)
    $stand=R::findOne('stands','standname=?',[$standname]);
    if (empty($stand))
       {
-      response('<h3>'._('Stand').' '.$standname.' '._('does not exist').'!</h3>',ERROR);
+      $values->standname=$standname;
+      status('CHECKSTAND',100,$values);
       }
 }
 
@@ -432,7 +432,7 @@ function checktoomany($cron=1,$userid=0)
          foreach($users as $user)
             {
             $numberofrentals=R::count('history','userid=:userid AND action=:action AND time>:time',[':userid'=>$user->id,':action'=>'RENT','time'=>date("Y-m-d H:i:s",time()-$watches["timetoomany"]*3600)]);
-            if ($numberofrentals>=($userlimit+$watches["numbertoomany"]))
+            if ($numberofrentals>=($user->userlimit+$watches["numbertoomany"]))
                {
                $abusers.=" ".$numberofrentals." ("._('limit')." ".$user->userlimit.") "._('by')." ".$user->username.",";
                $found=1;
@@ -449,7 +449,7 @@ function checktoomany($cron=1,$userid=0)
          foreach($users as $user)
             {
             $numberofrentals=R::count('history','userid=:userid AND action=:action AND time>:time',[':userid'=>$user->id,':action'=>'RENT','time'=>date("Y-m-d H:i:s",time()-$watches["timetoomany"]*3600)]);
-            if ($result->num_rows>=($userlimit+$watches["numbertoomany"]))
+            if ($numberofrentals>=($user->userlimit+$watches["numbertoomany"]))
                {
                $abusers.=" ".$numberofrentals." ("._('limit')." ".$user->userlimit.") "._('by')." ".$user->username.",";
                $found=1;
@@ -503,7 +503,7 @@ function changecreditendrental($bikenum,$userid)
 
    $usercredit=getusercredit($userid);
 
-   $history=R::find('history','bikenum=:bikenum AND userid=:userid AND FIND_IN_SET(action,:action) ORDER BY time DESC LIMIT 1',[':bikenum'=>$bikenum,':userid'=>$userid,':action:'=>'RENT,FORCERENT']);
+   $history=R::findOne('history','bikenum=:bikenum AND userid=:userid AND FIND_IN_SET(action,:action) ORDER BY time DESC LIMIT 1',[':bikenum'=>$bikenum,':userid'=>$userid,':action'=>'RENT,FORCERENT']);
    if (!empty($history))
       {
       $starttime=strtotime($history->time);
@@ -557,13 +557,13 @@ function changecreditendrental($bikenum,$userid)
       $history->userid=$userid;
       $history->bikenum=$bikenum;
       $history->action='CREDITCHANGE';
-      $history->paremeter=$creditchange.'|'.$changelog;
+      $history->parameter=$creditchange.'|'.$changelog;
       R::store($history);
       $history=R::dispense('history');
       $history->userid=$userid;
       $history->bikenum=$bikenum;
       $history->action='CREDIT';
-      $history->paremeter=$usercredit;
+      $history->parameter=$usercredit;
       R::store($history);
       return $creditchange;
       }

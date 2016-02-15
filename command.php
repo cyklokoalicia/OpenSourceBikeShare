@@ -3,7 +3,7 @@ require("config.php");
 require("external/rb.php");
 R::setup('mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword);
 R::freeze( TRUE );
-R::debug( TRUE,2 );
+//R::debug( TRUE,2 );
 R::addDatabase('localdb','mysql:host='.$dbserver.';dbname='.$dbname,$dbuser,$dbpassword,TRUE);
 R::begin();
 require('actions-web.php');

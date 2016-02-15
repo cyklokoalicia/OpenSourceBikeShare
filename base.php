@@ -2,7 +2,7 @@
 
 define('OK',1);
 
-function notification($result,$values==FALSE)
+function notification($result,$values=FALSE)
 {
 if ($result==10)
    {
@@ -146,9 +146,11 @@ function returnbike($userid,$bikenum,$stand,$note="",$force=FALSE)
    $values=new stdClass;
    $stand=strtoupper($stand);
 
+   $values->bikenum=$bikenum;
    if ($force==FALSE)
       {
       $countrented=R::count('bikes','currentuser=? ORDER BY bikenum',[$userid]);
+      $values->countrented=$countrented;
       if ($countrented==0)
          {
          status('RETURN',100);
@@ -167,16 +169,14 @@ function returnbike($userid,$bikenum,$stand,$note="",$force=FALSE)
             {
             $values->bikelist.=$userbike->bikenum.',';
             }
-         if ($countrented>1) $values->bikelist=substr($values->bikelist,0,strlen($values->bikelist)-1); // remove last comma
-         $values->bikenum=$bikenum;
-         $values->countrented=$countrented;
+         if ($countrented>=1) $values->bikelist=substr($values->bikelist,0,strlen($values->bikelist)-1); // remove last comma
          status('RETURN',102,$values);
          }
       }
    else
       {
       $bike=R::findOne('bikes','currentuser=:userid AND bikenum=:bikenum',[':userid'=>$userid,':bikenum'=>$bikenum]);
-      if (empty($bike)) // no such bike is rented
+      if (!empty($bike)) // bike does not exist
          {
          $values->bikenum=$bikenum;
          status('RETURN',103,$values);
@@ -187,6 +187,7 @@ function returnbike($userid,$bikenum,$stand,$note="",$force=FALSE)
       }
 
    $bike->currentcode=sprintf("%04d",$bike->currentcode);
+   $values->currentcode=$bike->currentcode;
 
    $stand=R::findOne('stands','standname=?',[$stand]);
 
@@ -263,20 +264,20 @@ function listbikes($stand)
 {
    global $forcestack;
    $values=new stdClass;
-   $stacktopbike=FALSE;
+   $values->stacktopbike=FALSE;
    if ($forcestack)
       {
       $stand=R::findOne('stand','standname=?',[$stand]);
       $values->stacktopbike=checktopofstack($stand->id);
       }
-   $rows=R::getAll('SELECT bikenum FROM bikes LEFT JOIN stands ON bikes.currentstand=stands.id WHERE standname=?',[$stand])
+   $rows=R::getAll('SELECT bikes.id,bikenum FROM bikes LEFT JOIN stands ON bikes.currentstand=stands.id WHERE standname=?',[$stand]);
    $bikes=R::convertToBeans('bikes',$rows);
    if (!empty($bikes))
       {
       $values->standcount=count($bikes);
       foreach ($bikes as $bike)
          {
-         $notes=R::find('notes','bikenum=? AND deleted IS NULL ORDER BY time DESC',[$bike->bikenum]);
+         $notes=R::find('notes','bikenum=:bikenum AND deleted=:deleted ORDER BY time DESC',[':bikenum'=>$bike->bikenum,':deleted'=>'0000-00-00 00:00:00']);
          $note="";
          foreach ($notes as $noteitem)
             {
@@ -285,12 +286,12 @@ function listbikes($stand)
          $note=substr($note,0,strlen($note)-2); // remove last two chars - comma and space
          if ($note)
             {
-            $values->bicycles[]=$bikenum; // bike with note / issue
+            $values->id[]=$bike->bikenum; // bike with note / issue
             $values->notes[]=$note;
             }
          else
             {
-            $values->bicycles[]=$bikenum;
+            $values->id[]=$bike->bikenum;
             $values->notes[]="";
             }
          }
@@ -331,7 +332,7 @@ function removenote($userid,$bikenum)
    $values=new stdClass;
    $values->bikenum=$bikenum;
    $note=R::findOne('notes','bikenum=?',[$bikenum]);
-   R::trash($note)
+   R::trash($note);
    status('DELNOTE',OK,$values);
 }
 
@@ -361,7 +362,7 @@ function addcredit($userid,$creditmultiplier)
    $history=R::dispense('history');
    $history->userid=$userid;
    $history->action='CREDITCHANGE';
-   $history->parameter=$addcreditamount.'|add+'.$addcreditamount);
+   $history->parameter=$addcreditamount.'|add+'.$addcreditamount;
    R::store($history);
    response(_('Added')." ".$addcreditamount.getcreditcurrency()." "._('credit for')." ".getusername($userid).".");
 }
@@ -391,7 +392,7 @@ function generatecoupons($multiplier)
          $coupon->coupon=$code;
          $coupon->value=$value;
          $coupon->status=0;
-         R::store($coupon)
+         R::store($coupon);
          }
       }
    response(_('Generated 10 new').' '.$value.' '.getcreditcurrency().' '._('coupons').'.',0,array("coupons"=>$codes));
@@ -412,7 +413,7 @@ function validatecoupon($userid,$couponcode)
    $coupon=R::findOne('coupons','coupon=? AND status<2',[$couponcode]);
    if (!empty($coupon))
       {
-      $credit=findOne('credit','userid=?',$userid);
+      $credit=R::findOne('credit','userid=?',$userid);
       $credit->credit=$credit->credit+$coupon->value;
       R::store($credit);
       $history=R::dispense('history');
@@ -470,28 +471,69 @@ function checkbikenum($bikenum)
       }
 }
 
-function checkstandname($standname)
+function userbikes($userid)
 {
-   $standname=trim(strtoupper($standname));
-   $stand=R::findOne('stands','standname=?',[$standname]);
-   if (empty($stand))
+   if (!isloggedin()) response("");
+   $bikes=R::find('bikes','currentuser=? ORDER BY bikenum',[$userid]);
+   if (!empty($bikes))
       {
-      $values->standname=$standname;
-      status('CHECKSTAND',100,$values);
+      foreach ($bikes as $bike)
+         {
+         $bicycles[]=$bike->bikenum;
+         $codes[]=str_pad($bike->code,4,"0",STR_PAD_LEFT);
+         $history=R::findOne('history','bikenum=:bikenum AND action=:action ORDER BY time DESC',[':bikenum'=>$bike->bikenum,':action'=>'RENT']);
+         if (!empty($history))
+            {
+            $oldcodes[]=str_pad($history->parameter,4,"0",STR_PAD_LEFT);
+            }
+         }
       }
+   else
+      {
+      $bicycles="";
+      }
+   if (!isset($codes)) $codes="";
+   if (!isset($oldcodes)) $oldcodes="";
+   response('',0,array("userbikes"=>array("bicycles"=>$bicycles,"codes"=>$codes,"oldcodes"=>$oldcodes)),0);
 }
 
 function mapgeolocation ($userid,$lat,$long)
 {
-
    $geolocation=R::dispense('geolocation');
    $geolocation->userid=$userid;
    $geolocation->latitude=$lat;
    $geolocation->longitude=$long;
    R::store($geolocation);
-
    response("");
+}
 
+
+function mapgetmarkers()
+{
+   $rows=R::getAll('SELECT stands.id,count(bikeNum) AS bikecount,standDescription,standName,standPhoto,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.id WHERE stands.serviceTag=0 GROUP BY standName ORDER BY standName');
+   if (!empty($rows))
+      {
+      foreach ($rows as $row)
+         {
+         $jsoncontent["markers"][]=$row;
+         }
+      }
+   response('',0,$jsoncontent,0);
+}
+
+function mapgetlimit($userid)
+{
+   if (!isloggedin()) response("");
+   $rented=R::count('bikes','currentuser=?',[$userid]);
+   $limit=R::findOne('limits','userid=?',[$userid]);
+
+   $currentlimit=$limit->userlimit-$rented;
+
+   $usercredit=0;
+   $usercredit=getusercredit($userid);
+
+   $jsoncontent=array("limit"=>$currentlimit,"rented"=>$rented,"usercredit"=>$usercredit);
+   response('',0,$jsoncontent,0);
 }
 
 ?>
