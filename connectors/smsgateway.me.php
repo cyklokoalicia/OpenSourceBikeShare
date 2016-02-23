@@ -14,73 +14,139 @@ $gatewaysecret=""; // your "Secret" from callback
 require('smsGateway.me.class.php');
 
 class SMSConnector
-   {
+{
 
-   function __construct()
-      {
-      $this->CheckConfig();
-      if (isset($_POST["message"])) $this->message=$_POST["message"];
-      if (isset($_POST["contact"])) $this->number=$_POST["contact"]["Number"];
-      if (isset($_POST["id"])) $this->uuid=$_POST["id"];
-      if (isset($_POST["received_at"])) $this->time=date("Y-m-d H:i:s",$_POST["received_at"]);
-      $this->ipaddress=$_SERVER['REMOTE_ADDR'];
-      }
+    private $_email = "";
+    private $_password = "";
+    private $_secret = "";
+    public $deviceId;
 
-   function CheckConfig()
-      {
-      global $gatewayemail,$gatewaypassword,$gatewaysecret;
-      if (DEBUG===TRUE) return;
-      if (!$gatewayemail OR !$gatewaypassword OR !$gatewaysecret) exit('Please, configure SMS API gateway access in '.__FILE__.'!');
-      // when SMS received, check if secret matches or exit, if does not:
-      if (isset($_POST["secret"]) AND isset($_POST["id"]) AND $_POST["secret"]<>$gatewaysecret) exit;
-      }
+    /**
+     * Sets whether the system should ask for deviceId or use 1 instead
+     * @var boolean
+     */
+    public $findDevice = true;
 
-   function Text()
-      {
-      return $this->message;
-      }
+    public function __construct()
+    {
+        $this->CheckConfig();
+        if (isset($_POST["message"])) {
+            $this->message = $_POST["message"];
+        }
 
-   function ProcessedText()
-      {
-      return strtoupper($this->message);
-      }
+        if (isset($_POST["contact"])) {
+            $this->number = $_POST["contact"]["number"];
+        }
 
-   function Number()
-      {
-      return $this->number;
-      }
+        if (isset($_POST["id"])) {
+            $this->uuid = $_POST["id"];
+        }
 
-   function UUID()
-      {
-      return $this->uuid;
-      }
+        if (isset($_POST["received_at"])) {
+            $this->time = date("Y-m-d H:i:s", $_POST["received_at"]);
+        }
 
-   function Time()
-      {
-      return $this->time;
-      }
+        $this->ipaddress = $_SERVER['REMOTE_ADDR'];
 
-   function IPAddress()
-      {
-      return $this->ipaddress;
-      }
+
+        
+    }
+
+    /**
+     * Returns first deviceId or 1
+     * @return integer deviceId
+     */
+    public function getDeviceId()
+    {
+        if (!$this->findDevice) {
+            return 1;
+        }
+
+        $smsgateway = new SmsGateway($this->_email, $this->_password);
+        $result = $smsgateway->getDevices();
+
+
+        if ($result['response']['success'] && isset($result['response']['result']['data'][0]['id'])) {
+            return $result['response']['result']['data'][0]['id'];
+        } else {
+            return 1;
+        }
+
+    }
+
+    public function CheckConfig()
+    {
+        global $gatewayemail, $gatewaypassword, $gatewaysecret;
+        if (DEBUG === true) {
+            return;
+        }
+
+        if (!$gatewayemail or !$gatewaypassword or !$gatewaysecret) {
+            exit('Please, configure SMS API gateway access in ' . __FILE__ . '!');
+        }
+
+        // when SMS received, check if secret matches or exit, if does not:
+        if (isset($_POST["secret"]) and isset($_POST["id"]) and $_POST["secret"] != $gatewaysecret) {
+            exit;
+        }
+        $this->_email = $gatewayemail;
+        $this->_password = $gatewaypassword;
+        $this->secret = $gatewaysecret;
+
+        $this->deviceId = $this->getDeviceId();
+    }
+
+    public function Text()
+    {
+        return $this->message;
+    }
+
+    public function ProcessedText()
+    {
+        return strtoupper($this->message);
+    }
+
+    public function Number()
+    {
+        return substr($this->number, 1); //remove + because smsgatewayme uses numbers with + but system doesn't
+    }
+
+    public function UUID()
+    {
+        return $this->uuid; //UUID zn. unikatne id, kedze rozne brany maju rozne id tak je to drist a moze nastat konflikt
+    }
+
+    public function Time()
+    {
+        return $this->time;
+    }
+
+    public function IPAddress()
+    {
+        return $this->ipaddress;
+    }
 
     // confirm SMS received to API
-   function Respond()
-      {
-      if (DEBUG===TRUE) return;
-      }
+    public function Respond()
+    {
+        if (DEBUG === true) {
+            return;
+        }
 
-   // send SMS message via API
-   function Send($number,$text)
-      {
-      global $gatewayemail,$gatewaypassword;
-      if (DEBUG===TRUE) return;
-      $smsgateway=new SmsGateway($gatewayemail,$gatewaypassword);
-      $deviceid=1; // use first existing device
-      $smsgateway->sendMessageToNumber("+".$number,$text,$deviceid);
-      }
+    }
 
-   }
+    // send SMS message via API
+    public function Send($number, $text)
+    {
 
-?>
+        if (DEBUG === true) {
+            return;
+        }
+
+        $smsgateway = new SmsGateway($this->_email, $this->_password);
+
+        $result = $smsgateway->sendMessageToNumber("+" . $number, $text, $this->deviceId);
+        return $result['success'];
+    }
+
+}
