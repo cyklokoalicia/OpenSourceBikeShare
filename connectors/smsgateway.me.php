@@ -148,5 +148,4 @@ class SMSConnector
         $result = $smsgateway->sendMessageToNumber("+" . $number, $text, $this->deviceId);
         return $result['success'];
     }
-
 }

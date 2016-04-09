@@ -20,46 +20,40 @@ require("config.php");
 
 function report()
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+    global $dbServer, $dbUser, $dbPassword, $dbName;
+    
+    $mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
 
-	if ($result = $mysqli->query("
+    if ($result = $mysqli->query("
 	SELECT max(time) as lastUsage,history.bikeNum,coalesce(standName,userName) as current
 	FROM `history` join bikes on bikes.bikenum=history.bikenum left join stands on bikes.currentStand=stands.standId left join users on bikes.currentUser=users.userid group by bikeNum order by lastusage asc
-	")) 
-        {
-		$data = $result->fetch_all(MYSQLI_ASSOC);
-	} 
-	else 
-	{
-	    echo "problem s sql dotazom";
-	    error("users bikes not fetched");
-	}
-	
-	echo '<table style="width:50%">';
+	")) {
+        $data = $result->fetch_all(MYSQLI_ASSOC);
+    } else {
+        echo "problem s sql dotazom";
+        error("users bikes not fetched");
+    }
+    
+    echo '<table style="width:50%">';
 #	echo '<caption>last usage</caption>';
-		
-	echo "<tr>";
-	$cols = array("bikeNum","lastUsage","current");
-	foreach($cols as $col)
-	{
-		echo "<th>$col</th>";		
-	} 
-	echo "</tr>";
-	 
-	for($i=0; $i<count($data);$i++)
-	{	
-		echo "<tr>";
-		foreach($cols as $col)      
-        	{
-                	echo "<td>";
-			echo $data[$i][$col];
-			echo "</td>";           
-        	}
-	echo "</tr>";
-	}
- 	echo "</table>";
+        
+    echo "<tr>";
+    $cols = array("bikeNum","lastUsage","current");
+    foreach ($cols as $col) {
+        echo "<th>$col</th>";
+    }
+    echo "</tr>";
+     
+    for ($i=0; $i<count($data); $i++) {
+        echo "<tr>";
+        foreach ($cols as $col) {
+            echo "<td>";
+            echo $data[$i][$col];
+            echo "</td>";
+        }
+        echo "</tr>";
+    }
+    echo "</table>";
 }
 
 report();

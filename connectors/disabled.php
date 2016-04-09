@@ -1,50 +1,47 @@
 <?php
 
 class SMSConnector
-   {
+{
 
-   function __construct()
-      {
-      }
+    function __construct()
+    {
+    }
 
-   function CheckConfig()
-      {
-      }
+    function CheckConfig()
+    {
+    }
 
-   function Text()
-      {
-      }
+    function Text()
+    {
+    }
 
-   function ProcessedText()
-      {
-      }
+    function ProcessedText()
+    {
+    }
 
-   function Number()
-      {
-      }
+    function Number()
+    {
+    }
 
-   function UUID()
-      {
-      }
+    function UUID()
+    {
+    }
 
-   function Time()
-      {
-      }
+    function Time()
+    {
+    }
 
-   function IPAddress()
-      {
-      }
+    function IPAddress()
+    {
+    }
 
     // confirm SMS received to API
-   function Respond()
-      {
-      }
+    function Respond()
+    {
+    }
 
    // send SMS message via API
-   function Send($number,$text)
-      {
-      }
-
-   }
-
-?>
+    function Send($number, $text)
+   {
+    }
+}
