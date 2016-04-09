@@ -4,16 +4,17 @@ CSS bubbles from:
 https://stackoverflow.com/questions/19400183/how-to-style-chat-bubble-in-iphone-classic-style-using-css-only
 */
 $usenumber=""; // including international dialing code, no plus, no zeroes
-if ($usenumber=="") exit('Please, edit this script and set $usenumber variable to number existing in the system.');
-if (isset($_POST["text"]))
-   {
-   $dirname=dirname($_SERVER['REQUEST_URI']);
-   $dirname=str_replace("/connectors/loopback","",$dirname);
-   fopen("http://".$_SERVER['HTTP_HOST'].$dirname."/receive.php?sms_text=".urlencode($_POST["text"])."&sms_uuid=test&sender=".$usenumber."&receive_time=".urlencode(date("Y-m-d H:i:s")),"r");
-   }
+if ($usenumber=="") {
+    exit('Please, edit this script and set $usenumber variable to number existing in the system.');
+}
+if (isset($_POST["text"])) {
+    $dirname=dirname($_SERVER['REQUEST_URI']);
+    $dirname=str_replace("/connectors/loopback", "", $dirname);
+    fopen("http://".$_SERVER['HTTP_HOST'].$dirname."/receive.php?sms_text=".urlencode($_POST["text"])."&sms_uuid=test&sender=".$usenumber."&receive_time=".urlencode(date("Y-m-d H:i:s")), "r");
+}
 
 $sms=file_get_contents("loopback.log");
-$lines=explode("\n",$sms);
+$lines=explode("\n", $sms);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -29,14 +30,17 @@ $lines=explode("\n",$sms);
 <div class="container">
 <div class="commentArea col-xs-12 col-sm-12 col-md-12 col-lg-12">
 <?php
-$lines=array_slice($lines,-5);
-foreach ($lines as $text)
-   {
-   $parts=explode("|~",urldecode($text));
-   $parts[2]=wordwrap($parts[2],50, "<br />",TRUE);
-   if ($parts[0]=="<") echo '<div class="bubbledRight"><em>',$parts[1],'</em><br />',$parts[2],'</div>';
-   if ($parts[0]==">") echo '<div class="bubbledLeft"><em>',$parts[1],'</em><br />',$parts[2],'</div>';
-   }
+$lines=array_slice($lines, -5);
+foreach ($lines as $text) {
+    $parts=explode("|~", urldecode($text));
+    $parts[2]=wordwrap($parts[2], 50, "<br />", true);
+    if ($parts[0]=="<") {
+        echo '<div class="bubbledRight"><em>',$parts[1],'</em><br />',$parts[2],'</div>';
+    }
+    if ($parts[0]==">") {
+        echo '<div class="bubbledLeft"><em>',$parts[1],'</em><br />',$parts[2],'</div>';
+    }
+}
 ?>
    </div>
    <form method="post" id="message" action="phone.php">

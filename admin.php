@@ -3,11 +3,13 @@ require("config.php");
 require("db.class.php");
 require('actions-web.php');
 
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+$db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
 $db->connect();
 
 checksession();
-if (getprivileges($_COOKIE["loguserid"])<=0) exit(_('You need admin privileges to access this page.'));
+if (getprivileges($_COOKIE["loguserid"])<=0) {
+    exit(_('You need admin privileges to access this page.'));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -24,19 +26,18 @@ if (getprivileges($_COOKIE["loguserid"])<=0) exit(_('You need admin privileges t
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrapValidator.min.css" />
-<?php if (file_exists("analytics.php")) require("analytics.php"); ?>
+<?php if (file_exists("analytics.php")) {
+    require("analytics.php");
+} ?>
 <script>
 <?php
-if (iscreditenabled())
-   {
-   echo 'var creditenabled=1;',"\n";
-   echo 'var creditcurrency="',$credit["currency"],'"',";\n";
-   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
-   }
-else
-   {
-   echo 'var creditenabled=0;',"\n";
-   }
+if (iscreditenabled()) {
+    echo 'var creditenabled=1;',"\n";
+    echo 'var creditcurrency="',$credit["currency"],'"',";\n";
+    $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
+} else {
+    echo 'var creditenabled=0;',"\n";
+}
 ?>
 </script>
 </head>
@@ -54,7 +55,7 @@ else
           <ul class="nav navbar-nav">
             <li><a href="<?php echo $systemURL; ?>"><?php echo _('Map'); ?></a></li>
             <li class="active"><a href="<?php echo $systemURL; ?>admin.php"><?php echo _('Admin'); ?></a></li>
-<?php if (isloggedin()): ?>
+<?php if (isloggedin()) : ?>
             <li><a href="command.php?action=logout" id="logout"><?php echo _('Log out'); ?></a></li>
 <?php endif; ?>
           </ul>
@@ -69,7 +70,8 @@ else
             </div>
 
 <?php
-if (isloggedin()):
+if (isloggedin()) {
+}
 ?>
             <div role="tabpanel">
 
@@ -79,8 +81,7 @@ if (isloggedin()):
     <li role="presentation"><a href="#stands" aria-controls="stands" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> <?php echo _('Stands'); ?></a></li>
     <li role="presentation"><a href="#users" aria-controls="users" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> <?php echo _('Users'); ?></a></li>
 <?php
-if (iscreditenabled()):
-?>
+if (iscreditenabled()) :
     <li role="presentation"><a href="#credit" aria-controls="credit" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-euro" aria-hidden="true"></span> <?php echo _('Credit system'); ?></a></li>
 <?php endif; ?>
     <li role="presentation"><a href="#reports" aria-controls="reports" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span> <?php echo _('Reports'); ?></a></li>
@@ -109,15 +110,22 @@ if (iscreditenabled()):
       </div>
     </div>
 <?php
-if (iscreditenabled()):
-?>
+if (iscreditenabled()) {
+    :
     <div role="tabpanel" class="tab-pane" id="credit">
       <div class="row">
          <div class="col-lg-12">
-         <button type="button" id="listcoupons" class="btn btn-default" title="<?php echo _('Display existing coupons.'); ?>"><span class="glyphicon glyphicon-list-alt"></span> <?php echo _('List coupons'); ?></button>
-         <button type="button" id="generatecoupons1" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$requiredcredit,$credit["currency"],' '; echo _('coupons'); ?></button>
-         <button type="button" id="generatecoupons2" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$requiredcredit*5,$credit["currency"],' '; echo _('coupons'); ?></button>
-         <button type="button" id="generatecoupons3" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$requiredcredit*10,$credit["currency"],' '; echo _('coupons'); ?></button>
+         <button type="button" id="listcoupons" class="btn btn-default" title="<?php echo _('Display existing coupons.'); ?>"><span class="glyphicon glyphicon-list-alt"></span> <?php echo _('List coupons');
+} ?></button>
+         <button type="button" id="generatecoupons1" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate');
+            echo ' ',$requiredcredit,$credit["currency"],' ';
+            echo _('coupons'); ?></button>
+         <button type="button" id="generatecoupons2" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate');
+            echo ' ',$requiredcredit*5,$credit["currency"],' ';
+            echo _('coupons'); ?></button>
+         <button type="button" id="generatecoupons3" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate');
+            echo ' ',$requiredcredit*10,$credit["currency"],' ';
+            echo _('coupons'); ?></button>
          <div id="creditconsole"></div>
          </div>
       </div>
@@ -132,16 +140,20 @@ if (iscreditenabled()):
       <form class="container" id="edituser">
          <div class="form-group"><label for="username" class="control-label"><?php echo _('Fullname:'); ?></label> <input type="text" name="username" id="username" class="form-control" /></div>
          <div class="form-group"><label for="email"><?php echo _('Email:'); ?></label> <input type="text" name="email" id="email" class="form-control" /></div>
-<?php if ($connectors["sms"]): ?>
+<?php if ($connectors["sms"]) {
+} ?>
          <div class="form-group"><label for="phone"><?php echo _('Phone number:'); ?></label> <input type="text" name="phone" id="phone" class="form-control" /></div>
 <? endif; ?>
          <div class="form-group"><label for="privileges"><?php echo _('Privileges:'); ?></label> <input type="text" name="privileges" id="privileges" class="form-control" /></div>
          <div class="form-group"><label for="limit"><?php echo _('Bike limit:'); ?></label> <input type="text" name="limit" id="limit" class="form-control" /></div>
          <input type="hidden" name="userid" id="userid" value="" />
          <button type="button" id="saveuser" class="btn btn-primary"><?php echo _('Save'); ?></button>
-         or <button type="button" id="addcredit" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit,$credit["currency"]; ?></button>
-         <button type="button" id="addcredit2" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit*5,$credit["currency"]; ?></button>
-         <button type="button" id="addcredit3" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit*10,$credit["currency"]; ?></button>
+         or <button type="button" id="addcredit" class="btn btn-success"><?php echo _('Add');
+            echo ' ',$requiredcredit,$credit["currency"]; ?></button>
+         <button type="button" id="addcredit2" class="btn btn-success"><?php echo _('Add');
+            echo ' ',$requiredcredit*5,$credit["currency"]; ?></button>
+         <button type="button" id="addcredit3" class="btn btn-success"><?php echo _('Add');
+            echo ' ',$requiredcredit*10,$credit["currency"]; ?></button>
       </form>
       <div id="userconsole"></div>
     </div>
@@ -166,7 +178,9 @@ if (iscreditenabled()):
   <div class="panel-body">
     <i class="glyphicon glyphicon-copyright-mark"></i> <? echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
   </div>
-  <div class="panel-footer"><strong><?php echo _('Privacy policy:'); ?></strong> <?php echo _('We will use your details for'); echo $systemname,'-'; echo _('related activities only'); ?>.</div>
+  <div class="panel-footer"><strong><?php echo _('Privacy policy:'); ?></strong> <?php echo _('We will use your details for');
+    echo $systemname,'-';
+    echo _('related activities only'); ?>.</div>
    </div>
 
     </div><!-- /.container -->

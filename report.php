@@ -20,71 +20,61 @@ require("config.php");
 
 function report()
 {
-	global $dbserver, $dbuser, $dbpassword, $dbname;
+    global $dbserver, $dbuser, $dbpassword, $dbname;
 
-	$mysqli = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
+    $mysqli = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
 
-	if ($result = $mysqli->query("SELECT bikes.bikeNum,userName,standName,note FROM bikes left join users on
+    if ($result = $mysqli->query("SELECT bikes.bikeNum,userName,standName,note FROM bikes left join users on
 	        bikes.currentUser=users.userId left join (select * from notes
 	        where deleted is null ) as notes on notes.bikeNum=bikes.BikeNum left
 	        join stands on bikes.currentStand=stands.standId
-	                order by standName,bikeNum LIMIT 100"))
-        {
-		while($row=$result->fetch_assoc())
-		{
-                echo $row["bikeNum"],"&nbsp;",$row["userName"],$row["standName"],"&nbsp;",$row["note"],"<br/>";
-                }
-	}
-	else
-	{
-	    echo "problem s sql dotazom";
-	    error("rented bikes not fetched");
-	}
+	                order by standName,bikeNum LIMIT 100")) {
+        while ($row=$result->fetch_assoc()) {
+            echo $row["bikeNum"],"&nbsp;",$row["userName"],$row["standName"],"&nbsp;",$row["note"],"<br/>";
+        }
+    } else {
+        echo "problem s sql dotazom";
+        error("rented bikes not fetched");
+    }
 
 }
 
 function reportStands()
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+    global $dbServer, $dbUser, $dbPassword, $dbName;
+    
+    $mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
 
-	if ($result = $mysqli->query("
+    if ($result = $mysqli->query("
 SELECT stands.standName,note FROM stands join (select * from notes
 	        where deleted is null ) as notes on notes.standId=stands.standId
-	                order by standName,note LIMIT 100	")) 
-        {
-		$data = $result->fetch_all(MYSQLI_ASSOC);
-	} 
-	else 
-	{
-	    echo "problem s sql dotazom";
-	    error("users bikes not fetched");
-	}
-	
-	echo '<table style="width:50%">';
+	                order by standName,note LIMIT 100	")) {
+        $data = $result->fetch_all(MYSQLI_ASSOC);
+    } else {
+        echo "problem s sql dotazom";
+        error("users bikes not fetched");
+    }
+    
+    echo '<table style="width:50%">';
 #	echo '<caption>last usage</caption>';
-		
-	echo "<tr>";
-	$cols = array("standName","note");
-	foreach($cols as $col)
-	{
-		echo "<th>$col</th>";		
-	} 
-	echo "</tr>";
-	 
-	for($i=0; $i<count($data);$i++)
-	{	
-		echo "<tr>";
-		foreach($cols as $col)      
-        	{
-                	echo "<td>";
-			echo $data[$i][$col];
-			echo "</td>";           
-        	}
-	echo "</tr>";
-	}
- 	echo "</table>";
+        
+    echo "<tr>";
+    $cols = array("standName","note");
+    foreach ($cols as $col) {
+        echo "<th>$col</th>";
+    }
+    echo "</tr>";
+     
+    for ($i=0; $i<count($data); $i++) {
+        echo "<tr>";
+        foreach ($cols as $col) {
+            echo "<td>";
+            echo $data[$i][$col];
+            echo "</td>";
+        }
+        echo "</tr>";
+    }
+    echo "</table>";
 }
 
 report();
