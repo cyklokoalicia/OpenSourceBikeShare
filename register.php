@@ -17,7 +17,9 @@ require("common.php");
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
 <link rel="stylesheet" type="text/css" href="css/bootstrapValidator.min.css" />
-<?php if (file_exists("analytics.php")) require("analytics.php"); ?>
+<?php if (file_exists("analytics.php")) {
+    require("analytics.php");
+} ?>
 </head>
 <body>
     <!-- Fixed navbar -->
@@ -48,7 +50,7 @@ require("common.php");
             <div id="console"></div>
             </div>
 
-<?php if (issmssystemenabled()==TRUE): ?>
+<?php if (issmssystemenabled()==true) : ?>
       <form class="container" id="step1">
        <h2><?php echo _('Step 1 - Confirm your phone number'); ?></h2>
          <div class="form-group">
@@ -61,7 +63,7 @@ require("common.php");
       <h2 id="step2title"><?php echo _('Step 2 - Create account'); ?></h2>
       <div class="form-group">
             <label for="smscode" class="control-label"><?php echo _('SMS code (received to your phone):'); ?></label> <input type="text" name="smscode" id="smscode" class="form-control" /></div>
-<?php else: ?>
+<?php else : ?>
       <form class="container" id="step2">
       <h2 id="step2title"><?php echo _('Step 1 - Create account'); ?></h2>
 <?php endif; ?>
@@ -85,7 +87,9 @@ require("common.php");
   <div class="panel-body">
     <i class="glyphicon glyphicon-copyright-mark"></i> <? echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
   </div>
-  <div class="panel-footer"><strong><?php echo _('Privacy policy'); ?>:</strong> <?php echo _('We will use your details for'); echo $systemname,'-'; echo _('related activities only'); ?>.</div>
+  <div class="panel-footer"><strong><?php echo _('Privacy policy'); ?>:</strong> <?php echo _('We will use your details for');
+    echo $systemname,'-';
+    echo _('related activities only'); ?>.</div>
    </div>
 
     </div><!-- /.container -->

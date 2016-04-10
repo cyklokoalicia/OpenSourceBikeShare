@@ -20,42 +20,35 @@ require("config.php");
 
 function report()
 {
-	global $dbserver, $dbuser, $dbpassword, $dbname;
+    global $dbserver, $dbuser, $dbpassword, $dbname;
 
-	$mysqli = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
+    $mysqli = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
 
-	if ($result = $mysqli->query("SELECT users.userId,userName,mail,number,privileges,userLimit,credit,count(bikeNum) as currently_rented from users left join limits on users.userId=limits.userId left join bikes on users.userId=bikes.currentUser left join credit on users.userId=credit.userId
-	                group by userId order by userId "))
-        {
-
-                echo '<table style="width:100%">';
+    if ($result = $mysqli->query("SELECT users.userId,userName,mail,number,privileges,userLimit,credit,count(bikeNum) as currently_rented from users left join limits on users.userId=limits.userId left join bikes on users.userId=bikes.currentUser left join credit on users.userId=credit.userId
+	                group by userId order by userId ")) {
+        echo '<table style="width:100%">';
 #       echo '<caption>uzivatelia</caption>';
 
         echo "<tr>";
         $cols = array("userId","userName","mail","number","privileges","userLimit","credit","currently_rented");
-        foreach($cols as $col)
-        {
-                echo "<th>$col</th>";
+        foreach ($cols as $col) {
+            echo "<th>$col</th>";
         }
         echo "</tr>";
-		while($row=$result->fetch_assoc())
-                {
+        while ($row=$result->fetch_assoc()) {
                 echo "<tr>";
-                foreach($cols as $col)
-                {
-                        echo "<td>";
-                        echo $row[$col];
-                        echo "</td>";
-                }
-        echo "</tr>";
+            foreach ($cols as $col) {
+                echo "<td>";
+                    echo $row[$col];
+                    echo "</td>";
+            }
+            echo "</tr>";
         }
         echo "</table>";
-	}
-	else
-	{
-	    echo "problem s sql dotazom";
-	    error("users bikes not fetched");
-	}
+    } else {
+        echo "problem s sql dotazom";
+        error("users bikes not fetched");
+    }
 
 }
 

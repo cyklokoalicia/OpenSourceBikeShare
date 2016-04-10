@@ -3,7 +3,7 @@ require("config.php");
 require("db.class.php");
 require('actions-web.php');
 
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+$db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
 $db->connect();
 ?>
 <!DOCTYPE html>
@@ -47,7 +47,9 @@ $db->connect();
    </div>
 <?php
 $userkey="";
-if (isset($_GET["key"])) $userkey=$_GET["key"];
+if (isset($_GET["key"])) {
+    $userkey=$_GET["key"];
+}
 confirmUser($userkey);
 ?>
 <div class="alert alert-warning" role="alert">
@@ -57,7 +59,9 @@ confirmUser($userkey);
   <div class="panel-body">
     <i class="glyphicon glyphicon-copyright-mark"></i> <? echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
   </div>
-  <div class="panel-footer"><strong><?php echo _('Privacy policy:'); ?></strong> <?php echo _('We will use your details for'); echo $systemname,'-'; echo _('related activities only'); ?>.</div>
+  <div class="panel-footer"><strong><?php echo _('Privacy policy:'); ?></strong> <?php echo _('We will use your details for');
+    echo $systemname,'-';
+    echo _('related activities only'); ?>.</div>
    </div>
 
     </div><!-- /.container -->
