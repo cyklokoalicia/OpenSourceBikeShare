@@ -304,22 +304,11 @@ while ($row=$result->fetch_assoc()) {
             echo ' ',$row["standName"]; ?></legend>
          <div class="row"><div class="col-lg-6">
 <?php
-if ($connectors["sms"]) :
-         <div class="form-group"><label for ="placename-<?php echo $standid; ?>" class="control-label"><?php echo _('Place:') {
-{
-        {
-        {
-        {
-        {
-        {
-        {
-        {
-        {
-        {} } } }
-         } }
-         } }
-         } }
-            } ?></label> <input type="text" name="placename[<?php echo $standid; ?>]" id="placename-<?php echo $standid; ?>" class="form-control" value="<?php echo $row["placeName"]; ?>" /></div>
+if ($connectors["sms"]) : ?>
+    <div class="form-group">
+        <label for ="placename-<?php echo $standid; ?>" class="control-label"><?php echo _('Place:')  ?></label>
+        <input type="text" name="placename[<?php echo $standid; ?>]" id="placename-<?php echo $standid; ?>" class="form-control" value="<?php echo $row["placeName"]; ?>" />
+    </div>
 <?php endif; ?>
          <div class="form-group"><label for="standdesc-<?php echo $standid; ?>" class="control-label"><?php echo _('Stand description:'); ?></label><textarea name="standdesc[<?php echo $standid; ?>]" id="standdesc-<?php echo $standid; ?>" class="form-control" rows="3" cols="39"></textarea></div>
          <div class="form-group"><label for="standphoto-<?php echo $standid; ?>" class="control-label"><?php echo _('Stand photo:'); ?></label><input type="file" name="standphoto[<?php echo $standid; ?>]" id="standphoto-<?php echo $standid; ?>" class="form-control" /></div>
@@ -344,10 +333,8 @@ if ($connectors["sms"]) :
          <button type="submit" id="register" class="btn btn-primary"><?php echo _('Set up stands'); ?></button> <?php echo _('and continue to step'); ?> 5
          </form>
 <?php endif; ?>
-<?php if ($step==5) {
-    :
+<?php if ($step==5):
     $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
-}
     $db->connect();
 ?>
       <h2>Set system options</h2>
