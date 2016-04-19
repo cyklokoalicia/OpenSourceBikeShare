@@ -250,7 +250,7 @@ if (!$error) {
     $result=$db->query("REPLACE INTO users SET userName='".$_POST["username"]."',password=SHA2('".$_POST["password"]."',512),mail='".$_POST["email"]."',number='".$_POST["phone"]."',privileges=7");
     $userid=$db->conn->insert_id;
     if (!$connectors["sms"]) {
-        $result=$db->query("UPDATE users SET number='$userid' WHERE userId='$userid'");
+        $result=$db->query("UPDATE users SET number='$userid' WHERE id='$userid'");
     }
     $result=$db->query("REPLACE INTO limits SET userId='$userid',userLimit='100'");
     $db->conn->commit();
@@ -304,22 +304,11 @@ while ($row=$result->fetch_assoc()) {
             echo ' ',$row["standName"]; ?></legend>
          <div class="row"><div class="col-lg-6">
 <?php
-if ($connectors["sms"]) :
-         <div class="form-group"><label for ="placename-<?php echo $standid; ?>" class="control-label"><?php echo _('Place:') {
-{
-        {
-        {
-        {
-        {
-        {
-        {
-        {
-        {
-        {} } } }
-         } }
-         } }
-         } }
-            } ?></label> <input type="text" name="placename[<?php echo $standid; ?>]" id="placename-<?php echo $standid; ?>" class="form-control" value="<?php echo $row["placeName"]; ?>" /></div>
+if ($connectors["sms"]) : ?>
+    <div class="form-group">
+        <label for ="placename-<?php echo $standid; ?>" class="control-label"><?php echo _('Place:')  ?></label>
+        <input type="text" name="placename[<?php echo $standid; ?>]" id="placename-<?php echo $standid; ?>" class="form-control" value="<?php echo $row["placeName"]; ?>" />
+    </div>
 <?php endif; ?>
          <div class="form-group"><label for="standdesc-<?php echo $standid; ?>" class="control-label"><?php echo _('Stand description:'); ?></label><textarea name="standdesc[<?php echo $standid; ?>]" id="standdesc-<?php echo $standid; ?>" class="form-control" rows="3" cols="39"></textarea></div>
          <div class="form-group"><label for="standphoto-<?php echo $standid; ?>" class="control-label"><?php echo _('Stand photo:'); ?></label><input type="file" name="standphoto[<?php echo $standid; ?>]" id="standphoto-<?php echo $standid; ?>" class="form-control" /></div>
@@ -344,23 +333,21 @@ if ($connectors["sms"]) :
          <button type="submit" id="register" class="btn btn-primary"><?php echo _('Set up stands'); ?></button> <?php echo _('and continue to step'); ?> 5
          </form>
 <?php endif; ?>
-<?php if ($step==5) {
-    :
+<?php if ($step==5):
     $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
-}
     $db->connect();
 ?>
       <h2>Set system options</h2>
 <?php
 $uploadtotal=0;
 foreach ($_POST["standdesc"] as $standid => $value) {
-    $result=$db->query("UPDATE stands SET standDescription='".$_POST["standdesc"][$standid]."',serviceTag='".$_POST["servicetag"][$standid]."',latitude='".$_POST["standlat"][$standid]."',longitude='".$_POST["standlong"][$standid]."' WHERE standId='$standid'");
+    $result=$db->query("UPDATE stands SET standDescription='".$_POST["standdesc"][$standid]."',serviceTag='".$_POST["servicetag"][$standid]."',latitude='".$_POST["standlat"][$standid]."',longitude='".$_POST["standlong"][$standid]."' WHERE id='$standid'");
     if (isset($uploads[$standid]["filename"])) {
-        $result=$db->query("UPDATE stands SET standPhoto='".$uploads[$standid]["filename"]."' WHERE standId='$standid'");
+        $result=$db->query("UPDATE stands SET standPhoto='".$uploads[$standid]["filename"]."' WHERE id='$standid'");
         $uploadtotal++;
     }
     if (isset($_POST["placename"][$standid])) {
-        $result=$db->query("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE standId='$standid'");
+        $result=$db->query("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE id='$standid'");
     }
 }
 $db->conn->commit();
@@ -432,7 +419,7 @@ foreach ($configfile as $line) {
     $configfile=file($configfilename);
     if ($credit["enabled"]==1) {
         $newcredit=($credit["min"]+$credit["rent"]+$credit["longrental"])*10;
-        $result=$db->query("SELECT userId FROM users WHERE privileges='7'");
+        $result=$db->query("SELECT id FROM users WHERE privileges='7'");
         $row=$result->fetch_assoc();
         $result=$db->query("REPLACE INTO credit SET userId='".$row["userId"]."',credit='$newcredit'");
     }
