@@ -247,7 +247,7 @@ if (!$error) {
 <?php if ($step==3) :
     $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
     $db->connect();
-    $result=$db->query("REPLACE INTO users SET userName='".$_POST["username"]."',password=SHA2('".$_POST["password"]."',512),mail='".$_POST["email"]."',number='".$_POST["phone"]."',privileges=7");
+    $result=$db->query("REPLACE INTO users SET userName='".$_POST["username"]."',password=SHA2('".$_POST["password"]."',512),mail='".$_POST["email"]."',number='".$_POST["phone"]."',privileges=7,note='',recommendations=''");
     $userid=$db->conn->insert_id;
     if (!$connectors["sms"]) {
         $result=$db->query("UPDATE users SET number='$userid' WHERE id='$userid'");
@@ -298,7 +298,7 @@ var maplon=<?php echo $systemlong; ?>;
 <?php
 $result=$db->query("SELECT * FROM stands ORDER BY standName");
 while ($row=$result->fetch_assoc()) {
-    $standid=$row["standId"];
+    $standid=$row["id"];
 ?>
          <fieldset><legend><?php echo _('Stand');
             echo ' ',$row["standName"]; ?></legend>
