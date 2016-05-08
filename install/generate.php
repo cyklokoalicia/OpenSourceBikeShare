@@ -51,7 +51,7 @@ $style = array(
     'position' => 'C'
 );
 
-$result=$db->query("SELECT bikeNum FROM bikes ORDER BY bikeNum");
+$result=R::getAll("SELECT bikeNum FROM bikes ORDER BY bikeNum");
 while ($row=$result->fetch_assoc()) {
     $pdf->AddPage();
    // QRCODE,M : QR-CODE Medium error correction
@@ -59,7 +59,7 @@ while ($row=$result->fetch_assoc()) {
     $pdf->MultiCell(0, 0, $row["bikeNum"], 0, 'C', false, 0);
 }
 
-$result=$db->query("SELECT standName FROM stands WHERE serviceTag='0' ORDER BY standName");
+$result=R::getAll("SELECT standName FROM stands WHERE serviceTag='0' ORDER BY standName");
 while ($row=$result->fetch_assoc()) {
     $pdf->AddPage();
    // QRCODE,M : QR-CODE Medium error correction

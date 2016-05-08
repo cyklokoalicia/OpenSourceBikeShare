@@ -226,7 +226,7 @@ if (!$error) {
     foreach ($sql as $value) {
         $value=trim($value);
         if (strpos("--", $value)===false) {
-            $result=$db->query($value);
+            $result=R::exec($value);
            //echo $value,'<br />';
         }
     }
@@ -247,12 +247,14 @@ if (!$error) {
 <?php if ($step==3) :
     $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
     $db->connect();
-    $result=$db->query("REPLACE INTO users SET userName='".$_POST["username"]."',password=SHA2('".$_POST["password"]."',512),mail='".$_POST["email"]."',number='".$_POST["phone"]."',privileges=7");
-    $userid=$db->conn->insert_id;
+    R::exec("REPLACE INTO users SET userName=?, password=SHA2(?, 512),mail=?, number=?, privileges=7", [
+                   $_POST["username"], $_POST["password"], $_POST["email"], $_POST["phone"]])
+
+    $userid= R::getInsertID();
     if (!$connectors["sms"]) {
-        $result=$db->query("UPDATE users SET number='$userid' WHERE id='$userid'");
+        $result=R::exec("UPDATE users SET number=:userid WHERE id=:userid", [':userid' => $userid]);
     }
-    $result=$db->query("REPLACE INTO limits SET userId='$userid',userLimit='100'");
+    $result=R::exec("REPLACE INTO limits SET userId=':userid', userLimit='100'", [':userid' => $userid]);
     $db->conn->commit();
 ?>
       <h2><?php echo _('Create bicycles and stands'); ?></h2>
@@ -269,18 +271,18 @@ if (!$error) {
 
 <?php endif; ?>
 <?php if ($step==4) :
-    $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
-    $db->connect();
+    R::setup("mysql:host=$dbserver;dbname=$dbname", $dbuser, $dbpassword);
+    R::begin()
     $stands=explode(",", $_POST["stands"]);
     foreach ($stands as $stand) {
         $stand=trim(strtoupper($stand));
-        $result=$db->query("REPLACE INTO stands SET standName='".$stand."',serviceTag=0,placeName='".$stand."'");
+        $result=R::exec("REPLACE INTO stands SET standName=:stand, serviceTag=0, placeName=:stand", [':stand' => $stands]);
     }
     for ($i=1; $i<=$_POST["bicyclestotal"]; $i++) {
         $code=sprintf("%04d", rand(100, 9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
-        $result=$db->query("REPLACE INTO bikes SET bikeNum='".$i."',currentStand=1,currentCode='".$code."'");
+        $result=R::exec("REPLACE INTO bikes SET bikeNum=:bikeNum, currentStand=1, currentCode=:code", [':bikeNum' => $i, ':code' => $code]);
     }
-    $db->conn->commit();
+    R::commit()
 ?>
       <h2><?php echo _('Set up stands'); ?></h2>
 <?php
@@ -296,7 +298,7 @@ var maplat=<?php echo $systemlat; ?>;
 var maplon=<?php echo $systemlong; ?>;
 </script>
 <?php
-$result=$db->query("SELECT * FROM stands ORDER BY standName");
+$result=R::getAll("SELECT * FROM stands ORDER BY standName");
 while ($row=$result->fetch_assoc()) {
     $standid=$row["standId"];
 ?>
@@ -341,13 +343,15 @@ if ($connectors["sms"]) : ?>
 <?php
 $uploadtotal=0;
 foreach ($_POST["standdesc"] as $standid => $value) {
-    $result=$db->query("UPDATE stands SET standDescription='".$_POST["standdesc"][$standid]."',serviceTag='".$_POST["servicetag"][$standid]."',latitude='".$_POST["standlat"][$standid]."',longitude='".$_POST["standlong"][$standid]."' WHERE id='$standid'");
+    $result=R::exec("UPDATE stands SET standDescription=?, serviceTag=?, latitude=?, longitude=? WHERE id='$standid'",
+                   [$_POST["standdesc"][$standid], $_POST["servicetag"][$standid], $_POST["standlat"][$standid], $_POST["standlong"][$standid]]);
+
     if (isset($uploads[$standid]["filename"])) {
-        $result=$db->query("UPDATE stands SET standPhoto='".$uploads[$standid]["filename"]."' WHERE id='$standid'");
+        $result=R::exec("UPDATE stands SET standPhoto='".$uploads[$standid]["filename"]."' WHERE id='$standid'");
         $uploadtotal++;
     }
     if (isset($_POST["placename"][$standid])) {
-        $result=$db->query("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE id='$standid'");
+        $result=R::exec("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE id='$standid'");
     }
 }
 $db->conn->commit();
@@ -419,29 +423,30 @@ foreach ($configfile as $line) {
     $configfile=file($configfilename);
     if ($credit["enabled"]==1) {
         $newcredit=($credit["min"]+$credit["rent"]+$credit["longrental"])*10;
-        $result=$db->query("SELECT id FROM users WHERE privileges='7'");
+        $result=R::getAll("SELECT id FROM users WHERE privileges='7'");
         $row=$result->fetch_assoc();
-        $result=$db->query("REPLACE INTO credit SET userId='".$row["userId"]."',credit='$newcredit'");
+        $result=R::exec("REPLACE INTO credit SET userId='".$row["userId"]."',credit='$newcredit'");
     }
     $db->conn->commit();
 ?>
-      <h2>Installation finished</h2>
-      <div class="alert alert-success" role="alert"><?php echo _('System options set.'); ?></div>
-      <div class="alert alert-warning" role="alert"><strong><?php echo _('Rename');
+        <h2>Installation finished</h2>
+        <div class="alert alert-success" role="alert"><?php echo _('System options set.'); ?></div>
+        <div class="alert alert-warning" role="alert"><strong><?php echo _('Rename');
         echo ' ',$configfilename,' ';
         echo _('to'); ?> config.php.</strong></div>
-      <form class="container" method="post" action="../">
-      <button type="submit" id="register" class="btn btn-primary"><?php echo _('Launch');
-        echo ' ',$systemname; ?>!</button>
-      </form>
+        <form class="container" method="post" action="../">
+            <button type="submit" id="register" class="btn btn-primary">
+            <?php echo _('Launch'),' ',$systemname; ?>!
+            </button>
+        </form>
 <?php endif; ?>
-   <br />
-   <div class="panel panel-default">
-  <div class="panel-body">
-    <i class="glyphicon glyphicon-copyright-mark"></i> <?php echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
-  </div>
-  <div class="panel-footer"><strong><?php echo _('Privacy policy'); ?>:</strong> <?php echo _('We will use your details for'); ?> <?php echo $systemname; ?>-<?php echo _('related activities only'); ?>.</div>
-   </div>
+        <br />
+        <div class="panel panel-default">
+        <div class="panel-body">
+            <i class="glyphicon glyphicon-copyright-mark"></i> <?php echo date("Y"); ?> <a href="<?php echo $systemURL; ?>"><?php echo $systemname; ?></a>
+        </div>
+        <div class="panel-footer"><strong><?php echo _('Privacy policy'); ?>:</strong> <?php echo _('We will use your details for'); ?> <?php echo $systemname; ?>-<?php echo _('related activities only'); ?>.</div>
+        </div>
 
     </div><!-- /.container -->
 </body>
