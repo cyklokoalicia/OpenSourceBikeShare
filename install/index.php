@@ -247,10 +247,11 @@ if (!$error) {
 <?php if ($step==3) :
     $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
     $db->connect();
-    R::exec("REPLACE INTO users SET userName=?, password=SHA2(?, 512),mail=?, number=?, privileges=7", [
-                   $_POST["username"], $_POST["password"], $_POST["email"], $_POST["phone"]]);
+    R::exec("REPLACE INTO users SET userName=?, password=SHA2(?, 512),mail=?, number=?, privileges=7, note='', recommendations=''", [
+            $_POST["username"], $_POST["password"], $_POST["email"], $_POST["phone"]]);
 
     $userid= R::getInsertID();
+
     if (!$connectors["sms"]) {
         $result=R::exec("UPDATE users SET number=:userid WHERE id=:userid", [':userid' => $userid]);
     }
@@ -300,7 +301,7 @@ var maplon=<?php echo $systemlong; ?>;
 <?php
 $result=R::getAll("SELECT * FROM stands ORDER BY standName");
 while ($row=$result->fetch_assoc()) {
-    $standid=$row["standId"];
+    $standid=$row["id"];
 ?>
          <fieldset><legend><?php echo _('Stand');
             echo ' ',$row["standName"]; ?></legend>

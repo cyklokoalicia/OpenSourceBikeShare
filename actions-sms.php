@@ -107,8 +107,6 @@ function status($action, $result, $values = false)
         } elseif ($result==100) {
         }
     }
-}
-
 
 response('Unhandled status '.$result.' in '.$action.' in file '.__FILE__.'.', ERROR);
 
@@ -161,14 +159,14 @@ function info($number, $stand)
         sendSMS($number, _('Stand name')." '".$stand."' "._('has not been recognized. Stands are marked by CAPITALLETTERS.'));
         return;
     }
-    $result=R::getAll("SELECT standId FROM stands where standName='$stand'");
+    $result=R::getAll("SELECT standId FROM stands where standName=:stand", [':stand' => $stand]);
     if ($result->num_rows!=1) {
         sendSMS($number, _('Stand')." '$stand' "._('does not exist.'));
         return;
     }
     $row =$result->fetch_assoc();
     $standId =$row["standId"];
-    $result=R::getAll("SELECT * FROM stands where standname='$stand'");
+    $result=R::getAll("SELECT * FROM stands where standname=:stand", [':stand' => $stand]);
     $row =$result->fetch_assoc();
     $standDescription=$row["standDescription"];
     $standPhoto=$row["standPhoto"];
@@ -292,7 +290,7 @@ function delnote($number, $bikeNum, $message)
 
     checkUserPrivileges($number);
 
-    $result=R::getAll("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
+    $result=R::getAll("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE bikeNum=:bikeNum", [':bikeNum' => $bikeNum]);
     if ($result->num_rows!=1) {
         sendSMS($number, _('Bike')." ".$bikeNum." "._('does not exist').".");
         return;
@@ -308,7 +306,7 @@ function delnote($number, $bikeNum, $message)
         $bikeStatus = "B.$bikeNum "._('is rented by')." $userName (+$phone).";
     }
 
-    $result=R::getAll("SELECT userName FROM users WHERE number=$number");
+    $result=R::getAll("SELECT userName FROM users WHERE number=:number", [':number' => $number]);
     $row =$result->fetch_assoc();
     $reportedBy=$row["userName"];
 
@@ -319,7 +317,7 @@ function delnote($number, $bikeNum, $message)
         $userNote='%';
     }
 
-      $result=R::exec("UPDATE notes SET deleted=NOW() where bikeNum=$bikeNum and deleted is null and note like '%$userNote%'");
+      $result=R::exec("UPDATE notes SET deleted=NOW() where bikeNum=:bikeNum and deleted is null and note like '%:userNote%'", [':userNote' => $userNote, ':bikeNum' => $bikeNum]);
       $count = $db->conn->affected_rows;
 
     if ($count == 0) {
@@ -347,7 +345,7 @@ function untag($number, $standName, $message)
     $userId = getUser($number);
 
     checkUserPrivileges($number);
-    $result=R::getAll("SELECT standId FROM stands where standName='$standName'");
+    $result=R::getAll("SELECT standId FROM stands where standName=:standName", [':standName' => $standName]);
     if ($result->num_rows!=1) {
         sendSMS($number, _("Stand")." ".$standName._("does not exist").".");
         return;
@@ -356,7 +354,7 @@ function untag($number, $standName, $message)
     $row =$result->fetch_assoc();
     $standId=$row["standId"];
 
-    $result=R::getAll("SELECT userName FROM users WHERE number=$number");
+    $result=R::getAll("SELECT userName FROM users WHERE number=:number", [':number' => $number]);
     $row =$result->fetch_assoc();
     $reportedBy=$row["userName"];
 
@@ -368,7 +366,7 @@ function untag($number, $standName, $message)
         $userNote='%';
     }
 
-    $result=R::exec("update notes join bikes on notes.bikeNum = bikes.bikeNum set deleted=now() where bikes.currentStand='$standId' and note like '%$userNote%' and deleted is null");
+    $result=R::exec("update notes join bikes on notes.bikeNum = bikes.bikeNum set deleted=now() where bikes.currentStand=:standId and note like '%:userNote%' and deleted is null", [':standId' => $standId, ':userNote' => $userNote]);
     $count = $db->conn->affected_rows;
 
     if ($count == 0) {
@@ -395,7 +393,7 @@ function delstandnote($number, $standName, $message)
     $userId = getUser($number);
 
     checkUserPrivileges($number);
-    $result=R::getAll("SELECT standId FROM stands where standName='$standName'");
+    $result=R::getAll("SELECT standId FROM stands where standName=:standName", [':standName' => $standName]);
     if ($result->num_rows!=1) {
         sendSMS($number, _("Stand")." ".$standName._("does not exist").".");
         return;
@@ -404,7 +402,7 @@ function delstandnote($number, $standName, $message)
     $row =$result->fetch_assoc();
     $standId=$row["standId"];
 
-    $result=R::getAll("SELECT userName FROM users WHERE number=$number");
+    $result=R::getAll("SELECT userName FROM users WHERE number=:number", [':number' => $number]);
     $row =$result->fetch_assoc();
     $reportedBy=$row["userName"];
 
@@ -416,7 +414,7 @@ function delstandnote($number, $standName, $message)
         $userNote='%';
     }
 
-      $result=R::exec("UPDATE notes SET deleted=NOW() where standId=$standId and deleted is null and note like '%$userNote%'");
+      $result=R::exec("UPDATE notes SET deleted=NOW() where standId=:standId and deleted is null and note like '%:userNote%'", [':standId' => $standId, ':userNote' => $userNote]);
       $count = $db->conn->affected_rows;
 
     if ($count == 0) {
@@ -443,7 +441,7 @@ function standNote($number, $standName, $message)
     $userId = getUser($number);
 
 
-    $result=R::getAll("SELECT standId FROM stands where standName='$standName'");
+    $result=R::getAll("SELECT standId FROM stands where standName=:standName", [':standName' => $standName]);
     if ($result->num_rows!=1) {
         sendSMS($number, _("Stand")." ".$standName._("does not exist").".");
         return;
@@ -452,7 +450,7 @@ function standNote($number, $standName, $message)
     $row =$result->fetch_assoc();
     $standId=$row["standId"];
 
-    $result=R::getAll("SELECT userName from users where number=$number");
+    $result=R::getAll("SELECT userName from users where number=:number", [':number' => $number]);
     $row =$result->fetch_assoc();
     $reportedBy=$row["userName"];
 
@@ -465,12 +463,12 @@ function standNote($number, $standName, $message)
 
        //checkUserPrivileges($number);
        // @TODO remove SMS from deleting completely?
-       //$result=R::exec("UPDATE bikes SET note=NULL where bikeNum=$bikeNum");
+       //$result=R::exec("UPDATE bikes SET note=NULL where bikeNum=:bikeNum", [':bikeNum' => $bikeNum]);
        //only admins can delete and those will receive the confirmation in the next step.
        //sendSMS($number,"Note for bike $bikeNum deleted.");
        //notifyAdmins("Note for bike $bikeNum deleted by $reportedBy.");
     } else {
-        R::exec("INSERT INTO notes SET standId='$standId',userId='$userId',note='$userNote'");
+        R::exec("INSERT INTO notes SET standId=:standId,userId=:userId,note=:userNote", [':standId' => $standId, ':userNote' => $userNote, ':userId' => $userId]);
         $noteid=$db->conn->insert_id;
         sendSMS($number, _('Note for stand')." ".$standName." "._('saved').".");
         notifyAdmins(_('Note #').$noteid.": "._("on stand")." ".$standName." "._('by')." ".$reportedBy." (".$number."):".$userNote);
@@ -487,7 +485,7 @@ function tag($number, $standName, $message)
     $userId = getUser($number);
 
 
-    $result=R::getAll("SELECT standId FROM stands where standName='$standName'");
+    $result=R::getAll("SELECT standId FROM stands where standName=:standName", [':standName' => $standName]);
     if ($result->num_rows!=1) {
         sendSMS($number, _("Stand")." ".$standName._("does not exist").".");
         return;
@@ -496,7 +494,7 @@ function tag($number, $standName, $message)
     $row =$result->fetch_assoc();
     $standId=$row["standId"];
 
-    $result=R::getAll("SELECT userName from users where number=$number");
+    $result=R::getAll("SELECT userName from users where number=:number", [':number' => $number]);
     $row =$result->fetch_assoc();
     $reportedBy=$row["userName"];
 
@@ -509,12 +507,12 @@ function tag($number, $standName, $message)
 
        //checkUserPrivileges($number);
        // @TODO remove SMS from deleting completely?
-       //$result=R::exec("UPDATE bikes SET note=NULL where bikeNum=$bikeNum");
+       //$result=R::exec("UPDATE bikes SET note=NULL where bikeNum=:bikeNum", [':bikeNum' => $bikeNum]);
        //only admins can delete and those will receive the confirmation in the next step.
        //sendSMS($number,"Note for bike $bikeNum deleted.");
        //notifyAdmins("Note for bike $bikeNum deleted by $reportedBy.");
     } else {
-        R::exec("INSERT INTO notes (bikeNum,userId,note) SELECT bikeNum,'$userId','$userNote' FROM bikes where currentStand='$standId'");
+        R::exec("INSERT INTO notes (bikeNum,userId,note) SELECT bikeNum,:userId,:userNote FROM bikes where currentStand=:standId", [':standId' => $standId, ':userNote' => $userNote, ':userId' => $userId]);
        //$noteid=$db->conn->insert_id;
         sendSMS($number, _('All bikes on stand')." ".$standName." "._('tagged').".");
         notifyAdmins(_('All bikes on stand')." "."$standName".' '._('tagged by')." ".$reportedBy." (".$number.")". _("with note:").$userNote);
@@ -542,7 +540,7 @@ function note($number, $bikeNum, $message)
 
     $bikeNum = intval($bikeNum);
 
-    $result=R::getAll("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
+    $result=R::getAll("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=:bikeNum", [':bikeNum' => $bikeNum]);
     if ($result->num_rows!=1) {
         sendSMS($number, _('Bike')." ".$bikeNum." "._('does not exist').".");
         return;
@@ -558,7 +556,7 @@ function note($number, $bikeNum, $message)
         $bikeStatus = "B.$bikeNum "._('is rented')." by ".$userName." (+".$phone.").";
     }
 
-    $result=R::getAll("SELECT userName from users where number=$number");
+    $result=R::getAll("SELECT userName from users where number=:number", [':number' => $number]);
     $row =$result->fetch_assoc();
     $reportedBy=$row["userName"];
 
@@ -575,13 +573,13 @@ function note($number, $bikeNum, $message)
        sendSMS($number,_('Empty note for bike')." ".$bikeNum." "._('not saved, for deleting notes use DELNOTE.').".");
 
      // @TODO remove SMS from deleting completely?
-       $result=R::exec("UPDATE bikes SET note=NULL where bikeNum=$bikeNum");
+       $result=R::exec("UPDATE bikes SET note=NULL where bikeNum=:bikeNum", [':bikeNum' => $bikeNum]);
        //only admins can delete and those will receive the confirmation in the next step.
        //sendSMS($number,"Note for bike $bikeNum deleted.");
        notifyAdmins(_('Note for bike')." ".$bikeNum." "._('deleted by')." ".$reportedBy.".");
        */
     } else {
-        R::exec("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
+        R::exec("INSERT INTO notes SET bikeNum=:bikeNum,userId=:userId,note=:userNote", [':userNote' => $userNote, ':userId' => $userId, ':bikeNum' => $bikeNum]);
         $noteid=$db->conn->insert_id;
         sendSMS($number, _('Note for bike')." ".$bikeNum." "._('saved').".");
         notifyAdmins(_('Note #').$noteid.": b.".$bikeNum." (".$bikeStatus.") "._('by')." ".$reportedBy." (".$number."):".$userNote);
@@ -596,13 +594,13 @@ function last($number, $bike)
     $userId = getUser($number);
     $bikeNum = intval($bike);
 
-    $result=R::getAll("SELECT bikeNum FROM bikes where bikeNum=$bikeNum");
+    $result=R::getAll("SELECT bikeNum FROM bikes where bikeNum=:bikeNum", [':bikeNum' => $bikeNum]);
     if ($result->num_rows!=1) {
         sendSMS($number, _('Bike')." ".$bikeNum." "._('does not exist').".");
         return;
     }
 
-    $result=R::getAll("SELECT userName,parameter,standName,action FROM `history` join users on history.userid=users.userid left join stands on stands.standid=history.parameter where bikenum=$bikeNum and action in ('RETURN','RENT','REVERT') order by time desc LIMIT 10");
+    $result=R::getAll("SELECT userName,parameter,standName,action FROM `history` join users on history.userid=users.userid left join stands on stands.standid=history.parameter where bikenum=:bikeNum and action in ('RETURN','RENT','REVERT') order by time desc LIMIT 10", [':bikeNum' => $bikeNum]);
 
     $historyInfo="B.$bikeNum:";
     while ($row=$result->fetch_assoc()) {
@@ -633,7 +631,7 @@ function revert($number, $bikeNum)
         global $db;
         $userId = getUser($number);
 
-        $result=R::getAll("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser<>'NULL'");
+        $result=R::getAll("SELECT currentUser FROM bikes WHERE bikeNum=:bikeNum AND currentUser<>'NULL'", [':bikeNum' => $bikeNum]);
     if (!$result->num_rows) {
            sendSMS($number, _('Bike')." ".$bikeNum." "._('is not rented right now. Revert not successful!'));
         return;
@@ -642,22 +640,22 @@ function revert($number, $bikeNum)
         $revertusernumber=getphonenumber($row["currentUser"]);
     }
 
-        $result=R::getAll("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=$bikeNum AND action IN ('RETURN','FORCERETURN') ORDER BY time DESC LIMIT 1");
+        $result=R::getAll("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=:bikeNum AND action IN ('RETURN','FORCERETURN') ORDER BY time DESC LIMIT 1", [':bikeNum' => $bikeNum]);
     if ($result->num_rows==1) {
                 $row=$result->fetch_assoc();
                     $standId=$row["parameter"];
                     $stand=$row["standName"];
     }
-        $result=R::getAll("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action IN ('RENT','FORCERENT') ORDER BY time DESC LIMIT 1,1");
+        $result=R::getAll("SELECT parameter FROM history WHERE bikeNum=:bikeNum AND action IN ('RENT','FORCERENT') ORDER BY time DESC LIMIT 1,1", [':bikeNum' => $bikeNum]);
     if ($result->num_rows==1) {
                 $row =$result->fetch_assoc();
                     $code=$row["parameter"];
     }
     if ($standId and $code) {
-           $result=R::exec("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code WHERE bikeNum=$bikeNum");
-        $result=R::exec("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'");
-        $result=R::exec("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code");
-        $result=R::exec("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
+           $result=R::exec("UPDATE bikes SET currentUser=NULL,currentStand=:standId,currentCode=:code WHERE bikeNum=:bikeNum", [':standId' => $standId, ':code' => $code, ':bikeNum' => $bikeNum]);
+        $result=R::exec("INSERT INTO history SET userId=:userId,bikeNum=:bikeNum,action='REVERT',parameter=':standId|:code'", [':standId' => $standId, ':code' => $code, ':userId' => $userId, ':bikeNum' => $bikeNum]);
+        $result=R::exec("INSERT INTO history SET userId=0,bikeNum=:bikeNum,action='RENT',parameter=:code", [':code' => $code, ':bikeNum' => $bikeNum]);
+        $result=R::exec("INSERT INTO history SET userId=0,bikeNum=:bikeNum,action='RETURN',parameter=:standId", [':standId' => $standId, ':bikeNum' => $bikeNum]);
         sendSMS($number, _('Bike')." ".$bikeNum." "._('reverted to stand')." ".$stand." "._('with code')." ".$code.".");
         sendSMS($revertusernumber, _('Bike')." ".$bikeNum." "._('has been returned. You can now rent a new bicycle.'));
     } else {
@@ -674,7 +672,7 @@ function add($number, $email, $phone, $message)
 
     $phone=normalizephonenumber($phone);
 
-    $result=R::getAll("SELECT number,mail,userName FROM users where number=$phone OR mail='$email'");
+    $result=R::getAll("SELECT number,mail,userName FROM users where number=:phone OR mail=:email", [':phone' => $phone, ':email' => $email]);
     if ($result->num_rows!=0) {
         $row =$result->fetch_assoc();
 
@@ -693,7 +691,7 @@ function add($number, $email, $phone, $message)
     $userName=$db->conn->real_escape_string(trim($matches[2]));
     $email=$db->conn->real_escape_string(trim($matches[1]));
 
-    $result=R::exec("INSERT into users SET userName='$userName',number=$phone,mail='$email'");
+    $result=R::exec("INSERT into users SET userName=:userName,number=:phone,mail=:email", [':userName' => $userName, ':phone' => $phone, ':email' => $email]);
 
     sendConfirmationEmail($email);
 
