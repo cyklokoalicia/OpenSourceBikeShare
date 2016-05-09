@@ -248,7 +248,7 @@ if (!$error) {
     $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
     $db->connect();
     R::exec("REPLACE INTO users SET userName=?, password=SHA2(?, 512),mail=?, number=?, privileges=7", [
-                   $_POST["username"], $_POST["password"], $_POST["email"], $_POST["phone"]])
+                   $_POST["username"], $_POST["password"], $_POST["email"], $_POST["phone"]]);
 
     $userid= R::getInsertID();
     if (!$connectors["sms"]) {
@@ -272,8 +272,8 @@ if (!$error) {
 <?php endif; ?>
 <?php if ($step==4) :
     R::setup("mysql:host=$dbserver;dbname=$dbname", $dbuser, $dbpassword);
-    R::begin()
-    $stands=explode(",", $_POST["stands"]);
+    R::begin();
+    $stands = explode(",", $_POST["stands"]);
     foreach ($stands as $stand) {
         $stand=trim(strtoupper($stand));
         $result=R::exec("REPLACE INTO stands SET standName=:stand, serviceTag=0, placeName=:stand", [':stand' => $stands]);

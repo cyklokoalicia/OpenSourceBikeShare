@@ -81,7 +81,8 @@ if (isloggedin()) {
     <li role="presentation"><a href="#stands" aria-controls="stands" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> <?php echo _('Stands'); ?></a></li>
     <li role="presentation"><a href="#users" aria-controls="users" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> <?php echo _('Users'); ?></a></li>
 <?php
-if (iscreditenabled()) :
+if (iscreditenabled()):
+?>
     <li role="presentation"><a href="#credit" aria-controls="credit" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-euro" aria-hidden="true"></span> <?php echo _('Credit system'); ?></a></li>
 <?php endif; ?>
     <li role="presentation"><a href="#reports" aria-controls="reports" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span> <?php echo _('Reports'); ?></a></li>
@@ -110,13 +111,11 @@ if (iscreditenabled()) :
       </div>
     </div>
 <?php
-if (iscreditenabled()) {
-    :
-    <div role="tabpanel" class="tab-pane" id="credit">
+if (iscreditenabled()):
+?>  <div role="tabpanel" class="tab-pane" id="credit">
       <div class="row">
          <div class="col-lg-12">
-         <button type="button" id="listcoupons" class="btn btn-default" title="<?php echo _('Display existing coupons.'); ?>"><span class="glyphicon glyphicon-list-alt"></span> <?php echo _('List coupons');
-} ?></button>
+         <button type="button" id="listcoupons" class="btn btn-default" title="<?php echo _('Display existing coupons.'); ?>"><span class="glyphicon glyphicon-list-alt"></span> <?php echo _('List coupons'); ?></button>
          <button type="button" id="generatecoupons1" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate');
             echo ' ',$requiredcredit,$credit["currency"],' ';
             echo _('coupons'); ?></button>
@@ -140,8 +139,7 @@ if (iscreditenabled()) {
       <form class="container" id="edituser">
          <div class="form-group"><label for="username" class="control-label"><?php echo _('Fullname:'); ?></label> <input type="text" name="username" id="username" class="form-control" /></div>
          <div class="form-group"><label for="email"><?php echo _('Email:'); ?></label> <input type="text" name="email" id="email" class="form-control" /></div>
-<?php if ($connectors["sms"]) {
-} ?>
+<?php if ($connectors["sms"]): ?>
          <div class="form-group"><label for="phone"><?php echo _('Phone number:'); ?></label> <input type="text" name="phone" id="phone" class="form-control" /></div>
 <? endif; ?>
          <div class="form-group"><label for="privileges"><?php echo _('Privileges:'); ?></label> <input type="text" name="privileges" id="privileges" class="form-control" /></div>

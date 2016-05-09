@@ -1,4 +1,5 @@
 <?php
+
 require("config.php");
 require("external/rb.php");
 require("actions-web.php");
