@@ -159,27 +159,23 @@ function info($number, $stand)
         sendSMS($number, _('Stand name')." '".$stand."' "._('has not been recognized. Stands are marked by CAPITALLETTERS.'));
         return;
     }
-    $result=R::getAll("SELECT standId FROM stands where standName=:stand", [':stand' => $stand]);
-    if ($result->num_rows!=1) {
+    $result = R::getAll("SELECT * FROM stands where standName=:stand", [':stand' => $stand]);
+    if (count($result)!=1) {
         sendSMS($number, _('Stand')." '$stand' "._('does not exist.'));
         return;
     }
-    $row =$result->fetch_assoc();
-    $standId =$row["standId"];
-    $result=R::getAll("SELECT * FROM stands where standname=:stand", [':stand' => $stand]);
-    $row =$result->fetch_assoc();
-    $standDescription=$row["standDescription"];
-    $standPhoto=$row["standPhoto"];
-    $standLat=round($row["latitude"], 5);
-    $standLong=round($row["longitude"], 5);
-    $message=$stand." - ".$standDescription;
+    $standDescription = $result["standDescription"];
+    $standPhoto = $result["standPhoto"];
+    $standLat = round($result["latitude"], 5);
+    $standLong = round($result["longitude"], 5);
+    $message = $stand." - ".$standDescription;
     if ($standLong and $standLat) {
         $message.=", GPS: ".$standLat.",".$standLong;
     }
     if ($standPhoto) {
         $message.=", ".$standPhoto;
     }
-                sendSMS($number, $message);
+    sendSMS($number, $message);
 
 }
 
@@ -208,7 +204,7 @@ function freeBikes($number)
     $userId = getUser($number);
 
     $result=R::getAll("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount>0 order by placeName");
-    $rentedBikes=$result->num_rows;
+    $rentedBikes= $result->num_rows;
 
     if ($rentedBikes==0) {
         $listBikes=_('No free bikes.');
