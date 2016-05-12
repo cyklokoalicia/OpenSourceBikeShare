@@ -203,37 +203,37 @@ function freeBikes($number)
     global $db;
     $userId = getUser($number);
 
-    $result=R::getAll("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount>0 order by placeName");
-    $rentedBikes= $result->num_rows;
+    $result = R::getAll("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount>0 order by placeName");
+    $rentedBikes = count($result);
 
-    if ($rentedBikes==0) {
-        $listBikes=_('No free bikes.');
+    if ($rentedBikes == 0) {
+        $listBikes = _('No free bikes.');
     } else {
-        $listBikes=_('Free bikes counts').":";
+        $listBikes = _('Free bikes counts').":";
     }
 
-    $listBikes="";
-    while ($row=$result->fetch_assoc()) {
-        $listBikes.=$row["placeName"].":".$row["bikeCount"];
-        $listBikes.=",";
+    $listBikes = "";
+    foreach ($result as $row) {
+        $listBikes .= $row["placeName"].":".$row["bikeCount"];
+        $listBikes .= ",";
     }
-    if ($rentedBikes>1) {
-        $listBikes=substr($listBikes, 0, strlen($listBikes)-1);
-    }
-
-    $result=R::getAll("SELECT count(bikeNum) as bikeCount,placeName from bikes right join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount=0 order by placeName");
-    $rentedBikes=$result->num_rows;
-
-    if (rentedBikes!=0) {
-        $listBikes.=" "._('Empty stands').": ";
+    if ($rentedBikes > 1) {
+        $listBikes = substr($listBikes, 0, strlen($listBikes)-1);
     }
 
-    while ($row=$result->fetch_assoc()) {
-        $listBikes.=$row["placeName"];
-        $listBikes.=",";
+    $result = R::getAll("SELECT count(bikeNum) as bikeCount,placeName from bikes right join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount=0 order by placeName");
+    $rentedBikes = count($result);
+
+    if ($rentedBikes != 0) {
+        $listBikes .= " "._('Empty stands').": ";
     }
-    if ($rentedBikes>1) {
-        $listBikes=substr($listBikes, 0, strlen($listBikes)-1);
+
+    foreach ($result as $row) {
+        $listBikes .= $row["placeName"];
+        $listBikes .= ",";
+    }
+    if ($rentedBikes > 1) {
+        $listBikes = substr($listBikes, 0, strlen($listBikes)-1);
     }
 
     sendSMS($number, $listBikes);
