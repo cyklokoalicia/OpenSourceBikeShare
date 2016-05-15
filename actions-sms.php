@@ -241,33 +241,22 @@ function freeBikes($number)
 
 function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 {
-    global $dbserver,$dbuser,$dbpassword,$dbname;
-        $localdb=new Database($dbserver, $dbuser, $dbpassword, $dbname);
-        $localdb->connect();
-        $localdb->conn->autocommit(true);
-
-    $sms_uuid =$localdb->conn->real_escape_string($sms_uuid);
-    $sender =$localdb->conn->real_escape_string($sender);
-    $receive_time =$localdb->conn->real_escape_string($receive_time);
-    $sms_text =$localdb->conn->real_escape_string($sms_text);
-    $ip =$localdb->conn->real_escape_string($ip);
-
-        $result =$localdb->query("SELECT sms_uuid FROM received WHERE sms_uuid='$sms_uuid'");
-    if (DEBUG===false and $result->num_rows>=1) { // sms already exists in DB, possible problem
+    $result = R::getAll("SELECT sms_uuid FROM received WHERE sms_uuid=:sms_uuid", [':sms_uuid' => $sms_uuid]);
+    if (DEBUG===false and count($result)>=1) { // sms already exists in DB, possible problem
            notifyAdmins(_('Problem with SMS')." $sms_uuid!", 1);
         return false;
     } else {
-        $result =$localdb->query("INSERT INTO received SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'");
+        $result = R::exec(
+            "INSERT INTO received SET sms_uuid=:sms_uuid, sender=:sender, receive_time=:receive_time, sms_text=:sms_text, ip=:ip",
+            [':sms_uuid' => $sms_uuid, ':sender' => $sender, ':receive_time' => $receive_time, ':sms_text' => $sms_text, ':ip' => $ip]
+        );
     }
-
 }
-
-
 
 function delnote($number, $bikeNum, $message)
 {
-
     global $db;
+
     $userId = getUser($number);
 
     $bikeNum=trim($bikeNum);
