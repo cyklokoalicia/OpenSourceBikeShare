@@ -55,7 +55,6 @@ function sendEmail($emailto, $subject, $message)
 
 function sendSMS($number, $text)
 {
-
     global $sms;
 
     $message=$text;
