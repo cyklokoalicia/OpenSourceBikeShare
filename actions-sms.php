@@ -298,7 +298,7 @@ function delnote($number, $bikeNum, $message)
     }
 
     $result = R::exec(
-        "UPDATE notes SET deleted=NOW() where bikeNum=:bikeNum and deleted is null and note like ':userNote'",
+        "UPDATE notes SET deleted=NOW() where bikeNum=:bikeNum and deleted is null and note like :userNote",
         [':userNote' => '%'.$userNote.'%', ':bikeNum' => $bikeNum]
     );
     $count = R::getAffectedRows();
