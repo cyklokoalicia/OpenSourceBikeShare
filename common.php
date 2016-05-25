@@ -55,7 +55,6 @@ function sendEmail($emailto, $subject, $message)
 
 function sendSMS($number, $text)
 {
-
     global $sms;
 
     $message=$text;
@@ -160,18 +159,18 @@ function isloggedin()
 function checksession()
 {
     global $systemURL;
-
-    $sessions=R::find('sessions', 'timestamp<=?', [time()]);
+    $sessions = R::find('sessions', 'timestamp<=?', [time()]);
+die('z');
     R::trashAll($sessions);
     if (isset($_COOKIE["loguserid"]) and isset($_COOKIE["logsession"])) {
-        $session=R::findOne('sessions', 'userid=:userid AND sessionid=:sessionid AND timestamp>:timestamp', [':userid'=>$_COOKIE["loguserid"],':sessionid'=>$_COOKIE["logsession"],':timestamp'=>time()]);
+        $session = R::findOne('sessions', 'userid=:userid AND sessionid=:sessionid AND timestamp>:timestamp', [':userid'=>$_COOKIE["loguserid"],':sessionid'=>$_COOKIE["logsession"],':timestamp'=>time()]);
         if (!empty($session)) {
-            $session->timestamp=time()+86400*14;
+            $session->timestamp = time()+86400*14;
             R::store($session);
             R::commit();
             R::begin();
         } else {
-            $sessions=R::find('sessions', 'userid=:userid OR sessionid=:sessionid', [':userid'=>$_COOKIE["loguserid"],':sessionid'=>$_COOKIE["logsession"]]);
+            $sessions = R::find('sessions', 'userid=:userid OR sessionid=:sessionid', [':userid'=>$_COOKIE["loguserid"],':sessionid'=>$_COOKIE["logsession"]]);
             R::trashAll($sessions);
             R::commit();
             setcookie("loguserid", "", time()-86400);
@@ -192,8 +191,8 @@ function checksession()
 
 function checkprivileges($userid)
 {
-    $privileges=getprivileges($userid);
-    if ($privileges<1) {
+    $privileges = getprivileges($userid);
+    if ($privileges < 1) {
         status('PRIVILEGES', 101);
         exit;
     }

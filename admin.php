@@ -1,10 +1,10 @@
 <?php
 require("config.php");
-require("db.class.php");
 require('actions-web.php');
 
-$db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
-$db->connect();
+R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
+R::freeze(true);
+
 
 checksession();
 if (getprivileges($_COOKIE["loguserid"])<=0) {
@@ -70,8 +70,7 @@ if (iscreditenabled()) {
             </div>
 
 <?php
-if (isloggedin()) {
-}
+if (isloggedin()):
 ?>
             <div role="tabpanel">
 
@@ -141,7 +140,7 @@ if (iscreditenabled()):
          <div class="form-group"><label for="email"><?php echo _('Email:'); ?></label> <input type="text" name="email" id="email" class="form-control" /></div>
 <?php if ($connectors["sms"]): ?>
          <div class="form-group"><label for="phone"><?php echo _('Phone number:'); ?></label> <input type="text" name="phone" id="phone" class="form-control" /></div>
-<? endif; ?>
+<?php endif; ?>
          <div class="form-group"><label for="privileges"><?php echo _('Privileges:'); ?></label> <input type="text" name="privileges" id="privileges" class="form-control" /></div>
          <div class="form-group"><label for="limit"><?php echo _('Bike limit:'); ?></label> <input type="text" name="limit" id="limit" class="form-control" /></div>
          <input type="hidden" name="userid" id="userid" value="" />

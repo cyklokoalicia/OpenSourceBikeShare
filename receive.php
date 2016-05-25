@@ -13,8 +13,8 @@ log_sms($sms->UUID(), $sms->Number(), $sms->Time(), $sms->Text(), $sms->IPAddres
 $args=preg_split("/\s+/", $sms->ProcessedText());//preg_split must be used instead of explode because of multiple spaces
 
 /**
-TODO validation of bike / stand for commands
-*/
+ * TODO validation of bike / stand for commands
+**/
 
 if (!validateNumber($sms->Number())) {
     sendSMS($sms->Number(), _('Your number is not registered.'));
