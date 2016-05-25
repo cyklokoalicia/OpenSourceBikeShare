@@ -417,7 +417,7 @@ function delstandnote($number, $standName, $message)
 
 function standNote($number, $standName, $message)
 {
-    $userId = getUser($number);
+    $userId = getuserid($number);
 
     $result = R::getAll("SELECT standId FROM stands where standName=:standName", [':standName' => $standName]);
     if (count($result) != 1) {
@@ -428,9 +428,7 @@ function standNote($number, $standName, $message)
     $row = $result[0];
     $standId = $row["standId"];
 
-    $result = R::getAll("SELECT userName from users where number=:number", [':number' => $number]);
-    $row = $result[0];
-    $reportedBy = $row["userName"];
+    $reportedBy = getusername($number);
 
     $matches = explode(" ", $message, 3);
     $userNote = trim($matches[2]);
