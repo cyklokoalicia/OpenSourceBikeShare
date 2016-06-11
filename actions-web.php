@@ -148,7 +148,7 @@ function last($userId, $bike = 0)
                 $historyInfo.=$row["standName"];
             } else {
                 $historyInfo.='<span class="bg-warning">'.$row["userName"];
-                $result2=R::getAll("SELECT time FROM history WHERE bikeNum=:bikeNum AND userId=:userId AND action='RENT' ORDER BY time DESC", 
+                $result2=R::getAll("SELECT time FROM history WHERE bikeNum=:bikeNum AND userId=:userId AND action='RENT' ORDER BY time DESC",
                                    [':bikeNum' => $row['bikeNum'], ':userId' => $row['userId']]);
                 $row2=$result2->fetch_assoc();
                 $historyInfo.=": ".date("d/m H:i", strtotime($row2["time"])).'</span>';
@@ -210,48 +210,47 @@ function revert($userId, $bikeNum)
 
 function register($number, $code, $checkcode, $fullname, $email, $password, $password2, $existing)
 {
-    global $db, $dbpassword, $countrycode, $systemURL;
+    global $dbpassword, $countrycode, $systemURL;
 
-    $number=$db->conn->real_escape_string(trim($number));
-    $code=$db->conn->real_escape_string(trim($code));
-    $checkcode=$db->conn->real_escape_string(trim($checkcode));
-    $fullname=$db->conn->real_escape_string(trim($fullname));
-    $email=$db->conn->real_escape_string(trim($email));
-    $password=$db->conn->real_escape_string(trim($password));
-    $password2=$db->conn->real_escape_string(trim($password2));
-    $existing=$db->conn->real_escape_string(trim($existing));
-    $parametercheck=$number.";".str_replace(" ", "", $code).";".$checkcode;
-    if ($password<>$password2) {
+    $number = trim($number);
+    $code = trim($code);
+    $checkcode = trim($checkcode);
+    $fullname = trim($fullname);
+    $email = trim($email);
+    $password = trim($password);
+    $password2 = trim($password2);
+    $existing = trim($existing);
+    $parametercheck = $number.";".str_replace(" ", "", $code).";".$checkcode;
+    if ($password <> $password2) {
         response(_('Password do not match. Please correct and try again.'), ERROR);
     }
     if (issmssystemenabled()==true) {
-        $result=R::getAll("SELECT parameter FROM history WHERE userId=0 AND bikeNum=0 AND action='REGISTER' AND parameter=:parametercheck ORDER BY time DESC LIMIT 1", [':parametercheck' => $parametercheck]);
-        if ($result->num_rows==1) {
+        $result = R::getAll("SELECT parameter FROM history WHERE userId=0 AND bikeNum=0 AND action='REGISTER' AND parameter=:parametercheck ORDER BY time DESC LIMIT 1", [':parametercheck' => $parametercheck]);
+        if (count($result) == 1) {
             if (!$existing) { // new user registration
-                $result=R::exec("INSERT INTO users SET userName=:fullname,password=SHA2(:password,512),mail=:email,number=:number,privileges=0", [':fullname' => $fullname, ':password' => $password, ':email' => $email, ':number' => $number]);
-                $userId=$db->conn->insert_id;
+                $result = R::exec("INSERT INTO users SET userName=:fullname,password=SHA2(:password,512),mail=:email,number=:number,privileges=0", [':fullname' => $fullname, ':password' => $password, ':email' => $email, ':number' => $number]);
+                $userId = R::GetInsertID();
                 sendConfirmationEmail($email);
                 response(_('You have been successfully registered. Please, check your email and read the instructions to finish your registration.'));
             } else // existing user, password change
             {
-                $result=R::getAll("SELECT userId FROM users WHERE number=:number", [':number' => $number]);
-                $row=$result->fetch_assoc();
-                $userId=$row["userId"];
-                $result=R::exec("UPDATE users SET password=SHA2(:password,512) WHERE userId=:userId", [':password' => $password, ':userId' => $userId]);
+                $result = R::getAll("SELECT userId FROM users WHERE number=:number", [':number' => $number]);
+                $row = $result[0];
+                $result = R::exec("UPDATE users SET password=SHA2(:password,512) WHERE userId=:userId",
+                                  [':password' => $password, ':userId' => $row["userId"]]);
                 response(_('Password successfully changed. Your username is your phone number. Continue to').' <a href="'.$systemURL.'">'._('login').'</a>.');
             }
         } else {
             response(_('Problem with the SMS code entered. Please check and try again.'), ERROR);
         }
-    } else // SMS system disabled
-      {
-        $result=R::exec("INSERT INTO users SET userName=:fullname,password=SHA2(:password,512),mail=:email,number='',privileges=0", [':fullname' => $fullname, ':password' => $password, ':email' => $email]);
-        $userId=$db->conn->insert_id;
-        $result=R::exec("UPDATE users SET number=:userId WHERE userId=:userId", [':userId' => $userId]);
+    } else {   // SMS system disabled
+        $result = R::exec("INSERT INTO users SET userName=:fullname,password=SHA2(:password,512),mail=:email,number='',privileges=0",
+                          [':fullname' => $fullname, ':password' => $password, ':email' => $email]);
+        $userId = R::GetInsertID();
+        $result = R::exec("UPDATE users SET number=:userId WHERE userId=:userId", [':userId' => $userId]);
         sendConfirmationEmail($email);
         response(_('You have been successfully registered. Please, check your email and read the instructions to finish your registration. Your number for login is:')." ".$userId);
     }
-
 }
 
 function login($number, $password)
@@ -309,33 +308,33 @@ function logout()
 function smscode($number)
 {
 
-    global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $connectors;
+    global $gatewayId, $gatewayKey, $gatewaySenderNumber, $connectors;
     srand();
 
-    $number=normalizephonenumber($number);
-    $number=$db->conn->real_escape_string($number);
-    $userexists=0;
-    $result=R::getAll("SELECT userId FROM users WHERE number=:number", [':number' => $number]);
-    if ($result->num_rows) {
-        $userexists=1;
+    $number = normalizephonenumber($number);
+    $userexists = 0;
+    $result = R::getAll("SELECT userId FROM users WHERE number=:number", [':number' => $number]);
+    if (count($result) > 0) {
+        $userexists = 1;
     }
 
-    $smscode=chr(rand(65, 90)).chr(rand(65, 90))." ".rand(100000, 999999);
-    $smscodenormalized=str_replace(" ", "", $smscode);
-    $checkcode=md5("WB".$number.$smscodenormalized);
+    $smscode = chr(rand(65, 90)).chr(rand(65, 90))." ".rand(100000, 999999);
+    $smscodenormalized = str_replace(" ", "", $smscode);
+    $checkcode = md5("WB".$number.$smscodenormalized);
     if (!$userexists) {
         $text=_('Enter this code to register:')." ".$smscode;
     } else {
         $text=_('Enter this code to change password:')." ".$smscode;
     }
-    $text=$db->conn->real_escape_string($text);
 
     if (!issmssystemenabled()) {
-        $result=R::exec("INSERT INTO sent SET number=:number,text=:text", [':text' => $text, ':number' => $number]);
+        R::exec("INSERT INTO sent SET number=:number,text=:text", [':text' => $text, ':number' => $number]);
     }
-    $result=R::exec("INSERT INTO history SET userId=0,bikeNum=0,action='REGISTER',parameter=':number;:smscodenormalized;:checkcode'", [':smscodenormalized' => $smscodenormalized, ':number' => $number, ':checkcode' => $checkcode]);
 
-    if (DEBUG===true) {
+    R::exec("INSERT INTO history SET userId=0,bikeNum=0,action='REGISTER',parameter=':number;:smscodenormalized;:checkcode'",
+            [':smscodenormalized' => $smscodenormalized, ':number' => $number, ':checkcode' => $checkcode]);
+
+    if (DEBUG === true) {
         response($number, 0, array("checkcode"=>$checkcode,"smscode"=>$smscode,"existing"=>$userexists));
     } else {
         sendSMS($number, $text);
@@ -349,20 +348,24 @@ function smscode($number)
 
 function trips($userId, $bike = 0)
 {
-
-    global $db;
-    $bikeNum=intval($bike);
+    $bikeNum = intval($bike);
     if ($bikeNum) {
-        $result=R::getAll("SELECT longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=:bikeNum AND action='RETURN' ORDER BY time DESC", [':bikeNum' => $bikeNum]);
-        while ($row = $result->fetch_assoc()) {
-            $jsoncontent[]=array("longitude"=>$row["longitude"],"latitude"=>$row["latitude"]);
+        $result = R::getAll("SELECT longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=:bikeNum AND action='RETURN' ORDER BY time DESC", [':bikeNum' => $bikeNum]);
+        foreach ($result as $row) {
+            $jsoncontent[] = array(
+                "longitude" => $row["longitude"],
+                "latitude" => $row["latitude"]
+            );
         }
     } else {
-        $result=R::getAll("SELECT bikeNum,longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE action='RETURN' ORDER BY bikeNum,time DESC");
-        $i=0;
-        while ($row = $result->fetch_assoc()) {
-            $bikenum=$row["bikeNum"];
-            $jsoncontent[$bikenum][]=array("longitude"=>$row["longitude"],"latitude"=>$row["latitude"]);
+        $result = R::getAll("SELECT bikeNum,longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE action='RETURN' ORDER BY bikeNum, time DESC");
+        $i = 0;
+        foreach ($result as $row) {
+            $bikenum = $row["bikeNum"];
+            $jsoncontent[$bikenum][] = array(
+                "longitude" => $row["longitude"],
+                "latitude" => $row["latitude"]
+            );
         }
     }
     echo json_encode($jsoncontent); // TODO change to response function
@@ -370,44 +373,66 @@ function trips($userId, $bike = 0)
 
 function getuserlist()
 {
-    global $db;
-    $result=R::getAll("SELECT users.userId,username,mail,number,privileges,credit,userLimit FROM users LEFT JOIN credit ON users.userId=credit.userId LEFT JOIN limits ON users.userId=limits.userId ORDER BY username");
-    while ($row = $result->fetch_assoc()) {
-        $jsoncontent[]=array("userid"=>$row["userId"],"username"=>$row["username"],"mail"=>$row["mail"],"number"=>$row["number"],"privileges"=>$row["privileges"],"credit"=>$row["credit"],"limit"=>$row["userLimit"]);
+    $result = R::getAll("SELECT users.userId,username,mail,number,privileges,credit,userLimit FROM users LEFT JOIN credit ON users.userId=credit.userId LEFT JOIN limits ON users.userId=limits.userId ORDER BY username");
+    foreach ($result as $row) {
+        $jsoncontent[] = array(
+           "userid" => $row["userId"],
+           "username" => $row["username"],
+           "mail" => $row["mail"],
+           "number" => $row["number"],
+           "privileges" => $row["privileges"],
+           "credit" => $row["credit"],
+           "limit" => $row["userLimit"]
+       );
     }
     echo json_encode($jsoncontent);// TODO change to response function
 }
 
 function getuserstats()
 {
-    global $db;
-    $result=R::getAll("SELECT users.userId,username,count(action) AS count FROM users LEFT JOIN history ON users.userId=history.userId WHERE history.userId IS NOT NULL GROUP BY username ORDER BY count DESC");
-    while ($row = $result->fetch_assoc()) {
-        $result2=R::getAll("SELECT count(action) AS rentals FROM history WHERE action='RENT' AND userId=".$row["userId"]);
-        $row2=$result2->fetch_assoc();
-        $result2=R::getAll("SELECT count(action) AS returns FROM history WHERE action='RETURN' AND userId=".$row["userId"]);
-        $row3=$result2->fetch_assoc();
-        $jsoncontent[]=array("userid"=>$row["userId"],"username"=>$row["username"],"count"=>$row["count"],"rentals"=>$row2["rentals"],"returns"=>$row3["returns"]);
+    $result = R::getAll("SELECT users.userId,username,count(action) AS count FROM users LEFT JOIN history ON users.userId=history.userId WHERE history.userId IS NOT NULL GROUP BY username ORDER BY count DESC");
+    foreach ($result as $row) {
+        $result2 = R::getAll("SELECT count(action) AS rentals FROM history WHERE action='RENT' AND userId=".$row["userId"]);
+        $row2 = $result2[0];
+        $result2 = R::getAll("SELECT count(action) AS returns FROM history WHERE action='RETURN' AND userId=".$row["userId"]);
+        $row3 = $result2[0];
+        $jsoncontent[] = array(
+            "userid"=>$row["userId"],
+            "username"=>$row["username"],
+            "count"=>$row["count"],
+            "rentals"=>$row2["rentals"],
+            "returns"=>$row3["returns"]
+        );
     }
     echo json_encode($jsoncontent);// TODO change to response function
 }
 
 function getusagestats()
 {
-    global $db;
-    $result=R::getAll("SELECT count(action) AS count,DATE(time) AS day,action FROM history WHERE userId IS NOT NULL AND action IN ('RENT','RETURN') GROUP BY day,action ORDER BY day DESC LIMIT 60");
-    while ($row=$result->fetch_assoc()) {
-        $jsoncontent[]=array("day"=>$row["day"],"count"=>$row["count"],"action"=>$row["action"]);
+    $result = R::getAll("SELECT count(action) AS count,DATE(time) AS day,action FROM history WHERE userId IS NOT NULL AND action IN ('RENT','RETURN') GROUP BY day,action ORDER BY day DESC LIMIT 60");
+    foreach ($result as $row) {
+        $jsoncontent[] = array(
+            "day" => $row["day"],
+            "count" => $row["count"],
+            "action" => $row["action"]
+        );
     }
     echo json_encode($jsoncontent);// TODO change to response function
 }
 
 function edituser($userid)
 {
-    global $db;
-    $result=R::getAll("SELECT users.userId,userName,mail,number,privileges,userLimit,credit FROM users LEFT JOIN limits ON users.userId=limits.userId LEFT JOIN credit ON users.userId=credit.userId WHERE users.userId=".$userid);
-    $row=$result->fetch_assoc();
-    $jsoncontent=array("userid"=>$row["userId"],"username"=>$row["userName"],"email"=>$row["mail"],"phone"=>$row["number"],"privileges"=>$row["privileges"],"limit"=>$row["userLimit"],"credit"=>$row["credit"]);
+    $result = R::getAll("SELECT users.userId,userName,mail,number,privileges,userLimit,credit FROM users LEFT JOIN limits ON users.userId=limits.userId LEFT JOIN credit ON users.userId=credit.userId WHERE users.userId=".$userid);
+    $row = $result[0];
+    $jsoncontent = array(
+        "userid" => $row["userId"],
+        "username" => $row["userName"],
+        "email" => $row["mail"],
+        "phone" => $row["number"],
+        "privileges" => $row["privileges"],
+        "limit" => $row["userLimit"],
+        "credit" => $row["credit"]
+    );
     echo json_encode($jsoncontent);// TODO change to response function
 }
 

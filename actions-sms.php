@@ -374,8 +374,8 @@ function delstandnote($number, $standName, $message)
     $userId = getUser($number);
 
     checkUserPrivileges($number);
-    $result=R::getAll("SELECT standId FROM stands where standName=:standName", [':standName' => $standName]);
-    if ($result->num_rows!=1) {
+    $result = R::getAll("SELECT standId FROM stands where standName=:standName", [':standName' => $standName]);
+    if (count($result) != 1) {
         sendSMS($number, _("Stand")." ".$standName._("does not exist").".");
         return;
     }
@@ -388,15 +388,16 @@ function delstandnote($number, $standName, $message)
     $reportedBy=$row["userName"];
 
 
-      $matches=explode(" ", $message, 3);
-      $userNote=$db->conn->real_escape_string(trim($matches[2]));
+    $matches=explode(" ", $message, 3);
+    $userNote=trim($matches[2]);
 
     if ($userNote=='') {
         $userNote='%';
     }
 
-      $result=R::exec("UPDATE notes SET deleted=NOW() where standId=:standId and deleted is null and note like '%:userNote%'", [':standId' => $standId, ':userNote' => $userNote]);
-      $count = $db->conn->affected_rows;
+    $result = R::exec("UPDATE notes SET deleted=NOW() where standId=:standId and deleted is null and note like '%:userNote%'",
+                    [':standId' => $standId, ':userNote' => $userNote]);
+    $count = R::Affected_Rows();
 
     if ($count == 0) {
         if ($userNote=="%") {
