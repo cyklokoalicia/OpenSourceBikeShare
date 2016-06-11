@@ -6,7 +6,6 @@ require("actions-web.php");
 
 R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
 R::freeze(true);
-//R::debug( TRUE,2 );
 R::addDatabase('localdb', 'mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword, true);
 R::freeze(true);
 //R::debug( TRUE,2 );

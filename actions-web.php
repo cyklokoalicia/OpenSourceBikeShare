@@ -111,13 +111,12 @@ function status($action, $result, $values = false)
 
 function last($userId, $bike = 0)
 {
-
-    global $db;
-    $bikeNum=intval($bike);
+    $bikeNum = intval($bike);
     if ($bikeNum) {
-        $result=R::getAll("SELECT userName,parameter,standName,action,time FROM `history` JOIN users ON history.userid=users.userid LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=:bikeNum AND (action NOT LIKE '%CREDIT%') ORDER BY time DESC LIMIT 10", [':bikeNum' => $bikeNum]);
+        $result = R::getAll("SELECT userName,parameter,standName,action,time FROM `history` JOIN users ON history.userid=users.userid LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=:bikeNum AND (action NOT LIKE '%CREDIT%') ORDER BY time DESC LIMIT 10", [':bikeNum' => $bikeNum]);
         $historyInfo="<h3>"._('Bike')." ".$bikeNum." "._('history').":</h3><ul>";
-        while ($row=$result->fetch_assoc()) {
+
+        foreach ($result as $row) {
             $time=strtotime($row["time"]);
             $historyInfo.="<li>".date("d/m H:i", $time)." - ";
             if ($row["standName"]!=null) {
@@ -136,29 +135,30 @@ function last($userId, $bike = 0)
         }
         $historyInfo.="</ul>";
     } else {
-        $result=R::getAll("SELECT bikeNum FROM bikes WHERE currentUser<>''");
-        $inuse=$result->num_rows;
-        $result=R::getAll("SELECT bikeNum,userName,standName,users.userId FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId LEFT JOIN stands ON bikes.currentStand=stands.standId ORDER BY bikeNum");
-        $total=$result->num_rows;
+        $result = R::getAll("SELECT bikeNum FROM bikes WHERE currentUser<>''");
+        $inuse = count($result);
+        $result = R::getAll("SELECT bikeNum,userName,standName,users.userId FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId LEFT JOIN stands ON bikes.currentStand=stands.standId ORDER BY bikeNum");
+        $total = count($result);
         $historyInfo="<h3>"._('Current network usage:')."</h3>";
         $historyInfo.="<h4>".sprintf(ngettext('%d bicycle', '%d bicycles', $total), $total).", ".$inuse." "._('in use')."</h4><ul>";
-        while ($row=$result->fetch_assoc()) {
+        foreach ($result as $row) {
             $historyInfo.="<li>".$row["bikeNum"]." - ";
             if ($row["standName"]!=null) {
                 $historyInfo.=$row["standName"];
             } else {
                 $historyInfo.='<span class="bg-warning">'.$row["userName"];
-                $result2=R::getAll("SELECT time FROM history WHERE bikeNum=:bikeNum AND userId=:userId AND action='RENT' ORDER BY time DESC",
+                $result2 = R::getAll("SELECT time FROM history WHERE bikeNum=:bikeNum AND userId=:userId AND action='RENT' ORDER BY time DESC",
                                    [':bikeNum' => $row['bikeNum'], ':userId' => $row['userId']]);
-                $row2=$result2->fetch_assoc();
+                $row2 = $result2[0];
                 $historyInfo.=": ".date("d/m H:i", strtotime($row2["time"])).'</span>';
             }
-                $result2=R::getAll("SELECT note FROM notes WHERE bikeNum=:bikeNum AND deleted IS NULL ORDER BY time DESC", [':bikeNum' => $row['bikeNum']]);
-                $note="";
-            while ($row=$result2->fetch_assoc()) {
-                $note.=$row["note"]."; ";
+
+            $result2 = R::getAll("SELECT note FROM notes WHERE bikeNum=:bikeNum AND deleted IS NULL ORDER BY time DESC", [':bikeNum' => $row['bikeNum']]);
+            $note="";
+            foreach ($result2 as $row) {
+                $note .= $row["note"]."; ";
             }
-                $note=substr($note, 0, strlen($note)-2); // remove last two chars - comma and space
+            $note=substr($note, 0, strlen($note)-2); // remove last two chars - comma and space
             if ($note) {
                 $historyInfo.=" (".$note.")";
             }
@@ -172,40 +172,41 @@ function last($userId, $bike = 0)
 
 function revert($userId, $bikeNum)
 {
-
-    global $db;
-
-    $standId=0;
-    $result=R::getAll("SELECT currentUser FROM bikes WHERE bikeNum=:bikeNum AND currentUser IS NOT NULL", [':bikeNum' => $bikeNum]);
-    if (!$result->num_rows) {
+    $standId = 0;
+    $result = R::getAll("SELECT currentUser FROM bikes WHERE bikeNum=:bikeNum AND currentUser IS NOT NULL", [':bikeNum' => $bikeNum]);
+    if (count($result) > 0) {
         response(_('Bicycle')." ".$bikeNum." "._('is not rented right now. Revert not successful!'), ERROR);
         return;
     } else {
-        $row=$result->fetch_assoc();
-        $revertusernumber=getphonenumber($row["currentUser"]);
+        $row = $result[0];
+        $revertusernumber = getphonenumber($row["currentUser"]);
     }
-    $result=R::getAll("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=:bikeNum AND action IN ('RETURN','FORCERETURN') ORDER BY time DESC LIMIT 1", [':bikeNum' => $bikeNum]);
-    if ($result->num_rows==1) {
-        $row = $result->fetch_assoc();
-        $standId=$row["parameter"];
-        $stand=$row["standName"];
+    $result = R::getAll("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=:bikeNum AND action IN ('RETURN','FORCERETURN') ORDER BY time DESC LIMIT 1", [':bikeNum' => $bikeNum]);
+    if (count($result) == 1) {
+        $row = $result[0];
+        $standId = $row["parameter"];
+        $stand = $row["standName"];
     }
-    $result=R::getAll("SELECT parameter FROM history WHERE bikeNum=:bikeNum AND action IN ('RENT','FORCERENT') ORDER BY time DESC LIMIT 1,1", [':bikeNum' => $bikeNum]);
-    if ($result->num_rows==1) {
-        $row = $result->fetch_assoc();
-        $code=str_pad($row["parameter"], 4, "0", STR_PAD_LEFT);
+    $result = R::getAll("SELECT parameter FROM history WHERE bikeNum=:bikeNum AND action IN ('RENT','FORCERENT') ORDER BY time DESC LIMIT 1,1",
+                        [':bikeNum' => $bikeNum]);
+    if (count($result) == 1) {
+        $row = $result[0];
+        $code = str_pad($row["parameter"], 4, "0", STR_PAD_LEFT);
     }
     if ($standId and $code) {
-        $result=R::exec("UPDATE bikes SET currentUser=NULL,currentStand=:standId,currentCode=:code WHERE bikeNum=:bikeNum", [':standId' => $standId, ':code' => $code, ':bikeNum' => $bikeNum]);
-        $result=R::exec("INSERT INTO history SET userId=:userId,bikeNum=:bikeNum,action='REVERT',parameter=':standId|:code'", [':standId' => $standId, ':code' => $code, ':userId' => $userId, ':bikeNum' => $bikeNum]);
-        $result=R::exec("INSERT INTO history SET userId=0,bikeNum=:bikeNum,action='RENT',parameter=:code", [':code' => $code, ':bikeNum' => $bikeNum]);
-        $result=R::exec("INSERT INTO history SET userId=0,bikeNum=:bikeNum,action='RETURN',parameter=:standId", [':standId' => $standId, ':bikeNum' => $bikeNum]);
+        $result = R::exec("UPDATE bikes SET currentUser=NULL,currentStand=:standId,currentCode=:code WHERE bikeNum=:bikeNum",
+                          [':standId' => $standId, ':code' => $code, ':bikeNum' => $bikeNum]);
+        $result = R::exec("INSERT INTO history SET userId=:userId,bikeNum=:bikeNum,action='REVERT',parameter=':standId|:code'",
+                          [':standId' => $standId, ':code' => $code, ':userId' => $userId, ':bikeNum' => $bikeNum]);
+        $result = R::exec("INSERT INTO history SET userId=0,bikeNum=:bikeNum,action='RENT',parameter=:code",
+                          [':code' => $code, ':bikeNum' => $bikeNum]);
+        $result = R::exec("INSERT INTO history SET userId=0,bikeNum=:bikeNum,action='RETURN',parameter=:standId",
+                          [':standId' => $standId, ':bikeNum' => $bikeNum]);
         response('<h3>'._('Bicycle').' '.$bikeNum.' '._('reverted to').' <span class="label label-primary">'.$stand.'</span> '._('with code').' <span class="label label-primary">'.$code.'</span>.</h3>');
         sendSMS($revertusernumber, _('Bike')." ".$bikeNum." "._('has been returned. You can now rent a new bicycle.'));
     } else {
         response(_('No last stand or code for bicycle')." ".$bikeNum." "._('found. Revert not successful!'), ERROR);
     }
-
 }
 
 function register($number, $code, $checkcode, $fullname, $email, $password, $password2, $existing)

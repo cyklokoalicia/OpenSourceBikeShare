@@ -5,9 +5,9 @@ if (file_exists("../config.php.example")) {
 } else {
     require("../config.php");
 }
-require("../db.class.php");
-$db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
-$db->connect();
+require("external/rb.php");
+R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
+R::freeze(true);
 
 // create new PDF document
 $pdf = new TCPDF('L', PDF_UNIT, 'A5', true, 'UTF-8', false);
@@ -51,16 +51,16 @@ $style = array(
     'position' => 'C'
 );
 
-$result=R::getAll("SELECT bikeNum FROM bikes ORDER BY bikeNum");
-while ($row=$result->fetch_assoc()) {
+$result = R::getAll("SELECT bikeNum FROM bikes ORDER BY bikeNum");
+foreach ($result as $row) {
     $pdf->AddPage();
    // QRCODE,M : QR-CODE Medium error correction
     $pdf->write2DBarcode($systemURL.'scan.php/rent/'.$row["bikeNum"], 'QRCODE,M', '', 18, '', 90, $style, 'N');
     $pdf->MultiCell(0, 0, $row["bikeNum"], 0, 'C', false, 0);
 }
 
-$result=R::getAll("SELECT standName FROM stands WHERE serviceTag='0' ORDER BY standName");
-while ($row=$result->fetch_assoc()) {
+$result = R::getAll("SELECT standName FROM stands WHERE serviceTag='0' ORDER BY standName");
+foreach ($result as $row) {
     $pdf->AddPage();
    // QRCODE,M : QR-CODE Medium error correction
     $pdf->write2DBarcode($systemURL.'scan.php/return/'.$row["standName"], 'QRCODE,M', '', 18, '', 90, $style, 'N');

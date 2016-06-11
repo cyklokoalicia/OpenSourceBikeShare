@@ -44,7 +44,7 @@ if (!validateNumber($sms->Number())) {
             {
             $userNote="";
             }
-           else $userNote=$db->conn->real_escape_string(trim($matches[1]));
+           else $userNote=trim($matches[1]);
            pass note only or empty string if no note sent
            */
             returnbike($sms->Number(), $args[1], $args[2], trim(urldecode($sms->Text())));
@@ -62,7 +62,7 @@ if (!validateNumber($sms->Number())) {
             {
             $userNote="";
             }
-           else $userNote=$db->conn->real_escape_string(trim($matches[1]));
+           else $userNote=trim($matches[1]);
            pass note only or empty string if no note sent
            */
             returnbike($sms->Number(), $args[1], $args[2], trim(urldecode($sms->Text())), true);

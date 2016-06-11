@@ -380,11 +380,11 @@ function delstandnote($number, $standName, $message)
         return;
     }
 
-    $row =$result->fetch_assoc();
+    $row = $result[0];
     $standId=$row["standId"];
 
-    $result=R::getAll("SELECT userName FROM users WHERE number=:number", [':number' => $number]);
-    $row =$result->fetch_assoc();
+    $result = R::getAll("SELECT userName FROM users WHERE number=:number", [':number' => $number]);
+    $row = $result[0];
     $reportedBy=$row["userName"];
 
 

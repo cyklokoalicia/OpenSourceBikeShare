@@ -160,8 +160,8 @@ function checksession()
 {
     global $systemURL;
     $sessions = R::find('sessions', 'timestamp<=?', [time()]);
-die('z');
     R::trashAll($sessions);
+
     if (isset($_COOKIE["loguserid"]) and isset($_COOKIE["logsession"])) {
         $session = R::findOne('sessions', 'userid=:userid AND sessionid=:sessionid AND timestamp>:timestamp', [':userid'=>$_COOKIE["loguserid"],':sessionid'=>$_COOKIE["logsession"],':timestamp'=>time()]);
         if (!empty($session)) {

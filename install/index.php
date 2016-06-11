@@ -219,8 +219,10 @@ if (!$error) {
     }
     $newconfig=implode($configfile);
     file_put_contents($configfilename, $newconfig);
-    $db=new Database($_POST["dbserver"], $_POST["dbuser"], $_POST["dbpassword"], $_POST["dbname"]);
-    $db->connect();
+
+    R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
+    R::freeze(true);
+
     $sql=file_get_contents("../create-database.sql");
     $sql=explode(";", $sql);
     foreach ($sql as $value) {
@@ -245,18 +247,20 @@ if (!$error) {
          </form>
 <?php endif; ?>
 <?php if ($step==3) :
-    $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
-    $db->connect();
+
+    R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
+    R::freeze(true);
+    R::begin();
     R::exec("REPLACE INTO users SET userName=?, password=SHA2(?, 512),mail=?, number=?, privileges=7, note='', recommendations=''", [
             $_POST["username"], $_POST["password"], $_POST["email"], $_POST["phone"]]);
 
-    $userid= R::getInsertID();
+    $userid = R::getInsertID();
 
     if (!$connectors["sms"]) {
-        $result=R::exec("UPDATE users SET number=:userid WHERE id=:userid", [':userid' => $userid]);
+        $result = R::exec("UPDATE users SET number=:userid WHERE id=:userid", [':userid' => $userid]);
     }
-    $result=R::exec("REPLACE INTO limits SET userId=':userid', userLimit='100'", [':userid' => $userid]);
-    $db->conn->commit();
+    $result = R::exec("REPLACE INTO limits SET userId=':userid', userLimit='100'", [':userid' => $userid]);
+    R::commit();
 ?>
       <h2><?php echo _('Create bicycles and stands'); ?></h2>
         <?php echo '<div class="alert alert-success" role="alert">',_('Admin user'),' ',$_POST["username"],' ',_('created with password:'),' ',$_POST["password"];
@@ -299,8 +303,8 @@ var maplat=<?php echo $systemlat; ?>;
 var maplon=<?php echo $systemlong; ?>;
 </script>
 <?php
-$result=R::getAll("SELECT * FROM stands ORDER BY standName");
-while ($row=$result->fetch_assoc()) {
+$result = R::getAll("SELECT * FROM stands ORDER BY standName");
+foreach ($result as $row) {
     $standid=$row["id"];
 ?>
          <fieldset><legend><?php echo _('Stand');
@@ -337,26 +341,28 @@ if ($connectors["sms"]) : ?>
          </form>
 <?php endif; ?>
 <?php if ($step==5):
-    $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
-    $db->connect();
+    R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
+    R::freeze(true);
+    R::begin()
 ?>
       <h2>Set system options</h2>
 <?php
 $uploadtotal=0;
 foreach ($_POST["standdesc"] as $standid => $value) {
-    $result=R::exec("UPDATE stands SET standDescription=?, serviceTag=?, latitude=?, longitude=? WHERE id='$standid'",
+    R::exec("UPDATE stands SET standDescription=?, serviceTag=?, latitude=?, longitude=? WHERE id='$standid'",
                    [$_POST["standdesc"][$standid], $_POST["servicetag"][$standid], $_POST["standlat"][$standid], $_POST["standlong"][$standid]]);
 
     if (isset($uploads[$standid]["filename"])) {
-        $result=R::exec("UPDATE stands SET standPhoto='".$uploads[$standid]["filename"]."' WHERE id='$standid'");
+        R::exec("UPDATE stands SET standPhoto='".$uploads[$standid]["filename"]."' WHERE id='$standid'");
         $uploadtotal++;
     }
     if (isset($_POST["placename"][$standid])) {
-        $result=R::exec("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE id='$standid'");
+        R::exec("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE id='$standid'");
     }
 }
-$db->conn->commit();
-echo '<div class="alert alert-success" role="alert">',sprintf(ngettext('%d stand', '%d stands', count($_POST["standdesc"])), count($_POST["standdesc"])),' ',_('set up and'),' ',sprintf(ngettext('%d photo', '%d photos', $uploadtotal), $uploadtotal),' ',_('uploaded'),'</div>';
+    R::commit();
+
+    echo '<div class="alert alert-success" role="alert">',sprintf(ngettext('%d stand', '%d stands', count($_POST["standdesc"])), count($_POST["standdesc"])),' ',_('set up and'),' ',sprintf(ngettext('%d photo', '%d photos', $uploadtotal), $uploadtotal),' ',_('uploaded'),'</div>';
 ?>
       <form class="container" method="post" action="index.php?step=6">
 <?php
@@ -407,8 +413,9 @@ foreach ($configfile as $line) {
          </form>
 <?php endif; ?>
 <?php if ($step==6) :
-    $db=new Database($dbserver, $dbuser, $dbpassword, $dbname);
-    $db->connect();
+    R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
+    R::freeze(true);
+    R::begin();
     $configfile=file($configfilename);
     foreach ($_POST as $variable => $value) {
         if (is_array($value)) {
@@ -423,12 +430,12 @@ foreach ($configfile as $line) {
     file_put_contents($configfilename, $newconfig);
     $configfile=file($configfilename);
     if ($credit["enabled"]==1) {
-        $newcredit=($credit["min"]+$credit["rent"]+$credit["longrental"])*10;
-        $result=R::getAll("SELECT id FROM users WHERE privileges='7'");
-        $row=$result->fetch_assoc();
-        $result=R::exec("REPLACE INTO credit SET userId='".$row["userId"]."',credit='$newcredit'");
+        $newcredit = ($credit["min"]+$credit["rent"]+$credit["longrental"])*10;
+        $result = R::getAll("SELECT id FROM users WHERE privileges='7'");
+        $row = $result[0];
+        $result = R::exec("REPLACE INTO credit SET userId='".$row["userId"]."',credit='$newcredit'");
     }
-    $db->conn->commit();
+    R::commit();
 ?>
         <h2>Installation finished</h2>
         <div class="alert alert-success" role="alert"><?php echo _('System options set.'); ?></div>

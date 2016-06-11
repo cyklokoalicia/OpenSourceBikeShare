@@ -35,7 +35,7 @@ function report()
             echo "<th>$col</th>";
         }
         echo "</tr>";
-        while ($row=$result->fetch_assoc()) {
+        foreach ($result as $row) {
                 echo "<tr>";
             foreach ($cols as $col) {
                 echo "<td>";

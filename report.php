@@ -29,7 +29,7 @@ function report()
 	        where deleted is null ) as notes on notes.bikeNum=bikes.BikeNum left
 	        join stands on bikes.currentStand=stands.standId
 	                order by standName,bikeNum LIMIT 100")) {
-        while ($row=$result->fetch_assoc()) {
+        foreach ($result as $row) {
             echo $row["bikeNum"],"&nbsp;",$row["userName"],$row["standName"],"&nbsp;",$row["note"],"<br/>";
         }
     } else {
@@ -42,7 +42,7 @@ function report()
 function reportStands()
 {
     global $dbServer, $dbUser, $dbPassword, $dbName;
-    
+
     $mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
 
     if ($result = $mysqli->query("
@@ -54,17 +54,17 @@ SELECT stands.standName,note FROM stands join (select * from notes
         echo "problem s sql dotazom";
         error("users bikes not fetched");
     }
-    
+
     echo '<table style="width:50%">';
 #	echo '<caption>last usage</caption>';
-        
+
     echo "<tr>";
     $cols = array("standName","note");
     foreach ($cols as $col) {
         echo "<th>$col</th>";
     }
     echo "</tr>";
-     
+
     for ($i=0; $i<count($data); $i++) {
         echo "<tr>";
         foreach ($cols as $col) {
