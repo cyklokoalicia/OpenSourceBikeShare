@@ -3,7 +3,7 @@
 
 $configfilename="../config.php.example";
 require($configfilename);
-require("../db.class.php");
+require("../external/rb.php");
 require("../external/htmlpurifier/HTMLPurifier.standalone.php");
 $htmlpurconfig=HTMLPurifier_Config::createDefault();
 $purifier=new HTMLPurifier($htmlpurconfig);
@@ -259,7 +259,7 @@ if (!$error) {
     if (!$connectors["sms"]) {
         $result = R::exec("UPDATE users SET number=:userid WHERE id=:userid", [':userid' => $userid]);
     }
-    $result = R::exec("REPLACE INTO limits SET userId=':userid', userLimit='100'", [':userid' => $userid]);
+    $result = R::exec("REPLACE INTO limits SET userId=:userid, userLimit='100'", [':userid' => $userid]);
     R::commit();
 ?>
       <h2><?php echo _('Create bicycles and stands'); ?></h2>
@@ -281,7 +281,7 @@ if (!$error) {
     $stands = explode(",", $_POST["stands"]);
     foreach ($stands as $stand) {
         $stand=trim(strtoupper($stand));
-        $result=R::exec("REPLACE INTO stands SET standName=:stand, serviceTag=0, placeName=:stand", [':stand' => $stands]);
+        $result=R::exec("REPLACE INTO stands SET standName=:stand, serviceTag=0, placeName=:stand", [':stand' => $stand]);
     }
     for ($i=1; $i<=$_POST["bicyclestotal"]; $i++) {
         $code=sprintf("%04d", rand(100, 9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
@@ -348,16 +348,17 @@ if ($connectors["sms"]) : ?>
       <h2>Set system options</h2>
 <?php
 $uploadtotal=0;
+
 foreach ($_POST["standdesc"] as $standid => $value) {
     R::exec("UPDATE stands SET standDescription=?, serviceTag=?, latitude=?, longitude=? WHERE id='$standid'",
                    [$_POST["standdesc"][$standid], $_POST["servicetag"][$standid], $_POST["standlat"][$standid], $_POST["standlong"][$standid]]);
 
     if (isset($uploads[$standid]["filename"])) {
-        R::exec("UPDATE stands SET standPhoto='".$uploads[$standid]["filename"]."' WHERE id='$standid'");
+        R::exec("UPDATE stands SET standPhoto='?' WHERE id='?'", [$uploads[$standid]["filename"], $standid]);
         $uploadtotal++;
     }
     if (isset($_POST["placename"][$standid])) {
-        R::exec("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE id='$standid'");
+        R::exec("UPDATE stands SET placeName='?' WHERE id='?'", [$_POST["placename"][$standid], $standid]);
     }
 }
     R::commit();
@@ -433,7 +434,7 @@ foreach ($configfile as $line) {
         $newcredit = ($credit["min"]+$credit["rent"]+$credit["longrental"])*10;
         $result = R::getAll("SELECT id FROM users WHERE privileges='7'");
         $row = $result[0];
-        $result = R::exec("REPLACE INTO credit SET userId='".$row["userId"]."',credit='$newcredit'");
+        $result = R::exec("REPLACE INTO credit SET id=:userid,userId=:userid,credit=:credit", [':userid'=>$row["id"], ':credit'=>$newcredit]);
     }
     R::commit();
 ?>

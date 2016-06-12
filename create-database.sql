@@ -84,7 +84,7 @@ CREATE TABLE `limits` (
 DROP TABLE IF EXISTS `pairing`;
 CREATE TABLE `pairing` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `time` timestamp NOT NULL,
   `standid` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -155,7 +155,7 @@ CREATE TABLE `users` (
   `userName` varchar(50) NOT NULL,
   `password` text NOT NULL,
   `mail` varchar(30) NOT NULL,
-  `number` varchar(30) NOT NULL,
+  `number` varchar(30),
   `privileges` int(11) NOT NULL DEFAULT '0',
   `note` text NOT NULL,
   `recommendations` text NOT NULL,

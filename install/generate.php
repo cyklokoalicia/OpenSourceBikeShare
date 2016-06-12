@@ -5,7 +5,7 @@ if (file_exists("../config.php.example")) {
 } else {
     require("../config.php");
 }
-require("external/rb.php");
+require("../external/rb.php");
 R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
 R::freeze(true);
 
