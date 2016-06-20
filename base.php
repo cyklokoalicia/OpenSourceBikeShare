@@ -465,12 +465,20 @@ function mapgeolocation($userid, $lat, $long)
 
 function mapgetmarkers()
 {
-    $rows=R::getAll('SELECT stands.id,count(bikeNum) AS bikecount,standDescription,standName,standPhoto,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.id WHERE stands.serviceTag=0 GROUP BY standName ORDER BY standName');
+    $rows = R::getAll(
+       'SELECT S.id, count(B.bikeNum) AS bikecount, S.standDescription, S.standName, S.standPhoto, S.longitude AS lon, S.latitude AS lat
+        FROM stands AS S
+        LEFT JOIN bikes AS B ON B.currentStand = S.id
+        WHERE S.serviceTag = 0
+        GROUP BY standName
+        ORDER BY standName');
+
     if (!empty($rows)) {
         foreach ($rows as $row) {
-            $jsoncontent["markers"][]=$row;
+            $jsoncontent["markers"][] = $row;
         }
     }
+
     response('', 0, $jsoncontent, 0);
 }
 
@@ -479,14 +487,14 @@ function mapgetlimit($userid)
     if (!isloggedin()) {
         response("");
     }
-    $rented=R::count('bikes', 'currentuser=?', [$userid]);
-    $limit=R::findOne('limits', 'userid=?', [$userid]);
+    $rented = R::count('bikes', 'currentuser=?', [$userid]);
+    $limit = R::findOne('limits', 'userid=?', [$userid]);
 
-    $currentlimit=$limit->userlimit-$rented;
+    $currentlimit = $limit->userlimit-$rented;
 
-    $usercredit=0;
-    $usercredit=getusercredit($userid);
+    $usercredit = 0;
+    $usercredit = getusercredit($userid);
 
-    $jsoncontent=array("limit"=>$currentlimit,"rented"=>$rented,"usercredit"=>$usercredit);
+    $jsoncontent = array("limit"=>$currentlimit,"rented"=>$rented,"usercredit"=>$usercredit);
     response('', 0, $jsoncontent, 0);
 }

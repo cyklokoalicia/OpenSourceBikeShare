@@ -213,7 +213,14 @@ function freeBikes($number)
         $listBikes = substr($listBikes, 0, strlen($listBikes)-1);
     }
 
-    $result = R::getAll("SELECT count(bikeNum) as bikeCount,placeName from bikes right join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount=0 order by placeName");
+    $result = R::getAll("SELECT count(bikeNum) as bikeCount,placeName
+                         from bikes
+                         right join stands on bikes.currentStand=stands.standId
+                         where stands.serviceTag=0
+                         group by placeName
+                         having bikeCount=0
+                         order by placeName");
+
     $rentedBikes = count($result);
 
     if ($rentedBikes != 0) {
