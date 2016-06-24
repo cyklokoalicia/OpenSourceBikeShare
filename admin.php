@@ -3,9 +3,6 @@ require("config.php");
 require("db-rb-setup.php");
 require('actions-web.php');
 
-R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
-R::freeze(true);
-
 checksession();
 if (getprivileges($_COOKIE["loguserid"])<=0) {
     exit(_('You need admin privileges to access this page.'));

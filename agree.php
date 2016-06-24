@@ -3,9 +3,6 @@ require("config.php");
 require('actions-web.php');
 require("db-rb-setup.php");
 
-R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
-R::freeze(true);
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
