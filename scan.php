@@ -1,11 +1,9 @@
 <?php
 require("config.php");
-require("external/rb.php");
-R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
-R::freeze(true);
-R::debug(true, 2);
-R::addDatabase('localdb', 'mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword, true);
+require("db-rb-setup.php");
+
 R::begin();
+
 require('actions-qrcode.php');
 
 if (isset($_COOKIE["loguserid"])) {

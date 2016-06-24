@@ -1,12 +1,7 @@
 <?php
 require("config.php");
-require("external/rb.php");
-R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
-R::freeze(true);
-//R::debug( TRUE,2 );
-R::addDatabase('localdb', 'mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword, true);
-R::begin();
 require('actions-web.php');
+require("db-rb-setup.php");
 
 if (isset($_COOKIE["loguserid"])) {
     $userid=$_COOKIE["loguserid"];

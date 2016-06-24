@@ -1,7 +1,7 @@
 <?php
 require("config.php");
-require("external/rb.php");
 require("common.php");
+require("db-rb-setup.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,6 +1,6 @@
 <?php
 require("config.php");
-require("external/rb.php");
+require("db-rb-setup.php");
 require('actions-web.php');
 
 R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);

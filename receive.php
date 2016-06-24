@@ -1,11 +1,9 @@
 <?php
 require("config.php");
-require("external/rb.php");
-R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
-R::freeze(true);
-R::debug(true, 2);
-R::addDatabase('localdb', 'mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword, true);
+require("db-rb-setup.php");
+
 R::begin();
+
 require("actions-sms.php");
 
 log_sms($sms->UUID(), $sms->Number(), $sms->Time(), $sms->Text(), $sms->IPAddress());

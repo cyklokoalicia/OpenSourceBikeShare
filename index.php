@@ -1,16 +1,13 @@
 <?php
 
 require("config.php");
-require("external/rb.php");
 require("actions-web.php");
+require("db-rb-setup.php");
 
-R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
-R::freeze(true);
-R::addDatabase('localdb', 'mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword, true);
-R::freeze(true);
-//R::debug( TRUE,2 );
 $values=new stdClass;
 // exit;
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
