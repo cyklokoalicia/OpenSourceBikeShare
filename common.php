@@ -109,7 +109,7 @@ function generatecodes($numcodes, $codelength, $wastage = 25)
 
 function getprivileges($userid)
 {
-    $user=R::load('users', $userid);
+    $user = R::load('users', $userid);
     if ($user->id) {
         return $user->privileges;
     }
@@ -146,7 +146,8 @@ function getuserid($number)
 function isloggedin()
 {
     if (isset($_COOKIE["loguserid"]) and isset($_COOKIE["logsession"])) {
-        $session=R::findOne('sessions', 'userid=:userid AND sessionid=:sessionid AND timestamp>:timestamp', [':userid'=>$_COOKIE["loguserid"],':sessionid'=>$_COOKIE["logsession"],':timestamp'=>time()]);
+        $session = R::findOne('sessions', 'userid=:userid AND sessionid=:sessionid AND timestamp>:timestamp',
+                              [':userid'=>$_COOKIE["loguserid"],':sessionid'=>$_COOKIE["logsession"],':timestamp'=>time()]);
         if (!empty($session)) {
             return 1;
         } else {
