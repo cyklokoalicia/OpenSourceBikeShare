@@ -577,3 +577,11 @@ function normalizephonenumber($number)
     }
     return $number;
 }
+
+function log_queries()
+{
+    $logs = R::getDatabaseAdapter()
+            ->getDatabase()
+            ->getLogger();
+    error_log(print_r($logs, true));
+}
