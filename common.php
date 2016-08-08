@@ -176,14 +176,18 @@ function checksession()
             R::commit();
             setcookie("loguserid", "", time()-86400);
             setcookie("logsession", "", time()-86400);
-            header("HTTP/1.1 301 Moved permanently");
+            header("HTTP/1.1 302 Found");
             header("Location: ".$systemURL."?error=2&time=".time());
+            header("Cache-Control: no-store, no-cache, must-revalidate");
+            header("Expires: ".gmdate('D, d M Y H:i:s \G\M\T', time()));
             header("Connection: close");
             exit;
         }
     } else {
-        header("HTTP/1.1 301 Moved permanently");
+        header("HTTP/1.1 302 Found");
         header("Location: ".$systemURL."?error=2&time=".time());
+        header("Cache-Control: no-store, no-cache, must-revalidate");
+        header("Expires: ".gmdate('D, d M Y H:i:s \G\M\T', time()));
         header("Connection: close");
         exit;
     }

@@ -466,13 +466,12 @@ function mapgeolocation($userid, $lat, $long)
 function mapgetmarkers()
 {
     $rows = R::getAll(
-       'SELECT S.id, count(B.bikeNum) AS bikecount, S.standDescription, S.standName, S.standPhoto, S.longitude AS lon, S.latitude AS lat
+       'SELECT S.id as standId, count(B.bikeNum) AS bikecount, S.standDescription, S.standName, S.standPhoto, S.longitude AS lon, S.latitude AS lat
         FROM stands AS S
         LEFT JOIN bikes AS B ON B.currentStand = S.id
         WHERE S.serviceTag = 0
         GROUP BY standName
         ORDER BY standName');
-
     if (!empty($rows)) {
         foreach ($rows as $row) {
             $jsoncontent["markers"][] = $row;
@@ -487,14 +486,18 @@ function mapgetlimit($userid)
     if (!isloggedin()) {
         response("");
     }
-    $rented = R::count('bikes', 'currentuser=?', [$userid]);
-    $limit = R::findOne('limits', 'userid=?', [$userid]);
+    $rented=R::count('bikes', 'currentuser=?', [$userid]);
+    $limit=R::findOne('limits', 'userid=?', [$userid]);
 
-    $currentlimit = $limit->userlimit-$rented;
+    echo $limit;
+    exit; // TODO continue, see https://github.com/gabordemooij/redbean/issues/515
 
-    $usercredit = 0;
-    $usercredit = getusercredit($userid);
 
-    $jsoncontent = array("limit"=>$currentlimit,"rented"=>$rented,"usercredit"=>$usercredit);
+    $currentlimit=$limit->userlimit-$rented;
+
+    $usercredit=0;
+    $usercredit=getusercredit($userid);
+
+    $jsoncontent=array("limit"=>$currentlimit,"rented"=>$rented,"usercredit"=>$usercredit);
     response('', 0, $jsoncontent, 0);
 }

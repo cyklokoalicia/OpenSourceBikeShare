@@ -94,10 +94,10 @@ DROP TABLE IF EXISTS `received`;
 CREATE TABLE `received` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `sms_uuid` varchar(60) NOT NULL,
+  `smsuuid` varchar(60) NOT NULL,
   `sender` varchar(20) NOT NULL,
-  `receive_time` varchar(20) NOT NULL,
-  `sms_text` varchar(200) NOT NULL,
+  `receivetime` varchar(20) NOT NULL,
+  `smstext` varchar(200) NOT NULL,
   `IP` varchar(20) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -152,9 +152,9 @@ CREATE TABLE `stands` (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userName` varchar(50) NOT NULL,
+  `userName` varchar(255) NOT NULL,
   `password` text NOT NULL,
-  `mail` varchar(30) NOT NULL,
+  `mail` varchar(255) NOT NULL,
   `number` varchar(30),
   `privileges` int(11) NOT NULL DEFAULT '0',
   `note` text NOT NULL,

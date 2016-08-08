@@ -121,7 +121,7 @@ foreach ($files as $key => $value) {
             <h1><?php echo _('Installation'); ?> <span class="label label-default"><?php echo _('Step');
             echo " ",$step; ?></span> <?php echo _('out of'); ?> <span class="label label-default">6</span></h1>
             </div>
-<?php if (!$step) : ?>
+<?php if (!$step): ?>
        <h2><?php echo _('System requirements check'); ?></h2>
       <form class="container" method="post" action="index.php?step=1">
 <?php
@@ -167,7 +167,7 @@ if (!$error) {
 ?>
          </form>
 <?php endif; ?>
-<?php if ($step==1) : ?>
+<?php if ($step==1): ?>
        <h2><?php echo _('Set basic system and database options'); ?></h2>
       <form class="container" method="post" action="index.php?step=2">
       <fieldset><legend><?php echo _('System'); ?></legend>
@@ -197,7 +197,7 @@ if (!$error) {
          <button type="submit" id="register" class="btn btn-primary"><?php echo _('Create database'); ?></button> <?php echo _('and continue to step'); ?> 2
          </form>
 <?php endif; ?>
-<?php if ($step==2) :
+<?php if ($step==2):
     $systemURL=$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"];
     $installpos=strpos($systemURL, "install/");
     $systemURL="http://".substr($systemURL, 0, $installpos);
@@ -246,8 +246,7 @@ if (!$error) {
          <button type="submit" id="register" class="btn btn-primary"><?php echo _('Create admin user'); ?></button> <?php echo _('and continue to step'); ?> 3
          </form>
 <?php endif; ?>
-<?php if ($step==3) :
-
+<?php if ($step==3):
     R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
     R::freeze(true);
     R::begin();
@@ -275,8 +274,9 @@ if (!$error) {
          </form>
 
 <?php endif; ?>
-<?php if ($step==4) :
+<?php if ($step==4):
     R::setup("mysql:host=$dbserver;dbname=$dbname", $dbuser, $dbpassword);
+    R::freeze(true);
     R::begin();
     $stands = explode(",", $_POST["stands"]);
     foreach ($stands as $stand) {
@@ -343,7 +343,7 @@ if ($connectors["sms"]) : ?>
 <?php if ($step==5):
     R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
     R::freeze(true);
-    R::begin()
+    R::begin();
 ?>
       <h2>Set system options</h2>
 <?php
@@ -413,7 +413,7 @@ foreach ($configfile as $line) {
          <button type="submit" id="register" class="btn btn-primary"><?php echo _('Set system options'); ?></button> <?php echo _('and finish'); ?>
          </form>
 <?php endif; ?>
-<?php if ($step==6) :
+<?php if ($step==6):
     R::setup('mysql:host='.$dbserver.';dbname='.$dbname, $dbuser, $dbpassword);
     R::freeze(true);
     R::begin();

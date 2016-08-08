@@ -10,6 +10,7 @@ function response($message, $error = 0, $additional = "", $log = 1)
             $json[$key]=$value;
         }
     }
+
     $json=json_encode($json);
     if ($log==1 and $message) {
         if (isset($_COOKIE["loguserid"])) {
@@ -20,7 +21,7 @@ function response($message, $error = 0, $additional = "", $log = 1)
         $number=getphonenumber($userid);
         logresult($number, $message);
     }
-    R::commit();
+    //R::commit(); // 2016-08-08 can be omitted? actually, does not work with this line!
     echo $json;
     exit;
 }
@@ -271,17 +272,27 @@ function login($number, $password)
         $session->userid=$user->id;
         $session->sessionid=hash('sha256', $user->id.$user->number.time());
         $session->timestamp=time()+86400*14;
+        echo 'a';
         R::store($session);
-        R::commit();
+        echo 'a';
+        //R::commit(); //206-08-08 not required???
+        echo 'a';
         setcookie("loguserid", $user->id, time()+86400*14);
         setcookie("logsession", $session->sessionid, time()+86400*14);
-        header("HTTP/1.1 301 Moved permanently");
+        header("HTTP/1.1 302 Found");
+        echo 'a';
         header("Location: ".$systemURL);
+        echo 'a';
+        header("Cache-Control: no-store, no-cache, must-revalidate");
+        header("Expires: ".gmdate('D, d M Y H:i:s \G\M\T', time()));
         header("Connection: close");
+        echo 'a';
         exit;
     } else {
-        header("HTTP/1.1 301 Moved permanently");
+        header("HTTP/1.1 302 Found");
         header("Location: ".$systemURL."?error=1");
+        header("Cache-Control: no-store, no-cache, must-revalidate");
+        header("Expires: ".gmdate('D, d M Y H:i:s \G\M\T', time()));
         header("Connection: close");
         exit;
     }

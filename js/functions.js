@@ -100,7 +100,7 @@ function getmarkers()
                      iconSize: [iconsize, iconsize],
                      iconAnchor: [iconsize/2, 0],
                      html: '<dl class="icondesc none" id="stand-'+jsonobject.markers[i].standName+'"><dt class="bikecount">'+jsonobject.markers[i].bikecount+'</dt><dd class="standname">'+jsonobject.markers[i].standName+'</dd></dl>',
-                     standid: jsonobject.markers[i].id
+                     standid: jsonobject.markers[i].standId
                   });
                   }
                else
@@ -109,12 +109,12 @@ function getmarkers()
                      iconSize: [iconsize, iconsize],
                      iconAnchor: [iconsize/2, 0],
                      html: '<dl class="icondesc" id="stand-'+jsonobject.markers[i].standName+'"><dt class="bikecount">'+jsonobject.markers[i].bikecount+'</dt><dd class="standname">'+jsonobject.markers[i].standName+'</dd></dl>',
-                     standid: jsonobject.markers[i].id
+                     standid: jsonobject.markers[i].standId
                   });
                   }
 
-               markerdata[jsonobject.markers[i].id]={name:jsonobject.markers[i].standName,desc:jsonobject.markers[i].standDescription,photo:jsonobject.markers[i].standPhoto,count:jsonobject.markers[i].bikecount};
-               markers[jsonobject.markers[i].id] = L.marker([jsonobject.markers[i].lat, jsonobject.markers[i].lon], { icon: tempicon }).addTo(map).on("click", showstand );
+               markerdata[jsonobject.markers[i].standId]={name:jsonobject.markers[i].standName,desc:jsonobject.markers[i].standDescription,photo:jsonobject.markers[i].standPhoto,count:jsonobject.markers[i].bikecount};
+               markers[jsonobject.markers[i].standId] = L.marker([jsonobject.markers[i].lat, jsonobject.markers[i].lon], { icon: tempicon }).addTo(map).on("click", showstand );
                $('body').data('markerdata',markerdata);
                }
             if (firstrun==1)

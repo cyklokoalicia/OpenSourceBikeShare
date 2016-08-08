@@ -5,8 +5,6 @@ require("actions-web.php");
 require("db-rb-setup.php");
 
 $values=new stdClass;
-// exit;
-
 
 ?>
 <!DOCTYPE html>
