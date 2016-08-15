@@ -1,5 +1,3 @@
--- Adminer 4.1.0 MySQL dump
-
 SET NAMES utf8;
 SET time_zone = '+00:00';
 
@@ -7,9 +5,9 @@ DROP TABLE IF EXISTS `bikes`;
 CREATE TABLE `bikes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `bikenum` int(11) NOT NULL,
-  `currentUser` int(11) DEFAULT NULL,
-  `currentStand` int(11) DEFAULT NULL,
-  `currentCode` int(11) NOT NULL,
+  `currentuser` int(11) DEFAULT NULL,
+  `currentstand` int(11) DEFAULT NULL,
+  `currentcode` int(11) NOT NULL,
   `note` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY (`bikenum`)
@@ -163,4 +161,4 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
--- 2014-11-20 11:19:49
+
