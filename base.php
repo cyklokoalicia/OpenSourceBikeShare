@@ -8,9 +8,9 @@ function notification($result, $values = false)
         notifyAdmins(_('Bike')." ".$values->bikenum." "._('rented out of stack by')." ".$values->username.". ".$values->stacktopbike." "._('was on the top of the stack at')." ".$values->currentstand.".", ERROR);
     } elseif ($result==20) {
         notifyAdmins(_('Note')." b.".$values->bikenum." (".$values->bikestatus.") "._('by')." ".$values->username."/".$values->phone.":".$values->note);
+    } else {
+        response('Unhandled notification '.$result.'.', ERROR);
     }
-    response('Unhandled notification '.$result.'.', ERROR);
-
 }
 
 function rentbike($userid, $bikenum, $force = false)
@@ -434,8 +434,8 @@ function userbikes($userid)
     if (!empty($bikes)) {
         foreach ($bikes as $bike) {
             $bicycles[]=$bike->bikenum;
-            $codes[]=str_pad($bike->code, 4, "0", STR_PAD_LEFT);
-            $history=R::findOne('history', 'bikenum=:bikenum AND action=:action ORDER BY time DESC', [':bikenum'=>$bike->bikenum,':action'=>'RENT']);
+            $codes[]=str_pad($bike->currentcode, 4, "0", STR_PAD_LEFT);
+            $history=R::findOne('history', 'bikenum=:bikenum AND action=:action ORDER BY time DESC LIMIT 1,2', [':bikenum'=>$bike->bikenum,':action'=>'RENT']);
             if (!empty($history)) {
                 $oldcodes[]=str_pad($history->parameter, 4, "0", STR_PAD_LEFT);
             }
@@ -489,11 +489,8 @@ function mapgetlimit($userid)
     $rented=R::count('bikes', 'currentuser=?', [$userid]);
     $limit=R::findOne('limits', 'userid=?', [$userid]);
 
-    echo $limit;
-    exit; // TODO continue, see https://github.com/gabordemooij/redbean/issues/515
-
-
     $currentlimit=$limit->userlimit-$rented;
+
 
     $usercredit=0;
     $usercredit=getusercredit($userid);

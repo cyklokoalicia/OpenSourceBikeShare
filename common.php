@@ -168,12 +168,9 @@ function checksession()
         if (!empty($session)) {
             $session->timestamp = time()+86400*14;
             R::store($session);
-            R::commit();
-            R::begin();
         } else {
             $sessions = R::find('sessions', 'userid=:userid OR sessionid=:sessionid', [':userid'=>$_COOKIE["loguserid"],':sessionid'=>$_COOKIE["logsession"]]);
             R::trashAll($sessions);
-            R::commit();
             setcookie("loguserid", "", time()-86400);
             setcookie("logsession", "", time()-86400);
             header("HTTP/1.1 302 Found");
