@@ -1,0 +1,36 @@
+@import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600);
+.navbar-select-stand-li {
+  height: 50px; }
+
+.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a > h4 {
+  margin: 0; }
+
+.navbar-nav > .messages-menu > .dropdown-menu > li .menu > li > a > p {
+  margin: 0; }
+
+.content-wrapper {
+  margin-left: 0;
+  min-height: calc(100vh - 101px); }
+
+.main-footer {
+  margin-left: 0; }
+
+.sidebar-in {
+  margin-left: 230px; }
+
+.select2-container--default .select2-selection--single {
+  border-radius: 0;
+  height: 30px; }
+
+.select2 {
+  min-width: 155px !important;
+  width: 200px !important;
+  margin-top: 10px; }
+
+.select2-container--default .select2-selection--single .select2-selection__clear {
+  margin-top: -3px; }
+
+.box-header.with-border {
+  border-bottom: 1px solid #f4f4f4; }
+
+/*# sourceMappingURL=app.css.map */

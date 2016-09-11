@@ -1,0 +1,75 @@
+{
+    "name": "laravel/laravel",
+    "description": "The Laravel Framework.",
+    "keywords": ["framework", "laravel"],
+    "license": "MIT",
+    "type": "project",
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/pixwell-dev/laravel-api-debugger"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.4",
+        "laravel/framework": "5.3.*",
+        "tymon/jwt-auth": "^1.0@dev",
+        "barryvdh/laravel-cors": "0.8.x",
+        "spatie/laravel-permission": "^1.3",
+        "webpatser/laravel-uuid": "^2.0",
+        "barryvdh/laravel-ide-helper": "^2.1",
+        "rap2hpoutre/laravel-log-viewer": "^0.5.3",
+        "toin0u/geotools-laravel": "~1.0",
+        "pixwell-dev/laravel-api-debugger": "dev-master",
+        "bosnadev/repositories": "^0.13.0",
+        "barryvdh/laravel-debugbar": "^2.2",
+        "league/fractal": "^0.13.0",
+        "dingo/api": "dev-master",
+        "predis/predis": "^1.1",
+        "brotzka/laravel-dotenv-editor": "^2.0"
+    },
+    "require-dev": {
+        "fzaninotto/faker": "~1.4",
+        "mockery/mockery": "0.9.*",
+        "phpunit/phpunit": "~5.0",
+        "symfony/css-selector": "3.1.*",
+        "symfony/dom-crawler": "3.1.*"
+    },
+    "autoload": {
+        "classmap": [
+            "database"
+        ],
+        "psr-4": {
+            "BikeShare\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/TestCase.php"
+        ]
+    },
+    "scripts": {
+        "post-root-package-install": [
+            "php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "php artisan key:generate"
+        ],
+        "post-install-cmd": [
+            "Illuminate\\Foundation\\ComposerScripts::postInstall",
+            "php artisan optimize"
+        ],
+        "post-update-cmd": [
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+            "php artisan ide-helper:generate",
+            "php artisan ide-helper:models --nowrite",
+            "php artisan ide-helper:meta",
+            "php artisan optimize"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable" : true
+}

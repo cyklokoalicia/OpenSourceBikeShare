@@ -1,0 +1,14 @@
+## POST /api/auth/register
++ Request (application/json)
+    + Headers
+    	Accept: application/json
+    + Body
+		{
+			"name": "John Doe",
+			"email": "john@doe.com",
+			"phone_number": "+421944244303",
+			"password": "heslo"
+		}
++ Response 200 (application/json)
+
+    + Attributes (array[User])
