@@ -31,7 +31,7 @@ class User extends Authenticatable implements JWTSubject
         'limit',
         'note',
         'recommendation',
-        'confirmation_key',
+        'confirmation_token',
         'locked'
     ];
 

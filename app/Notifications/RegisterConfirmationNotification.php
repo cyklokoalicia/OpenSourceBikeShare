@@ -44,7 +44,7 @@ class RegisterConfirmationNotification extends Notification implements ShouldQue
     public function toMail($notifiable)
     {
         $ruleUrl = app('AppConfig')->getSystemRules();
-        $agreeUrl = url('/agree/' . $notifiable->confirmation_key);
+        $agreeUrl = url('/api/auth/agree/' . $notifiable->confirmation_token);
 
         return (new MailMessage)
             ->subject('Registration')

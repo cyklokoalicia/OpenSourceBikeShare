@@ -29,7 +29,7 @@ $api->version('v1', ['namespace' => 'BikeShare\Http\Controllers\Api\v1'], functi
             'uses' => 'RegisterController@register',
         ]);
 
-        $api->get('agree/{confirmation_key}', [
+        $api->get('agree/{token}', [
             'as' => 'api.auth.agree',
             'uses' => 'RegisterController@agree',
         ]);
@@ -38,6 +38,19 @@ $api->version('v1', ['namespace' => 'BikeShare\Http\Controllers\Api\v1'], functi
             'as' => 'api.auth.login',
             'uses' => 'LoginController@authenticate',
         ]);
+
+        // Password Reset Routes...
+        $api->post('password/email', [
+            'as' => 'api.auth.password.email',
+            'uses' => 'ForgotPasswordController@sendResetLinkEmail'
+        ]);
+
+        $api->post('password/reset', [
+            'as' => 'api.auth.password.post.reset',
+            'uses' => 'ResetPasswordController@reset'
+        ]);
+
+
     });
 
     $api->group(['middleware' => 'jwt.auth'], function ($api) {

@@ -1,8 +1,9 @@
 <?php
 namespace BikeShare\Domain\User;
 
+use App;
 use BikeShare\Domain\Core\Repository;
-use BikeShare\Http\Services\AppConfig;
+use Illuminate\Support\Str;
 
 class UsersRepository extends Repository
 {
@@ -34,5 +35,23 @@ class UsersRepository extends Repository
         }
 
         return $user;
+    }
+
+
+    public function getConfirmationToken()
+    {
+        return hash_hmac('sha256', Str::random(40), $this->hashKey());
+    }
+
+
+    private function hashKey()
+    {
+        $key = $this->app['config']['app.key'];
+
+        if (Str::startsWith($key, 'base64:')) {
+            $key = base64_decode(substr($key, 7));
+        }
+
+        return $key;
     }
 }

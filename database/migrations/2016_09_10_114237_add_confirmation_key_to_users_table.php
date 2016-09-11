@@ -14,7 +14,7 @@ class AddConfirmationKeyToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('confirmation_key')->after('locked')->nullable();
+            $table->string('confirmation_token')->after('locked')->nullable();
         });
     }
 
@@ -26,7 +26,7 @@ class AddConfirmationKeyToUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('confirmation_key');
+            $table->dropColumn('confirmation_token');
         });
     }
 }

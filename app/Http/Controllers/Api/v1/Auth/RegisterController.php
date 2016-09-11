@@ -10,7 +10,6 @@ use BikeShare\Domain\User\UserTransformer;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Notifications\RegisterConfirmationNotification;
 use Illuminate\Http\Request;
-use Ramsey\Uuid\Uuid;
 
 class RegisterController extends Controller
 {
@@ -53,19 +52,20 @@ class RegisterController extends Controller
 
 
     /**
-     * @param $key
+     * @param $token
      *
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response|void
      */
-    public function agree($key)
+    public function agree($token)
     {
-        if (! $user = $this->userRepo->findBy('confirmation_key', $key)) {
-            return $this->response->errorNotFound('User not found');
+        if (! $user = $this->userRepo->findBy('confirmation_token', $token)) {
+            return $this->response->errorBadRequest('Bad token');
         }
         $user->limit = app('AppConfig')->getRegistrationLimits();
+        $user->confirmation_token = null;
         $user->save();
 
-        return response('Your account has been activated.');
+        return response()->json(['message' => 'Your account has been activated.']);
     }
 
     /**
@@ -81,7 +81,7 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'phone_number' => $data['phone_number'],
             'password' => bcrypt($data['password']),
-            'confirmation_key' => (string) Uuid::uuid4(),
+            'confirmation_token' => $this->userRepo->getConfirmationToken(),
             'credit' => 0,
             'locked' => 1,
         ]);
