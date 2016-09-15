@@ -13,7 +13,7 @@ class BuildApiDocs extends Command
      *
      * @var string
      */
-    protected $signature = 'bikeshare:docs';
+    protected $signature = 'bike-share:docs';
 
     /**
      * The console command description.

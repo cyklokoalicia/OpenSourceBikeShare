@@ -119,4 +119,21 @@ class AppConfig
     {
         return $this->config['watches']['free_time'];
     }
+
+
+    public function getTimeToMany()
+    {
+        return $this->config['watches']['time_too_many'];
+    }
+
+    public function getNumberToMany()
+    {
+        return $this->config['watches']['number_too_many'];
+    }
+
+
+    public function isNotifyUser()
+    {
+        return $this->config['notify_user'];
+    }
 }

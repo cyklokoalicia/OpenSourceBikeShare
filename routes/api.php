@@ -17,7 +17,6 @@ $api = app('Dingo\Api\Routing\Router');
 
 $api->version('v1', ['namespace' => 'BikeShare\Http\Controllers\Api\v1'], function ($api) {
 
-
     $api->group(['prefix' => 'auth', 'namespace' => 'Auth'], function ($api) {
         $api->post('verify-phone-number', [
             'as' => 'api.auth.verify-phone-number',

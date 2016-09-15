@@ -5,9 +5,12 @@ use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Note\Note;
 use BikeShare\Domain\Rent\Rent;
+use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\Stand\StandsRepository;
+use BikeShare\Domain\User\User;
+use BikeShare\Domain\User\UsersRepository;
 use Carbon\Carbon;
 
 class RentService
@@ -161,5 +164,44 @@ class RentService
     public function checkTopOfStack($bike)
     {
         return $bike->stand->getTopPosition() == $bike->stack_position;
+    }
+
+    public function checkLongRent()
+    {
+        $rents = app(RentsRepository::class)->findWhere(['status' => RentStatus::OPEN]);
+
+        foreach ($rents as $rent) {
+            if ($rent->started_at->addHours(app('AppConfig')->getWatchersLongRental())->isPast()) {
+                if (app('AppConfig')->isNotifyUser()) {
+                    // TODO send notification (sms, email ?) to user about long rental
+                }
+            }
+        }
+
+        // TODO send notification report to admins about all long rentals
+    }
+
+
+    public function checkManyRents(User $user = null)
+    {
+        $timeToMany = app('AppConfig')->getTimeToMany();
+        $numberToMany = app('AppConfig')->getNumberToMany();
+        if ($user) {
+            $users = collect($user);
+        } else {
+            $users = app(UsersRepository::class)->findWhere([
+                ['limit', '!=', 0]
+            ]);
+        }
+
+        foreach ($users as $user) {
+            $rents = $user->rents()->where('started_at', '>', Carbon::now()->subHour($timeToMany))->get();
+
+            if (count($rents) >= ($user->limit + $numberToMany)) {
+                // TODO prepare data for report
+            }
+        }
+
+        // TODO notify admins (create report) about too many rentals of users
     }
 }

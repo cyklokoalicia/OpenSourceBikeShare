@@ -46,7 +46,7 @@ class UsersRepository extends Repository
 
     private function hashKey()
     {
-        $key = $this->app['config']['app.key'];
+        $key = config('app.key');
 
         if (Str::startsWith($key, 'base64:')) {
             $key = base64_decode(substr($key, 7));
