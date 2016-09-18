@@ -18,7 +18,7 @@ class CreateCouponsTable extends Migration
             $table->string('uuid');
             $table->string('coupon');
             $table->double('value', 5, 2);
-            $table->integer('user_id')->unsigned();
+            $table->integer('user_id')->unsigned()->nullable();
             $table->foreign('user_id')->references('id')->on('users');
             $table->string('status');
             $table->softDeletes();

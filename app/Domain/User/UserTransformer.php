@@ -18,16 +18,17 @@ class UserTransformer extends TransformerAbstract
     public function transform(User $user)
     {
         return [
-            'uuid'           => (string)$user->uuid,
-            'name'           => $user->name,
-            'phone_number'   => $user->phone_number,
-            'email'          => $user->email,
-            'note'           => $user->note,
-            'credit'         => $user->credit,
-            'recommendation' => $user->recommendation,
-            'limit'          => $user->limit,
-            'locked'         => $user->locked,
-            'created_at'     => (string)$user->created_at,
+            'uuid'            => (string)$user->uuid,
+            'name'            => $user->name,
+            'phone_number'    => $user->phone_number,
+            'email'           => $user->email,
+            'note'            => $user->note,
+            'credit'          => $user->credit,
+            'credit_currency' => app('AppConfig')->getCreditCurrency(),
+            'recommendation'  => $user->recommendation,
+            'limit'           => $user->limit,
+            'locked'          => $user->locked,
+            'created_at'      => (string)$user->created_at,
         ];
     }
 

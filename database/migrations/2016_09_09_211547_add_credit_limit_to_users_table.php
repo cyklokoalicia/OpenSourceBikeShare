@@ -14,7 +14,7 @@ class AddCreditLimitToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->decimal('credit', 5, 2)->nullable()->after('phone_number');
+            $table->decimal('credit', 10, 2)->nullable()->after('phone_number');
             $table->integer('limit')->default(0)->after('credit');
         });
     }

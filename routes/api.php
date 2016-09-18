@@ -181,6 +181,33 @@ $api->version('v1', ['namespace' => 'BikeShare\Http\Controllers\Api\v1'], functi
                 ]);
             });
 
+            $api->group(['prefix' => 'coupons', 'namespace' => 'Coupons'], function ($api) {
+                $api->get('', [
+                    'as' => 'api.coupons.index',
+                    'uses' => 'CouponsController@index',
+                ]);
+
+                $api->post('', [
+                    'as' => 'api.coupons.store',
+                    'uses' => 'CouponsController@store',
+                ]);
+
+                $api->get('{uuid}/sell', [
+                    'as' => 'api.coupons.sell',
+                    'uses' => 'CouponsController@sell',
+                ]);
+
+                $api->get('{uuid}/validate', [
+                    'as' => 'api.coupons.validate',
+                    'uses' => 'CouponsController@validateCoupon',
+                ]);
+
+                $api->get('{uuid}', [
+                    'as' => 'api.coupons.show',
+                    'uses' => 'CouponsController@show',
+                ]);
+            });
+
         });
     });
 });
