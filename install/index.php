@@ -227,6 +227,9 @@ if (!$error) {
     $sql=explode(";", $sql);
     foreach ($sql as $value) {
         $value=trim($value);
+        if (ctype_space($value)) {
+            continue;
+        }
         if (strpos("--", $value)===false) {
             $result=R::exec($value);
            //echo $value,'<br />';
