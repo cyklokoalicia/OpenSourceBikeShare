@@ -22,10 +22,10 @@ class BuildApiDocs extends Command
      */
     protected $description = 'Builds api docs based on controller annotations.';
 
+
     /**
      * Create a new command instance.
      *
-     * @return void
      */
     public function __construct()
     {
@@ -43,7 +43,7 @@ class BuildApiDocs extends Command
         $output = base_path('resources/views/docs/index.blade.php');
         $gulpProcess = new Process('gulp docs');
 
-        $process = new Process("aglio -i {$docsFile} --theme-template triple --no-theme-condense-nav --theme-variables streak -o {$output}");
+        $process = new Process("aglio -i {$docsFile} --theme-template triple --no-theme-condense-nav --theme-variables flatly -o {$output}");
 
         try {
             $gulpProcess->mustRun();

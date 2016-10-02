@@ -5,6 +5,7 @@ namespace BikeShare\Console;
 use BikeShare\Console\Commands\BuildApiDocs;
 use BikeShare\Console\Commands\CheckLongRents;
 use BikeShare\Console\Commands\CheckManyRents;
+use BikeShare\Console\Commands\ComposerUpdateScript;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -17,6 +18,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         BuildApiDocs::class,
+        ComposerUpdateScript::class,
         CheckLongRents::class,
         CheckManyRents::class,
     ];

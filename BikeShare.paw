@@ -1,4 +1,4 @@
-<?xml version="1.0" standalone="no"?>
+<?xml version="1.0"?>
 <!DOCTYPE database SYSTEM "file:///System/Library/DTDs/CoreData.dtd">
 
 <database>
@@ -10,7 +10,7 @@
             <plist version="1.0">
                 <dict>
                     <key>NSPersistenceFrameworkVersion</key>
-                    <integer>641</integer>
+                    <integer>752</integer>
                     <key>NSStoreModelVersionHashes</key>
                     <dict>
                         <key>LMCookieJar</key>
@@ -1208,10 +1208,10 @@
         <attribute name="followredirects" type="bool">0</attribute>
         <attribute name="body" type="string"></attribute>
         <attribute name="order" type="int64">3</attribute>
-        <attribute name="name" type="string">register Duplicate</attribute>
+        <attribute name="name" type="string">agree</attribute>
         <relationship name="parent" type="0/1" destination="LMREQUESTTREEITEM" idrefs="z247"></relationship>
         <relationship name="children" type="0/0" destination="LMREQUESTTREEITEM"></relationship>
-        <relationship name="headers" type="0/0" destination="LMKEYVALUE" idrefs="z443 z442 z444"></relationship>
+        <relationship name="headers" type="0/0" destination="LMKEYVALUE" idrefs="z442 z444 z443"></relationship>
     </object>
     <object type="LMKEYVALUE" id="z442">
         <attribute name="value" type="string">[{"data":{"environmentVariable":"AA6A4A95-0BC2-44C2-9A4F-D240F25505CF"},"identifier":"com.luckymarmot.EnvironmentVariableDynamicValue"}]</attribute>

@@ -171,13 +171,9 @@ return [
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         Barryvdh\Cors\ServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
-        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
         Toin0u\Geotools\GeotoolsServiceProvider::class,
-        Lanin\ApiDebugger\DebuggerServiceProvider::class,
-        Barryvdh\Debugbar\ServiceProvider::class,
         Dingo\Api\Provider\LaravelServiceProvider::class,
-        Brotzka\DotenvEditor\DotenvEditorServiceProvider::class,
         //
 
         /*
@@ -237,15 +233,10 @@ return [
         'Validator'    => Illuminate\Support\Facades\Validator::class,
         'View'         => Illuminate\Support\Facades\View::class,
 
-        //'Api'               => Dingo\Api\Facade\API::class,
-        'JWTAuth'      => Tymon\JWTAuth\Facades\JWTAuth::class,
-        'Uuid'         => Webpatser\Uuid\Uuid::class,
-        'Geotools'     => Toin0u\Geotools\Facade\Geotools::class,
-        'Debugger'     => Lanin\ApiDebugger\DebuggerFacade::class,
-        'Debugbar'     => Barryvdh\Debugbar\Facade::class,
-        'DotenvEditor' => Brotzka\DotenvEditor\DotenvEditorFacade::class,
+        'Api'      => Dingo\Api\Facade\API::class,
+        'JWTAuth'  => Tymon\JWTAuth\Facades\JWTAuth::class,
+        'Geotools' => Toin0u\Geotools\Facade\Geotools::class,
     ],
-
 
     'version' => '0.0.1'
 ];

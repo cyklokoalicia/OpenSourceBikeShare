@@ -11,3 +11,4 @@ Homestead.yaml
 /bower_components
 /storage/debugbar
 /storage/framework
+/storage/logs
