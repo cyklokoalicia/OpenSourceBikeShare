@@ -27,6 +27,8 @@ class RentTransformer extends TransformerAbstract
         return [
             'uuid'       => (string)$rent->uuid,
             'status'     => $rent->status,
+            'old_code'     => $rent->old_code,
+            'new_code'     => $rent->new_code,
             'started_at' => (string)$rent->started_at,
             'ended_at'   => (string)$rent->ended_at,
         ];

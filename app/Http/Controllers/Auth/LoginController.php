@@ -4,6 +4,7 @@ namespace BikeShare\Http\Controllers\Auth;
 
 use BikeShare\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -45,5 +46,21 @@ class LoginController extends Controller
     public function username()
     {
         return 'phone_number';
+    }
+
+    /**
+     * The user has been authenticated.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  mixed  $user
+     * @return mixed
+     */
+    protected function authenticated(Request $request, $user)
+    {
+        if ($user->hasRole('admin')) {
+            return redirect()->intended('app/dashboard');
+        }
+
+        return $this->redirectTo;
     }
 }

@@ -37,15 +37,15 @@ Route::group(['prefix' => 'auth', 'namespace' => 'Auth'], function () {
     ]);
 
     // Registration Routes...
-    Route::get('register', [
-        'as' => 'auth.register',
-        'uses' => 'RegisterController@showRegistrationForm'
-    ]);
-
-    Route::post('register', [
-        'as' => 'auth.post.register',
-        'uses' => 'RegisterController@register'
-    ]);
+    //Route::get('register', [
+    //    'as' => 'auth.register',
+    //    'uses' => 'RegisterController@showRegistrationForm'
+    //]);
+    //
+    //Route::post('register', [
+    //    'as' => 'auth.post.register',
+    //    'uses' => 'RegisterController@register'
+    //]);
 
     // Password Reset Routes...
     Route::get('password/reset', [
@@ -109,7 +109,7 @@ Route::group(['prefix' => 'app', 'middleware' => 'auth'], function () {
         ]);
     });
 
-
+    // TODO moved under users
     Route::group(['prefix' => 'rents', 'namespace' => 'Rents'], function () {
 
         Route::get('/', [
@@ -121,6 +121,46 @@ Route::group(['prefix' => 'app', 'middleware' => 'auth'], function () {
             'as'   => 'app.rents.show',
             'uses' => 'RentsController@show'
         ]);
+
+    });
+
+    Route::group(['middleware' => 'role:admin'], function () {
+        Route::get('/dashboard', [
+            'as'   => 'app.dashboard',
+            'uses' => 'DashboardController@index'
+        ]);
+
+        Route::group(['prefix' => 'users'], function () {
+
+            Route::group(['prefix' => '{uuid}'], function () {
+                Route::get('profile', [
+                    'as'   => 'app.users.profile.show',
+                    'uses' => 'ProfileController@show'
+                ]);
+            });
+
+            Route::group(['prefix' => 'rents', 'namespace' => 'Rents'], function () {
+
+                Route::get('/', [
+                    'as'   => 'app.users.rents.index',
+                    'uses' => 'RentsController@index'
+                ]);
+
+                Route::get('{uuid}', [
+                    'as'   => 'app.users.rents.show',
+                    'uses' => 'RentsController@show'
+                ]);
+
+            });
+
+            Route::get('/', [
+                'as'   => 'app.users.index',
+                'uses' => 'UsersController@index'
+            ]);
+
+
+
+        });
 
     });
 

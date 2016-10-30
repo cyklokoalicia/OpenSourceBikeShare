@@ -1,0 +1,26 @@
+{
+  "name": "OpenSourceBikeShare",
+  "description": "",
+  "main": "",
+  "authors": [
+    "Jozef Balún <balunjozef@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/cyklokoalicia/OpenSourceBikeShare",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "select2": "^4.0.3",
+    "font-awesome": "^4.6.3",
+    "AdminLTE": "admin-lte#^2.3.6",
+    "datatables.net": "^1.10.12",
+    "datatables.net-bs": "^1.10.12",
+    "datatables.net-responsive": "^2.1.0",
+    "datatables.net-responsive-bs": "^2.1.0"
+  }
+}

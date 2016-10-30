@@ -372,5 +372,37 @@ return [
 
     'sms' => [
         'enabled' => env('SMS_ENABLED', false),
+
+        /*
+        |--------------------------------------------------------------------------
+        | SMS Connectors / Gateways
+        |--------------------------------------------------------------------------
+        |
+        | null, log, euroSms
+        |
+        */
+        'connector' => env('SMS_CONNECTOR', 'log'),
+
+        'connections' => [
+            'null' => [
+                'driver' => 'null',
+            ],
+
+            'log' => [
+                'driver' => 'log',
+            ],
+
+            'euroSms' => [
+                'id' => env('EUROSMS_ID'),
+                'key' => env('EUROSMS_KEY'),
+                'senderNumber' => env('EUROSMS_NUMBER'),
+            ],
+
+            'nexmo' => [
+                'key' => env('NEXMO_KEY'),
+                'secret' => env('NEXMO_SECRET'),
+                'sms_from' => '15556666666',
+            ],
+        ]
     ],
 ];

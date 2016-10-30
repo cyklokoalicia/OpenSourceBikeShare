@@ -8,7 +8,7 @@
     <body class="hold-transition login-page">
     <div class="login-box">
         <div class="login-logo">
-            <a href="{{ route('app.home') }}"><b>Admin</b>LTE</a>
+            <a href="{{ route('app.home') }}"><b>Admin</b> {{ app('AppConfig')->getSystemName() }}</a>
         </div><!-- /.login-logo -->
 
         @if (count($errors) > 0)
@@ -55,7 +55,7 @@
             </div> /.social-auth-links -->
 
             <a href="{{ route('auth.password.reset') }}">I forgot my password</a><br>
-            <a href="{{ route('auth.register') }}" class="text-center">Register a new membership</a>
+            {{--<a href="{{ route('auth.register') }}" class="text-center">Register a new membership</a>--}}
 
         </div><!-- /.login-box-body -->
 

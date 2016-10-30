@@ -22,13 +22,15 @@
         <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">
                 <!-- Messages: style can be found in dropdown.less-->
-                <li class="navbar-select-stand-li">
-                    <select class="navbar-select-stand">
-                        @foreach($stands as $stand)
-                            <option value="{{ $stand->uuid }}"> {{ $stand->name }}</option>
-                        @endforeach
-                    </select>
-                </li>
+                @if(! auth()->user()->hasRole('admin'))
+                    <li class="navbar-select-stand-li">
+                        <select class="navbar-select-stand">
+                            @foreach($stands as $stand)
+                                <option value="{{ $stand->uuid }}"> {{ $stand->name }}</option>
+                            @endforeach
+                        </select>
+                    </li>
+                @endif
                 <li class="dropdown messages-menu">
                     <!-- Menu toggle button -->
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="rents">

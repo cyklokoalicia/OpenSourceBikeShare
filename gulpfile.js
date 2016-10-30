@@ -51,9 +51,9 @@ elixir(function(mix) {
     mix.copy('bower_components/select2/dist/js/select2.full.js', 'public/js/libs/select2.js');
 
     // data table
-    mix.copy('bower_components/AdminLTE/plugins/datatables/dataTables.bootstrap.css', 'public/css/libs/dataTables.css');
-    mix.copy('bower_components/AdminLTE/plugins/datatables/jquery.dataTables.min.js', 'public/js/libs/jquery.dataTables.js');
-    mix.copy('bower_components/AdminLTE/plugins/datatables/dataTables.bootstrap.min.js', 'public/js/libs/dataTables.js');
+    mix.copy('bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css', 'public/css/libs/dataTables.css');
+    mix.copy('bower_components/datatables.net/js/jquery.dataTables.min.js', 'public/js/libs/jquery.dataTables.js');
+    mix.copy('bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js', 'public/js/libs/dataTables.js');
 
     // Merge all CSS files in one file.
     mix.styles([

@@ -11,13 +11,11 @@ use League\Fractal\Manager;
 class RentsController extends Controller
 {
     protected $rentRepo;
-    protected $fractal;
 
     public function __construct(RentsRepository $repository)
     {
-        $this->rentRepo = $repository;
-        $this->fractal = new Manager();
         parent::__construct();
+        $this->rentRepo = $repository;
     }
     /**
      * Display a listing of the resource.
@@ -28,22 +26,24 @@ class RentsController extends Controller
     {
         if (auth()->user()->hasRole('admin')) {
             $rents = $this->rentRepo->with(['bike', 'standFrom', 'standTo', 'user'])->all();
+            $include = ['bike', 'standFrom', 'standTo', 'user'];
         } else {
             //$rents = auth()->user()->rents()->with('bike', 'standFrom', 'standTo')->get();
 
             $rents = auth()->user()->rents()->get();
-
             $include = ['bike', 'standFrom'];
-            $resource = new Fractal\Resource\Collection($rents, new RentTransformer);
-
-            if (isset($include)) {
-                $this->fractal->parseIncludes(implode(",", $include));
-            }
-
-            $rents = $this->fractal->createData($resource)->toArray();
         }
 
-//dd($rents);
+
+        $resource = new Fractal\Resource\Collection($rents, new RentTransformer);
+
+        if (isset($include)) {
+            $this->fractal->parseIncludes(implode(",", $include));
+        }
+
+        $rents = json_decode($this->fractal->createData($resource)->toJson());
+
+        //dd($rents);
         return view('rents.index', [
             'rents' => $rents
         ]);

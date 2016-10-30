@@ -55,7 +55,7 @@ desired effect
 </div><!-- ./wrapper -->
 
 @include('layouts.partials.scripts')
-@stack('in-scripts')
+@stack('scripts')
 
 </body>
 </html>
