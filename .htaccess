@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+
+    SetEnvIf Authorization .+ HTTP_AUTHORIZATION=$0
+
+    RewriteCond %{REQUEST_URI} !^public
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^.*$ https://%{SERVER_NAME}%{REQUEST_URI} [L,R]
+</IfModule>

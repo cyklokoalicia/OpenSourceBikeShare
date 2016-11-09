@@ -61,7 +61,7 @@
             </form>
 
             <a href="{{ route('auth.login') }}">Log in</a><br>
-            <a href="{{ route('auth.register') }}" class="text-center">Register a new membership</a>
+{{--            <a href="{{ route('auth.register') }}" class="text-center">Register a new membership</a>--}}
 
         </div><!-- /.login-box-body -->
 

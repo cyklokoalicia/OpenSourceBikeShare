@@ -31,7 +31,7 @@ class BikesController extends Controller
      */
     public function index()
     {
-        dd('index');
+        dd('list of all bikes');
     }
 
     /**
