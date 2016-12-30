@@ -33,12 +33,12 @@
         <ul class="sidebar-menu">
             <li class="header">HEADER</li>
             <!-- Optionally, you can add icons to the links -->
-            <li class="active"><a href="{{ route('app.dashboard') }}"><i class='fa fa-dashboard'></i> <span>Dashboard</span></a></li>
-            <li class=""><a href="{{ route('app.home') }}"><i class='fa fa-map'></i> <span>Map</span></a></li>
-            <li class=""><a href="{{ route('app.users.rents.index') }}"><i class='fa fa-retweet'></i> <span>Rents</span></a></li>
-            <li class=""><a href="{{ route('app.users.index') }}"><i class='fa fa-users'></i> <span>Users</span></a></li>
-            <li class=""><a href="{{ route('app.bikes.index') }}"><i class='fa fa-bicycle'></i> <span>Bikes</span></a></li>
-            <li class=""><a href="{{ route('app.stands.index') }}"><i class='fa fa-map-pin'></i> <span>Stands</span></a></li>
+            <li class="{{ set_active(['app/dashboard']) }}"><a href="{{ route('app.dashboard') }}"><i class='fa fa-dashboard'></i> <span>Dashboard</span></a></li>
+            <li class="{{ set_active(['app/home']) }}"><a href="{{ route('app.home') }}"><i class='fa fa-map'></i> <span>Map</span></a></li>
+            <li class="{{ set_active(['app/users/rents*']) }}"><a href="{{ route('app.users.rents.index') }}"><i class='fa fa-retweet'></i> <span>Rents</span></a></li>
+            <li class="{{ set_active(['app/users']) }}"><a href="{{ route('app.users.index') }}"><i class='fa fa-users'></i> <span>Users</span></a></li>
+            <li class="{{ set_active(['app/bikes']) }}"><a href="{{ route('app.bikes.index') }}"><i class='fa fa-bicycle'></i> <span>Bikes</span></a></li>
+            <li class="{{ set_active(['app/stands']) }}"><a href="{{ route('app.stands.index') }}"><i class='fa fa-map-pin'></i> <span>Stands</span></a></li>
             <li class="treeview">
                 <a href="#"><i class='fa fa-link'></i> <span>Multilevel</span> <i class="fa fa-angle-left pull-right"></i></a>
                 <ul class="treeview-menu">

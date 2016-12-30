@@ -40,7 +40,10 @@
         ],
         "psr-4": {
             "BikeShare\\": "app/"
-        }
+        },
+        "files": [
+            "app/Http/helpers.php"
+        ]
     },
     "autoload-dev": {
         "classmap": [
