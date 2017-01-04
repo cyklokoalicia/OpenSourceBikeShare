@@ -6,5 +6,5 @@
         <span><strong>date:</strong> {{ $date }}</span> <span><strong>version:</strong> {{ $version }}</span>
     </div>
     <!-- Default to the left -->
-    <strong>Copyright &copy; 2016 <a href="http://whitebikes.info">WhiteBikes</a>.</strong> Created by <a href="http://whitebikes.info"></a>. See code at <a href="">Github</a>
+    <strong>Copyright &copy; {{ date('Y') }} <a href="http://whitebikes.info">WhiteBikes</a>.</strong> Created by <a href="https://github.com/cyklokoalicia/OpenSourceBikeShare/graphs/contributors">Contributors</a>. See code at <a href="https://github.com/cyklokoalicia/OpenSourceBikeShare">Github</a>
 </footer>

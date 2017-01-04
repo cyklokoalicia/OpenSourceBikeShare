@@ -32,11 +32,11 @@ class HomeController extends Controller
         $stands = app(StandsRepository::class)->all();
         $rents = auth()->user()->rents()->get();
 
-        return view('home')->with([
-            'date'    => Carbon::now()->toDateString(),
+        return view('home', [
+            'date' => Carbon::now()->toDateString(),
             'version' => config('app.version'),
-            'stands'  => $stands,
-            'activeRents'  => $rents,
+            'stands' => $stands,
+            'activeRents' => $rents,
         ]);
     }
 }

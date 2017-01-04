@@ -27,20 +27,20 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @forelse($rents->data as $rent)
+                            @forelse($rents as $rent)
                                 <tr>
                                     <td><span class="@include('layouts.partials.class', ['label' => 'label', 'status' => $rent->status])">{{ $rent->status }}</span></td>
-                                    <td><a href="{{ route('app.bikes.show', $rent->bike->data->uuid) }}">{{ $rent->bike->data->bike_num }}</a></td>
-                                    <td><a href="{{ route('app.users.profile.show', $rent->user->data->uuid) }}">{{ $rent->user->data->name }}</a></td>
-                                    <td><a href="{{ route('app.stands.show', $rent->standFrom->data->uuid) }}">{{ $rent->standFrom->data->name }}</a></td>
-                                    <td>@if(isset($rent->standTo))<a href="{{ route('app.stands.show', $rent->standTo->data->uuid) }}">{{ $rent->standTo->data->name }}</a>@endif</td>
+                                    <td><a href="{{ route('app.bikes.show', $rent->bike->uuid) }}">{{ $rent->bike->bike_num }}</a></td>
+                                    <td><a href="{{ route('app.users.profile.show', $rent->user->uuid) }}">{{ $rent->user->name }}</a></td>
+                                    <td><a href="{{ route('app.stands.show', $rent->standFrom->uuid) }}">{{ $rent->standFrom->name }}</a></td>
+                                    <td><a href="{{ route('app.stands.show', $rent->standTo->uuid ?? '') }}">{{ $rent->standTo->name ?? '' }}</a></td>
                                     <td>{{ $rent->old_code }}</td>
                                     <td>{{ $rent->new_code }}</td>
-                                    <td>{{ Carbon\Carbon::parse($rent->started_at)->format('d M, Y H:m') }}</td>
-                                    <td>@if(! empty($rent->ended_at)){{ Carbon\Carbon::parse($rent->ended_at)->format('d M, Y H:m') }}@endif</td>
-                                    <td>{{ Carbon\Carbon::parse($rent->started_at)->diffForHumans() }}</td>
+                                    <td>{{ $rent->started_at->format('d M, Y H:m') }}</td>
+                                    <td>{{ $rent->ended_at ? $rent->ended_at->format('d M, Y H:m') : ''}}</td>
+                                    <td>{{ $rent->started_at->diffForHumans() }}</td>
                                     <td>
-                                        <a href="{!! route('app.bikes.return', ['uuid' => $rent->bike->data->uuid]) !!}" class="btn btn-flat btn-sm btn-warning" title="return bike"><i class="fa fa-refresh fa-fw"></i></a>
+                                        <a href="{!! route('app.bikes.return', ['uuid' => $rent->bike->uuid]) !!}" class="btn btn-flat btn-sm btn-warning" title="return bike"><i class="fa fa-refresh fa-fw"></i></a>
                                         <a href="{!! route('app.rents.show', ['uuid' => $rent->uuid]) !!}" class="btn btn-flat btn-sm btn-primary" title="view rent"><i class="fa fa-eye fa-fw"></i></a>
                                     </td>
                                 </tr>

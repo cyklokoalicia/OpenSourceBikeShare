@@ -10,13 +10,17 @@ use League\Fractal\Manager;
 
 class RentsController extends Controller
 {
+
     protected $rentRepo;
+
 
     public function __construct(RentsRepository $repository)
     {
         parent::__construct();
         $this->rentRepo = $repository;
     }
+
+
     /**
      * Display a listing of the resource.
      *
@@ -26,28 +30,15 @@ class RentsController extends Controller
     {
         if (auth()->user()->hasRole('admin')) {
             $rents = $this->rentRepo->with(['bike', 'standFrom', 'standTo', 'user'])->all();
-            $include = ['bike', 'standFrom', 'standTo', 'user'];
         } else {
-            //$rents = auth()->user()->rents()->with('bike', 'standFrom', 'standTo')->get();
-
-            $rents = auth()->user()->rents()->get();
-            $include = ['bike', 'standFrom'];
+            $rents = auth()->user()->rents()->load('bike', 'standFrom')->get();
         }
 
-
-        $resource = new Fractal\Resource\Collection($rents, new RentTransformer);
-
-        if (isset($include)) {
-            $this->fractal->parseIncludes(implode(",", $include));
-        }
-
-        $rents = json_decode($this->fractal->createData($resource)->toJson());
-
-        //dd($rents);
         return view('rents.index', [
-            'rents' => $rents
+            'rents' => $rents,
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -59,10 +50,12 @@ class RentsController extends Controller
         return view('rents.create');
     }
 
+
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -70,10 +63,12 @@ class RentsController extends Controller
         //
     }
 
+
     /**
      * Display the specified resource.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function show($uuid)
@@ -92,10 +87,12 @@ class RentsController extends Controller
         return view('rents.show')->with(['rent' => $rent]);
     }
 
+
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function edit($uuid)
@@ -103,11 +100,13 @@ class RentsController extends Controller
         $rent = $this->rentRepo->findByUuid($uuid);
     }
 
+
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $uuid
+     * @param  \Illuminate\Http\Request $request
+     * @param  int                      $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $uuid)
@@ -115,10 +114,12 @@ class RentsController extends Controller
         $rent = $this->rentRepo->findByUuid($uuid);
     }
 
+
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function destroy($uuid)

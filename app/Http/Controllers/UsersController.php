@@ -8,15 +8,20 @@ class UsersController extends Controller
 
     public $usersRepo;
 
+
     public function __construct(UsersRepository $repository)
     {
+        parent::__construct();
         $this->usersRepo = $repository;
     }
 
+
     public function index()
     {
-        $users = $this->usersRepo->all();
+        $users = $this->usersRepo->with(['activeRents'])->all();
 
-        return view('users.index')->with(['users' => $users]);
+        return view('users.index', [
+            'users' => $users,
+        ]);
     }
 }

@@ -130,6 +130,20 @@ Route::group(['prefix' => 'app', 'middleware' => 'auth'], function () {
             'uses' => 'DashboardController@index'
         ]);
 
+        Route::group(['prefix' => 'rents', 'namespace' => 'Rents'], function () {
+
+            Route::get('/', [
+                'as'   => 'app.rents.index',
+                'uses' => 'RentsController@index'
+            ]);
+
+            Route::get('{uuid}', [
+                'as'   => 'app.rents.show',
+                'uses' => 'RentsController@show'
+            ]);
+
+        });
+
         Route::group(['prefix' => 'users'], function () {
 
             Route::group(['prefix' => '{uuid}'], function () {
@@ -137,20 +151,6 @@ Route::group(['prefix' => 'app', 'middleware' => 'auth'], function () {
                     'as'   => 'app.users.profile.show',
                     'uses' => 'ProfileController@show'
                 ]);
-            });
-
-            Route::group(['prefix' => 'rents', 'namespace' => 'Rents'], function () {
-
-                Route::get('/', [
-                    'as'   => 'app.users.rents.index',
-                    'uses' => 'RentsController@index'
-                ]);
-
-                Route::get('{uuid}', [
-                    'as'   => 'app.users.rents.show',
-                    'uses' => 'RentsController@show'
-                ]);
-
             });
 
             Route::get('/', [

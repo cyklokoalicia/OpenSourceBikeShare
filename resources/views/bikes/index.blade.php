@@ -1,8 +1,7 @@
-
 @extends('layouts.app')
 
 @section('html_header_title')
-    Stands
+    Bikes
 @endsection
 
 @section('main-content')
@@ -10,37 +9,37 @@
         <div class="col-md-12">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">All stands table</h3>
+                    <h3 class="box-title">All bikes table</h3>
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body table-responsive">
-                    <table class="table table-bordered table-condensed table-striped table-hover" id="stands-table">
+                    <table class="table table-bordered table-condensed table-striped table-hover" id="bikes-table">
                         <thead>
                         <tr>
                             <th>#</th>
                             <th>uuid</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Bikes count</th>
-                            <th>place name</th>
-                            <th>Is service</th>
-                            <th>lat</th>
-                            <th>lng</th>
+                            <th>Bike num</th>
+                            <th>Current code</th>
+                            <th>Used by</th>
+                            <th>Current stand</th>
+                            <th>Stack position</th>
+                            <th>Status</th>
+                            <th>Note</th>
                             <th>Action</th>
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach($stands as $stand)
-                            <tr class="item{{ $stand->id }}">
-                                <td>{{ $stand->id }}</td>
-                                <td>{{ $stand->uuid }}</td>
-                                <td>{{ $stand->name }}</td>
-                                <td>{{ $stand->description }}</td>
-                                <td>{{ $stand->bikes->count() }}</td>
-                                <td>{{ $stand->place_name }}</td>
-                                <td>{{ $stand->service_tag ? 'Yes' : 'No' }}</td>
-                                <td>{{ $stand->latitude }}</td>
-                                <td>{{ $stand->logitude }}</td>
+                        @foreach($bikes as $bike)
+                            <tr class="item{{ $bike->id }}">
+                                <td>{{ $bike->id }}</td>
+                                <td>{{ $bike->uuid }}</td>
+                                <td>{{ $bike->bike_num }}</td>
+                                <td>{{ $bike->current_code }}</td>
+                                <td><a href="{{ route('app.users.profile.show', $bike->user->uuid ?? '' ) }}">{{ $bike->user ? $bike->user->name : '' }}</a></td>
+                                <td><a href="{{ route('app.stands.show', $bike->stand->uuid ?? '' ) }}">{{ $bike->stand ? $bike->stand->name : '' }}</a></td>
+                                <td>{{ $bike->stack_position }}</td>
+                                <td>{{ $bike->status }}</td>
+                                <td>{{ $bike->note }}</td>
                                 <td>
                                     <a href="" class="edit-modal btn btn-info btn-sm btn-flat">
                                         <span class="fa fa-edit"></span> Edit
@@ -66,7 +65,7 @@
 @push('scripts')
 <script>
     $(document).ready(function () {
-        $('#stands-table').DataTable({
+        $('#bikes-table').DataTable({
             pageLength: 50
         });
     });

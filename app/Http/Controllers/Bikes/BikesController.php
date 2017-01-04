@@ -21,6 +21,7 @@ class BikesController extends Controller
 
     public function __construct(BikesRepository $bikesRepository)
     {
+        parent::__construct();
         $this->bikeRepo = $bikesRepository;
     }
 
@@ -31,7 +32,11 @@ class BikesController extends Controller
      */
     public function index()
     {
-        dd('list of all bikes');
+        $bikes = $this->bikeRepo->with(['stand', 'user'])->all();
+
+        return view('bikes.index', [
+            'bikes' => $bikes
+        ]);
     }
 
     /**
@@ -65,7 +70,7 @@ class BikesController extends Controller
     {
         $bike = $this->bikeRepo->findByUuid($uuid);
 
-        return view('rents.show', [
+        return view('bikes.show', [
             'bike' => $bike
         ]);
     }

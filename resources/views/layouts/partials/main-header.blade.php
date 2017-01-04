@@ -140,12 +140,7 @@
                             <li class="user-header">
                                 <img src="/img/user2-160x160.jpg" class="img-circle" alt="User Image" />
                                 <p>
-                                    {{ Auth::user()->name }}
-                                    <small>Member since Nov. 2012</small>
-                                </p>
-
-                                <p>
-                                    {{ Auth::user()->credit }}
+                                    {{ Auth::user()->name }} ({{ Auth::user()->credit }})
                                     <small>Member since Nov. 2012</small>
                                 </p>
                             </li>

@@ -27,7 +27,11 @@ class StandsController extends Controller
      */
     public function index()
     {
-        return $this->standRepo->all();
+        $stands = $this->standRepo->with(['bikes'])->all();
+
+        return view('stand.index', [
+            'stands' => $stands
+        ]);
     }
 
     /**

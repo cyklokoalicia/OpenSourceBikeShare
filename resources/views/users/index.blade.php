@@ -36,7 +36,7 @@
                                 <td>{{ $user->phone_number }}</td>
                                 <td>{{ $user->limit }}</td>
                                 <td>{{ $user->credit }}</td>
-                                <td><a href=""></a>{{ $user->activeRents()->count() }}</td>
+                                <td><a href="{{ route('app.rents.index') }}">{{ $user->activeRents->count() }}</a></td>
                                 <td>{{ $user->last_login->diffForHumans() }}</td>
                                 <td>
                                     <a href="{{ route('app.users.profile.show', $user->uuid) }}" class="btn btn-flat btn-primary btn-sm">
