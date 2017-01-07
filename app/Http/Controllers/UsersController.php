@@ -24,4 +24,12 @@ class UsersController extends Controller
             'users' => $users,
         ]);
     }
+
+
+    public function edit($id)
+    {
+        $user = $users = $this->usersRepo->find($id);
+
+        return view('users.edit')->with(compact('user'));
+    }
 }

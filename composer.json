@@ -23,7 +23,8 @@
         "rap2hpoutre/laravel-log-viewer": "^0.5.3",
         "doctrine/dbal": "^2.5",
         "guzzlehttp/guzzle": "^6.2",
-        "spatie/laravel-activitylog": "^1.10"
+        "spatie/laravel-activitylog": "^1.10",
+        "jenssegers/date": "^3.2"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

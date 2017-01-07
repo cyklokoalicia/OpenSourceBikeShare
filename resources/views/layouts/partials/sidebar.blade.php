@@ -46,6 +46,7 @@
                     <li><a href="#">Link in level 2</a></li>
                 </ul>
             </li>
+            <li class="{{ set_active(['app/logs']) }}"><a href="{{ route('app.logs.index') }}"><i class='fa fa-file-text'></i> <span>Logs</span></a></li>
         </ul><!-- /.sidebar-menu -->
     </section>
     <!-- /.sidebar -->

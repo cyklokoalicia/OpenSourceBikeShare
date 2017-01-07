@@ -70,6 +70,9 @@ Route::group(['prefix' => 'auth', 'namespace' => 'Auth'], function () {
 });
 
 Route::group(['prefix' => 'app', 'middleware' => 'auth'], function () {
+
+    Route::get('logs', 'ActivitylogController@index')->name('app.logs.index');
+
     Route::get('/home', [
         'as'   => 'app.home',
         'uses' => 'HomeController@index'
@@ -151,6 +154,8 @@ Route::group(['prefix' => 'app', 'middleware' => 'auth'], function () {
                     'as'   => 'app.users.profile.show',
                     'uses' => 'ProfileController@show'
                 ]);
+
+                Route::get('edit', 'UsersController@edit')->name('app.users.edit');
             });
 
             Route::get('/', [
