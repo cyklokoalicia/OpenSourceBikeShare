@@ -8,13 +8,14 @@ use BikeShare\Domain\Rent\RentStatus;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
 
-    use Notifiable, HasRoles, Uuid, SoftDeletes;
+    use Notifiable, HasRoles, Uuid, SoftDeletes, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -32,7 +33,19 @@ class User extends Authenticatable implements JWTSubject
         'note',
         'recommendation',
         'confirmation_token',
-        'locked'
+        'locked',
+    ];
+
+    protected static $logAttributes = [
+        'name',
+        'email',
+        'phone_number',
+        'password',
+        'credit',
+        'limit',
+        'note',
+        'recommendation',
+        'locked',
     ];
 
     protected $dates = ['deleted_at', 'last_login'];
@@ -46,6 +59,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'remember_token',
     ];
+
 
     public function setCreditAttribute($value)
     {

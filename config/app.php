@@ -174,6 +174,7 @@ return [
         Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
         Toin0u\Geotools\GeotoolsServiceProvider::class,
         Dingo\Api\Provider\LaravelServiceProvider::class,
+        Spatie\Activitylog\ActivitylogServiceProvider::class,
         //
 
         /*
