@@ -36,13 +36,15 @@
 // select 2 update css styles
 .select2-container--default .select2-selection--single {
   border-radius: 0;
-  height: 30px;
+  height: 34px;
+  border-color: #d2d6de;
 }
 
 .select2 {
   min-width: 155px !important;
   width: 200px !important;
   margin-top: 10px;
+  width: 100% !important;
 }
 
 .select2-container--default .select2-selection--single .select2-selection__clear {

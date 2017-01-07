@@ -10,6 +10,7 @@
             <div class="box">
                 <div class="box-header with-border">
                     <h3 class="box-title">All bikes table</h3>
+                    <a href="{{ route('app.bikes.create') }}" class="btn btn-flat btn-success btn-sm pull-right"> <i class="fa fa-plus"></i> Add new</a>
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body table-responsive">
@@ -41,11 +42,11 @@
                                 <td>{{ $bike->status }}</td>
                                 <td>{{ $bike->note }}</td>
                                 <td>
-                                    <a href="" class="edit-modal btn btn-info btn-sm btn-flat">
-                                        <span class="fa fa-edit"></span> Edit
+                                    <a href="" class="edit-modal" data-toggle="tooltip" title="Edit">
+                                        <i class="fa fa-edit fa-fw"></i>
                                     </a>
-                                    <a href="" class="delete-modal btn btn-danger btn-sm btn-flat">
-                                        <span class="fa fa-trash"></span> Delete
+                                    <a href="" class="delete-modal" data-toggle="tooltip" title="Delete">
+                                        <i class="fa fa-trash fa-fw"></i>
                                     </a>
                                 </td>
                             </tr>

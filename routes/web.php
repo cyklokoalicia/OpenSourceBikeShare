@@ -93,6 +93,16 @@ Route::group(['prefix' => 'app', 'middleware' => 'auth'], function () {
             'uses' => 'BikesController@index'
         ]);
 
+        Route::get('/create', [
+            'as'   => 'app.bikes.create',
+            'uses' => 'BikesController@create'
+        ]);
+
+        Route::post('/store', [
+            'as'   => 'app.bikes.store',
+            'uses' => 'BikesController@store'
+        ]);
+
         Route::post('/{uuid}/rent', [
             'as'   => 'app.bikes.rent',
             'uses' => 'BikesController@rent'

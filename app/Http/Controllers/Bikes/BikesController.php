@@ -8,11 +8,14 @@ use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Rent\Requests\RentRequest;
 use BikeShare\Domain\Bike\BikesRepository;
 use BikeShare\Domain\Rent\Requests\ReturnRequest;
+use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\Stand\StandsRepository;
+use BikeShare\Domain\User\User;
 use BikeShare\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use BikeShare\Http\Requests;
+use ReflectionClass;
 
 class BikesController extends Controller
 {
@@ -46,7 +49,15 @@ class BikesController extends Controller
      */
     public function create()
     {
-        //
+        $status = (new ReflectionClass(BikeStatus::class))->getConstants();
+        $users = User::all();
+        $stands = Stand::all();
+
+        return view('bikes.create', [
+            'status' => $status,
+            'users' => $users,
+            'stands' => $stands,
+        ]);
     }
 
     /**
@@ -57,7 +68,7 @@ class BikesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request->all());
     }
 
     /**
