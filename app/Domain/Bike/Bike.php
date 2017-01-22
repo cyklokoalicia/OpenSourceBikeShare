@@ -5,13 +5,18 @@ use BikeShare\Domain\Core\Model;
 use BikeShare\Domain\Note\Note;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Bike extends Model
 {
 
+    use LogsActivity;
+
     public $table = 'bikes';
 
     public $fillable = ['bike_num', 'current_code', 'status', 'note'];
+
+    protected static $logAttributes = ['bike_num', 'current_code', 'status', 'note'];
 
     public $dates = ['deleted_at'];
 

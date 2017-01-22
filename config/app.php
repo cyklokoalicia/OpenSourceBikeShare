@@ -174,6 +174,8 @@ return [
         Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
         Toin0u\Geotools\GeotoolsServiceProvider::class,
         Dingo\Api\Provider\LaravelServiceProvider::class,
+        Jenssegers\Date\DateServiceProvider::class,
+        Spatie\Activitylog\ActivitylogServiceProvider::class,
         Kamaln7\Toastr\ToastrServiceProvider::Class,
         //
 

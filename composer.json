@@ -22,6 +22,8 @@
         "dingo/api": "dev-master",
         "rap2hpoutre/laravel-log-viewer": "^0.5.3",
         "doctrine/dbal": "^2.5",
+        "jenssegers/date": "^3.2"
+        "spatie/laravel-activitylog": "^1.10",
         "guzzlehttp/guzzle": "^6.2",
         "oriceon/toastr-5-laravel": "dev-master"
     },
