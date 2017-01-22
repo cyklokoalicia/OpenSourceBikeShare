@@ -1,4 +1,5 @@
 <?php
+
 namespace BikeShare\Domain\Bike;
 
 use BikeShare\Domain\Core\Repository;
@@ -11,6 +12,7 @@ class BikesRepository extends Repository
     {
         return Bike::class;
     }
+
 
     public function findByBikeNum($bikeNum, $columns = ['*'])
     {
@@ -25,5 +27,14 @@ class BikesRepository extends Repository
         $model->save();
 
         return $model;
+    }
+
+
+    public function formatData(array $data): array
+    {
+        unset($data['_token']);
+        unset($data['_method']);
+
+        return $data;
     }
 }

@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ab35f39dac3c4ee6018bf2bc28c4448c",
-    "content-hash": "73d3846316f10c6206c9ff8ce8e9d859",
+    "hash": "35f6b3b2b9cd49939ef8ac35541eac9e",
+    "content-hash": "296f0d65f4d9dc0f34774e5f6384765a",
     "packages": [
         {
             "name": "barryvdh/laravel-cors",
@@ -1877,6 +1877,55 @@
                 "php"
             ],
             "time": "2016-09-16 12:04:44"
+        },
+        {
+            "name": "oriceon/toastr-5-laravel",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/oriceon/toastr-5-laravel.git",
+                "reference": "e03dfd3d49d5b0a9cd5858e64ad9197cddef9a4b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/oriceon/toastr-5-laravel/zipball/e03dfd3d49d5b0a9cd5858e64ad9197cddef9a4b",
+                "reference": "e03dfd3d49d5b0a9cd5858e64ad9197cddef9a4b",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/session": ">=5.0.0",
+                "illuminate/support": ">=5.0.0",
+                "php": ">=5.4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Kamaln7\\Toastr\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kamal Nasser",
+                    "email": "kamal@kamalnasser.net"
+                },
+                {
+                    "name": "Valentin Ivascu",
+                    "email": "oriceon@gmail.com"
+                }
+            ],
+            "description": "Easy toastr notifications for Laravel 5",
+            "homepage": "https://github.com/oriceon/toastr-5-laravel",
+            "keywords": [
+                "laravel",
+                "notification",
+                "php",
+                "toastr"
+            ],
+            "time": "2016-05-17 10:14:35"
         },
         {
             "name": "paragonie/random_compat",
@@ -5644,6 +5693,7 @@
     "stability-flags": {
         "tymon/jwt-auth": 20,
         "dingo/api": 20,
+        "oriceon/toastr-5-laravel": 20,
         "pixwell-dev/laravel-api-debugger": 20
     },
     "prefer-stable": true,

@@ -6,13 +6,13 @@
             <div class="col-xs-12">
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Create new Bike</h3>
+                        <h3 class="box-title">Create new User</h3>
                     </div>
 
-                    <form action="{{ route('app.bikes.store') }}" method="POST">
+                    <form action="{{ route('app.users.store') }}" method="POST">
                         {{ csrf_field() }}
                         <div class="box-body">
-                            @include('bikes._form')
+                            @include('users._form')
                         </div>
                         <div class="box-footer">
                             <input type="submit" class="btn btn-success btn-flat" value="Submit">

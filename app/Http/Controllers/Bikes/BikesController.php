@@ -1,7 +1,9 @@
 <?php
+
 namespace BikeShare\Http\Controllers\Bikes;
 
 use BikeShare\Domain\Bike\BikeStatus;
+use BikeShare\Domain\Bike\Requests\CreateBikeRequest;
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
@@ -16,17 +18,20 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use BikeShare\Http\Requests;
 use ReflectionClass;
+use Toastr;
 
 class BikesController extends Controller
 {
 
     protected $bikeRepo;
 
+
     public function __construct(BikesRepository $bikesRepository)
     {
         parent::__construct();
         $this->bikeRepo = $bikesRepository;
     }
+
 
     /**
      * Display a listing of the resource.
@@ -38,9 +43,10 @@ class BikesController extends Controller
         $bikes = $this->bikeRepo->with(['stand', 'user'])->all();
 
         return view('bikes.index', [
-            'bikes' => $bikes
+            'bikes' => $bikes,
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -60,21 +66,29 @@ class BikesController extends Controller
         ]);
     }
 
+
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param CreateBikeRequest|Request $request
+     *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateBikeRequest $request)
     {
-        dd($request->all());
+        $this->bikeRepo->create($request->all());
+
+        Toastr::success('Bike successfully created');
+
+        return redirect()->route('app.bikes.index');
     }
+
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function show($uuid)
@@ -82,37 +96,59 @@ class BikesController extends Controller
         $bike = $this->bikeRepo->findByUuid($uuid);
 
         return view('bikes.show', [
-            'bike' => $bike
+            'bike' => $bike,
         ]);
     }
+
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function edit($uuid)
     {
-        //
+        $status = (new ReflectionClass(BikeStatus::class))->getConstants();
+        $users = User::all();
+        $stands = Stand::all();
+
+        if (! $bike = $this->bikeRepo->findByUuid($uuid)) {
+            Toastr::error('Bike Not found!');
+        }
+
+        return view('bikes.edit', [
+            'status' => $status,
+            'bike' => $bike,
+            'users' => $users,
+            'stands' => $stands,
+        ]);
     }
+
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $uuid
+     * @param  \Illuminate\Http\Request $request
+     * @param  int                      $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $uuid)
     {
-        //
+        $this->bikeRepo->update($request->all(), $uuid, 'uuid');
+        Toastr::success('Bike successfully updated');
+
+        return redirect()->route('app.bikes.index');
     }
+
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function destroy($uuid)

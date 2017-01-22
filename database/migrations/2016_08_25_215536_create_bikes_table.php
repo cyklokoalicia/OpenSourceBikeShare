@@ -17,13 +17,13 @@ class CreateBikesTable extends Migration
             $table->increments('id');
             $table->string('uuid');
             $table->integer('bike_num')->unique();
-            $table->integer('current_code')->default('0000');
+            $table->integer('current_code')->nullable();
             $table->integer('stand_id')->unsigned()->nullable();
             $table->foreign('stand_id')->references('id')->on('stands');
             $table->integer('user_id')->unsigned()->nullable();
             $table->foreign('user_id')->references('id')->on('users');
             $table->string('status');
-            $table->text('note');
+            $table->text('note')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

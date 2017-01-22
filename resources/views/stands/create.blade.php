@@ -6,13 +6,13 @@
             <div class="col-xs-12">
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Create new Bike</h3>
+                        <h3 class="box-title">Create new Stand</h3>
                     </div>
 
-                    <form action="{{ route('app.bikes.store') }}" method="POST">
+                    <form action="{{ route('app.stands.store') }}" method="POST">
                         {{ csrf_field() }}
                         <div class="box-body">
-                            @include('bikes._form')
+                            @include('stands._form')
                         </div>
                         <div class="box-footer">
                             <input type="submit" class="btn btn-success btn-flat" value="Submit">
@@ -27,13 +27,10 @@
 @push('scripts')
 <script>
     $(document).ready(function () {
-        $('#select-user').select2({
-            allowClear: true,
-            placeholder: 'Select an option'
-        });
-        $('#select-stand').select2({
-            allowClear: true,
-            placeholder: 'Select an option'
+        $('#is-service').iCheck({
+            checkboxClass: 'icheckbox_square-green',
+            radioClass: 'iradio_square-green',
+            increaseArea: '20%' // optional
         });
     });
 </script>

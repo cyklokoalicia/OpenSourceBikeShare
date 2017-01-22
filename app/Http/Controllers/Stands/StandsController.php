@@ -3,23 +3,31 @@ namespace BikeShare\Http\Controllers\Stands;
 
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Bike\BikeTransformer;
+use BikeShare\Domain\Stand\Requests\CreateStandRequest;
+use BikeShare\Domain\Stand\Requests\UpdateStandRequest;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Domain\Stand\StandTransformer;
 use BikeShare\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use BikeShare\Http\Requests;
 use League\Fractal;
+use Toastr;
 
 class StandsController extends Controller
 {
+
     protected $standRepo;
+
     protected $fractal;
+
 
     public function __construct(StandsRepository $repository)
     {
         parent::__construct();
         $this->standRepo = $repository;
     }
+
+
     /**
      * Display a listing of the resource.
      *
@@ -29,10 +37,11 @@ class StandsController extends Controller
     {
         $stands = $this->standRepo->with(['bikes'])->all();
 
-        return view('stand.index', [
-            'stands' => $stands
+        return view('stands.index', [
+            'stands' => $stands,
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -41,70 +50,85 @@ class StandsController extends Controller
      */
     public function create()
     {
-        return view('stand.create');
+        return view('stands.create');
     }
+
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param CreateStandRequest|Request $request
+     *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateStandRequest $request)
     {
-        //
+        $this->standRepo->create($request->all());
+
+        Toastr::success('Stand successfully created');
+
+        return redirect()->route('app.stands.index');
     }
+
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function show($uuid)
     {
         $stand = $this->standRepo->findByUuid($uuid);
-        $resource = new Fractal\Resource\Item($stand, new StandTransformer);
-
         $bikes = $stand->bikes()->where('status', BikeStatus::FREE)->get();
-        $bikeResource = new Fractal\Resource\Collection($bikes, new BikeTransformer());
 
-        $bikes = $this->fractal->createData($bikeResource)->toArray();
-        $stand = $this->fractal->createData($resource)->toArray();
-
-        return view('stand.show')->with([
-            'stand' => $stand['data'],
-            'bikes' => $bikes['data'],
+        return view('stands.show', [
+            'stand' => $stand,
+            'bikes' => $bikes,
         ]);
     }
+
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function edit($uuid)
     {
         $stand = $this->standRepo->findByUuid($uuid);
+
+        return view('stands.edit', [
+            'stand' => $stand,
+        ]);
     }
+
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $uuid
+     * @param UpdateStandRequest|Request $request
+     * @param  int                       $uuid
+     *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $uuid)
+    public function update(UpdateStandRequest $request, $uuid)
     {
-        $stand = $this->standRepo->findByUuid($uuid);
+        $this->standRepo->update($request->all(), $uuid, 'uuid');
+        Toastr::success('Stand successfully updated');
+
+        return redirect()->route('app.stands.index');
     }
+
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
+     *
      * @return \Illuminate\Http\Response
      */
     public function destroy($uuid)

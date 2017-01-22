@@ -11,6 +11,7 @@
             <div class="box">
                 <div class="box-header with-border">
                     <h3 class="box-title">All stands table</h3>
+                    <a href="{{ route('app.stands.create') }}" class="btn btn-flat btn-success btn-sm pull-right"> <i class="fa fa-plus"></i> Add new</a>
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body table-responsive">
@@ -18,7 +19,6 @@
                         <thead>
                         <tr>
                             <th>#</th>
-                            <th>uuid</th>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Bikes count</th>
@@ -33,20 +33,20 @@
                         @foreach($stands as $stand)
                             <tr class="item{{ $stand->id }}">
                                 <td>{{ $stand->id }}</td>
-                                <td>{{ $stand->uuid }}</td>
                                 <td>{{ $stand->name }}</td>
                                 <td>{{ $stand->description }}</td>
                                 <td>{{ $stand->bikes->count() }}</td>
                                 <td>{{ $stand->place_name }}</td>
                                 <td>{{ $stand->service_tag ? 'Yes' : 'No' }}</td>
                                 <td>{{ $stand->latitude }}</td>
-                                <td>{{ $stand->logitude }}</td>
+                                <td>{{ $stand->longitude }}</td>
                                 <td>
-                                    <a href="" class="edit-modal btn btn-info btn-sm btn-flat">
-                                        <span class="fa fa-edit"></span> Edit
+                                    <a href="{{ route('app.stands.show', $stand->uuid) }}" data-toggle="tooltip" title="Detail" class="">
+                                        <i class="fa fa-eye fa-fw"></i>
                                     </a>
-                                    <a href="" class="delete-modal btn btn-danger btn-sm btn-flat">
-                                        <span class="fa fa-trash"></span> Delete
+
+                                    <a href="{{ route('app.stands.edit', $stand->uuid) }}" class="">
+                                        <i class="fa fa-edit fa-fw"></i>
                                     </a>
                                 </td>
                             </tr>

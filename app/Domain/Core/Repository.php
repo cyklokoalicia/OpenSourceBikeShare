@@ -22,6 +22,20 @@ abstract class Repository extends CoreRepository
 
 
     /**
+     * @param array $data
+     * @param $id
+     * @param string $attribute
+     * @return mixed
+     */
+    public function update(array $data, $id, $attribute = "id")
+    {
+        $data = $this->formatData($data);
+
+        return $this->model->where($attribute, '=', $id)->update($data);
+    }
+
+
+    /**
      * @param       $uuid
      * @param array $columns
      *
@@ -38,5 +52,18 @@ abstract class Repository extends CoreRepository
     public function generateBikeCode()
     {
         return mt_rand(1010, 9900);
+    }
+
+
+    public function formatData(array $data) :array
+    {
+        if (isset($data['_token'])) {
+            unset($data['_token']);
+        }
+        if (isset($data['_method'])) {
+            unset($data['_method']);
+        }
+
+        return $data;
     }
 }

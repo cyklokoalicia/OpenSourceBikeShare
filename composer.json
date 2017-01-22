@@ -22,7 +22,8 @@
         "dingo/api": "dev-master",
         "rap2hpoutre/laravel-log-viewer": "^0.5.3",
         "doctrine/dbal": "^2.5",
-        "guzzlehttp/guzzle": "^6.2"
+        "guzzlehttp/guzzle": "^6.2",
+        "oriceon/toastr-5-laravel": "dev-master"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

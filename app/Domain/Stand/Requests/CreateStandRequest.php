@@ -1,9 +1,9 @@
 <?php
-namespace BikeShare\Domain\Bike\Requests;
+namespace BikeShare\Domain\Stand\Requests;
 
 use Dingo\Api\Http\FormRequest;
 
-class CreateBikeRequest extends FormRequest
+class CreateStandRequest extends FormRequest
 {
 
     /**
@@ -25,7 +25,9 @@ class CreateBikeRequest extends FormRequest
     public function rules()
     {
         return [
-            'bike_num' => 'required|numeric|unique:bikes,bike_num',
+            'name' => 'required|unique:stands,name',
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
         ];
     }
 }

@@ -18,7 +18,6 @@
                         <thead>
                         <tr>
                             <th>#</th>
-                            <th>uuid</th>
                             <th>Bike num</th>
                             <th>Current code</th>
                             <th>Used by</th>
@@ -33,7 +32,6 @@
                         @foreach($bikes as $bike)
                             <tr class="item{{ $bike->id }}">
                                 <td>{{ $bike->id }}</td>
-                                <td>{{ $bike->uuid }}</td>
                                 <td>{{ $bike->bike_num }}</td>
                                 <td>{{ $bike->current_code }}</td>
                                 <td><a href="{{ route('app.users.profile.show', $bike->user->uuid ?? '' ) }}">{{ $bike->user ? $bike->user->name : '' }}</a></td>
@@ -42,11 +40,8 @@
                                 <td>{{ $bike->status }}</td>
                                 <td>{{ $bike->note }}</td>
                                 <td>
-                                    <a href="" class="edit-modal" data-toggle="tooltip" title="Edit">
+                                    <a href="{{ route('app.bikes.edit', $bike->uuid) }}" class="edit-modal" data-toggle="tooltip" title="Edit">
                                         <i class="fa fa-edit fa-fw"></i>
-                                    </a>
-                                    <a href="" class="delete-modal" data-toggle="tooltip" title="Delete">
-                                        <i class="fa fa-trash fa-fw"></i>
                                     </a>
                                 </td>
                             </tr>

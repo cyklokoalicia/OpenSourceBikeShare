@@ -17,12 +17,12 @@ class CreateStandsTable extends Migration
             $table->increments('id');
             $table->string('uuid');
             $table->string('name');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->binary('photo')->nullable();
-            $table->string('place_name');
+            $table->string('place_name')->nullable();
             $table->integer('service_tag')->nullable();
-            $table->double('longitude', 10, 8);
-            $table->double('latitude', 10, 8);
+            $table->double('longitude', 10, 8)->nullable();
+            $table->double('latitude', 10, 8)->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

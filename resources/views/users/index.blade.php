@@ -10,6 +10,7 @@
             <div class="box">
                 <div class="box-header with-border">
                     <h3 class="box-title">All users table</h3>
+                    <a href="{{ route('app.users.create') }}" class="btn btn-flat btn-success btn-sm pull-right"> <i class="fa fa-plus"></i> Add new</a>
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body table-responsive">
@@ -37,19 +38,14 @@
                                 <td>{{ $user->limit }}</td>
                                 <td>{{ $user->credit }}</td>
                                 <td><a href="{{ route('app.rents.index') }}">{{ $user->activeRents->count() }}</a></td>
-                                <td>{{ $user->last_login->diffForHumans() }}</td>
+                                <td>{{ $user->last_login ? $user->last_login->diffForHumans() : 'Not login yet' }}</td>
                                 <td>
-                                    <a href="{{ route('app.users.profile.show', $user->uuid) }}" class="btn btn-flat btn-primary btn-sm">
-                                        <i class="fa fa-user"></i> Profile
+                                    <a href="{{ route('app.users.profile.show', $user->uuid) }}" data-toggle="tooltip" title="Profile" class="">
+                                        <i class="fa fa-user fa-fw"></i>
                                     </a>
-                                    <button class="edit-modal btn btn-info btn-sm btn-flat"
-                                            data-info="{{$user->id}},{{$user->first_name}},{{$user->last_name}},{{$user->email}}">
-                                        <span class="fa fa-edit"></span> Edit
-                                    </button>
-                                    <button class="delete-modal btn btn-danger btn-sm btn-flat"
-                                            data-info="{{$user->id}},{{$user->first_name}},{{$user->last_name}},{{$user->email}}">
-                                        <span class="fa fa-trash"></span> Delete
-                                    </button>
+                                    <a href="{{ route('app.users.edit', $user->uuid) }}" data-toggle="tooltip" title="Edit">
+                                        <i class="fa fa-edit fa-fw"></i>
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach
