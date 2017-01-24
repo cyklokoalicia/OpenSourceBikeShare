@@ -1,4 +1,5 @@
 <?php
+
 namespace BikeShare\Http\Controllers\Api\v1\Stands;
 
 use BikeShare\Domain\Stand\Stand;
@@ -10,6 +11,7 @@ class StandsController extends Controller
 {
 
     protected $standRepo;
+
 
     public function __construct(StandsRepository $standsRepository)
     {
@@ -24,10 +26,18 @@ class StandsController extends Controller
 
         dd($stands->getTopPosition());
 
-
         //$stands = $this->standRepo->all();
 
-
         return $this->response->collection($stands, new StandTransformer());
+    }
+
+
+    public function show($uuid)
+    {
+        if (! $stand = $this->standRepo->findByUuid($uuid)) {
+            return $this->response->errorNotFound('Stand was not found!');
+        }
+
+        return $this->response->item($stand, new StandTransformer());
     }
 }

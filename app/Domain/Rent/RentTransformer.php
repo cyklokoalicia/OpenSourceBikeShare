@@ -1,9 +1,11 @@
 <?php
+
 namespace BikeShare\Domain\Rent;
 
 use BikeShare\Domain\Bike\BikeTransformer;
 use BikeShare\Domain\Stand\StandTransformer;
 use BikeShare\Domain\User\UserTransformer;
+use Carbon\Carbon;
 use League\Fractal\TransformerAbstract;
 
 class RentTransformer extends TransformerAbstract
@@ -18,19 +20,21 @@ class RentTransformer extends TransformerAbstract
         'bike',
         'standFrom',
         'standTo',
-        'user'
+        'user',
     ];
 
 
     public function transform(Rent $rent)
     {
         return [
-            'uuid'       => (string)$rent->uuid,
-            'status'     => $rent->status,
-            'old_code'     => $rent->old_code,
-            'new_code'     => $rent->new_code,
-            'started_at' => (string)$rent->started_at,
-            'ended_at'   => (string)$rent->ended_at,
+            'uuid' => (string)$rent->uuid,
+            'status' => $rent->status,
+            'old_code' => $rent->old_code,
+            'new_code' => $rent->new_code,
+            'started_at' => $rent->started_at->toDateTimeString(),
+            'ended_at' => $rent->ended_at ? $rent->ended_at->toDateTimeString() : null,
+            'duration' => $rent->duration ?? $rent->started_at->diffInSeconds(Carbon::now()),
+            'duration_string' => $this->formatDuration($rent->duration, $rent->started_at),
         ];
     }
 
@@ -58,10 +62,24 @@ class RentTransformer extends TransformerAbstract
         }
     }
 
+
     public function includeUser(Rent $rent)
     {
         if ($user = $rent->user) {
             return $this->item($user, new UserTransformer());
         }
+    }
+
+
+    protected function formatDuration($duration, $started)
+    {
+        if ($duration) {
+            $H = floor($duration / 3600);
+            $i = ($duration / 60) % 60;
+
+            return sprintf("%02dh %02dm", $H, $i);
+        }
+
+        return $started->diff(Carbon::now())->format('%Hh %im');
     }
 }

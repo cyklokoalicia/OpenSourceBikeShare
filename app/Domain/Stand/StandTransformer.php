@@ -1,4 +1,5 @@
 <?php
+
 namespace BikeShare\Domain\Stand;
 
 use BikeShare\Domain\Bike\BikeTransformer;
@@ -13,21 +14,22 @@ class StandTransformer extends TransformerAbstract
      * @var array
      */
     protected $availableIncludes = [
-        'bikes'
+        'bikes',
     ];
 
 
     public function transform(Stand $stand)
     {
         return [
-            'uuid'        => (string)$stand->uuid,
-            'name'        => $stand->name,
-            'latitude'    => $stand->latitude,
-            'longitude'   => $stand->longitude,
-            'photo'       => $stand->photo,
+            'uuid' => (string)$stand->uuid,
+            'name' => $stand->name,
+            'latitude' => $stand->latitude,
+            'longitude' => $stand->longitude,
+            'photo' => $stand->photo,
             'description' => $stand->description,
-            'place_name'  => $stand->place_name,
+            'place_name' => $stand->place_name,
             'service_tag' => $stand->service_tag,
+            'distance' => $stand->distance ? round($stand->distance * 1000) : null,
         ];
     }
 

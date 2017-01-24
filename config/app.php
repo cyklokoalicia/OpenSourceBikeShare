@@ -236,7 +236,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
 
-        'Api' => Dingo\Api\Facade\API::class,
+        'Api' => Dingo\Api\Facade\Route::class,
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'Geotools' => Toin0u\Geotools\Facade\Geotools::class,
         'Toastr' => Kamaln7\Toastr\Facades\Toastr::class
