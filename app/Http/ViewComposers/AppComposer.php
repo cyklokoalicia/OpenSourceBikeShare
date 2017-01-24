@@ -45,5 +45,6 @@ class AppComposer
         $view->with('date', $this->date);
         $view->with('version', $this->version);
         $view->with('roles', $this->roles);
+        $view->with('currentUser', $this->user);
     }
 }

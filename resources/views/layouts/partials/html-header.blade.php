@@ -8,8 +8,6 @@
     <link href="{{ asset('/css/libs/font-awesome.css') }}" rel="stylesheet" type="text/css" />
     <!-- Ionicons -->
     <link href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css" />
-    <!-- Theme style -->
-    <link href="{{ asset('/css/libs/admin-lte.css') }}" rel="stylesheet" type="text/css" />
     <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
           page. However, you can choose any other skin. Make sure you
           apply the skin class to the body tag so the changes take effect.
@@ -21,7 +19,10 @@
     <!-- iCheck -->
     <link href="{{ asset('/css/libs/i-check.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('/css/libs/select2.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('/css/libs/daterangepicker.css') }}" rel="stylesheet" type="text/css" />
 
+    <!-- Theme style -->
+    <link href="{{ asset('/css/libs/admin-lte.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('/css/libs/app.css') }}" rel="stylesheet" type="text/css" />
 {{--    <link href="{{ asset('/css/min.css') }}" rel="stylesheet" type="text/css" />--}}
 

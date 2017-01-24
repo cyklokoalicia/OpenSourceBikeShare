@@ -10,8 +10,12 @@
                     </div>
 
                     <div class="box-body">
-                        <div class="detail-map"></div>
-                        <div class="photo"></div>
+                        <div class="detail-map">
+                            <h1>map</h1>
+                        </div>
+                        <div class="photo">
+                            <h1>photo</h1>
+                        </div>
                         <div class="bikes table-responsive">
                             <table class="table no-margin">
                                 <thead>
@@ -30,8 +34,8 @@
                                         <td><a href="{{ route('app.bikes.edit', $bike->uuid) }}">{{ $bike->bike_num }}</a></td>
                                         <td>{{ $bike->stack_position }}</td>
                                         <td>{{ $bike->current_code }}</td>
-                                        <td><span class="label label-success">{{ $bike->status }}</span></td>
-                                        <td><a href="{{ route('app.users.edit', $bike->uuid) }}">{{ $bike->bike_num }}</a></td>
+                                        <td><span class="label {{ getStatusLabel($bike->status) }}">{{ $bike->status }}</span></td>
+                                        <td>@if(count($bike->rents) > 0)<a href="{{ route('app.users.profile.show', $bike->rents[0]->user->uuid) }}">{{ $bike->rents[0]->user->email }}</a>@endif</td>
                                     </tr>
                                 @empty
                                     <p>no bikes</p>

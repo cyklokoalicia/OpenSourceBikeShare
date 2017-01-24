@@ -81,7 +81,9 @@ class StandsController extends Controller
     public function show($uuid)
     {
         $stand = $this->standRepo->findByUuid($uuid);
-        $bikes = $stand->bikes()->where('status', BikeStatus::FREE)->get();
+        $bikes = $stand->bikes()->with(['rents' => function ($query) {
+            $query->latest()->with('user')->first();
+        }])->where('status', BikeStatus::FREE)->get();
 
         return view('stands.show', [
             'stand' => $stand,

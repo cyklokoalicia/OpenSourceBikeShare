@@ -3,6 +3,7 @@ namespace BikeShare\Domain\Bike;
 
 use BikeShare\Domain\Core\Model;
 use BikeShare\Domain\Note\Note;
+use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -35,7 +36,7 @@ class Bike extends Model
 
     public function rents()
     {
-        return $this->hasMany(Bike::class);
+        return $this->hasMany(Rent::class);
     }
 
 

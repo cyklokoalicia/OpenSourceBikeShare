@@ -37,7 +37,7 @@
                                 <td><a href="{{ route('app.users.profile.show', $bike->user->uuid ?? '' ) }}">{{ $bike->user ? $bike->user->name : '' }}</a></td>
                                 <td><a href="{{ route('app.stands.show', $bike->stand->uuid ?? '' ) }}">{{ $bike->stand ? $bike->stand->name : '' }}</a></td>
                                 <td>{{ $bike->stack_position }}</td>
-                                <td>{{ $bike->status }}</td>
+                                <td><span class="label {{ getStatusLabel($bike->status) }}">{{ $bike->status }}</span></td>
                                 <td>{{ $bike->note }}</td>
                                 <td>
                                     <a href="{{ route('app.bikes.edit', $bike->uuid) }}" class="edit-modal" data-toggle="tooltip" title="Edit">

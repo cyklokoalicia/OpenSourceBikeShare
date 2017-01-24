@@ -55,6 +55,11 @@ elixir(function(mix) {
     mix.copy('bower_components/datatables.net/js/jquery.dataTables.min.js', 'public/js/libs/jquery.dataTables.js');
     mix.copy('bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js', 'public/js/libs/dataTables.js');
 
+    // date range picker
+    mix.copy('bower_components/bootstrap-daterangepicker/daterangepicker.js', 'public/js/libs/daterangepicker.js');
+    mix.copy('bower_components/moment/min/moment-with-locales.js', 'public/js/libs/moment.js');
+    mix.copy('bower_components/bootstrap-daterangepicker/daterangepicker.css', 'public/css/libs/daterangepicker.css');
+
     // Merge all CSS files in one file.
     mix.styles([
         '/libs/bootstrap.css',
