@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddCreditLimitToUsersTable extends Migration
+class AddCreditDurationToRentsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class AddCreditLimitToUsersTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->decimal('credit', 12, 2)->nullable()->after('phone_number');
-            $table->integer('limit')->default(0)->after('credit');
+        Schema::table('rents', function (Blueprint $table) {
+            $table->integer('duration')->nullable()->after('ended_at');
+            $table->decimal('credit', 12, 2)->nullable()->after('duration');
         });
     }
 
@@ -26,9 +26,9 @@ class AddCreditLimitToUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('rents', function (Blueprint $table) {
+            $table->dropColumn('duration');
             $table->dropColumn('credit');
-            $table->dropColumn('limit');
         });
     }
 }

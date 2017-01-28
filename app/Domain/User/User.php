@@ -1,4 +1,5 @@
 <?php
+
 namespace BikeShare\Domain\User;
 
 use BikeShare\Domain\Rent\Rent;
@@ -76,6 +77,11 @@ class User extends Authenticatable implements JWTSubject
     public function activeRents()
     {
         return $this->hasMany(Rent::class)->where('status', RentStatus::OPEN);
+    }
+
+    public function routeNotificationForMail()
+    {
+        return $this->email;
     }
 
 

@@ -1,4 +1,5 @@
 <?php
+
 namespace BikeShare\Http\Controllers\Users;
 
 use BikeShare\Http\Controllers\Controller;

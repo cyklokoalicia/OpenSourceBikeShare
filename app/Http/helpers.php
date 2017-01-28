@@ -34,3 +34,15 @@ function getStatusLabel($status)
             return 'label-info';
     }
 }
+
+if (! function_exists('toastr')) {
+    /**
+     * Return the instance of toastr.
+     *
+     * @return Kamaln7\Toastr\Toastr
+     */
+    function toastr()
+    {
+        return app('toastr');
+    }
+}

@@ -177,6 +177,7 @@ return [
         Jenssegers\Date\DateServiceProvider::class,
         Spatie\Activitylog\ActivitylogServiceProvider::class,
         Kamaln7\Toastr\ToastrServiceProvider::Class,
+        Laravel\Tinker\TinkerServiceProvider::class,
         //
 
         /*

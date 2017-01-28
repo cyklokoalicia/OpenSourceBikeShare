@@ -1,17 +1,14 @@
 <?php
+
 namespace BikeShare\Http\Controllers\Stands;
 
 use BikeShare\Domain\Bike\BikeStatus;
-use BikeShare\Domain\Bike\BikeTransformer;
 use BikeShare\Domain\Stand\Requests\CreateStandRequest;
 use BikeShare\Domain\Stand\Requests\UpdateStandRequest;
 use BikeShare\Domain\Stand\StandsRepository;
-use BikeShare\Domain\Stand\StandTransformer;
 use BikeShare\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use BikeShare\Http\Requests;
-use League\Fractal;
-use Toastr;
 
 class StandsController extends Controller
 {
@@ -65,7 +62,7 @@ class StandsController extends Controller
     {
         $this->standRepo->create($request->all());
 
-        Toastr::success('Stand successfully created');
+        toastr()->success('Stand successfully created');
 
         return redirect()->route('app.stands.index');
     }
@@ -113,14 +110,14 @@ class StandsController extends Controller
      * Update the specified resource in storage.
      *
      * @param UpdateStandRequest|Request $request
-     * @param  int                       $uuid
+     * @param  int $uuid
      *
      * @return \Illuminate\Http\Response
      */
     public function update(UpdateStandRequest $request, $uuid)
     {
         $this->standRepo->update($request->all(), $uuid, 'uuid');
-        Toastr::success('Stand successfully updated');
+        toastr()->success('Stand successfully updated');
 
         return redirect()->route('app.stands.index');
     }

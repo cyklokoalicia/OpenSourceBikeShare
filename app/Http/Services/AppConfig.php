@@ -27,19 +27,19 @@ class AppConfig
 
     public function isCreditEnabled()
     {
-        return $this->config['credit']['enabled'] == true;
+        return $this->config['credit']['enabled'];
     }
 
 
     public function isStackBikeEnabled()
     {
-        return $this->config['stack_bike'] == true;
+        return $this->config['stack_bike'];
     }
 
 
     public function isSmsEnabled()
     {
-        return $this->config['sms']['enabled'] == true;
+        return $this->config['sms']['enabled'];
     }
 
 

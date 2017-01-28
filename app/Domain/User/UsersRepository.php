@@ -15,6 +15,12 @@ class UsersRepository extends Repository
 
     public function getUsersWithRole($role)
     {
+        if (is_array($role)) {
+            return $this->model->whereHas('roles', function ($q) use ($role) {
+                $q->whereIn('name', $role);
+            });
+        }
+
         return $this->model->whereHas('roles', function ($q) use ($role) {
             $q->where('name', $role);
         });
