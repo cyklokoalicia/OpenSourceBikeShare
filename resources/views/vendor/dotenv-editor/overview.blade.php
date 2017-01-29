@@ -1,11 +1,12 @@
-@extends('dotenv-editor::master')
+@extends('layouts.app')
+
 
 {{--
 Feel free to extend your custom wrapping view.
 All needed files are included within this file, so nothing could break if you extend your own master view.
 --}}
 
-@section('content')
+@section('main-content')
 
 
     <div id="app">
@@ -14,16 +15,18 @@ All needed files are included within this file, so nothing could break if you ex
             <h1><a href="{{ url(config('dotenveditor.route')) }}">{{ trans('dotenv-editor::views.title') }}</a></h1>
 
             <div class="row">
-                <div class="col-md-12">
-                    <ul class="nav nav-tabs">
-                        <li v-for="view in views" role="presentation" class="@{{ view.active ? 'active' : '' }}">
-                            <a href="javascript:;" @click="setActiveView(view.name)">@{{ view.name }}</a>
-                        </li>
-                    </ul>
+                <div class="col-md-12 ">
+                    <div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs">
+                            <li v-for="view in views" role="presentation" class="@{{ view.active ? 'active' : '' }}">
+                                <a href="javascript:;" @click="setActiveView(view.name)">@{{ view.name }}</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
-            <br><br>
+            <br>
 
             <div class="row">
 
@@ -34,15 +37,16 @@ All needed files are included within this file, so nothing could break if you ex
                         {{-- VueJS-Errors --}}
                         <div class="alert alert-success" role="alert" v-show="alertsuccess">
                             <button type="button" class="close" @click="closeAlert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
+                            <span aria-hidden="true">&times;</span>
                             </button>
                             @{{ alertmessage }}
                         </div>
                         {{-- Errors from POST-Requests --}}
                         @if(session('dotenv'))
                             <div class="alert alert-success alert-dismissable" role="alert">
-                                <button type="button" class="close" aria-label="Close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
+                                <button type="button" class="close" aria-label="Close" data-dismiss="alert"
+                                        aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
                                 </button>
                                 {{ session('dotenv') }}
                             </div>
@@ -63,7 +67,7 @@ All needed files are included within this file, so nothing could break if you ex
                                     {!! trans('dotenv-editor::views.overview_text') !!}
                                 </p>
                                 <p>
-                                <a href="javascript:;" v-show="loadButton" class="btn btn-primary" @click="loadEnv">
+                                    <a href="javascript:;" v-show="loadButton" class="btn btn-primary" @click="loadEnv">
                                     {{ trans('dotenv-editor::views.overview_button') }}
                                     </a>
                                 </p>
@@ -80,12 +84,12 @@ All needed files are included within this file, so nothing could break if you ex
                                         <td>@{{ entry.value }}</td>
                                         <td>
                                             <a href="javascript:;" @click="editEntry(entry)"
-                                                title="{{ trans('dotenv-editor::views.overview_table_popover_edit') }}">
-                                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                            title="{{ trans('dotenv-editor::views.overview_table_popover_edit') }}">
+                                            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                                             </a>
                                             <a href="javascript:;" @click="modal(entry)"
-                                                title="{{ trans('dotenv-editor::views.overview_table_popover_delete') }}">
-                                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                            title="{{ trans('dotenv-editor::views.overview_table_popover_delete') }}">
+                                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                                             </a>
                                         </td>
                                     </tr>
@@ -98,7 +102,8 @@ All needed files are included within this file, so nothing could break if you ex
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span></button>
                                         <h4 class="modal-title">@{{ deleteModal.title }}</h4>
                                     </div>
                                     <div class="modal-body">
@@ -112,7 +117,7 @@ All needed files are included within this file, so nothing could break if you ex
                                             {!! trans('dotenv-editor::views.overview_delete_modal_no') !!}
                                         </button>
                                         <button type="button" class="btn btn-danger" @click="deleteEntry">
-                                            {!! trans('dotenv-editor::views.overview_delete_modal_yes') !!}
+                                        {!! trans('dotenv-editor::views.overview_delete_modal_yes') !!}
                                         </button>
                                     </div>
                                 </div>
@@ -124,14 +129,17 @@ All needed files are included within this file, so nothing could break if you ex
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span></button>
                                         <h4 class="modal-title">{!! trans('dotenv-editor::views.overview_edit_modal_title') !!}</h4>
                                     </div>
                                     <div class="modal-body">
-                                        <strong>{!! trans('dotenv-editor::views.overview_edit_modal_key') !!}:</strong> @{{ toEdit.key }}<br><br>
+                                        <strong>{!! trans('dotenv-editor::views.overview_edit_modal_key') !!}
+                                            :</strong> @{{ toEdit.key }}<br><br>
                                         <div class="form-group">
                                             <label for="editvalue">{!! trans('dotenv-editor::views.overview_edit_modal_value') !!}</label>
-                                            <input type="text" v-model="toEdit.value" id="editvalue" class="form-control">
+                                            <input type="text" v-model="toEdit.value" id="editvalue"
+                                                   class="form-control">
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -139,7 +147,7 @@ All needed files are included within this file, so nothing could break if you ex
                                             {!! trans('dotenv-editor::views.overview_edit_modal_quit') !!}
                                         </button>
                                         <button type="button" class="btn btn-primary" @click="updateEntry">
-                                            {!! trans('dotenv-editor::views.overview_edit_modal_save') !!}
+                                        {!! trans('dotenv-editor::views.overview_edit_modal_save') !!}
                                         </button>
                                     </div>
                                 </div>
@@ -162,11 +170,13 @@ All needed files are included within this file, so nothing could break if you ex
                                 <form @submit.prevent="addNew()">
                                     <div class="form-group">
                                         <label for="newkey">{!! trans('dotenv-editor::views.addnew_label_key') !!}</label>
-                                        <input type="text" name="newkey" id="newkey" v-model="newEntry.key" class="form-control">
+                                        <input type="text" name="newkey" id="newkey" v-model="newEntry.key"
+                                               class="form-control">
                                     </div>
                                     <div class="form-group">
                                         <label for="newvalue">{!! trans('dotenv-editor::views.addnew_label_value') !!}</label>
-                                        <input type="text" name="newvalue" id="newvalue" v-model="newEntry.value" class="form-control">
+                                        <input type="text" name="newvalue" id="newvalue" v-model="newEntry.value"
+                                               class="form-control">
                                     </div>
                                     <button class="btn btn-default" type="submit">
                                         {!! trans('dotenv-editor::views.addnew_button_add') !!}
@@ -184,7 +194,8 @@ All needed files are included within this file, so nothing could break if you ex
                                 <h2 class="panel-title">{!! trans('dotenv-editor::views.backup_title_one') !!}</h2>
                             </div>
                             <div class="panel-body">
-                                <a href="{{ url(config('dotenveditor.route') . "/createbackup") }}" class="btn btn-primary">
+                                <a href="{{ url(config('dotenveditor.route') . "/createbackup") }}"
+                                   class="btn btn-primary">
                                     {!! trans('dotenv-editor::views.backup_create') !!}
                                 </a>
                                 <a href="{{ url(config("dotenveditor.route") . "/download") }}" class="btn btn-primary">
@@ -226,18 +237,25 @@ All needed files are included within this file, so nothing could break if you ex
                                                 <td>{{ $c++ }}</td>
                                                 <td>{{ $backup['formatted'] }}</td>
                                                 <td>
-                                                    <a href="javascript:;" @click="showBackupDetails('{{ $backup['unformatted'] }}', '{{ $backup['formatted'] }}')" title="{!! trans('dotenv-editor::views.backup_table_options_show') !!}">
-                                                        <span class="glyphicon glyphicon-zoom-in"></span>
+                                                    <a href="javascript:;" @click="
+                                                    showBackupDetails('{{ $backup['unformatted'] }}
+                                                    ', '{{ $backup['formatted'] }}')" title=
+                                                    "{!! trans('dotenv-editor::views.backup_table_options_show') !!}">
+                                                    <span class="glyphicon glyphicon-zoom-in"></span>
                                                     </a>
-                                                    <a href="javascript:;" @click="restoreBackup({{ $backup['unformatted'] }})"
-                                                        title="{!! trans('dotenv-editor::views.backup_table_options_restore') !!}"
+                                                    <a href="javascript:;" @click="
+                                                    restoreBackup({{ $backup['unformatted'] }})"
+                                                    title=
+                                                    "{!! trans('dotenv-editor::views.backup_table_options_restore') !!}"
                                                     >
-                                                        <span class="glyphicon glyphicon-refresh" title="wiederherstellen"></span>
+                                                    <span class="glyphicon glyphicon-refresh"></span>
                                                     </a>
-                                                    <a href="{{ url(config("dotenveditor.route") . "/download/" . $backup['unformatted']) }}">
-                                                        <span class="glyphicon glyphicon-download" title="{!! trans('dotenv-editor::views.backup_table_options_download') !!}"></span>
+                                                    <a href="{{ url(config("dotenveditor.route") . "/download/" . $backup['unformatted']) }}"
+                                                       title="{!! trans('dotenv-editor::views.backup_table_options_download') !!}">
+                                                        <span class="glyphicon glyphicon-download"></span>
                                                     </a>
-                                                    <a href="{{ url(config("dotenveditor.route") . "/deletebackup/" . $backup["unformatted"]) }}" title="{!! trans('dotenv-editor::views.backup_table_options_delete') !!}">
+                                                    <a href="{{ url(config("dotenveditor.route") . "/deletebackup/" . $backup["unformatted"]) }}"
+                                                       title="{!! trans('dotenv-editor::views.backup_table_options_delete') !!}">
                                                         <span class="glyphicon glyphicon-trash"></span>
                                                     </a>
                                                 </td>
@@ -249,43 +267,46 @@ All needed files are included within this file, so nothing could break if you ex
                         </div>
 
                         @if($backups)
-                        {{-- Details Modal --}}
-                        <div class="modal fade" id="showDetails" tabindex="-1" role="dialog">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                        <h4 class="modal-title">{!! trans('dotenv-editor::views.backup_modal_title') !!}</h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        <table class="table table-striped">
-                                            <tr>
-                                                <th>{!! trans('dotenv-editor::views.backup_modal_key') !!}</th>
-                                                <th>{!! trans('dotenv-editor::views.backup_modal_value') !!}</th>
-                                            </tr>
-                                            <tr v-for="entry in details">
-                                                <td>@{{ entry.key }}</td>
-                                                <td>@{{ entry.value }}</td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <a href="javascript:;" @click="restoreBackup(currentBackup.timestamp)"
-                                        title="Stelle dieses Backup wieder her"
-                                        class="btn btn-primary"
-                                        >
-                                        {!! trans('dotenv-editor::views.backup_modal_restore') !!}
-                                        </a>
+                            {{-- Details Modal --}}
+                            <div class="modal fade" id="showDetails" tabindex="-1" role="dialog">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span></button>
+                                            <h4 class="modal-title">{!! trans('dotenv-editor::views.backup_modal_title') !!}</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <table class="table table-striped">
+                                                <tr>
+                                                    <th>{!! trans('dotenv-editor::views.backup_modal_key') !!}</th>
+                                                    <th>{!! trans('dotenv-editor::views.backup_modal_value') !!}</th>
+                                                </tr>
+                                                <tr v-for="entry in details">
+                                                    <td>@{{ entry.key }}</td>
+                                                    <td>@{{ entry.value }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="javascript:;" @click="restoreBackup(currentBackup.timestamp)"
+                                            title="Stelle dieses Backup wieder her"
+                                            class="btn btn-primary"
+                                            >
+                                            {!! trans('dotenv-editor::views.backup_modal_restore') !!}
+                                            </a>
 
-                                        <button type="button" class="btn btn-default" data-dismiss="modal">{!! trans('dotenv-editor::views.backup_modal_close') !!}</button>
+                                            <button type="button" class="btn btn-default"
+                                                    data-dismiss="modal">{!! trans('dotenv-editor::views.backup_modal_close') !!}</button>
 
-                                        <a href="{{ url(config("dotenveditor.route") . "/deletebackup/" . $backup["unformatted"]) }}" class="btn btn-danger">
-                                            {!! trans('dotenv-editor::views.backup_modal_delete') !!}
-                                        </a>
+                                            <a href="{{ url(config("dotenveditor.route") . "/deletebackup/" . $backup["unformatted"]) }}"
+                                               class="btn btn-danger">
+                                                {!! trans('dotenv-editor::views.backup_modal_delete') !!}
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         @endif
 
                     </div>
@@ -303,12 +324,14 @@ All needed files are included within this file, so nothing could break if you ex
                                     {!! trans('dotenv-editor::views.upload_warning') !!}
                                 </span>
                                 </p>
-                                <form method="post" action="{{ url(config("dotenveditor.route") . "/upload") }}" enctype="multipart/form-data">
+                                <form method="post" action="{{ url(config("dotenveditor.route") . "/upload") }}"
+                                      enctype="multipart/form-data">
                                     <div class="form-group">
                                         <label for="backup">{!! trans('dotenv-editor::views.upload_label') !!}</label>
                                         <input type="file" name="backup">
                                     </div>
-                                    <button type="submit" class="btn btn-primary" title="Ein Backup von deinem Computer hochladen">
+                                    <button type="submit" class="btn btn-primary"
+                                            title="Ein Backup von deinem Computer hochladen">
                                         {!! trans('dotenv-editor::views.upload_button') !!}
                                     </button>
                                 </form>
@@ -351,40 +374,38 @@ All needed files are included within this file, so nothing could break if you ex
                     content: ''
                 },
                 token: "{!! csrf_token() !!}",
-                entries: [
-
-                ]
+                entries: []
             },
             methods: {
-                loadEnv: function(){
+                loadEnv: function () {
                     var vm = this;
                     this.loadButton = false;
-                    $.getJSON("{{ $url }}/getdetails", function(items){
+                    $.getJSON("{{ config('dotenveditor.route') }}/getdetails", function (items) {
                         vm.entries = items;
                     });
                 },
-                setActiveView: function(viewName){
-                    $.each(this.views, function(key, value){
-                        if(value.name == viewName){
+                setActiveView: function (viewName) {
+                    $.each(this.views, function (key, value) {
+                        if (value.name == viewName) {
                             value.active = 1;
                         } else {
                             value.active = 0;
                         }
                     })
                 },
-                addNew: function(){
+                addNew: function () {
                     var vm = this;
                     var newkey = this.newEntry.key;
                     var newvalue = this.newEntry.value;
                     $.ajax({
-                        url: "{{ $url }}/add",
+                        url: "{{ config('dotenveditor.route') }}/add",
                         type: "post",
                         data: {
                             _token: this.token,
                             key: newkey,
                             value: newvalue
                         },
-                        success: function(){
+                        success: function () {
                             vm.entries.push({
                                 key: newkey,
                                 value: newvalue
@@ -400,52 +421,52 @@ All needed files are included within this file, so nothing could break if you ex
                         }
                     })
                 },
-                editEntry: function(entry){
+                editEntry: function (entry) {
                     this.toEdit = {};
                     this.toEdit = entry;
                     $('#editModal').modal('show');
                 },
-                updateEntry: function(){
+                updateEntry: function () {
                     var vm = this;
                     $.ajax({
-                        url: "{{ $url }}/update",
+                        url: "{{ config('dotenveditor.route') }}/update",
                         type: "post",
                         data: {
                             _token: this.token,
                             key: vm.toEdit.key,
                             value: vm.toEdit.value
                         },
-                        success: function(){
+                        success: function () {
                             var msg = "{{ trans('dotenv-editor::views.entry_edited') }}";
                             vm.showAlert("success", msg);
                             $('#editModal').modal('hide');
                         }
                     })
                 },
-                makeBackup: function(){
+                makeBackup: function () {
                     var vm = this;
                     $.ajax({
-                        url: "{{ $url }}/createbackup",
+                        url: "{{ config('dotenveditor.route') }}/createbackup",
                         type: "get",
-                        success: function(){
+                        success: function () {
                             vm.showAlert('success', "{{ trans('dotenv-editor::views.backup_created') }}");
                         }
                     })
                 },
-                showBackupDetails: function(timestamp, formattedtimestamp){
+                showBackupDetails: function (timestamp, formattedtimestamp) {
                     this.currentBackup.timestamp = timestamp;
                     var vm = this;
-                    $.getJSON("{{ $url }}/getdetails/" + timestamp, function(items){
+                    $.getJSON("{{ config('dotenveditor.route') }}/getdetails/" + timestamp, function (items) {
                         vm.details = items;
                         $('#showDetails').modal('show');
                     });
                 },
-                restoreBackup: function(timestamp){
+                restoreBackup: function (timestamp) {
                     var vm = this;
                     $.ajax({
-                        url: "{{ $url }}/restore/" + timestamp,
+                        url: "{{ config('dotenveditor.route') }}/restore/" + timestamp,
                         type: "get",
-                        success: function(){
+                        success: function () {
                             vm.loadEnv();
                             $('#showDetails').modal('hide');
                             vm.setActiveView('overview');
@@ -453,7 +474,7 @@ All needed files are included within this file, so nothing could break if you ex
                         }
                     })
                 },
-                deleteEntry: function(){
+                deleteEntry: function () {
                     var entry = this.toDelete;
                     var vm = this;
 
@@ -464,7 +485,7 @@ All needed files are included within this file, so nothing could break if you ex
                             _token: this.token,
                             key: entry.key
                         },
-                        success: function(){
+                        success: function () {
                             var msg = "{{ trans('dotenv-editor::views.entry_deleted') }}";
                             vm.showAlert("success", msg);
                         }
@@ -473,14 +494,14 @@ All needed files are included within this file, so nothing could break if you ex
                     this.toDelete = {};
                     $('#deleteModal').modal('hide');
                 },
-                showAlert: function(type, message){
+                showAlert: function (type, message) {
                     this.alertmessage = message;
                     this.alertsuccess = 1;
                 },
-                closeAlert: function(){
+                closeAlert: function () {
                     this.alertsuccess = 0;
                 },
-                modal: function(entry){
+                modal: function (entry) {
                     this.toDelete = entry;
                     this.deleteModal.title = "{{ trans('dotenv-editor::views.delete_entry') }}";
                     this.deleteModal.content = entry.key + "=" + entry.value;
@@ -491,9 +512,11 @@ All needed files are included within this file, so nothing could break if you ex
     </script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+            integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+            crossorigin="anonymous"></script>
     <script>
-        $(document).ready(function(){
+        $(document).ready(function () {
             $(function () {
                 $('[data-toggle="popover"]').popover()
             });

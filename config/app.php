@@ -178,6 +178,7 @@ return [
         Spatie\Activitylog\ActivitylogServiceProvider::class,
         Kamaln7\Toastr\ToastrServiceProvider::Class,
         Laravel\Tinker\TinkerServiceProvider::class,
+        Brotzka\DotenvEditor\DotenvEditorServiceProvider::class,
         //
 
         /*
@@ -240,7 +241,9 @@ return [
         'Api' => Dingo\Api\Facade\Route::class,
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'Geotools' => Toin0u\Geotools\Facade\Geotools::class,
-        'Toastr' => Kamaln7\Toastr\Facades\Toastr::class
+        'Toastr' => Kamaln7\Toastr\Facades\Toastr::class,
+        'DotenvEditor' => Brotzka\DotenvEditor\DotenvEditorFacade::class,
+
     ],
 
     'version' => '0.0.1',

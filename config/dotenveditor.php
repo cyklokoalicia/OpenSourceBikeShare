@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Fabian
- * Date: 12.05.16
- * Time: 07:24
- */
 
 return [
     /*
@@ -16,7 +10,7 @@ return [
     |
     */
     'pathToEnv'         =>  base_path() . '/.env',
-    'backupPath'        =>  base_path() . '/resources/backups/dotenv-editor/', // Make sure, you have a "/" at the end
+    'backupPath'        =>  storage_path() . '/app/backups/dotenv-editor/', // Make sure, you have a "/" at the end
 
     /*
     |--------------------------------------------------------------------------
@@ -34,7 +28,7 @@ return [
     'activated'         => true,
 
     // Set the base-route. All requests start here
-    'route'             =>  '/enveditor',
+    'route'             =>  '/app/enveditor',
 
     // middleware and middlewwaregroups. Add your own middleware if you want.
     'middleware'        => ['web'/*, 'jwt.auth', 'role:admin'*/],

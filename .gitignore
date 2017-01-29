@@ -13,3 +13,4 @@ storage/framework/sessions/
 storage/framework/views/
 storage/logs/
 /composer.lock
+/storage/app/backups/dotenv-editor/

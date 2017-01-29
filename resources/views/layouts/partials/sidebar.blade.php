@@ -47,6 +47,7 @@
                 </ul>
             </li>
             <li class="{{ set_active(['app/logs']) }}"><a href="{{ route('app.logs.index') }}"><i class='fa fa-file-text'></i> <span>Logs</span></a></li>
+            <li class="{{ set_active(['app/enveditor']) }}"><a href="{{ url('app/enveditor') }}"><i class='fa fa-gears'></i> <span>Settings</span></a></li>
         </ul><!-- /.sidebar-menu -->
     </section>
     <!-- /.sidebar -->
