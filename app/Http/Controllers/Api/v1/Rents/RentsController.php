@@ -65,7 +65,7 @@ class RentsController extends Controller
      */
     public function store(CreateRentRequest $request, RentService $rentService)
     {
-        if (!$bike = app(BikesRepository::class)->findByUuid($request->get('bike'))) {
+        if (! $bike = app(BikesRepository::class)->findByUuid($request->get('bike'))) {
             return $this->response->errorNotFound('Bike not found!');
         }
 
@@ -81,7 +81,7 @@ class RentsController extends Controller
         // TODO check too many, i don't understand yet
 
         if (app('AppConfig')->isStackBikeEnabled()) {
-            if (!$rentService->checkTopOfStack($bike)) {
+            if (! $rentService->checkTopOfStack($bike)) {
                 return $this->response->errorBadRequest('Bike is not on the top!');
             }
         }
@@ -112,7 +112,7 @@ class RentsController extends Controller
      */
     public function show($uuid)
     {
-        if (!$rent = $this->rentRepo->findByUuid($uuid)) {
+        if (! $rent = $this->rentRepo->findByUuid($uuid)) {
             return $this->response->errorNotFound('Rent not found');
         }
 
@@ -145,7 +145,7 @@ class RentsController extends Controller
 
     public function close(Request $request, $uuid, RentService $rentService)
     {
-        if (!$rent = $this->rentRepo->findByUuid($uuid)) {
+        if (! $rent = $this->rentRepo->findByUuid($uuid)) {
             return $this->response->errorNotFound('Rent not found!');
         }
 
@@ -154,11 +154,11 @@ class RentsController extends Controller
         }
 
         $userBikes = $this->user->bikes()->get();
-        if (!$userBikes || !$userBikes->contains($rent->bike)) {
+        if (! $userBikes || ! $userBikes->contains($rent->bike)) {
             $this->response->errorBadRequest('You do not have rent this bike!');
         }
 
-        if (!$stand = app(StandsRepository::class)->findByUuid($request->get('stand'))) {
+        if (! $stand = app(StandsRepository::class)->findByUuid($request->get('stand'))) {
             return $this->response->errorNotFound('Stand not found!');
         }
 
