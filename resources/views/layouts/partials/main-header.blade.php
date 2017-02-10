@@ -16,9 +16,9 @@
         <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
             <span class="sr-only">Toggle navigation</span>
         </a>
-        @endhasrole
+    @endhasrole
 
-        <!-- Navbar Right Menu -->
+    <!-- Navbar Right Menu -->
         <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">
                 <!-- Messages: style can be found in dropdown.less-->
@@ -43,17 +43,19 @@
                             <!-- inner menu: contains the messages -->
                             <ul class="menu">
                                 @forelse($activeRents as $rent)
-                                <li><!-- start message -->
-                                    <a href="{{ route('app.rents.show', ['uuid' => $rent->uuid]) }}">
-                                        <!-- Message title and timestamp -->
-                                        <h4>
-                                            Bike no. {{ $rent->bike->bike_num }}
-                                            <small><i class="fa fa-clock-o"></i> {{ $rent->started_at->diffForHumans() }}</small>
-                                        </h4>
-                                        <!-- The message -->
-                                        <p>old code: {{ $rent->old_code }} new code: {{  $rent->new_code }}</p>
-                                    </a>
-                                </li><!-- end message -->
+                                    <li><!-- start message -->
+                                        <a href="{{ route('app.rents.show', ['uuid' => $rent->uuid]) }}">
+                                            <!-- Message title and timestamp -->
+                                            <h4>
+                                                Bike no. {{ $rent->bike->bike_num }}
+                                                <small>
+                                                    <i class="fa fa-clock-o"></i> {{ $rent->started_at->diffForHumans() }}
+                                                </small>
+                                            </h4>
+                                            <!-- The message -->
+                                            <p>old code: {{ $rent->old_code }} new code: {{  $rent->new_code }}</p>
+                                        </a>
+                                    </li><!-- end message -->
                                 @empty
 
                                 @endforelse
@@ -64,23 +66,25 @@
                 </li><!-- /.messages-menu -->
 
                 @hasrole('admin')
-                <!-- Notifications Menu -->
+            <!-- Notifications Menu -->
                 <li class="dropdown notifications-menu">
                     <!-- Menu toggle button -->
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-bell-o"></i>
-                        <span class="label label-warning">10</span>
+                        <span class="label label-warning">{{ $notifications->count() }}</span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li class="header">You have 10 notifications</li>
+                        <li class="header">You have {{ $notifications->count() }} notifications</li>
                         <li>
                             <!-- Inner Menu: contains the notifications -->
                             <ul class="menu">
-                                <li><!-- start notification -->
-                                    <a href="#">
-                                        <i class="fa fa-users text-aqua"></i> 5 new members joined today
-                                    </a>
-                                </li><!-- end notification -->
+                                @foreach($notifications as $notification)
+                                    <li><!-- start notification -->
+                                        <a href="#">
+                                            <i class="fa fa-users text-aqua"></i> 5 new members joined today
+                                        </a>
+                                    </li><!-- end notification -->
+                                @endforeach
                             </ul>
                         </li>
                         <li class="footer"><a href="#">View all</a></li>
@@ -108,7 +112,9 @@
                                         <!-- The progress bar -->
                                         <div class="progress xs">
                                             <!-- Change the css width attribute to simulate progress -->
-                                            <div class="progress-bar progress-bar-aqua" style="width: 20%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar progress-bar-aqua" style="width: 20%"
+                                                 role="progressbar" aria-valuenow="20" aria-valuemin="0"
+                                                 aria-valuemax="100">
                                                 <span class="sr-only">20% Complete</span>
                                             </div>
                                         </div>
@@ -125,7 +131,7 @@
                 @if (Auth::guest())
                     <li><a href="{{ route('auth.login') }}">Login</a></li>
                     <li><a href="{{ route('auth.register') }}">Register</a></li>
-                @else
+            @else
                 <!-- User Account Menu -->
                     <li class="dropdown user user-menu">
                         <!-- Menu Toggle Button -->
@@ -138,7 +144,7 @@
                         <ul class="dropdown-menu">
                             <!-- The user image in the menu -->
                             <li class="user-header">
-                                <img src="/img/user2-160x160.jpg" class="img-circle" alt="User Image" />
+                                <img src="/img/user2-160x160.jpg" class="img-circle" alt="User Image"/>
                                 <p>
                                     {{ $currentUser->name }} ({{ $currentUser->credit }})
                                     <small>Member since {{ dateFormat($currentUser->created_at, 'M. Y') }}</small>
@@ -159,7 +165,8 @@
                             <!-- Menu Footer-->
                             <li class="user-footer">
                                 <div class="pull-left">
-                                    <a href="{{ route('app.users.profile.show', $currentUser->uuid)}}" class="btn btn-default btn-flat">Profile</a>
+                                    <a href="{{ route('app.users.profile.show', $currentUser->uuid)}}"
+                                       class="btn btn-default btn-flat">Profile</a>
                                 </div>
                                 <div class="pull-right">
                                     <a href="{{ route('auth.logout') }}" class="btn btn-default btn-flat">Sign out</a>
@@ -180,7 +187,7 @@
 
 @push('in-scripts')
 <script type="text/javascript">
-    $(document).ready(function() {
+    $(document).ready(function () {
         $(".navbar-select-stand").select2({
             placeholder: {
                 id: -1,

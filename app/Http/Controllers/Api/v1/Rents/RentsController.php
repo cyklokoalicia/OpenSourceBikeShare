@@ -1,27 +1,20 @@
 <?php
+
 namespace BikeShare\Http\Controllers\Api\v1\Rents;
 
-use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikesRepository;
 use BikeShare\Domain\Bike\BikeStatus;
-use BikeShare\Domain\Bike\Events\BikeWasRented;
 use BikeShare\Domain\Bike\Events\BikeWasReturned;
-use BikeShare\Domain\Note\NotesRepository;
 use BikeShare\Domain\Rent\Events\RentWasClosed;
-use BikeShare\Domain\Rent\Events\RentWasCreated;
-use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Rent\RentTransformer;
 use BikeShare\Domain\Rent\Requests\CreateRentRequest;
 use BikeShare\Domain\Stand\StandsRepository;
-use BikeShare\Domain\User\User;
 use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
-use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\RentService;
 use BikeShare\Notifications\NoteCreated;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Notification;
 
@@ -33,6 +26,7 @@ class RentsController extends Controller
     {
         $this->rentRepo = $repository;
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -65,7 +59,7 @@ class RentsController extends Controller
      *
      * @param CreateRentRequest|Request $request
      *
-     * @param RentService               $rentService
+     * @param RentService $rentService
      *
      * @return \Illuminate\Http\Response
      */
@@ -113,12 +107,14 @@ class RentsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
      * @return \Illuminate\Http\Response
      */
     public function show($uuid)
     {
-        $rent = $this->rentRepo->findByUuid($uuid);
+        if (! $rent = $this->rentRepo->findByUuid($uuid)) {
+            return $this->response->errorNotFound('Rent not found');
+        }
 
         return $this->response->item($rent, new RentTransformer);
     }
@@ -127,8 +123,8 @@ class RentsController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $uuid
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $uuid
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $uuid)
@@ -139,7 +135,7 @@ class RentsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $uuid
+     * @param  int $uuid
      * @return \Illuminate\Http\Response
      */
     public function destroy($uuid)
@@ -170,8 +166,8 @@ class RentsController extends Controller
 
         if ($request->has('note')) {
             $rentServiceObj = $rentService->addNote($rent->bike, $request->get('note'));
-            $users = app(UsersRepository::class)->getUsersWithRole('admin');
-            Notification::send($users, new NoteCreated($rent->note));
+            $users = app(UsersRepository::class)->getUsersWithRole('admin')->get();
+            Notification::send($users, new NoteCreated($rentServiceObj->note));
         }
 
         event(new RentWasClosed($rentServiceObj->rent));

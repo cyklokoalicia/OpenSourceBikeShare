@@ -34,3 +34,24 @@ function getStatusLabel($status)
             return 'label-info';
     }
 }
+
+function secToHours($seconds)
+{
+    $H = floor($seconds / 3600);
+    $i = ($seconds / 60) % 60;
+    $s = $seconds % 60;
+
+    return sprintf("%02d:%02d:%02d", $H, $i, $s);
+}
+
+if (! function_exists('toastr')) {
+    /**
+     * Return the instance of toastr.
+     *
+     * @return Kamaln7\Toastr\Toastr
+     */
+    function toastr()
+    {
+        return app('toastr');
+    }
+}

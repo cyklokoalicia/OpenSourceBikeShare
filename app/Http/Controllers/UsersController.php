@@ -4,7 +4,6 @@ namespace BikeShare\Http\Controllers;
 
 use BikeShare\Domain\User\UsersRepository;
 use Illuminate\Http\Request;
-use Toastr;
 
 class UsersController extends Controller
 {
@@ -42,7 +41,7 @@ class UsersController extends Controller
 
         $this->usersRepo->create($request->all());
 
-        Toastr::success('User successfully created');
+        toastr()->success('User successfully created');
 
         return redirect()->route('app.users.index');
     }
@@ -50,8 +49,8 @@ class UsersController extends Controller
 
     public function edit($uuid)
     {
-        if (! $user = $this->usersRepo->findByUuid($uuid)) {
-            Toastr::warning('User not found!');
+        if (!$user = $this->usersRepo->findByUuid($uuid)) {
+            toastr()->warning('User not found!');
         }
 
         return view('users.edit', [
@@ -62,12 +61,12 @@ class UsersController extends Controller
 
     public function update(Request $request, $uuid)
     {
-        if (! $user = $this->usersRepo->findByUuid($uuid)) {
-            Toastr::warning('User not found!');
+        if (!$user = $this->usersRepo->findByUuid($uuid)) {
+            toastr()->warning('User not found!');
         }
 
         $this->usersRepo->update($request->all(), $uuid, 'uuid');
-        Toastr::success('User successfully updated');
+        toastr()->success('User successfully updated');
 
         return redirect()->route('app.users.index');
     }

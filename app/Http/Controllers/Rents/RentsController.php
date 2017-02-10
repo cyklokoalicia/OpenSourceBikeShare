@@ -102,18 +102,13 @@ class RentsController extends Controller
      */
     public function show($uuid)
     {
-        $rent = $this->rentRepo->findByUuid($uuid);
+        if (! $rent = $this->rentRepo->with(['bike', 'standFrom'])->findByUuid($uuid)) {
+            toastr()->warning('Rent not exists!');
 
-        $include = ['bike', 'standFrom'];
-        $resource = new Fractal\Resource\Item($rent, new RentTransformer);
-
-        if (isset($include)) {
-            $this->fractal->parseIncludes(implode(",", $include));
+            return redirect()->route('app.rents.index');
         }
 
-        $rent = $this->fractal->createData($resource)->toArray();
-
-        return view('rents.show')->with(['rent' => $rent]);
+        return view('rents.show')->withRent($rent);
     }
 
 

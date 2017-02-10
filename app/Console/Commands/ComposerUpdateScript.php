@@ -36,7 +36,7 @@ class ComposerUpdateScript extends Command
      *
      * @return mixed
      */
-    public function fire()
+    public function handle()
     {
         if ($this->laravel->environment('local')) {
             $this->call('ide-helper:generate');

@@ -82,6 +82,7 @@ class RentService
     public function closeRentLog()
     {
         $this->rent->ended_at = Carbon::now();
+        $this->rent->duration = $this->rent->ended_at->diffInSeconds($this->rent->started_at);
         $this->rent->status = RentStatus::CLOSE;
         $this->rent->standTo()->associate($this->standTo);
         $this->rent->save();
@@ -92,7 +93,7 @@ class RentService
 
     public function updateCredit()
     {
-        if (! app('AppConfig')->idCreditEnabled()) {
+        if (! app('AppConfig')->isCreditEnabled()) {
             return $this;
         }
 

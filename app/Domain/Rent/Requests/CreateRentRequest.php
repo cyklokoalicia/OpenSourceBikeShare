@@ -1,9 +1,9 @@
 <?php
 namespace BikeShare\Domain\Rent\Requests;
 
-use Dingo\Api\Http\FormRequest;
+use BikeShare\Domain\Core\Request;
 
-class CreateRentRequest extends FormRequest
+class CreateRentRequest extends Request
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,7 +23,13 @@ class CreateRentRequest extends FormRequest
     public function rules()
     {
         return [
-            'bike' => 'required'
+            'bike' => 'required',
+            'test' => 'string',
         ];
+    }
+
+    public function prepareForValidation()
+    {
+
     }
 }

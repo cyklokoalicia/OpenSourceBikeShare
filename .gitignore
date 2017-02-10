@@ -1,5 +1,4 @@
 /node_modules
-/public/storage
 /vendor
 /.idea
 Homestead.json
@@ -9,5 +8,9 @@ Homestead.yaml
 /.phpstorm.meta.php
 /_ide_helper.php
 /bower_components
-
-/storage
+/storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+storage/logs/
+/composer.lock
+/storage/app/backups/dotenv-editor/

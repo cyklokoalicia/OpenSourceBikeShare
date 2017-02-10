@@ -43,8 +43,9 @@ Api::version('v1', ['namespace' => 'BikeShare\Http\Controllers\Api\v1'], functio
         });
 
         Api::group(['prefix' => 'rents', 'namespace' => 'Rents'], function () {
-            Api::post('{uuid}/close', 'RentsController@close')->name('api.rents.close');
             Api::post('', 'RentsController@store')->name('api.rents.store');
+            Api::get('{uuid}', 'RentsController@show')->name('api.rents.show');
+            Api::post('{uuid}/close', 'RentsController@close')->name('api.rents.close');
         });
 
         Api::group(['middleware' => 'role:admin'], function () {

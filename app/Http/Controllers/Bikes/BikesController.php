@@ -18,7 +18,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use BikeShare\Http\Requests;
 use ReflectionClass;
-use Toastr;
 
 class BikesController extends Controller
 {
@@ -78,7 +77,7 @@ class BikesController extends Controller
     {
         $this->bikeRepo->create($request->all());
 
-        Toastr::success('Bike successfully created');
+        toastr()->success('Bike successfully created');
 
         return redirect()->route('app.bikes.index');
     }
@@ -114,8 +113,8 @@ class BikesController extends Controller
         $users = User::all();
         $stands = Stand::all();
 
-        if (! $bike = $this->bikeRepo->findByUuid($uuid)) {
-            Toastr::error('Bike Not found!');
+        if (!$bike = $this->bikeRepo->findByUuid($uuid)) {
+            toastr()->error('Bike Not found!');
         }
 
         return view('bikes.edit', [
@@ -131,14 +130,14 @@ class BikesController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request $request
-     * @param  int                      $uuid
+     * @param  int $uuid
      *
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $uuid)
     {
         $this->bikeRepo->update($request->all(), $uuid, 'uuid');
-        Toastr::success('Bike successfully updated');
+        toastr()->success('Bike successfully updated');
 
         return redirect()->route('app.bikes.index');
     }

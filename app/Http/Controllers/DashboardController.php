@@ -5,8 +5,8 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return view('dashboard')->with([
+        toastr()->info('success', 'ok');
 
-        ]);
+        return view('dashboard');
     }
 }
