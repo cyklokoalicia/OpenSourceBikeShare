@@ -18,7 +18,7 @@
     "laravel/framework": "5.3.*",
     "tymon/jwt-auth": "^1.0@dev",
     "barryvdh/laravel-cors": "0.8.x",
-    "spatie/laravel-permission": "^1.3",
+    "spatie/laravel-permission": "^1.7",
     "toin0u/geotools-laravel": "~1.0",
     "bosnadev/repositories": "^0.13.0",
     "league/fractal": "^0.13.0",

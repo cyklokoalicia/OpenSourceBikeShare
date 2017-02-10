@@ -51,14 +51,4 @@ class Stand extends Model
     {
         return $this->morphMany(Note::class, 'notable');
     }
-
-
-    public function closest($query, $lat, $lng, $radius)
-    {
-
-
-        return $query->selectRaw("id, (6371 * acos(cos(radians($this->latitude)) * cos($lat)) * cos(radians($lng) - radians($this->longitude)) + sin(radians($this->latitude)) * sin(radians($lat )))) AS distance)")
-            ->having('distance', '<', $radius)
-            ->orderBy('distance');
-    }
 }
