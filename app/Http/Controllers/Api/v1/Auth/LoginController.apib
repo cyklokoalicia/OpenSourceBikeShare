@@ -1,12 +1,15 @@
 # Group Authentication
 App auth
 
-# Auth [/api/auth/]
+# auth endpoints [/api/auth/]
 
 ## Login [POST /api/auth/authenticate]
+
+#### Attributes
++ `phone_number` (string, required)
++ `password` (string, required)
+
 + Request (application/json)
-    + Headers
-    	Accept: application/json
     + Body
 		{
 			"phone_number": "+4210944244393",
@@ -16,5 +19,5 @@ App auth
 
     + Body
     	{
-    		"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIVzI1NiJ9.eyJpc3MiOiJodHRwOi8vd2hpdGViaWtlcy5kZXYvYXBpL2F1dGgvYXV0aGVudGljYXRlIiwiaWF0IjoxNDc1Mzk0MjM5LCJuYmYiOjE0NzUzOTQyMzksImp0aSI6Ijk1MzAzZDczMmYzYzBhYjJlYzU4N2MxZTA2YzU4YjA4Iiwic3ViIjoxfQ.Z0_EkP4GfutCUBraCL_FhGotPoKDswuZ6baMJY3_0Os"
+    		"token": "<token>"
     	}

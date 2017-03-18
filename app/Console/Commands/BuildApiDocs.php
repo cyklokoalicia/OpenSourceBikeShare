@@ -13,7 +13,7 @@ class BuildApiDocs extends Command
      *
      * @var string
      */
-    protected $signature = 'bike-share:docs';
+    protected $signature = 'docs:generate';
 
     /**
      * The console command description.
@@ -39,7 +39,7 @@ class BuildApiDocs extends Command
      */
     public function handle()
     {
-        $docsFile = storage_path('app/api-docs.apib');
+        $docsFile = resource_path('docs/api-docs.apib');
         $output = base_path('resources/views/docs/index.blade.php');
         $gulpProcess = new Process('gulp docs');
 

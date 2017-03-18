@@ -1,0 +1,19 @@
+FORMAT: 1A
+
+# BikeShare API
+
+**Api Base URL:** `http://bikeshare.pixwell.sk`
+
+### Requirements
+
+- **Every** request to API must contain `Accept: application/json` header
+
+- **Every** request to API except login, must contain authorization header `Authorization: Bearer <APP_AUTH_TOKEN>`, where `<APP_AUTH_TOKEN>` is token obtained from login endpoints e.g. `{
+	"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdMzk2MzYxTAzYyJ9.zrEwUJNqYK5sLw"
+}`
+
+### Auth error responses
+- **400** Bad Request - `{"message": "Token not provided","status_code": 400}`
+- **401** Unauthorized - `{"message": "Token has expired","status_code": 401}`
+- **401** Unauthorized - `{"message": "Could not decode token <APP_AUTH_TOKEN> is an invalid JWS","status_code": 401}`
+

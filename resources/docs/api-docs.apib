@@ -1,0 +1,142 @@
+FORMAT: 1A
+
+# BikeShare API
+
+**Api Base URL:** `http://bikeshare.pixwell.sk`
+
+### Requirements
+
+- **Every** request to API must contain `Accept: application/json` header
+
+- **Every** request to API except login, must contain authorization header `Authorization: Bearer <APP_AUTH_TOKEN>`, where `<APP_AUTH_TOKEN>` is token obtained from login endpoints e.g. `{
+	"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdMzk2MzYxTAzYyJ9.zrEwUJNqYK5sLw"
+}`
+
+### Auth error responses
+- **400** Bad Request - `{"message": "Token not provided","status_code": 400}`
+- **401** Unauthorized - `{"message": "Token has expired","status_code": 401}`
+- **401** Unauthorized - `{"message": "Could not decode token <APP_AUTH_TOKEN> is an invalid JWS","status_code": 401}`
+
+
+# Group Authentication
+App auth
+
+# auth endpoints [/api/auth/]
+
+## Login [POST /api/auth/authenticate]
+
+#### Attributes
++ `phone_number` (string, required)
++ `password` (string, required)
+
++ Request (application/json)
+    + Body
+		{
+			"phone_number": "+4210944244393",
+			"password": "password"
+		}
++ Response 200 (application/json)
+
+    + Body
+    	{
+    		"token": "<token>"
+    	}
+
+## Verify phone number [POST /api/auth/verify-phone-number]
+
+#### Attributes
++ `phone_number` (string, required)
+
++ Request (application/json)
+    + Body
+		{
+			"phone_number": "+421944244303",
+		}
+
++ Response 200 (application/json)
+
+	+ Body
+
+		{
+        	"phone_number": "+421945244303",
+        	"sms": 150218
+		}
+
++ Response 422 (application/json)
+
+    {
+    	"message": "422 Unprocessable Entity",
+    	"errors": {
+    		"phone_number": [
+    			"The phone number has already been taken."
+    		]
+    	}
+    }
+
+
+
+## Register [POST /api/auth/register]
+
+#### Attributes
++ `name` (string, required)
++ `email` (string, required)
++ `phone_number` (string, required)
++ `password` (string, required)
+
++ Request (application/json)
+    + Body
+		{
+			"name": "John Doe",
+			"email": "john@doe.com",
+			"phone_number": "+421944244303",
+			"password": "heslo"
+		}
++ Response 200 (application/json)
+
+    + Attributes (User)
+
+# Group Me
+
+
+# me endpoints [/api/me/]
+
+## Profile [GET /api/me]
+
++ Response 200 (application/json)
+
+   + Attributes (User)
+
+
+## Closest stands [GET /api/me/closest-stands]
+Closest stands for my current gps location
+
++ Response 200 (application/json)
+
+   + Attributes (Stand)
+
+## Data Structures
+
+### User
++ uuid: `4eacbd40-707b-11e6-8440-6b0424d4dc06`
++ name: John Doe
++ phone_number: +421944244303
++ email: john@doe.com
++ note: some notes
++ recommendation: some recommendation
++ credit: 300.00 (number, required)
++ credit_currency: €
++ limit: 1 (number, required)
++ created_at: `2016-09-01 08:02:22`
+
+
+### Stand
++ data
+	+ uuid: `a4c6cff7-297c-436e-b08b-1a4160184323`
+	+ name: Saleziani
+	+ latitude: 48.15495 (number)
+	+ longitude: 17.13446 (number)
+	+ photo: null
+	+ description: dsdsdss
+	+ place_name: Miletocova
+	+ service_tag: true (boolean)
+	+ distance: 190 (number)

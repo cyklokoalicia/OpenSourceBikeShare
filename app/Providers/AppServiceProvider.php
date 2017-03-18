@@ -4,6 +4,7 @@ namespace BikeShare\Providers;
 
 use BikeShare\Http\Services\AppConfig;
 use Illuminate\Support\ServiceProvider;
+use League\Fractal\Serializer\ArraySerializer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,7 +25,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        $this->app['Dingo\Api\Transformer\Factory']->setAdapter(function ($app) {
+            $fractal = new \League\Fractal\Manager;
+            $fractal->setSerializer(new ArraySerializer());
+
+            return new \Dingo\Api\Transformer\Adapter\Fractal($fractal);
+        });
     }
 
     /**

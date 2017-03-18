@@ -1,7 +1,45 @@
-## Register [POST /api/auth/register]
+## Verify phone number [POST /api/auth/verify-phone-number]
+
+#### Attributes
++ `phone_number` (string, required)
+
 + Request (application/json)
-    + Headers
-    	Accept: application/json
+    + Body
+		{
+			"phone_number": "+421944244303",
+		}
+
++ Response 200 (application/json)
+
+	+ Body
+
+		{
+        	"phone_number": "+421945244303",
+        	"sms": 150218
+		}
+
++ Response 422 (application/json)
+
+    {
+    	"message": "422 Unprocessable Entity",
+    	"errors": {
+    		"phone_number": [
+    			"The phone number has already been taken."
+    		]
+    	}
+    }
+
+
+
+## Register [POST /api/auth/register]
+
+#### Attributes
++ `name` (string, required)
++ `email` (string, required)
++ `phone_number` (string, required)
++ `password` (string, required)
+
++ Request (application/json)
     + Body
 		{
 			"name": "John Doe",

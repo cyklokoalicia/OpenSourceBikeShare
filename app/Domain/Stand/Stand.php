@@ -28,6 +28,12 @@ class Stand extends Model
 
     public $dates = ['deleted_at'];
 
+    public $casts = [
+        'service_tag' => 'boolean',
+        'latitude' => 'decimal',
+        'longitude' => 'decimal',
+    ];
+
 
     public function getTopPosition()
     {
