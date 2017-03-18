@@ -11,36 +11,32 @@
     {
       "type": "git",
       "url": "https://github.com/pixwell-dev/laravel-api-debugger"
-    },
-    {
-      "type": "vcs",
-      "url": "https://github.com/rhwilrForks/blueprint"
     }
   ],
   "require": {
     "php": ">=5.6.4",
     "laravel/framework": "5.4.*",
-    "tymon/jwt-auth": "^1.0.0-beta@dev",
+    "tymon/jwt-auth": "^1.0.0-beta.2",
     "barryvdh/laravel-cors": "0.8.x",
-    "spatie/laravel-permission": "^1.7",
+    "spatie/laravel-permission": "^1.12",
     "toin0u/geotools-laravel": "~1.0",
     "bosnadev/repositories": "^0.13.0",
-    "league/fractal": "^0.13.0",
-    "dingo/api": "dev-master",
+    "league/fractal": "^0.15.0",
+    "dingo/api": "1.0.0-beta8",
     "rap2hpoutre/laravel-log-viewer": "^0.5.3",
     "doctrine/dbal": "^2.5",
     "jenssegers/date": "^3.2",
     "spatie/laravel-activitylog": "^1.10",
     "guzzlehttp/guzzle": "^6.2",
     "oriceon/toastr-5-laravel": "dev-master",
-    "dingo/blueprint": "dev-master",
+    "dingo/blueprint": "^0.2",
     "laravel/tinker": "^1.0",
     "brotzka/laravel-dotenv-editor": "^2.0"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
     "mockery/mockery": "0.9.*",
-    "phpunit/phpunit": "~5.0",
+    "phpunit/phpunit": "~5.7",
     "symfony/css-selector": "3.1.*",
     "symfony/dom-crawler": "3.1.*",
     "barryvdh/laravel-debugbar": "^2.2",
@@ -59,9 +55,9 @@
     ]
   },
   "autoload-dev": {
-    "classmap": [
-      "tests/TestCase.php"
-    ]
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
   },
   "scripts": {
     "post-root-package-install": [

@@ -7,6 +7,7 @@ Homestead.yaml
 /_ide_helper_models.php
 /.phpstorm.meta.php
 /_ide_helper.php
+/public/hot
 /bower_components
 /storage/framework/cache/
 storage/framework/sessions/

@@ -2,12 +2,19 @@ const elixir = require('laravel-elixir');
 
 require('laravel-elixir-vue');
 var concat = require('gulp-concat');
+const addsrc = require('gulp-add-src');
+var sort = require('gulp-sort');
+var gulp = require('gulp');
 
 gulp.task('docs', function () {
-    return gulp.src(['./storage/app/api-header.apib', './app/Http/Controllers/Api/**/*.apib', './storage/app/api-data-sources.apib'])
+    return gulp.src('./app/Http/Controllers/Api/**/*.apib')
+        .pipe(sort())
+        .pipe(addsrc.prepend('./resources/docs/_api-header.apib'))
+        .pipe(addsrc.append('./resources/docs/_api-data-sources.apib'))
         .pipe(concat('api-docs.apib'))
-        .pipe(gulp.dest('./storage/app/'));
+        .pipe(gulp.dest('./resources/docs/'));
 });
+
 
 /*
  |--------------------------------------------------------------------------

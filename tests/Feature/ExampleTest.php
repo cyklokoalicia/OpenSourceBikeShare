@@ -1,5 +1,7 @@
 <?php
+namespace Test\Feature;
 
+use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -11,9 +13,9 @@ class ExampleTest extends TestCase
      *
      * @return void
      */
-    public function testBasicExample()
+    public function testBasicTest()
     {
-        $this->visit('/')
-             ->see('Laravel');
+        $response = $this->get('/');
+        $response->assertStatus(200);
     }
 }
