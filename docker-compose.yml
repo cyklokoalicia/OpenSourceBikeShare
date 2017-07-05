@@ -6,3 +6,13 @@ services:
       - .:/var/www/html/
     ports:
       - "80:80"
+  db:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=OpenSourceBikeShare
+    volumes:
+      - data:/var/lib/mysql
+
+volumes:
+  data:

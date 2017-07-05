@@ -8,8 +8,13 @@ mkdir -p storage/framework/cache
 
 composer install
 
+if [ ! -f ".env" ]; then
+	cp .env.example .env
+fi
 if [ -z "$(grep APP_KEY=base64 .env)" ]; then
+
 	php artisan key:generate
+	php artisan migrate
 fi
 
 
