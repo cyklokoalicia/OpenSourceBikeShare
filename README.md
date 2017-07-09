@@ -59,6 +59,15 @@ How does it work?
 * No fixed stands required, stand positions are just marked for visibility 
 * Checks and balances included to prevent system abuse 
 * Free for all or charge users for rental time 
+
+
+Run with Docker 
+---------- 
+    docker-compose build
+    docker-compose up -d
+
+open your Browser at http://localhost/app/home or http://localhost/logs
+
  
 Launch your own bike sharing system! 
 --------- 
