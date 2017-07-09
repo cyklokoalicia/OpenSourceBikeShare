@@ -1,19 +1,26 @@
 <?php
+
 namespace BikeShare\Http\ViewComposers;
 
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Stand\StandsRepository;
 use Carbon\Carbon;
+use function foo\func;
 use Illuminate\Contracts\View\View;
 
 class AppComposer
 {
 
     protected $users;
+
     protected $stands;
+
     protected $date;
+
     protected $version;
+
     protected $roles;
+
     protected $notifications;
 
 
@@ -28,17 +35,19 @@ class AppComposer
     {
         // Dependencies automatically resolved by service container...
         $this->stands = $stands->all();
-        $this->user = auth()->user();
+        $this->user = auth()->user()->load('roles');
         $this->date = Carbon::now()->toDateString();
         $this->version = config('app.version');
-        $this->roles = $this->user->roles()->get();
+        $this->roles = $this->user->roles;
         $this->notifications = $this->user->unreadNotifications;
     }
+
 
     /**
      * Bind data to the view.
      *
-     * @param  View  $view
+     * @param  View $view
+     *
      * @return void
      */
     public function compose(View $view)

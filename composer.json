@@ -31,7 +31,9 @@
     "oriceon/toastr-5-laravel": "dev-master",
     "dingo/blueprint": "^0.2",
     "laravel/tinker": "^1.0",
-    "brotzka/laravel-dotenv-editor": "^2.0"
+    "brotzka/laravel-dotenv-editor": "^2.0",
+    "egeloen/google-map": "^2.0",
+    "spatie/laravel-blade-javascript": "^1.1"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",

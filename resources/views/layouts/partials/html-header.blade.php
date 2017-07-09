@@ -1,6 +1,7 @@
 <head>
     <meta charset="UTF-8">
     <title>@yield('html_header_title', 'Page title') - BikeShare </title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
     <!-- Bootstrap 3.3.4 -->
     <link href="{{ asset('/css/libs/bootstrap.css') }}" rel="stylesheet" type="text/css" />
@@ -22,8 +23,9 @@
     <link href="{{ asset('/css/libs/daterangepicker.css') }}" rel="stylesheet" type="text/css" />
 
     <!-- Theme style -->
+    {{--<link href="{{ asset('/css/libs/app.css') }}" rel="stylesheet" type="text/css" />--}}
     <link href="{{ asset('/css/libs/admin-lte.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('/css/libs/app.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('/css/app.css') }}" rel="stylesheet" type="text/css" />
 {{--    <link href="{{ asset('/css/min.css') }}" rel="stylesheet" type="text/css" />--}}
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->

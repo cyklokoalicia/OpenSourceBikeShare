@@ -16,6 +16,7 @@ class ComposerServiceProvider extends ServiceProvider
     {
         // Uing class based composers...
         view()->composer('layouts.app', AppComposer::class);
+        //view()->composer('*', AppComposer::class);
     }
 
     /**

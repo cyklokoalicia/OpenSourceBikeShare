@@ -55,6 +55,12 @@ Api::version('v1', ['namespace' => 'BikeShare\Http\Controllers\Api\v1'], functio
                 Api::get('/history', 'RentsController@history')->name('api.rents.history');
             });
 
+            Api::group(['prefix' => 'stands', 'namespace' => 'Stands'], function () {
+                Api::get('', 'StandsController@index')->name('api.stands.index');
+                Api::get('{uuid}', 'StandsController@show')->name('api.stands.show');
+                Api::post('import', 'StandsController@import');
+            });
+
             Api::group(['prefix' => 'users', 'namespace' => 'Users'], function () {
 
                 Api::group(['prefix' => '{uuid}'], function () {

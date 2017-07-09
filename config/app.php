@@ -190,6 +190,7 @@ return [
         BikeShare\Providers\EventServiceProvider::class,
         BikeShare\Providers\RouteServiceProvider::class,
         BikeShare\Providers\ComposerServiceProvider::class,
+        Spatie\BladeJavaScript\BladeJavaScriptServiceProvider::class,
 
     ],
 
@@ -244,6 +245,7 @@ return [
         'Geotools' => Toin0u\Geotools\Facade\Geotools::class,
         'Toastr' => Kamaln7\Toastr\Facades\Toastr::class,
         'DotenvEditor' => Brotzka\DotenvEditor\DotenvEditorFacade::class,
+
 
     ],
 

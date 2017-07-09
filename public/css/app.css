@@ -1,13 +1,4 @@
-// Fonts
-@import url("https://fonts.googleapis.com/css?family=Raleway:300,400,600");
-
-// Variables
-@import "variables";
-
-// Bootstrap
-//@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
-
-.navbar-select-stand-li {
+@import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600);.navbar-select-stand-li {
   height: 50px;
 }
 
@@ -32,7 +23,6 @@
   margin-left: 230px;
 }
 
-// select 2 update css styles
 .select2-container--default .select2-selection--single {
   border-radius: 0;
   height: 34px;
@@ -49,14 +39,8 @@
   margin-top: -3px;
 }
 
-//
 .box-header.with-border {
   border-bottom: 1px solid #f4f4f4;
-}
-
-//
-.bikes {
-
 }
 
 .bike-count {
@@ -72,5 +56,6 @@
   position: absolute;
   font-size: 8px;
   color: #333;
-  font-weight: 700
+  font-weight: 700;
 }
+
