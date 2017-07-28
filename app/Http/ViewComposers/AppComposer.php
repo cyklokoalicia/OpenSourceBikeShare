@@ -25,7 +25,7 @@ class AppComposer
 
 
     /**
-     * Create a new profile composer.
+     * Create a new profile composer.bower install remodal
      *
      * @param StandsRepository $stands
      *

@@ -29,16 +29,12 @@ class UsersRepository extends Repository
 
     public function create(array $data)
     {
-        $user = new User($data);
-        $user->limit = 1;
+        $data['limit'] = 1;
         if (app('AppConfig')->isCreditEnabled()) {
-            $user->credit = 0;
+            $data['credit'] = 0;
         }
-        $user->locked = 0;
-        $user->save();
-        if (isset($data['roles'])) {
-            $user->assignRole($data['roles']);
-        }
+        $data['locked'] = 0;
+        $user = parent::create($data);
 
         return $user;
     }

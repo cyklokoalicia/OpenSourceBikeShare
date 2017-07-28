@@ -7,7 +7,6 @@ use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Domain\User\UserTransformer;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use Illuminate\Http\Request;
-use BikeShare\Http\Requests;
 
 class UsersController extends Controller
 {
@@ -44,6 +43,10 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         $user = $this->userRepo->create($request->all());
+
+        if ($request->has('roles')) {
+            $user->assignRole($request->roles);
+        }
         event(new UserWasRegistered($user));
 
         return $this->response->item($user, new UserTransformer());
@@ -61,9 +64,7 @@ class UsersController extends Controller
      */
     public function show($uuid)
     {
-        if (! $user = $this->userRepo->findByUuid($uuid)) {
-            return $this->response->errorNotFound('User not found');
-        }
+        $user = $this->userRepo->findByUuid($uuid);
 
         return $this->response->item($user, new UserTransformer());
     }
@@ -81,11 +82,8 @@ class UsersController extends Controller
      */
     public function update(Request $request, $uuid)
     {
-        if (! $user = $this->userRepo->findByUuid($uuid)) {
-            return $this->response->errorNotFound('User not found');
-        }
-
-        $this->userRepo->updateRich($request->all(), $user->id);
+        $user = $this->userRepo->findByUuid($uuid);
+        $this->userRepo->update($request->all(), $user->id);
 
         return $this->response->item($user, new UserTransformer());
     }
@@ -102,9 +100,7 @@ class UsersController extends Controller
      */
     public function destroy($uuid)
     {
-        if (! $user = $this->userRepo->findByUuid($uuid)) {
-            return $this->response->errorNotFound('User not found');
-        }
+        $user = $this->userRepo->findByUuid($uuid);
         $user->delete();
 
         return $this->response->item($user, new UserTransformer());
@@ -114,13 +110,11 @@ class UsersController extends Controller
     /**
      * @param $uuid
      *
-     * @return \Dingo\Api\Http\Response|void
+     * @return \Dingo\Api\Http\Response
      */
     public function restore($uuid)
     {
-        if (! $user = $this->userRepo->findByUuidWithTrashed($uuid)) {
-            return $this->response->errorNotFound('User not found');
-        }
+        $user = $this->userRepo->findByUuidWithTrashed($uuid);
         $user->restore();
 
         return $this->response->item($user, new UserTransformer());

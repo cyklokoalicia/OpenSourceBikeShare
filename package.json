@@ -8,7 +8,6 @@
     "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
     "prod": "npm run production",
     "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
-
   },
   "devDependencies": {
     "axios": "^0.16.2",
@@ -23,5 +22,8 @@
     "lodash": "^4.17.4",
     "vue": "^2.1.10",
     "vue-resource": "^0.9.3"
+  },
+  "dependencies": {
+    "vue-select": "github:sagalbot/vue-select"
   }
 }

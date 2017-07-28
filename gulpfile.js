@@ -1,6 +1,4 @@
-const elixir = require('laravel-elixir');
 
-require('laravel-elixir-vue');
 var concat = require('gulp-concat');
 const addsrc = require('gulp-add-src');
 var sort = require('gulp-sort');
@@ -56,6 +54,12 @@ elixir(function(mix) {
 
     mix.copy('bower_components/select2/dist/css/select2.css', 'public/css/libs/select2.css');
     mix.copy('bower_components/select2/dist/js/select2.full.js', 'public/js/libs/select2.js');
+
+    // remodal
+    mix.copy('bower_components/remodal/dist/remodal.css', 'public/css/libs/remodal.css');
+    mix.copy('bower_components/remodal/dist/remodal-default-theme.css', 'public/css/libs/remodal-default-theme.css');
+    mix.copy('bower_components/remodal/dist/remodal.js', 'public/js/libs/remodal.js');
+
 
     // data table
     mix.copy('bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css', 'public/css/libs/dataTables.css');

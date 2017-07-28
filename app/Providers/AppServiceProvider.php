@@ -3,6 +3,8 @@
 namespace BikeShare\Providers;
 
 use BikeShare\Http\Services\AppConfig;
+use Dingo\Api\Http\Response;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\ServiceProvider;
 use League\Fractal\Serializer\ArraySerializer;
 
@@ -14,10 +16,13 @@ class AppServiceProvider extends ServiceProvider
         \Barryvdh\Debugbar\ServiceProvider::class,
         \Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
     ];
+
     protected $aliases = [
         'Debugger' => \Lanin\ApiDebugger\DebuggerFacade::class,
         'Debugbar' => \Barryvdh\Debugbar\Facade::class,
     ];
+
+
     /**
      * Bootstrap any application services.
      *
@@ -31,7 +36,16 @@ class AppServiceProvider extends ServiceProvider
 
             return new \Dingo\Api\Transformer\Adapter\Fractal($fractal);
         });
+
+        $this->app['Dingo\Api\Exception\Handler']->register(function (ModelNotFoundException $exception) {
+
+            return Response::create([
+                'message' => $exception->getModel() . ' not found!',
+                'code' => $exception->getCode(),
+            ], 404);
+        });
     }
+
 
     /**
      * Register any application services.

@@ -1,14 +1,32 @@
 <?php
+
 namespace BikeShare\Domain\Core;
 
-use Bosnadev\Repositories\Eloquent\Repository as CoreRepository;
+use Prettus\Repository\Contracts\CacheableInterface;
+use Prettus\Repository\Eloquent\BaseRepository;
 
 /**
  * Class Repository
  * @package Bosnadev\Repositories\Eloquent
  */
-abstract class Repository extends CoreRepository
+abstract class Repository extends BaseRepository implements CacheableInterface
 {
+
+    use CacheableRepository;
+
+
+    // TODO cache this custom method
+    public function findBy($field, $value = null, $columns = ['*'])
+    {
+        $this->applyCriteria();
+        $this->applyScope();
+        $model = $this->model->where($field, '=', $value)->firstOrFail($columns);
+        $this->resetModel();
+
+        return $this->parserResult($model);
+    }
+
+
     /**
      * @param       $uuid
      * @param array $columns
@@ -22,9 +40,10 @@ abstract class Repository extends CoreRepository
 
 
     /**
-     * @param array $data
-     * @param $id
+     * @param array  $data
+     * @param        $id
      * @param string $attribute
+     *
      * @return mixed
      */
     public function update(array $data, $id, $attribute = "id")
@@ -32,6 +51,14 @@ abstract class Repository extends CoreRepository
         $data = $this->formatData($data);
 
         return $this->model->where($attribute, '=', $id)->update($data);
+    }
+
+
+    public function withTrashed()
+    {
+        $this->model = $this->model->withTrashed();
+
+        return $this;
     }
 
 
@@ -43,9 +70,7 @@ abstract class Repository extends CoreRepository
      */
     public function findByUuidWithTrashed($uuid, $columns = ['*'])
     {
-        $this->applyCriteria();
-
-        return $this->model->withTrashed()->where('uuid', '=', $uuid)->first($columns);
+        return $this->withTrashed()->findBy('uuid', '=', $uuid);
     }
 
 
@@ -55,7 +80,7 @@ abstract class Repository extends CoreRepository
     }
 
 
-    public function formatData(array $data) :array
+    public function formatData(array $data): array
     {
         if (isset($data['_token'])) {
             unset($data['_token']);

@@ -16,11 +16,10 @@
   "require": {
     "php": ">=5.6.4",
     "laravel/framework": "5.4.*",
-    "tymon/jwt-auth": "^1.0.0-beta.2",
+    "tymon/jwt-auth": "^1.0.0-beta.3",
     "barryvdh/laravel-cors": "0.8.x",
     "spatie/laravel-permission": "^1.12",
     "toin0u/geotools-laravel": "~1.0",
-    "bosnadev/repositories": "^0.13.0",
     "league/fractal": "^0.15.0",
     "dingo/api": "1.0.0-beta8",
     "rap2hpoutre/laravel-log-viewer": "^0.5.3",
@@ -33,7 +32,8 @@
     "laravel/tinker": "^1.0",
     "brotzka/laravel-dotenv-editor": "^2.0",
     "egeloen/google-map": "^2.0",
-    "spatie/laravel-blade-javascript": "^1.1"
+    "spatie/laravel-blade-javascript": "^1.1",
+    "prettus/l5-repository": "^2.6"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",

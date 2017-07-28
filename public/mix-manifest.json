@@ -1,4 +1,27 @@
 {
     "/js/app.js": "/js/app.js",
-    "/css/app.css": "/css/app.css"
+    "/css/app.css": "/css/app.css",
+    "/css/libs/bootstrap.css": "/css/libs/bootstrap.css",
+    "/css/libs/admin-lte.css": "/css/libs/admin-lte.css",
+    "/css/libs/admin-lte-skin.css": "/css/libs/admin-lte-skin.css",
+    "/js/libs/admin-lte.js": "/js/libs/admin-lte.js",
+    "/js/libs/jquery.js": "/js/libs/jquery.js",
+    "/css/libs/font-awesome.css": "/css/libs/font-awesome.css",
+    "/css/libs/i-check.css": "/css/libs/i-check.css",
+    "/css/libs/green.png": "/css/libs/green.png",
+    "/css/libs/green@2x.png": "/css/libs/green@2x.png",
+    "/js/libs/i-check.js": "/js/libs/i-check.js",
+    "/css/libs/select2.css": "/css/libs/select2.css",
+    "/js/libs/select2.js": "/js/libs/select2.js",
+    "/css/libs/remodal.css": "/css/libs/remodal.css",
+    "/css/libs/remodal-default-theme.css": "/css/libs/remodal-default-theme.css",
+    "/js/libs/remodal.js": "/js/libs/remodal.js",
+    "/css/libs/dataTables.css": "/css/libs/dataTables.css",
+    "/js/libs/jquery.dataTables.js": "/js/libs/jquery.dataTables.js",
+    "/js/libs/dataTables.js": "/js/libs/dataTables.js",
+    "/js/libs/daterangepicker.js": "/js/libs/daterangepicker.js",
+    "/js/libs/moment.js": "/js/libs/moment.js",
+    "/css/libs/daterangepicker.css": "/css/libs/daterangepicker.css",
+    "/css/min.css": "/css/min.css",
+    "/js/min.js": "/js/min.js"
 }

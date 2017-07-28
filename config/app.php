@@ -179,6 +179,8 @@ return [
         Kamaln7\Toastr\ToastrServiceProvider::Class,
         Laravel\Tinker\TinkerServiceProvider::class,
         Brotzka\DotenvEditor\DotenvEditorServiceProvider::class,
+        Spatie\BladeJavaScript\BladeJavaScriptServiceProvider::class,
+        Prettus\Repository\Providers\RepositoryServiceProvider::class,
         //
 
         /*
@@ -190,7 +192,6 @@ return [
         BikeShare\Providers\EventServiceProvider::class,
         BikeShare\Providers\RouteServiceProvider::class,
         BikeShare\Providers\ComposerServiceProvider::class,
-        Spatie\BladeJavaScript\BladeJavaScriptServiceProvider::class,
 
     ],
 

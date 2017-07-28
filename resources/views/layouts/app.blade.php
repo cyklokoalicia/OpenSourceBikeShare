@@ -4,8 +4,13 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html lang="{{ app()->getLocale() }}">
-
+<head>
+    <meta charset="UTF-8">
+    <title>@yield('html_header_title', 'Page title') - BikeShare </title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
 @include('layouts.partials.html-header')
+</head>
 
 <!--
 BODY TAG OPTIONS:
@@ -48,8 +53,8 @@ desired effect
         </section><!-- /.content -->
     </div><!-- /.content-wrapper -->
 
-    @include('layouts.partials.control-sidebar')
-
+    {{--@include('layouts.partials.control-sidebar')--}}
+    <control-sidebar></control-sidebar>
     @include('layouts.partials.footer')
 
 </div><!-- ./wrapper -->

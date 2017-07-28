@@ -1,8 +1,5 @@
-<head>
-    <meta charset="UTF-8">
-    <title>@yield('html_header_title', 'Page title') - BikeShare </title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+
+
     <!-- Bootstrap 3.3.4 -->
     <link href="{{ asset('/css/libs/bootstrap.css') }}" rel="stylesheet" type="text/css" />
     <!-- Font Awesome Icons -->
@@ -22,6 +19,9 @@
     <link href="{{ asset('/css/libs/select2.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('/css/libs/daterangepicker.css') }}" rel="stylesheet" type="text/css" />
 
+    <link rel="stylesheet" href="{{ asset('/css/libs/remodal.css') }}">
+    <link rel="stylesheet" href="{{ asset('/css/libs/remodal-default-theme.css') }}">
+
     <!-- Theme style -->
     {{--<link href="{{ asset('/css/libs/app.css') }}" rel="stylesheet" type="text/css" />--}}
     <link href="{{ asset('/css/libs/admin-lte.css') }}" rel="stylesheet" type="text/css" />
@@ -34,4 +34,3 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-</head>

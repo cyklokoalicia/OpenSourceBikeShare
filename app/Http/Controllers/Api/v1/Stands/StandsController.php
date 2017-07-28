@@ -35,9 +35,7 @@ class StandsController extends Controller
 
     public function show($uuid)
     {
-        if (! $stand = $this->standRepo->findByUuid($uuid)) {
-            return $this->response->errorNotFound('Stand was not found!');
-        }
+        $stand = $this->standRepo->findByUuid($uuid);
 
         return $this->response->item($stand, new StandTransformer());
     }
