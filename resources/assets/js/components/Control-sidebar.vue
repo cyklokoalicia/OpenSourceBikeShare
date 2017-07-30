@@ -14,7 +14,7 @@
                 <div class="tab-pane active" id="control-sidebar-home-tab">
                     <div class="form-group">
                         <v-select
-                                :debounce="250"
+                                :debounce="550"
                                 :on-search="getOptions"
                                 :on-change="getStandDetail"
                                 :options="options"
@@ -25,25 +25,22 @@
                     </div>
 
                     <h3 class="control-sidebar-heading">Stand detail</h3>
-                    <a href="">look detail screen</a>
+                    <p>{{ stand.description }}</p>
+                    <a :href="'stands/' + stand.uuid" >look stand detail screen</a>
+
+                    <h3 class="control-sidebar-heading">Bikes <span v-bind:text="bikes.length"></span></h3>
+                    <ul id="bikes-list">
+                        <li v-for="(bike, index) in bikes">
+                            <button class="btn btn-flat" v-bind:class="classObject(bike)">{{ bike.bike_num }}</button>
+                        </li>
+                    </ul>
 
                 </div><!-- /.tab-pane -->
                 <!-- Stats tab content -->
                 <div class="tab-pane" id="control-sidebar-stats-tab">Stats Tab Content</div><!-- /.tab-pane -->
                 <!-- Settings tab content -->
                 <div class="tab-pane" id="control-sidebar-settings-tab">
-                    <form method="post">
-                        <h3 class="control-sidebar-heading">General Settings</h3>
-                        <div class="form-group">
-                            <label class="control-sidebar-subheading">
-                                Report panel usage
-                                <input type="checkbox" class="pull-right" checked/>
-                            </label>
-                            <p>
-                                Some information about this general settings option
-                            </p>
-                        </div><!-- /.form-group -->
-                    </form>
+
                 </div><!-- /.tab-pane -->
             </div>
         </aside><!-- /.control-sidebar -->
@@ -55,21 +52,26 @@
 </template>
 
 <script>
+    import {Stand} from '../classes/Stand';
+
     export default {
         data() {
             return {
-                options: []
+                options: [],
+                description: "",
+                bikes: [],
+                stand: {}
             }
         },
         methods: {
             getOptions(q, loading) {
-                loading(true)
+                loading(true);
                 axios.get('/app.json/stands', {
                     params: {
                         search: q
                     }
                 }).then(resp => {
-                    this.options = resp.data.stands
+                    this.options = resp.data.stands;
                     loading(false)
                 })
             },
@@ -77,11 +79,24 @@
             getStandDetail(obj) {
                 axios.get('/app.json/stands/' + obj.name).then(resp => {
                     console.log(resp.data);
+                    this.stand = resp.data.stand;
+                    this.bikes = resp.data.bikes;
                 });
+            },
+
+            classObject: function (bike) {
+                if (bike.note) {
+                    return 'btn-warning';
+                } else {
+                    return 'btn-success';
+                }
             }
         },
         mounted() {
             console.log('Component mounted.')
+        },
+        computed: {
+
         }
     }
 

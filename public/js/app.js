@@ -1815,9 +1815,7 @@ if (token) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__classes_Stand__ = __webpack_require__(49);
 //
 //
 //
@@ -1872,10 +1870,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 
+
+
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
         return {
-            options: []
+            options: [],
+            description: "",
+            bikes: [],
+            stand: {}
         };
     },
 
@@ -1894,14 +1897,29 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             });
         },
         getStandDetail: function getStandDetail(obj) {
+            var _this2 = this;
+
             axios.get('/app.json/stands/' + obj.name).then(function (resp) {
                 console.log(resp.data);
+                _this2.stand = resp.data.stand;
+                _this2.bikes = resp.data.bikes;
             });
+        },
+
+
+        classObject: function classObject(bike) {
+            if (bike.note) {
+                return 'btn-warning';
+            } else {
+                return 'btn-success';
+            }
         }
     },
     mounted: function mounted() {
         console.log('Component mounted.');
-    }
+    },
+
+    computed: {}
 });
 
 /***/ }),
@@ -32012,7 +32030,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "form-group"
   }, [_c('v-select', {
     attrs: {
-      "debounce": 250,
+      "debounce": 550,
       "on-search": _vm.getOptions,
       "on-change": _vm.getStandDetail,
       "options": _vm.options,
@@ -32021,16 +32039,36 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     }
   })], 1), _vm._v(" "), _c('h3', {
     staticClass: "control-sidebar-heading"
-  }, [_vm._v("Stand detail")]), _vm._v(" "), _c('a', {
+  }, [_vm._v("Stand detail")]), _vm._v(" "), _c('p', [_vm._v(_vm._s(_vm.stand.description))]), _vm._v(" "), _c('a', {
     attrs: {
-      "href": ""
+      "href": 'stands/' + _vm.stand.uuid
     }
-  }, [_vm._v("look detail screen")])]), _vm._v(" "), _c('div', {
+  }, [_vm._v("look stand detail screen")]), _vm._v(" "), _c('h3', {
+    staticClass: "control-sidebar-heading"
+  }, [_vm._v("Bikes "), _c('span', {
+    attrs: {
+      "text": _vm.bikes.length
+    }
+  })]), _vm._v(" "), _c('ul', {
+    attrs: {
+      "id": "bikes-list"
+    }
+  }, _vm._l((_vm.bikes), function(bike, index) {
+    return _c('li', [_c('button', {
+      staticClass: "btn btn-flat",
+      class: _vm.classObject(bike)
+    }, [_vm._v(_vm._s(bike.bike_num))])])
+  }))]), _vm._v(" "), _c('div', {
     staticClass: "tab-pane",
     attrs: {
       "id": "control-sidebar-stats-tab"
     }
-  }, [_vm._v("Stats Tab Content")]), _vm._v(" "), _vm._m(1)])]), _vm._v(" "), _c('div', {
+  }, [_vm._v("Stats Tab Content")]), _vm._v(" "), _c('div', {
+    staticClass: "tab-pane",
+    attrs: {
+      "id": "control-sidebar-settings-tab"
+    }
+  })])]), _vm._v(" "), _c('div', {
     staticClass: "control-sidebar-bg"
   })])
 },staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -32053,29 +32091,6 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   }, [_c('i', {
     staticClass: "fa fa-gears"
   })])])])
-},function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('div', {
-    staticClass: "tab-pane",
-    attrs: {
-      "id": "control-sidebar-settings-tab"
-    }
-  }, [_c('form', {
-    attrs: {
-      "method": "post"
-    }
-  }, [_c('h3', {
-    staticClass: "control-sidebar-heading"
-  }, [_vm._v("General Settings")]), _vm._v(" "), _c('div', {
-    staticClass: "form-group"
-  }, [_c('label', {
-    staticClass: "control-sidebar-subheading"
-  }, [_vm._v("\n                            Report panel usage\n                            "), _c('input', {
-    staticClass: "pull-right",
-    attrs: {
-      "type": "checkbox",
-      "checked": ""
-    }
-  })]), _vm._v(" "), _c('p', [_vm._v("\n                            Some information about this general settings option\n                        ")])])])])
 }]}
 module.exports.render._withStripped = true
 if (false) {
@@ -41827,6 +41842,35 @@ module.exports = function(module) {
 __webpack_require__(9);
 module.exports = __webpack_require__(10);
 
+
+/***/ }),
+/* 45 */,
+/* 46 */,
+/* 47 */,
+/* 48 */,
+/* 49 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Stand = function (_Vue) {
+  _inherits(Stand, _Vue);
+
+  function Stand() {
+    _classCallCheck(this, Stand);
+
+    return _possibleConstructorReturn(this, (Stand.__proto__ || Object.getPrototypeOf(Stand)).apply(this, arguments));
+  }
+
+  return Stand;
+}(Vue);
+
+/* unused harmony default export */ var _unused_webpack_default_export = (Stand);
 
 /***/ })
 /******/ ]);
