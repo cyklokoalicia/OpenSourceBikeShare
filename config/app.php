@@ -181,6 +181,7 @@ return [
         Brotzka\DotenvEditor\DotenvEditorServiceProvider::class,
         Spatie\BladeJavaScript\BladeJavaScriptServiceProvider::class,
         Prettus\Repository\Providers\RepositoryServiceProvider::class,
+        NotificationChannels\Twilio\TwilioProvider::class,
         //
 
         /*
