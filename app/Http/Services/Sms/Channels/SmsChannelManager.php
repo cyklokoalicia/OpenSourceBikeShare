@@ -39,7 +39,7 @@ class SmsChannelManager
             'twilio' => TwilioChannel::class,
             'euroSms' => EuroSmsChannel::class,
             'log' => LogSmsChannel::class,
-            'null' => NullChannel::class
+            'null' => NullSmsChannel::class
         ];
     }
 
