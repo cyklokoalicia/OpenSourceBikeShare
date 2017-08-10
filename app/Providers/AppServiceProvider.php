@@ -76,9 +76,8 @@ class AppServiceProvider extends ServiceProvider
             return new AppConfig($app->config['bike-share']);
         });
 
-        $this->app->bind(EuroSms::class, function () {
-            $config = $this->app['config']['services.euroSms'];
-            return new EuroSms($config['id'], $config['key'], $config['senderNumber']);
+        $this->app->singleton(AppConfig::class, function ($app) {
+            return new AppConfig($app->config['bike-share']);
         });
     }
 }

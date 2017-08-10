@@ -193,7 +193,7 @@ return [
         BikeShare\Providers\EventServiceProvider::class,
         BikeShare\Providers\RouteServiceProvider::class,
         BikeShare\Providers\ComposerServiceProvider::class,
-
+        BikeShare\Providers\SmsServiceProvider::class,
     ],
 
     /*

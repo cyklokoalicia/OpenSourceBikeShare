@@ -98,6 +98,10 @@ Api::version('v1', ['namespace' => 'BikeShare\Http\Controllers\Api\v1'], functio
             });
         });
     });
+
+    Api::group(['prefix' => 'sms', 'namespace' => 'Sms'], function () {
+        Api::match(['get', 'post'],'/receive', 'SmsController@receive')->name('api.sms.receive');
+    });
 });
 
 Route::group(['middleware' => 'auth:api'], function () {
