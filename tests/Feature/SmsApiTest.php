@@ -2,7 +2,9 @@
 namespace Test\Feature;
 
 use BikeShare\Domain\User\User;
+use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
+use BikeShare\Notifications\Sms\Credit;
 use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -68,4 +70,19 @@ class SmsApiTest extends TestCase
         $this->get(self::URL_PREFIX . '?' . $getParams);
         Notification::assertSentTo($user, UnknownCommand::class);
     }
+
+    /**
+     * @test
+     */
+    public function credit_command()
+    {
+        $user = factory(User::class)->create();
+        $getParams = $this->smsRequest->buildGetQuery('CREDIT',$user->phone_number,1,1);
+        Notification::fake();
+        $this->get(self::URL_PREFIX . '?' . $getParams);
+
+        Notification::assertSentTo($user, Credit::class);
+    }
+
+
 }

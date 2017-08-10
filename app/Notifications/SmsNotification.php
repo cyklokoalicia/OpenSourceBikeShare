@@ -17,21 +17,21 @@ abstract class SmsNotification extends Notification
         return [SmsChannelManager::class];
     }
 
-    public abstract function text(User $notifiable);
+    public abstract function text();
 
     public function toTwilio($notifiable)
     {
         return (new TwilioSmsMessage())
-            ->content($this->text($notifiable));
+            ->content($this->text());
     }
 
     public function toEuroSms($notifiable)
     {
-        return $this->text($notifiable);
+        return $this->text();
     }
 
     public function toLogSms($notifiable)
     {
-        return $this->text($notifiable);
+        return $this->text();
     }
 }

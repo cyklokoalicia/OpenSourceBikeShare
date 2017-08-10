@@ -8,14 +8,14 @@ use BikeShare\Notifications\SmsNotification;
 
 class Help extends SmsNotification
 {
-    protected $isCreditEnabled;
+    private $isCreditEnabled;
 
     public function __construct(AppConfig $appConfig)
     {
         $this->isCreditEnabled = $appConfig->isCreditEnabled();
     }
 
-    public function text(User $user)
+    public function text()
     {
         $message="Commands:\nHELP\n";
         if ($this->isCreditEnabled) {

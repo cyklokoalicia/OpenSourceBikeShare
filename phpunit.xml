@@ -29,5 +29,6 @@
         <env name="QUEUE_DRIVER" value="sync"/>
         <env name="SMS_ENABLED" value="true"/>
         <env name="SMS_CONNECTOR" value="log"/>
+        <env name="CREDIT_ENABLED" value="true"/>
     </php>
 </phpunit>

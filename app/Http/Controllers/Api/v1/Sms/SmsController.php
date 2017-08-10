@@ -6,6 +6,7 @@ use BikeShare\Domain\Sms\Sms;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
+use BikeShare\Notifications\Sms\Credit;
 use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use Dingo\Api\Routing\Helpers;
@@ -69,12 +70,11 @@ class SmsController extends Controller
                 $this->helpCommand($sms);
                 break;
             case "CREDIT":
-                if (iscreditenabled()==FALSE)
-                {
-                    unknownCommand($sms->Number(),$args[0]);
+                if (!$this->appConfig->isCreditEnabled()){
+                    $this->unknownCommand($sms, $args[0]);
                     break;
                 }
-                credit($sms->Number());
+                $this->creditCommand($sms);
                 break;
 //            case "FREE":
 //                freeBikes($sms->Number());
@@ -153,14 +153,18 @@ class SmsController extends Controller
         }
     }
 
-    protected function helpCommand(Sms $sms)
+    private function helpCommand(Sms $sms)
     {
         $sms->sender->notify(new Help($this->appConfig));
     }
 
-    protected function unknownCommand(Sms $sms, $command)
+    private function unknownCommand(Sms $sms, $command)
     {
         $sms->sender->notify(new UnknownCommand($command));
     }
 
+    private function creditCommand(Sms $sms)
+    {
+        $sms->sender->notify(new Credit($this->appConfig, $sms->sender));
+    }
 }
