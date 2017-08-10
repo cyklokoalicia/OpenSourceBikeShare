@@ -2,6 +2,7 @@
 
 namespace BikeShare\Domain\Sms;
 
+use BikeShare\Domain\User\User;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -14,8 +15,8 @@ class Sms extends Model
     public $fillable = [
         'uuid',
         'incoming',
-        'sender',
-        'receiver',
+        'from',
+        'to',
         'received_at',
         'sent_at',
         'sms_text',
@@ -27,8 +28,8 @@ class Sms extends Model
     protected static $logAttributes = [
         'uuid',
         'incoming',
-        'sender',
-        'receiver',
+        'from',
+        'to',
         'received_at',
         'sent_at',
         'sms_text',
@@ -38,5 +39,15 @@ class Sms extends Model
     public $casts = [
         'incoming' => 'boolean'
     ];
+
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'from', 'phone_number');
+    }
+
+    public function receiver()
+    {
+        return $this->belongsTo(User::class, 'to', 'phone_number');
+    }
 
 }

@@ -17,8 +17,8 @@ class CreateSmsTable extends Migration
             $table->increments('id');
             $table->string('uuid');
             $table->boolean('incoming');
-            $table->string('sender')->nullable();
-            $table->string('receiver')->nullable();
+            $table->string('from')->nullable();
+            $table->string('to')->nullable();
             $table->timestamp('received_at')->nullable();
             $table->timestamp('sent_at')->nullable();
             $table->string('sms_text');
