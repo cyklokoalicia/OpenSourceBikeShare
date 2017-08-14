@@ -181,6 +181,7 @@ return [
         Brotzka\DotenvEditor\DotenvEditorServiceProvider::class,
         Spatie\BladeJavaScript\BladeJavaScriptServiceProvider::class,
         Prettus\Repository\Providers\RepositoryServiceProvider::class,
+        NotificationChannels\Twilio\TwilioProvider::class,
         //
 
         /*
@@ -192,7 +193,7 @@ return [
         BikeShare\Providers\EventServiceProvider::class,
         BikeShare\Providers\RouteServiceProvider::class,
         BikeShare\Providers\ComposerServiceProvider::class,
-
+        BikeShare\Providers\SmsServiceProvider::class,
     ],
 
     /*

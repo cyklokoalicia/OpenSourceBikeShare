@@ -33,7 +33,8 @@
     "brotzka/laravel-dotenv-editor": "^2.0",
     "egeloen/google-map": "^2.0",
     "spatie/laravel-blade-javascript": "^1.1",
-    "prettus/l5-repository": "^2.6"
+    "prettus/l5-repository": "^2.6",
+    "laravel-notification-channels/twilio": "^2.0"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",

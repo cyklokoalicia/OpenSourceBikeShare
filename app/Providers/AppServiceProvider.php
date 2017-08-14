@@ -3,10 +3,12 @@
 namespace BikeShare\Providers;
 
 use BikeShare\Http\Services\AppConfig;
+use BikeShare\Http\Services\Sms\EuroSms;
 use Dingo\Api\Http\Response;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\ServiceProvider;
 use League\Fractal\Serializer\ArraySerializer;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -70,8 +72,10 @@ class AppServiceProvider extends ServiceProvider
             // only for production
         }
 
-        $this->app->singleton('AppConfig', function ($app) {
+        $this->app->singleton(AppConfig::class, function ($app) {
             return new AppConfig($app->config['bike-share']);
         });
+
+        $this->app->alias(AppConfig::class, 'AppConfig');
     }
 }
