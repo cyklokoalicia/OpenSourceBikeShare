@@ -6,6 +6,7 @@ use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Core\Uuid;
 use BikeShare\Domain\Rent\RentStatus;
+use BikeShare\Http\Services\AppConfig;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -64,7 +65,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function setCreditAttribute($value)
     {
-        $this->attributes['credit'] = app('AppConfig')->getRequiredCredit() * $value;
+        $this->attributes['credit'] = app(AppConfig::class)->getRequiredCredit() * $value;
     }
 
 

@@ -3,6 +3,7 @@ namespace BikeShare\Domain\User;
 
 use BikeShare\Domain\Bike\BikeTransformer;
 use BikeShare\Domain\Rent\RentTransformer;
+use BikeShare\Http\Services\AppConfig;
 use League\Fractal\TransformerAbstract;
 
 class UserTransformer extends TransformerAbstract
@@ -24,7 +25,7 @@ class UserTransformer extends TransformerAbstract
             'email'           => $user->email,
             'note'            => $user->note,
             'credit'          => $user->credit,
-            'credit_currency' => app('AppConfig')->getCreditCurrency(),
+            'credit_currency' => app(AppConfig::class)->getCreditCurrency(),
             'recommendation'  => $user->recommendation,
             'limit'           => $user->limit,
             'locked'          => $user->locked,

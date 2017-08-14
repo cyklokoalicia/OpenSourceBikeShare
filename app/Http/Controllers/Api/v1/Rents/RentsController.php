@@ -13,6 +13,7 @@ use BikeShare\Domain\Rent\Requests\CreateRentRequest;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
+use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\RentService;
 use BikeShare\Notifications\NoteCreated;
 use Illuminate\Http\Request;
@@ -80,14 +81,14 @@ class RentsController extends Controller
 
         // TODO check too many, i don't understand yet
 
-        if (app('AppConfig')->isStackBikeEnabled()) {
+        if (app(AppConfig::class)->isStackBikeEnabled()) {
             if (! $rentService->checkTopOfStack($bike)) {
                 return $this->response->errorBadRequest('Bike is not on the top!');
             }
         }
 
-        if (app('AppConfig')->isCreditEnabled()) {
-            $requiredCredit = app('AppConfig')->getRequiredCredit();
+        if (app(AppConfig::class)->isCreditEnabled()) {
+            $requiredCredit = app(AppConfig::class)->getRequiredCredit();
             if ($this->user->credit < $requiredCredit) {
                 return $this->response->errorBadRequest('You do not have required credit for rent bike!');
             }

@@ -7,6 +7,7 @@ use BikeShare\Domain\Coupon\CouponStatus;
 use BikeShare\Domain\Coupon\CouponTransformer;
 use BikeShare\Domain\Coupon\Requests\CreateCouponRequest;
 use BikeShare\Http\Controllers\Api\v1\Controller;
+use BikeShare\Http\Services\AppConfig;
 
 class CouponsController extends Controller
 {
@@ -30,11 +31,11 @@ class CouponsController extends Controller
 
     public function store(CreateCouponRequest $request)
     {
-        if (! app('AppConfig')->isCreditEnabled()) {
+        if (! app(AppConfig::class)->isCreditEnabled()) {
             return $this->response->error('Credit is not enabled', 409);
         }
 
-        $value = app('AppConfig')->getRequiredCredit() * $request->get('multiplier');
+        $value = app(AppConfig::class)->getRequiredCredit() * $request->get('multiplier');
 
         $count = $request->has('count') ? $request->get('count') : 10;
         $codes = $this->couponRepo->generateCodes($count);
@@ -69,7 +70,7 @@ class CouponsController extends Controller
 
     public function sell($uuid)
     {
-        if (! app('AppConfig')->isCreditEnabled()) {
+        if (! app(AppConfig::class)->isCreditEnabled()) {
             return $this->response->error('Credit is not enabled', 409);
         }
 
@@ -90,7 +91,7 @@ class CouponsController extends Controller
 
     public function validateCoupon($uuid)
     {
-        if (! app('AppConfig')->isCreditEnabled()) {
+        if (! app(AppConfig::class)->isCreditEnabled()) {
             return $this->response->error('Credit is not enabled', 409);
         }
 
