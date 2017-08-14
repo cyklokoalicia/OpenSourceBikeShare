@@ -28,7 +28,7 @@ class StandTransformer extends TransformerAbstract
             'photo' => $stand->photo,
             'description' => $stand->description,
             'place_name' => $stand->place_name,
-            'service_tag' => $stand->service_tag,
+            'status' => $stand->status,
             'distance' => $stand->distance ? round($stand->distance * 1000) : null,
         ];
     }

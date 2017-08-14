@@ -14,8 +14,8 @@
 Route::group(['prefix' => 'app.json', 'middleware' => 'auth'], function () {
 
     Route::group(['prefix' => 'stands', 'namespace' => 'Stands'], function () {
-        Route::get('', 'StandsApiController@index')->name('app.stands.index');
-        Route::get('{slug}', 'StandsApiController@show')->name('app.stands.show');
+        Route::get('', 'StandsApiController@index')->name('app.json.stands.index');
+        Route::get('{slug}', 'StandsApiController@show')->name('app.json.stands.show');
     });
 
     Route::group(['prefix' => 'bikes', 'namespace' => 'Bikes'], function () {

@@ -3,12 +3,9 @@
 namespace BikeShare\Http\Controllers\Stands;
 
 use BikeShare\Domain\Bike\BikeStatus;
-use BikeShare\Domain\Stand\Requests\CreateStandRequest;
-use BikeShare\Domain\Stand\Requests\UpdateStandRequest;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use BikeShare\Http\Requests;
 
 class StandsApiController extends Controller
 {
@@ -36,9 +33,10 @@ class StandsApiController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int $uuid
+     * @param $slug
      *
      * @return \Illuminate\Http\Response
+     *
      */
     public function show($slug)
     {

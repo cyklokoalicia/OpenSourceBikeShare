@@ -14,14 +14,14 @@ class Stand extends Model
 
     public $table = 'stands';
 
-    public $fillable = ['name', 'descriptions', 'photo', 'place_name', 'note', 'service_tag', 'latitude', 'longitude'];
+    public $fillable = ['name', 'descriptions', 'photo', 'place_name', 'note', 'status', 'latitude', 'longitude'];
 
     protected static $logAttributes = [
         'name',
         'descriptions',
         'photo',
         'place_name',
-        'service_tag',
+        'status',
         'latitude',
         'longitude',
     ];
@@ -29,7 +29,6 @@ class Stand extends Model
     public $dates = ['deleted_at'];
 
     public $casts = [
-        'service_tag' => 'boolean',
         'latitude' => 'decimal',
         'longitude' => 'decimal',
     ];
