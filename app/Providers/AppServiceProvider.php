@@ -72,12 +72,10 @@ class AppServiceProvider extends ServiceProvider
             // only for production
         }
 
-        $this->app->singleton('AppConfig', function ($app) {
-            return new AppConfig($app->config['bike-share']);
-        });
-
         $this->app->singleton(AppConfig::class, function ($app) {
             return new AppConfig($app->config['bike-share']);
         });
+
+        $this->app->alias(AppConfig::class, 'AppConfig');
     }
 }
