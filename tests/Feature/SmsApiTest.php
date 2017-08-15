@@ -5,6 +5,7 @@ use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
 use BikeShare\Notifications\Sms\Credit;
+use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -50,7 +51,7 @@ class SmsApiTest extends TestCase
     /**
      * @test
      */
-    public function help_command()
+    public function help_command_sent()
     {
         $user = factory(User::class)->create();
         $getParams = $this->smsRequest->buildGetQuery('HELP', $user->phone_number,1,1);
@@ -62,7 +63,7 @@ class SmsApiTest extends TestCase
     /**
      * @test
      */
-    public function unknown_command()
+    public function unknown_command_sent()
     {
         $user = factory(User::class)->create();
         $getParams = $this->smsRequest->buildGetQuery('NOSUCHCOMMAND',$user->phone_number,1,1);
@@ -74,7 +75,7 @@ class SmsApiTest extends TestCase
     /**
      * @test
      */
-    public function credit_command()
+    public function credit_command_sent()
     {
         $user = factory(User::class)->create();
         $getParams = $this->smsRequest->buildGetQuery('CREDIT',$user->phone_number,1,1);
@@ -84,5 +85,16 @@ class SmsApiTest extends TestCase
         Notification::assertSentTo($user, Credit::class);
     }
 
+    /**
+     * @test
+     */
+    public function free_command_sent()
+    {
+        $user = factory(User::class)->create();
+        $getParams = $this->smsRequest->buildGetQuery('FREE',$user->phone_number,1,1);
+        Notification::fake();
+        $this->get(self::URL_PREFIX . '?' . $getParams);
 
+        Notification::assertSentTo($user, Free::class);
+    }
 }

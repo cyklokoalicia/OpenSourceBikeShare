@@ -2,7 +2,6 @@
 
 namespace BikeShare\Notifications;
 
-use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\Sms\Channels\SmsChannelManager;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;

@@ -3,10 +3,12 @@
 namespace BikeShare\Http\Controllers\Api\v1\Sms;
 
 use BikeShare\Domain\Sms\Sms;
+use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
 use BikeShare\Notifications\Sms\Credit;
+use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use Dingo\Api\Routing\Helpers;
@@ -26,11 +28,18 @@ class SmsController extends Controller
      * @var AppConfig
      */
     private $appConfig;
+    /**
+     * @var StandsRepository
+     */
+    private $standsRepo;
 
-    public function __construct(SmsRequestContract $smsRequest, AppConfig $appConfig)
+    public function __construct(SmsRequestContract $smsRequest,
+                                AppConfig $appConfig,
+                                StandsRepository $standsRepository)
     {
         $this->smsRequest = $smsRequest;
         $this->appConfig = $appConfig;
+        $this->standsRepo = $standsRepository;
     }
 
     public function receive(Request $request)
@@ -76,9 +85,9 @@ class SmsController extends Controller
                 }
                 $this->creditCommand($sms);
                 break;
-//            case "FREE":
-//                freeBikes($sms->Number());
-//                break;
+            case "FREE":
+                $this->freeCommand($sms);
+                break;
 //            case "RENT":
 //                validateReceivedSMS($sms->Number(),count($args),2,_('with bike number:')." RENT 47");
 //                rent($sms->Number(),$args[1]);//intval
@@ -167,4 +176,10 @@ class SmsController extends Controller
     {
         $sms->sender->notify(new Credit($this->appConfig, $sms->sender));
     }
+
+    private function freeCommand($sms)
+    {
+        $sms->sender->notify(new Free($this->standsRepo));
+    }
+
 }
