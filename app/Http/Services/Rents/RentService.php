@@ -2,6 +2,7 @@
 namespace BikeShare\Http\Services\Rents;
 
 use BikeShare\Domain\Bike\Bike;
+use BikeShare\Domain\Bike\BikesRepository;
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
@@ -13,6 +14,7 @@ use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as ER;
 use Carbon\Carbon;
+use Exception;
 
 class RentService
 {
@@ -50,6 +52,7 @@ class RentService
      * @param Bike $bike
      * @return Rent
      * @throws RentException
+     * @throws Exception
      */
     public function rentBike($user, Bike $bike)
     {
@@ -59,27 +62,28 @@ class RentService
         if ($this->appConfig->isCreditEnabled()){
             $requiredCredit = $this->appConfig->getRequiredCredit();
             if ($this->user->credit < $requiredCredit){
-                throw new RentException(new ER(ER::LOW_CREDIT, $requiredCredit));
+                throw new RentException(ER::LOW_CREDIT(), $requiredCredit);
             }
         }
 
         // TODO checkTooMany
 
         if ($bike->status != BikeStatus::FREE) {
-            throw new RentException(new ER(ER::BIKE_NOT_FREE));
+            if (!$bike->user){
+                throw new Exception("Bike not free but no owner", [$bike->user]);
+            }
+            throw new RentException(ER::BIKE_NOT_FREE());
         }
 
         $currentRents = $this->user->bikes()->get()->count();
 
         if ($currentRents >= $this->user->limit) {
-            throw new RentException(new ER(ER::MAXIMUM_NUMBER_OF_RENTS),
+            throw new RentException(ER::MAXIMUM_NUMBER_OF_RENTS(),
                 $this->user->limit, $currentRents);
         }
 
         if ($this->appConfig->isStackBikeEnabled() && !$this->checkTopOfStack($bike)){
-            throw new RentException(
-                new ER(ER::BIKE_NOT_ON_TOP, $this->bike->stand->getTopBike())
-            );
+            throw new RentException(ER::BIKE_NOT_ON_TOP(), $this->bike->stand->getTopBike());
         }
 
         $this->rentBikeInternal();

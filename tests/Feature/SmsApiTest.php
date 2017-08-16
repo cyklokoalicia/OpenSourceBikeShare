@@ -5,13 +5,20 @@ use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
+use BikeShare\Http\Services\Rents\Exceptions\RentException;
+use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as RE;
+use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
+use BikeShare\Notifications\Sms\BikeAlreadyRented;
 use BikeShare\Notifications\Sms\BikeDoesNotExist;
+use BikeShare\Notifications\Sms\BikeNotTopOfStack;
 use BikeShare\Notifications\Sms\BikeRented;
 use BikeShare\Notifications\Sms\Credit;
 use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
+use BikeShare\Notifications\Sms\RechargeCredit;
+use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Notification;
@@ -132,7 +139,7 @@ class SmsApiTest extends TestCase
      */
     public function rent_command_ok()
     {
-        $requiredCredit = $this->appConfig->getRequiredCredit() + 1;
+        $requiredCredit = $this->appConfig->getRequiredCredit();
 
         $user = factory(User::class)->create([
             'credit' => $requiredCredit,
@@ -145,9 +152,106 @@ class SmsApiTest extends TestCase
         Notification::assertSentTo($user, BikeRented::class);
     }
 
+    /**
+     * @test
+     */
+    public function rent_command_low_credit()
+    {
+        $user = factory(User::class)->create();
+        factory(Stand::class)->create()->bikes()
+            ->save(factory(Bike::class)->make(['bike_num' => 1]));
+
+        // fake low-credit
+        $mockedRentService = $this->mockClass(RentService::class);
+        $mockedRentService
+            ->method('rentBike')
+            ->willThrowException(new RentException(RE::LOW_CREDIT()));
+
+        $this->app->instance(RentService::class, $mockedRentService);
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RENT 1'));
+        Notification::assertSentTo($user, RechargeCredit::class);
+    }
+
+    /**
+     * @test
+     */
+    public function rent_command_bike_already_rented()
+    {
+        $user = factory(User::class)->create();
+        factory(Stand::class)->create()->bikes()
+            ->save(factory(Bike::class)->make(['bike_num' => 1]));
+
+        // fake rented bike
+        $mockedRentService = $this->mockClass(RentService::class);
+        $mockedRentService
+            ->method('rentBike')
+            ->willThrowException(new RentException(RE::BIKE_NOT_FREE()));
+
+        $this->app->instance(RentService::class, $mockedRentService);
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RENT 1'));
+        Notification::assertSentTo($user, BikeAlreadyRented::class);
+    }
+
+    /**
+     * @test
+     */
+    public function rent_command_bike_not_top_of_stack()
+    {
+        $user = factory(User::class)->create();
+        factory(Stand::class)->create()->bikes()
+            ->save(factory(Bike::class)->make(['bike_num' => 1]));
+
+        // fake rented bike
+        $mockedRentService = $this->mockClass(RentService::class);
+        $mockedRentService
+            ->method('rentBike')
+            ->willThrowException(new RentException(RE::BIKE_NOT_ON_TOP(), $this->mockClass(Bike::class)));
+
+        $this->app->instance(RentService::class, $mockedRentService);
+
+        Notification::fake();
+
+        $this->get($this->buildSmsUrl($user, 'RENT 1'));
+        Notification::assertSentTo($user, BikeNotTopOfStack::class);
+    }
+
+    /**
+     * @test
+     */
+    public function rent_command_max_number_of_rents_exceeded()
+    {
+        $user = factory(User::class)->create();
+        factory(Stand::class)->create()->bikes()
+            ->save(factory(Bike::class)->make(['bike_num' => 1]));
+
+        // fake rented bike
+        $mockedRentService = $this->mockClass(RentService::class);
+        $mockedRentService
+            ->method('rentBike')
+            ->willThrowException(new RentException(RE::MAXIMUM_NUMBER_OF_RENTS()));
+
+        $this->app->instance(RentService::class, $mockedRentService);
+
+        Notification::fake();
+
+        $this->get($this->buildSmsUrl($user, 'RENT 1'));
+        Notification::assertSentTo($user, RentLimitExceeded::class);
+    }
+
     private function buildSmsUrl($user, $text)
     {
         $getParams = $this->smsRequest->buildGetQuery($text, $user->phone_number,1,1);
         return self::URL_PREFIX . '?' . $getParams;
+    }
+
+    private function mockClass($className)
+    {
+        return $this->getMockBuilder($className)
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }

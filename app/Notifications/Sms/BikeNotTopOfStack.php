@@ -3,7 +3,6 @@
 namespace BikeShare\Notifications\Sms;
 
 use BikeShare\Domain\Bike\Bike;
-use BikeShare\Domain\User\User;
 use BikeShare\Notifications\SmsNotification;
 
 class BikeNotTopOfStack extends SmsNotification
