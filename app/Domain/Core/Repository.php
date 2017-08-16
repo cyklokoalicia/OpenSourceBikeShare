@@ -14,13 +14,22 @@ abstract class Repository extends BaseRepository implements CacheableInterface
 
     use CacheableRepository;
 
+    public function findByOrFail($field, $value = null, $columns = ['*'])
+    {
+        $this->applyCriteria();
+        $this->applyScope();
+        $model = $this->model->where($field, '=', $value)->firstOrFail($columns);
+        $this->resetModel();
+
+        return $this->parserResult($model);
+    }
 
     // TODO cache this custom method
     public function findBy($field, $value = null, $columns = ['*'])
     {
         $this->applyCriteria();
         $this->applyScope();
-        $model = $this->model->where($field, '=', $value)->firstOrFail($columns);
+        $model = $this->model->where($field, '=', $value)->first($columns);
         $this->resetModel();
 
         return $this->parserResult($model);
