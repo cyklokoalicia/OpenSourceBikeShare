@@ -360,6 +360,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Watch bikes rented out of top of the stack
+    |--------------------------------------------------------------------------
+    | false = do not watch stack
+    | true = notify if other than the top of the stack bike is rented from a stand (independent of 'stack_bike')
+    |
+    */
+
+    'stack_watch' => env('STACK_WATCH', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Notification for users
     |--------------------------------------------------------------------------
     |

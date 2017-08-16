@@ -36,6 +36,10 @@ class AppConfig
         return $this->config['stack_bike'];
     }
 
+    public function isStackWatchEnabled()
+    {
+        return $this->config['stack_watch'];
+    }
 
     public function isSmsEnabled()
     {
