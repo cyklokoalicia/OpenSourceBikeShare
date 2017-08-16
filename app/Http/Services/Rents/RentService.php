@@ -1,16 +1,17 @@
 <?php
-namespace BikeShare\Http\Services;
+namespace BikeShare\Http\Services\Rents;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
-use BikeShare\Domain\Note\Note;
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Stand\Stand;
-use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Domain\User\User;
 use BikeShare\Domain\User\UsersRepository;
+use BikeShare\Http\Services\AppConfig;
+use BikeShare\Http\Services\Rents\Exceptions\RentException;
+use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as ER;
 use Carbon\Carbon;
 
 class RentService
@@ -30,21 +31,97 @@ class RentService
 
     public $note;
 
+    /**
+     * @var AppConfig
+     */
+    private $appConfig;
 
+    /**
+     * RentService constructor.
+     * @param AppConfig $appConfig
+     */
+    public function __construct(AppConfig $appConfig)
+    {
+        $this->appConfig = $appConfig;
+    }
+
+    /**
+     * @param $user
+     * @param Bike $bike
+     * @return Rent
+     * @throws RentException
+     */
     public function rentBike($user, Bike $bike)
     {
         $this->user = $user;
         $this->bike = $bike;
+
+        if ($this->appConfig->isCreditEnabled()){
+            $requiredCredit = $this->appConfig->getRequiredCredit();
+            if ($this->user->credit < $requiredCredit){
+                throw new RentException(new ER(ER::LOW_CREDIT, $requiredCredit));
+            }
+        }
+
+        // TODO checkTooMany
+
+        if ($bike->status != BikeStatus::FREE) {
+            throw new RentException(new ER(ER::BIKE_NOT_FREE));
+        }
+
+        $currentRents = $this->user->bikes()->get()->count();
+
+        if ($currentRents >= $this->user->limit) {
+            throw new RentException(new ER(ER::MAXIMUM_NUMBER_OF_RENTS),
+                $this->user->limit, $currentRents);
+        }
+
+        if ($this->appConfig->isStackBikeEnabled() && !$this->checkTopOfStack($bike)){
+            throw new RentException(
+                new ER(ER::BIKE_NOT_ON_TOP, $this->bike->stand->getTopBike())
+            );
+        }
+
+        $this->rentBikeInternal();
+        $rent = $this->createRentLog();
+        // TODO enable events
+//        event(new RentWasCreated($rent));
+//        event(new BikeWasRented($bike, $rent->new_code, $this->user));
+        return $rent;
+    }
+
+    private function rentBikeInternal()
+    {
+        if ($this->appConfig->isStackWatchEnabled()
+            && !$this->checkTopOfStack($this->bike)){
+            // TODO notifyAdmin
+        }
+
         $this->oldCode = $this->bike->current_code;
         $this->standFrom = $this->bike->stand;
         $this->bike->status = BikeStatus::OCCUPIED;
         $this->bike->current_code = Bike::generateBikeCode();
         $this->bike->stack_position = null;
         $this->bike->stand()->dissociate();
-        $this->bike->user()->associate($user);
+        $this->bike->user()->associate($this->user);
         $this->bike->save();
+    }
 
-        return $this;
+    /**
+     * @return Rent
+     */
+    private function createRentLog()
+    {
+        $this->rent = new Rent();
+        $this->rent->status = RentStatus::OPEN;
+        $this->rent->user()->associate($this->user);
+        $this->rent->bike()->associate($this->bike);
+        $this->rent->standFrom()->associate($this->standFrom);
+        $this->rent->started_at = Carbon::now();
+        $this->rent->old_code = $this->oldCode;
+        $this->rent->new_code = $this->bike->current_code;
+        $this->rent->save();
+        return $this->rent;
     }
 
 
@@ -61,23 +138,6 @@ class RentService
 
         return $this;
     }
-
-
-    public function createRentLog()
-    {
-        $this->rent = new Rent();
-        $this->rent->status = RentStatus::OPEN;
-        $this->rent->user()->associate($this->user);
-        $this->rent->bike()->associate($this->bike);
-        $this->rent->standFrom()->associate($this->standFrom);
-        $this->rent->started_at = Carbon::now();
-        $this->rent->old_code = $this->oldCode;
-        $this->rent->new_code = $this->bike->current_code;
-        $this->rent->save();
-
-        return $this;
-    }
-
 
     public function closeRentLog()
     {

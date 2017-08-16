@@ -13,7 +13,9 @@ use BikeShare\Domain\Rent\Requests\CreateRentRequest;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
-use BikeShare\Http\Services\RentService;
+use BikeShare\Http\Services\Rents\Exceptions\RentException;
+use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as ER;
+use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Notifications\NoteCreated;
 use Illuminate\Http\Request;
 use Notification;
@@ -66,42 +68,33 @@ class RentsController extends Controller
     public function store(CreateRentRequest $request, RentService $rentService)
     {
         if (! $bike = app(BikesRepository::class)->findByUuid($request->get('bike'))) {
-            return $this->response->errorNotFound('Bike not found!');
+            $this->response->errorNotFound('Bike not found!');
         }
 
-        if ($bike->status != BikeStatus::FREE) {
-            return $this->response->errorNotFound('Bike is not free!');
-        }
-
-        $currentRents = $this->user->bikes()->get()->count();
-        if ($currentRents >= $this->user->limit) {
-            return $this->response->errorBadRequest('You reached the maximum number of rents!');
-        }
-
-        // TODO check too many, i don't understand yet
-
-        if (app('AppConfig')->isStackBikeEnabled()) {
-            if (! $rentService->checkTopOfStack($bike)) {
-                return $this->response->errorBadRequest('Bike is not on the top!');
+        $rent = null;
+        try {
+            // TODO check too many, i don't understand yet
+            $rent = $rentService->rentBike($this->user, $bike);
+        } catch (RentException $e){
+            switch ($e->type){
+                case ER::BIKE_NOT_FREE:
+                    $this->response->errorNotFound('Bike is not free!');
+                    break;
+                case ER::MAXIMUM_NUMBER_OF_RENTS:
+                    $this->response->errorBadRequest('You reached the maximum number of rents!');
+                    break;
+                case ER::BIKE_NOT_ON_TOP:
+                    $this->response->errorBadRequest('Bike is not on the top!');
+                    break;
+                case ER::LOW_CREDIT:
+                    $this->response->errorBadRequest('You do not have required credit for rent bike!');
+                    break;
+                default:
+                    // unknown type, rethrow
+                    throw $e;
             }
         }
-
-        if (app('AppConfig')->isCreditEnabled()) {
-            $requiredCredit = app('AppConfig')->getRequiredCredit();
-            if ($this->user->credit < $requiredCredit) {
-                return $this->response->errorBadRequest('You do not have required credit for rent bike!');
-            }
-        }
-
-        $rentServiceObj = $rentService->rentBike($this->user, $bike)->createRentLog();
-
-        dd($rentServiceObj);
-        //$rent = app(RentService::class)->rentBike($this->user, $bike);
-
-        //event(new RentWasCreated($rent));
-        //event(new BikeWasRented($bike, $rent->new_code, $this->user));
-
-        return $this->response->item($rentServiceObj->rent, new RentTransformer());
+        return $this->response->item($rent, new RentTransformer());
     }
 
     /**

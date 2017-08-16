@@ -1,12 +1,17 @@
 <?php
 namespace Test\Feature;
 
+use BikeShare\Domain\Bike\Bike;
+use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
+use BikeShare\Notifications\Sms\BikeDoesNotExist;
+use BikeShare\Notifications\Sms\BikeRented;
 use BikeShare\Notifications\Sms\Credit;
 use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
+use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Notification;
@@ -23,10 +28,16 @@ class SmsApiTest extends TestCase
      */
     private $smsRequest;
 
+    /**
+     * @var AppConfig
+     */
+    private $appConfig;
+
     protected function setUp()
     {
         parent::setUp();
-        $this->smsRequest = $this->app->make(SmsRequestContract::class);
+        $this->smsRequest = app(SmsRequestContract::class);
+        $this->appConfig = app(AppConfig::class);
     }
 
     /**
@@ -54,9 +65,8 @@ class SmsApiTest extends TestCase
     public function help_command_sent()
     {
         $user = factory(User::class)->create();
-        $getParams = $this->smsRequest->buildGetQuery('HELP', $user->phone_number,1,1);
         Notification::fake();
-        $this->get(self::URL_PREFIX . '?' . $getParams);
+        $this->get($this->buildSmsUrl($user, 'HELP'));
         Notification::assertSentTo($user, Help::class);
     }
 
@@ -66,9 +76,8 @@ class SmsApiTest extends TestCase
     public function unknown_command_sent()
     {
         $user = factory(User::class)->create();
-        $getParams = $this->smsRequest->buildGetQuery('NOSUCHCOMMAND',$user->phone_number,1,1);
         Notification::fake();
-        $this->get(self::URL_PREFIX . '?' . $getParams);
+        $this->get($this->buildSmsUrl($user, 'NOSUCHCOMMAND'));
         Notification::assertSentTo($user, UnknownCommand::class);
     }
 
@@ -78,10 +87,8 @@ class SmsApiTest extends TestCase
     public function credit_command_sent()
     {
         $user = factory(User::class)->create();
-        $getParams = $this->smsRequest->buildGetQuery('CREDIT',$user->phone_number,1,1);
         Notification::fake();
-        $this->get(self::URL_PREFIX . '?' . $getParams);
-
+        $this->get($this->buildSmsUrl($user, 'CREDIT'));
         Notification::assertSentTo($user, Credit::class);
     }
 
@@ -91,10 +98,56 @@ class SmsApiTest extends TestCase
     public function free_command_sent()
     {
         $user = factory(User::class)->create();
-        $getParams = $this->smsRequest->buildGetQuery('FREE',$user->phone_number,1,1);
         Notification::fake();
-        $this->get(self::URL_PREFIX . '?' . $getParams);
-
+        $this->get($this->buildSmsUrl($user, 'FREE'));
         Notification::assertSentTo($user, Free::class);
+    }
+
+    /**
+     * @test
+     */
+    public function rent_command_missing_bike_number()
+    {
+        $user = factory(User::class)->create();
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RENT'));
+        Notification::assertSentTo($user, InvalidArgumentsCommand::class);
+    }
+
+    /**
+     * @test
+     */
+    public function rent_command_non_existing_bike_number()
+    {
+        $user = factory(User::class)->create();
+        factory(Stand::class)->create()->bikes()
+            ->save(factory(Bike::class)->make(['bike_num'=>1]));
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RENT 2'));
+        Notification::assertSentTo($user, BikeDoesNotExist::class);
+    }
+
+    /**
+     * @test
+     */
+    public function rent_command_ok()
+    {
+        $requiredCredit = $this->appConfig->getRequiredCredit() + 1;
+
+        $user = factory(User::class)->create([
+            'credit' => $requiredCredit,
+            'limit' => 1
+        ]);
+        factory(Stand::class)->create()->bikes()
+            ->save(factory(Bike::class)->make(['bike_num'=>1]));
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RENT 1'));
+        Notification::assertSentTo($user, BikeRented::class);
+    }
+
+    private function buildSmsUrl($user, $text)
+    {
+        $getParams = $this->smsRequest->buildGetQuery($text, $user->phone_number,1,1);
+        return self::URL_PREFIX . '?' . $getParams;
     }
 }

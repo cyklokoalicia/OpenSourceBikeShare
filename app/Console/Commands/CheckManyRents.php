@@ -2,7 +2,7 @@
 
 namespace BikeShare\Console\Commands;
 
-use BikeShare\Http\Services\RentService;
+use BikeShare\Http\Services\Rents\RentService;
 use Exception;
 use Illuminate\Console\Command;
 

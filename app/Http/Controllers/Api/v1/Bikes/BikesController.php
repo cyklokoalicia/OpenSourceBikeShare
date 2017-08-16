@@ -13,8 +13,7 @@ use BikeShare\Domain\Rent\Requests\RentRequest;
 use BikeShare\Domain\Rent\Requests\ReturnRequest;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
-use BikeShare\Http\Services\RentService;
-use BikeShare\Jobs\CreateRentJob;
+use BikeShare\Http\Services\Rents\RentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -119,14 +118,11 @@ class BikesController extends Controller
     {
         // TODO limits, credits
         $bike = $this->bikeRepo->findByUuid($uuid);
-        //$oldCode = $bike->current_code;
-        //$standFrom = $bike->standFrom;
 
-        $rent = $rentService->rentBike($this->user, $bike)->createRentLog();
+        // TODO catch all exception types
+        $rent = $rentService->rentBike($this->user, $bike);
 
-        //event(new BikeWasRented($bike, $oldCode, $stand));
-
-        return $this->response->item($rent->rent, new RentTransformer());
+        return $this->response->item($rent, new RentTransformer());
     }
 
     public function returnBike(ReturnRequest $request, $uuid)
