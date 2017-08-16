@@ -37,15 +37,17 @@ class Stand extends Model
 
     public function getTopPosition()
     {
-        $bike = $this->bikes()->orderBy('stack_position', 'desc')->first();
-
+        $bike = $this->getTopBike();
         if ($bike) {
             return $bike->stack_position;
         }
-
         return null;
     }
 
+    public function getTopBike()
+    {
+        return $this->bikes()->orderBy('stack_position', 'desc')->first();
+    }
 
     public function bikes()
     {
