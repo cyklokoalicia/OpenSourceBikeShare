@@ -9,7 +9,7 @@
     <body class="hold-transition register-page">
     <div class="register-box">
         <div class="register-logo">
-            <a href="{{ route('app.home') }}"><b>Admin</b> {{ app('AppConfig')->getSystemName() }}</a>
+            <a href="{{ route('app.home') }}"><b>Admin</b> {{ app(BikeShare\Http\Services\AppConfig::class)->getSystemName() }}</a>
         </div>
 
         @if (count($errors) > 0)

@@ -23,7 +23,7 @@
                             <th>Description</th>
                             <th>Bikes count</th>
                             <th>place name</th>
-                            <th>Is service</th>
+                            <th>Status</th>
                             <th>lat</th>
                             <th>lng</th>
                             <th>Action</th>
@@ -37,7 +37,7 @@
                                 <td>{{ $stand->description }}</td>
                                 <td>{{ $stand->bikes->count() }}</td>
                                 <td>{{ $stand->place_name }}</td>
-                                <td>{{ $stand->service_tag ? 'Yes' : 'No' }}</td>
+                                <td>{{ $stand->status }}</td>
                                 <td>{{ $stand->latitude }}</td>
                                 <td>{{ $stand->longitude }}</td>
                                 <td>

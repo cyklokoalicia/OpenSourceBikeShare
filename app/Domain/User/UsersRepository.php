@@ -3,6 +3,7 @@ namespace BikeShare\Domain\User;
 
 use App;
 use BikeShare\Domain\Core\Repository;
+use BikeShare\Http\Services\AppConfig;
 use Illuminate\Support\Str;
 
 class UsersRepository extends Repository
@@ -30,7 +31,7 @@ class UsersRepository extends Repository
     public function create(array $data)
     {
         $data['limit'] = 1;
-        if (app('AppConfig')->isCreditEnabled()) {
+        if (app(AppConfig::class)->isCreditEnabled()) {
             $data['credit'] = 0;
         }
         $data['locked'] = 0;

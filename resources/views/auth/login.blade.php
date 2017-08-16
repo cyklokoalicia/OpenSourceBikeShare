@@ -8,7 +8,7 @@
     <body class="hold-transition login-page">
     <div class="login-box">
         <div class="login-logo">
-            <a href="{{ route('app.home') }}"><b>Admin</b> {{ app('AppConfig')->getSystemName() }}</a>
+            <a href="{{ route('app.home') }}"><b>Admin</b> {{ app(BikeShare\Http\Services\AppConfig::class)->getSystemName() }}</a>
         </div><!-- /.login-logo -->
 
         @if (count($errors) > 0)

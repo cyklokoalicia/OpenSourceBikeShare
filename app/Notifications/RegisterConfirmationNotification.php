@@ -3,6 +3,7 @@
 namespace BikeShare\Notifications;
 
 use BikeShare\Domain\User\User;
+use BikeShare\Http\Services\AppConfig;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -43,13 +44,13 @@ class RegisterConfirmationNotification extends Notification implements ShouldQue
      */
     public function toMail($notifiable)
     {
-        $ruleUrl = app('AppConfig')->getSystemRules();
+        $ruleUrl = app(AppConfig::class)->getSystemRules();
         $agreeUrl = url('/api/auth/agree/' . $notifiable->confirmation_token);
 
         return (new MailMessage)
             ->subject('Registration')
             ->greeting("Hello, $notifiable->name!")
-            ->line('you have been registered into community bike share system ' .  app('AppConfig')->getSystemName())
+            ->line('you have been registered into community bike share system ' .  app(AppConfig::class)->getSystemName())
             ->line('')
             ->line('System rules are available here:')
             ->line($ruleUrl)

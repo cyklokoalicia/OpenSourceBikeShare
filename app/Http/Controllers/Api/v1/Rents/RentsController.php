@@ -16,6 +16,7 @@ use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as ER;
 use BikeShare\Http\Services\Rents\RentService;
+use BikeShare\Http\Services\AppConfig;
 use BikeShare\Notifications\NoteCreated;
 use Illuminate\Http\Request;
 use Notification;

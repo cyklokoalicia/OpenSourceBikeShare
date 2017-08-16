@@ -17,9 +17,12 @@
 
 <!-- radio -->
 <div class="form-group">
-    <label>
-        <input type="checkbox" name="service_tag" id="is-service" class="minimal" value="1" {{ ((($stand->service_tag ?? old('service_tag')) == 1) ? 'checked' : '') }}>
-        Is service stand ?
+    <label for="status">
+        <select name="status" class="form-control" id="status">
+            @foreach($statuses as $key => $name)
+                <option value="{{ $key }}" {{ ((($stand->status ?? old("status")) == $key) ? 'selected' : '') }}>{{ $name }}</option>
+            @endforeach
+        </select>
     </label>
 </div>
 

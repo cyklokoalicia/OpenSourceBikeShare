@@ -8,6 +8,7 @@ use BikeShare\Domain\User\User;
 use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Domain\User\UserTransformer;
 use BikeShare\Http\Controllers\Api\v1\Controller;
+use BikeShare\Http\Services\AppConfig;
 use BikeShare\Notifications\RegisterConfirmationNotification;
 use Illuminate\Http\Request;
 
@@ -61,7 +62,7 @@ class RegisterController extends Controller
         if (! $user = $this->userRepo->findBy('confirmation_token', $token)) {
             return $this->response->errorBadRequest('Bad token');
         }
-        $user->limit = app('AppConfig')->getRegistrationLimits();
+        $user->limit = app(AppConfig::class)->getRegistrationLimits();
         $user->confirmation_token = null;
         $user->save();
 
