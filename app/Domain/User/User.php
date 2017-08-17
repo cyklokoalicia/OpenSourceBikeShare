@@ -62,13 +62,6 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
-
-    public function setCreditAttribute($value)
-    {
-        $this->attributes['credit'] = app(AppConfig::class)->getRequiredCredit() * $value;
-    }
-
-
     public function rents()
     {
         return $this->hasMany(Rent::class);
