@@ -3,71 +3,71 @@ namespace BikeShare\Http\Services;
 
 class AppConfig
 {
+    private $prefix;
 
-    protected $config;
+    private $app;
 
-
-    public function __construct($config)
+    public function __construct($app, $prefix='bike-share')
     {
-        $this->config = $config;
+        $this->app = $app;
+        $this->prefix = $prefix;
     }
-
 
     public function getSystemName()
     {
-        return $this->config['system']['name'];
+        return $this->get('system.name');
     }
 
 
     public function getSystemRules()
     {
-        return $this->config['system']['rules'];
+        return $this->get('system.rules');
     }
 
 
     public function isCreditEnabled()
     {
-        return $this->config['credit']['enabled'];
+        return $this->get('credit.enabled');
     }
 
 
     public function isStackBikeEnabled()
     {
-        return $this->config['stack_bike'];
+        return $this->get('stack_bike');
     }
 
     public function isStackWatchEnabled()
     {
-        return $this->config['stack_watch'];
+        return $this->get('stack_watch');
     }
 
     public function isSmsEnabled()
     {
-        return $this->config['sms']['enabled'];
+        return $this->get('sms.enabled');
     }
 
 
     public function getRegistrationLimits()
     {
-        return $this->config['limits']['registration'];
+        return $this->get('limits.registration');
     }
 
 
     public function getMinCredit()
     {
-        return $this->config['credit']['min'];
+        return $this->get('credit.min');
     }
 
 
     public function getRentCredit()
     {
-        return $this->config['credit']['rent'];
+        return $this->get('credit.rent');
     }
 
 
     public function getLongRentCredit()
     {
-        return $this->config['credit']['long_rental'];
+        return $this->get('credit.long_rental');
     }
 
 
@@ -79,65 +79,71 @@ class AppConfig
 
     public function getCreditCurrency()
     {
-        return $this->config['credit']['currency'];
+        return $this->get('credit.currency');
     }
 
 
     public function getPriceCycle()
     {
-        return $this->config['credit']['price_cycle'];
+        return $this->get('credit.price_cycle');
     }
 
 
     public function getCreditLongRental()
     {
-        return $this->config['credit']['long_rental'];
+        return $this->get('credit.long_rental');
     }
 
 
     public function getWatchersLongRental()
     {
-        return $this->config['watches']['long_rental'];
+        return $this->get('watches.long_rental');
     }
 
 
     public function getFlatPriceCycle()
     {
-        return $this->config['watches']['flat_price_cycle'];
+        return $this->get('watches.flat_price_cycle');
     }
 
 
     public function getDoublePriceCycle()
     {
-        return $this->config['watches']['double_price_cycle'];
+        return $this->get('watches.double_price_cycle');
     }
 
 
     public function getDoublePriceCycleCap()
     {
-        return $this->config['watches']['double_price_cycle_cap'];
+        return $this->get('watches.double_price_cycle_cap');
     }
 
 
     public function getFreeTime()
     {
-        return $this->config['watches']['free_time'];
+        return $this->get('watches.free_time');
     }
 
 
     public function getTimeToMany()
     {
-        return $this->config['watches']['time_too_many'];
+        return $this->get('watches.time_too_many');
     }
 
     public function getNumberToMany()
     {
-        return $this->config['watches']['number_too_many'];
+        return $this->get('watches.number_too_many');
     }
 
 
     public function isNotifyUser()
     {
-        return $this->config['notify_user'];
+        return $this->get('notify_user');
+    }
+
+    private function get($key)
+    {
+        $key = $this->prefix . '.' . $key;
+        return $this->app->config->get($key);
     }
 }
