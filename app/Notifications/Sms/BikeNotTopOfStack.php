@@ -7,13 +7,8 @@ use BikeShare\Notifications\SmsNotification;
 
 class BikeNotTopOfStack extends SmsNotification
 {
-    /**
-     * @var Bike
-     */
     private $requestedBike;
-    /**
-     * @var Bike
-     */
+
     private $topBike;
 
     public function __construct(Bike $requestedBike, Bike $topBike)

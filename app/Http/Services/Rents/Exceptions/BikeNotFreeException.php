@@ -2,6 +2,7 @@
 
 namespace BikeShare\Http\Services\Rents\Exceptions;
 
-class RentException extends \LogicException
+
+class BikeNotFreeException extends RentException
 {
 }

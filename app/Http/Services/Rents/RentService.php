@@ -11,8 +11,10 @@ use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Http\Services\AppConfig;
-use BikeShare\Http\Services\Rents\Exceptions\RentException;
-use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as ER;
+use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
+use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
+use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
+use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
 use Carbon\Carbon;
 use Exception;
 
@@ -48,21 +50,25 @@ class RentService
     }
 
     /**
-     * @param $user
+     * @param User $user
      * @param Bike $bike
      * @return Rent
-     * @throws RentException
+     * @throws LowCreditException
+     * @throws BikeNotFreeException
+     * @throws BikeNotOnTopException
+     * @throws MaxNumberOfRentsException
      * @throws Exception
      */
-    public function rentBike($user, Bike $bike)
+    public function rentBike(User $user, Bike $bike)
     {
         $this->user = $user;
         $this->bike = $bike;
 
         if ($this->appConfig->isCreditEnabled()){
             $requiredCredit = $this->appConfig->getRequiredCredit();
+
             if ($this->user->credit < $requiredCredit){
-                throw new RentException(ER::LOW_CREDIT(), $requiredCredit);
+                throw new LowCreditException($this->user->credit, $requiredCredit);
             }
         }
 
@@ -72,18 +78,16 @@ class RentService
             if (!$bike->user){
                 throw new Exception("Bike not free but no owner", [$bike->user]);
             }
-            throw new RentException(ER::BIKE_NOT_FREE());
+            throw new BikeNotFreeException();
         }
 
         $currentRents = $this->user->bikes()->get()->count();
-
         if ($currentRents >= $this->user->limit) {
-            throw new RentException(ER::MAXIMUM_NUMBER_OF_RENTS(),
-                $this->user->limit, $currentRents);
+            throw new MaxNumberOfRentsException($this->user->limit, $currentRents);
         }
 
         if ($this->appConfig->isStackBikeEnabled() && !$this->checkTopOfStack($bike)){
-            throw new RentException(ER::BIKE_NOT_ON_TOP(), $this->bike->stand->getTopBike());
+            throw new BikeNotOnTopException($this->bike->stand->getTopBike());
         }
 
         $this->rentBikeInternal();
@@ -105,7 +109,7 @@ class RentService
         $this->standFrom = $this->bike->stand;
         $this->bike->status = BikeStatus::OCCUPIED;
         $this->bike->current_code = Bike::generateBikeCode();
-        $this->bike->stack_position = null;
+        $this->bike->stack_position = 0;
         $this->bike->stand()->dissociate();
         $this->bike->user()->associate($this->user);
         $this->bike->save();

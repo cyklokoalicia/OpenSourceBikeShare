@@ -13,6 +13,10 @@ use BikeShare\Domain\Rent\Requests\CreateRentRequest;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
+use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
+use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
+use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
+use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as ER;
 use BikeShare\Http\Services\Rents\RentService;
@@ -76,24 +80,26 @@ class RentsController extends Controller
         try {
             // TODO check too many, i don't understand yet
             $rent = $rentService->rentBike($this->user, $bike);
-        } catch (RentException $e){
-            switch ($e->type){
-                case ER::BIKE_NOT_FREE:
-                    $this->response->errorNotFound('Bike is not free!');
-                    break;
-                case ER::MAXIMUM_NUMBER_OF_RENTS:
-                    $this->response->errorBadRequest('You reached the maximum number of rents!');
-                    break;
-                case ER::BIKE_NOT_ON_TOP:
-                    $this->response->errorBadRequest('Bike is not on the top!');
-                    break;
-                case ER::LOW_CREDIT:
-                    $this->response->errorBadRequest('You do not have required credit for rent bike!');
-                    break;
-                default:
-                    // unknown type, rethrow
-                    throw $e;
-            }
+        }
+        catch (LowCreditException $e)
+        {
+            $this->response->errorBadRequest('You do not have required credit for rent bike!');
+        }
+        catch (BikeNotFreeException $e)
+        {
+            $this->response->errorNotFound('Bike is not free!');
+        }
+        catch (BikeNotOnTopException $e)
+        {
+            $this->response->errorBadRequest('Bike is not on the top!');
+        }
+        catch (MaxNumberOfRentsException $e)
+        {
+            $this->response->errorBadRequest('You reached the maximum number of rents!');
+        }
+        catch (RentException $e)
+        {
+            throw $e;
         }
         return $this->response->item($rent, new RentTransformer());
     }

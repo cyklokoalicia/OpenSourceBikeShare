@@ -7,6 +7,10 @@ use BikeShare\Domain\Sms\Sms;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\AppConfig;
+use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
+use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
+use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
+use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as ER;
 use BikeShare\Http\Services\Rents\RentService;
@@ -23,7 +27,6 @@ use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use Dingo\Api\Routing\Helpers;
-use Exception;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -45,6 +48,7 @@ class SmsController extends Controller
      * @var StandsRepository
      */
     private $standsRepo;
+
     /**
      * @var BikesRepository
      */
@@ -114,10 +118,13 @@ class SmsController extends Controller
                     $this->rentCommand($sms, $args[1]);
                 }
                 break;
+
 //            case "RETURN":
 //                validateReceivedSMS($sms->Number(),count($args),3,_('with bike number and stand name:')." RETURN 47 RACKO");
 //                returnBike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())));
 //                break;
+
+
 //            case "FORCERENT":
 //                checkUserPrivileges($sms->Number());
 //                validateReceivedSMS($sms->Number(),count($args),2,_('with bike number:')." FORCERENT 47");
@@ -218,41 +225,29 @@ class SmsController extends Controller
             return;
         }
 
-        try {
-            $rent = app(RentService::class)
-                ->rentBike($user, $bike);
+        try
+        {
+            $rent = app(RentService::class)->rentBike($user, $bike);
             $user->notify(new BikeRented($rent));
-        } catch (RentException $e){
-            switch ($e->type){
-                case ER::LOW_CREDIT:
-                    $requiredCredit = $e->param1;
-                    $user->notify(new RechargeCredit($this->appConfig,
-                        $user->credit,
-                        $requiredCredit));
-                    break;
-
-                case ER::BIKE_NOT_FREE:
-                    if (!$bike->user){
-                        throw new Exception("Bike not free but no owner", [$bike->user]);
-                    }
-                    $user->notify(new BikeAlreadyRented($user, $bike));
-                    break;
-
-                case ER::BIKE_NOT_ON_TOP:
-                    $topBike = $e->param1;
-                    $user->notify(new BikeNotTopOfStack($bike, $topBike));
-                    break;
-
-                case ER::MAXIMUM_NUMBER_OF_RENTS:
-                    $userLimit = $e->param1;
-                    $currentRents = $e->param2;
-                    $user->notify(new RentLimitExceeded($userLimit, $currentRents));
-                    break;
-
-                default:
-                    // unknown type, rethrow
-                    throw $e;
-            }
+        }
+        catch (LowCreditException $e)
+        {
+            $user->notify(new RechargeCredit($this->appConfig, $e->userCredit, $e->userCredit));
+        }
+        catch (BikeNotFreeException $e)
+        {
+            $user->notify(new BikeAlreadyRented($user, $bike));
+        }
+        catch (MaxNumberOfRentsException $e)
+        {
+            $user->notify(new RentLimitExceeded($e->userLimit, $e->currentRents));
+        }
+        catch (BikeNotOnTopException $e)
+        {
+            $user->notify(new BikeNotTopOfStack($bike, $e->topBike));
+        }
+        catch (RentException $e){
+            throw $e; // unknown type, rethrow
         }
     }
 }
