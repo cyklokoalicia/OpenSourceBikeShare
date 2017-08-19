@@ -19,10 +19,12 @@ use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
 use BikeShare\Notifications\Sms\BikeDoesNotExist;
+use BikeShare\Notifications\Sms\BikeReturnedSuccess;
+use BikeShare\Notifications\Sms\BikeToReturnNotRentedByMe;
 use BikeShare\Notifications\Sms\NoBikesRented;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\BikeNotTopOfStack;
-use BikeShare\Notifications\Sms\BikeRented;
+use BikeShare\Notifications\Sms\BikeRentedSuccess;
 use BikeShare\Notifications\Sms\Credit;
 use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
@@ -107,6 +109,7 @@ class SmsController extends Controller
             case "HELP":
                 $this->helpCommand($sms);
                 break;
+
             case "CREDIT":
                 if (!$this->appConfig->isCreditEnabled()){
                     $this->unknownCommand($sms, $args[0]);
@@ -114,9 +117,11 @@ class SmsController extends Controller
                     $this->creditCommand($sms);
                 }
                 break;
+
             case "FREE":
                 $this->freeCommand($sms);
                 break;
+
             case "RENT":
                 if (count($args) < 2){
                     $this->invalidArgumentsCommand($sms, "with bike number: RENT 47");
@@ -124,6 +129,7 @@ class SmsController extends Controller
                     $this->rentCommand($sms, $args[1]);
                 }
                 break;
+
             case "RETURN":
                 if (count($args) < 3){
                     $this->invalidArgumentsCommand($sms, "with bike number and stand name: RENT 47 RACKO");
@@ -235,7 +241,7 @@ class SmsController extends Controller
         try
         {
             $rent = $this->rentService->rentBike($user, $bike);
-            $user->notify(new BikeRented($rent));
+            $user->notify(new BikeRentedSuccess($rent));
         }
         catch (LowCreditException $e)
         {
@@ -277,26 +283,22 @@ class SmsController extends Controller
             return;
         }
 
+        $noteText = self::parseNoteFromReturnSms($sms->sms_text);
+
         try {
             $rent = $this->rentService->returnBike($user, $bike, $stand);
-            // TODO
-//            $this->user->notify()
+            if ($noteText){
+                $this->rentService->addNote($bike, $user, $noteText);
+            }
+            $user->notify(new BikeReturnedSuccess($this->appConfig, $rent, $noteText));
         }
-        catch (BikeNotRentedException $e)
+        catch (BikeNotRentedException | BikeRentedByOtherUserException $e )
         {
-            // TODO
-        }
-        catch (BikeRentedByOtherUserException $e)
-        {
-            // TODO
+            $user->notify(new BikeToReturnNotRentedByMe($user, $bike, $this->bikeRepo->bikesRentedByUser($user)));
         }
         catch (ReturnException $e)
         {
             throw $e; // unknown type, rethrow
-        }
-
-        if ($userNote = self::parseNoteFromReturnSms($sms->sms_text)){
-            $this->rentService->addNote($bike, $user, $userNote);
         }
     }
 

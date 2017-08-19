@@ -25,6 +25,11 @@ class BikesRepository extends Repository
         return $this->model->where(['user_id' => $user->id, 'status' => BikeStatus::OCCUPIED])->count();
     }
 
+    public function bikesRentedByUser(User $user)
+    {
+        return $this->model->where(['user_id' => $user->id, 'status' => BikeStatus::OCCUPIED])->get();
+    }
+
     public function create(array $data)
     {
         $data['status'] = BikeStatus::SETTING;

@@ -9,11 +9,14 @@ use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
 use BikeShare\Notifications\Sms\BikeDoesNotExist;
 use BikeShare\Notifications\Sms\BikeNotTopOfStack;
-use BikeShare\Notifications\Sms\BikeRented;
+use BikeShare\Notifications\Sms\BikeRentedSuccess;
+use BikeShare\Notifications\Sms\BikeReturnedSuccess;
+use BikeShare\Notifications\Sms\BikeToReturnNotRentedByMe;
 use BikeShare\Notifications\Sms\Credit;
 use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
+use BikeShare\Notifications\Sms\NoBikesRented;
 use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
@@ -130,7 +133,7 @@ class SmsApiTest extends TestCase
         Notification::fake();
         $this->get($this->buildSmsUrl($user, 'RENT 1'));
 
-        Notification::assertSentTo($user, BikeRented::class);
+        Notification::assertSentTo($user, BikeRentedSuccess::class);
     }
 
     /** @test */
@@ -220,8 +223,47 @@ class SmsApiTest extends TestCase
         Notification::assertSentTo($user, BikeDoesNotExist::class);
     }
 
+    /** @test */
+    public function return_command_bike_not_rented_or_rented_by_other_user()
+    {
 
+        $user = create(User::class, ['credit' => $this->appConfig->getRequiredCredit(), 'limit' => 1]);
+        $otherUser = create(User::class, ['credit' => $this->appConfig->getRequiredCredit(), 'limit' => 1]);
+        $stand = create(Stand::class, ['name' => 'SAFKO']);
+        $stand->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+        $stand->bikes()->save(make(Bike::class, ['bike_num'=>2]));
+        $stand->bikes()->save(make(Bike::class, ['bike_num'=>3]));
 
+        // Assert 1
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RETURN 2 SAFKO'));
+        Notification::assertSentTo($user, NoBikesRented::class);
+
+        // Act
+        $this->get($this->buildSmsUrl($otherUser, 'RENT 1'));
+        $this->get($this->buildSmsUrl($user, 'RENT 2'));
+
+        // Assert 2
+        $this->get($this->buildSmsUrl($user, 'RETURN 1 SAFKO'));
+        Notification::assertSentTo($user, BikeToReturnNotRentedByMe::class);
+
+        $this->get($this->buildSmsUrl($user, 'RETURN 3 SAFKO'));
+        Notification::assertSentTo($user, BikeToReturnNotRentedByMe::class);
+    }
+
+    /** @test */
+    public function return_command_ok()
+    {
+        $user = create(User::class, ['credit' => $this->appConfig->getRequiredCredit(), 'limit' => 1]);
+        create(Stand::class, ['name' => 'SAFKO'])->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        $this->get($this->buildSmsUrl($user, 'RENT 1'));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RETURN 1 SAFKO'));
+
+        Notification::assertSentTo($user, BikeReturnedSuccess::class);
+    }
 
     private function buildSmsUrl($user, $text)
     {
