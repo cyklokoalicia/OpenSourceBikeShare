@@ -3,27 +3,19 @@
 namespace BikeShare\Http\Controllers\Api\v1\Rents;
 
 use BikeShare\Domain\Bike\BikesRepository;
-use BikeShare\Domain\Bike\BikeStatus;
-use BikeShare\Domain\Bike\Events\BikeWasReturned;
-use BikeShare\Domain\Rent\Events\RentWasClosed;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Rent\RentTransformer;
 use BikeShare\Domain\Rent\Requests\CreateRentRequest;
 use BikeShare\Domain\Stand\StandsRepository;
-use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
-use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as ER;
 use BikeShare\Http\Services\Rents\RentService;
-use BikeShare\Http\Services\AppConfig;
-use BikeShare\Notifications\NoteCreated;
 use Illuminate\Http\Request;
-use Notification;
 
 class RentsController extends Controller
 {
@@ -146,33 +138,20 @@ class RentsController extends Controller
     public function close(Request $request, $uuid, RentService $rentService)
     {
         if (! $rent = $this->rentRepo->findByUuid($uuid)) {
-            return $this->response->errorNotFound('Rent not found!');
-        }
-
-        if ($rent->status != RentStatus::OPEN) {
-            $this->response->errorBadRequest('Rent is not active!');
-        }
-
-        $userBikes = $this->user->bikes()->get();
-        if (! $userBikes || ! $userBikes->contains($rent->bike)) {
-            $this->response->errorBadRequest('You do not have rent this bike!');
+            $this->response->errorNotFound('Rent not found!');
         }
 
         if (! $stand = app(StandsRepository::class)->findByUuid($request->get('stand'))) {
-            return $this->response->errorNotFound('Stand not found!');
+            $this->response->errorNotFound('Stand not found!');
         }
 
-        $rentServiceObj = $rentService->returnBike($this->user, $stand, $rent)->closeRentLog()->updateCredit();
+        $rent = $rentService->closeRent($rent, $stand);
+        // TODO catch exceptions
 
         if ($request->has('note')) {
-            $rentServiceObj = $rentService->addNote($rent->bike, $request->get('note'));
-            $users = app(UsersRepository::class)->getUsersWithRole('admin')->get();
-            Notification::send($users, new NoteCreated($rentServiceObj->note));
+            $rentService->addNote($rent->bike, $rent->user, $request->get('note'));
         }
 
-        event(new RentWasClosed($rentServiceObj->rent));
-        event(new BikeWasReturned($rentServiceObj->bike, $stand));
-
-        return $this->response->item($rentServiceObj->rent, new RentTransformer());
+        return $this->response->item($rent, new RentTransformer());
     }
 }

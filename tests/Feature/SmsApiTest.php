@@ -16,6 +16,7 @@ use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
+use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Notification;
@@ -183,6 +184,44 @@ class SmsApiTest extends TestCase
 
         Notification::assertSentTo($user, RentLimitExceeded::class);
     }
+
+    /** @test */
+    public function return_command_stand_does_not_exist()
+    {
+        $user = create(User::class);
+        create(Stand::class, ['name'=>'ABCD'])->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RETURN 1 NO_SUCH_STAND'));
+
+        Notification::assertSentTo($user, StandDoesNotExist::class);
+    }
+
+    /** @test */
+    public function return_command_missing_stand_name()
+    {
+        $user = create(User::class);
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RETURN 1'));
+
+        Notification::assertSentTo($user, InvalidArgumentsCommand::class);
+    }
+
+    /** @test */
+    public function return_command_bike_does_not_exist()
+    {
+        $user = create(User::class);
+        create(Stand::class, ['name'=>'ABCD'])->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'RETURN 2 ABCD'));
+
+        Notification::assertSentTo($user, BikeDoesNotExist::class);
+    }
+
+
+
 
     private function buildSmsUrl($user, $text)
     {

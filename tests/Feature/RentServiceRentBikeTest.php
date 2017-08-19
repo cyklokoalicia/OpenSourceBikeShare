@@ -4,6 +4,8 @@ namespace Tests\Unit;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
+use BikeShare\Domain\Rent\Rent;
+use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
@@ -55,7 +57,7 @@ class RentServiceRentBikeTest extends TestCase
     public function rent_bike_which_is_already_rented_by_me()
     {
         // Arrange
-        $user = $this->userWithResources();
+        $user = userWithResources();
         $bike = create(Stand::class)->bikes()->save(make(Bike::class));
         $this->rentService->rentBike($user, $bike);
 
@@ -70,8 +72,8 @@ class RentServiceRentBikeTest extends TestCase
     public function rent_bike_already_rented_by_other_user()
     {
         // Arrange
-        $myUser = $this->userWithResources();
-        $otherUser = $this->userWithResources();
+        $myUser = userWithResources();
+        $otherUser = userWithResources();
         $bike = create(Stand::class)->bikes()->save(make(Bike::class));
         $this->rentService->rentBike($otherUser, $bike);
 
@@ -86,7 +88,7 @@ class RentServiceRentBikeTest extends TestCase
     public function rent_bike_with_zero_user_limit()
     {
         // Arrange
-        $myUser = $this->userWithResources(['limit' => 0]);
+        $myUser = userWithResources(['limit' => 0]);
         $bike = create(Stand::class)->bikes()->save(make(Bike::class));
 
         // Assert
@@ -100,7 +102,7 @@ class RentServiceRentBikeTest extends TestCase
     public function rent_bike_not_from_top_with_top_stack_enforced()
     {
         // Arrange
-        $user = $this->userWithResources();
+        $user = userWithResources();
         $stand = create(Stand::class);
         $bikeNotOnTop = $stand->bikes()->save(make(Bike::class, ['stack_position' => 0]));
         $bikeOnTop = $stand->bikes()->save(make(Bike::class, ['stack_position' => 1]));
@@ -118,24 +120,28 @@ class RentServiceRentBikeTest extends TestCase
     public function rent_bike_ok()
     {
         // Arrange
-        $user = $this->userWithResources();
+        $user = userWithResources();
         $bike = create(Stand::class)->bikes()->save(make(Bike::class));
 
         // Act
-        $this->rentService->rentBike($user, $bike);
+        $rent = $this->rentService->rentBike($user, $bike);
         $bike->fresh();
 
         // Assert
         self::assertEquals($bike->status, BikeStatus::OCCUPIED);
         self::assertNull($bike->stand);
         self::assertEquals($bike->user->id, $user->id);
+
+        $associatedRent = Rent::where(['bike_id'=>$bike->id, 'user_id'=>$user->id, 'status' => RentStatus::OPEN])->first();
+        self::assertNotNull($associatedRent);
+        self::assertEquals($associatedRent->id, $rent->id);
     }
 
     /** @test */
     public function rent_bike_ok_with_stack_enforced()
     {
         // Arrange
-        $user = $this->userWithResources();
+        $user = userWithResources();
         $stand = create(Stand::class);
         $bikeNotOnTop = $stand->bikes()->save(make(Bike::class, ['stack_position'=>0]));
         $bikeOnTop = $stand->bikes()->save(make(Bike::class, ['stack_position'=>1]));
@@ -146,19 +152,5 @@ class RentServiceRentBikeTest extends TestCase
 
         // Assert
         self::assertEquals($rent->bike->id, $bikeOnTop->id);
-    }
-
-    /**
-     * Helper method - create user with enough resources to rent bikes
-     * @param array $attributes
-     * @param int $numberOfBikesHeCanRent
-     * @return mixed
-     */
-    private function userWithResources($attributes = [], $numberOfBikesHeCanRent = 1000)
-    {
-        return create(User::class, array_merge([
-                'credit' => $this->appConfig->getRequiredCredit() * $numberOfBikesHeCanRent,
-                'limit' => $numberOfBikesHeCanRent
-            ], $attributes));
     }
 }

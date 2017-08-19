@@ -9,14 +9,18 @@ use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
+use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
+use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
-use BikeShare\Http\Services\Rents\Exceptions\RentExceptionType as ER;
+use BikeShare\Http\Services\Rents\Exceptions\ReturnException;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
 use BikeShare\Notifications\Sms\BikeDoesNotExist;
+use BikeShare\Notifications\Sms\NoBikesRented;
+use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\BikeNotTopOfStack;
 use BikeShare\Notifications\Sms\BikeRented;
 use BikeShare\Notifications\Sms\Credit;
@@ -54,15 +58,18 @@ class SmsController extends Controller
      */
     private $bikeRepo;
 
-    public function __construct(SmsRequestContract $smsRequest,
-                                AppConfig $appConfig,
-                                StandsRepository $standsRepository,
-                                BikesRepository $bikeRepository)
+    /**
+     * @var RentService
+     */
+    private $rentService;
+
+    public function __construct()
     {
-        $this->smsRequest = $smsRequest;
-        $this->appConfig = $appConfig;
-        $this->standsRepo = $standsRepository;
-        $this->bikeRepo = $bikeRepository;
+        $this->smsRequest = app(SmsRequestContract::class);
+        $this->appConfig = app(AppConfig::class);
+        $this->standsRepo = app(StandsRepository::class);
+        $this->bikeRepo = app(BikesRepository::class);
+        $this->rentService = app(RentService::class);
     }
 
     public function receive(Request $request)
@@ -93,8 +100,7 @@ class SmsController extends Controller
 
     protected function parseCommand(Sms $sms)
     {
-        //preg_split must be used instead of explode because of multiple spaces
-        $args = preg_split("/\s+/", strtoupper(trim(urldecode($sms->sms_text))));
+        $args = self::parseSmsArguments($sms->sms_text);
 
         switch($args[0])
         {
@@ -118,11 +124,13 @@ class SmsController extends Controller
                     $this->rentCommand($sms, $args[1]);
                 }
                 break;
-
-//            case "RETURN":
-//                validateReceivedSMS($sms->Number(),count($args),3,_('with bike number and stand name:')." RETURN 47 RACKO");
-//                returnBike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())));
-//                break;
+            case "RETURN":
+                if (count($args) < 3){
+                    $this->invalidArgumentsCommand($sms, "with bike number and stand name: RENT 47 RACKO");
+                } else {
+                    $this->returnCommand($sms, $args[1], $args[2]);
+                }
+                break;
 
 
 //            case "FORCERENT":
@@ -216,10 +224,9 @@ class SmsController extends Controller
         $sms->sender->notify(new InvalidArgumentsCommand($errorMsg));
     }
 
-    private function rentCommand($sms, $bikeNumber)
+    private function rentCommand(Sms $sms, $bikeNumber)
     {
         $user = $sms->sender;
-        $bikeNumber = intval($bikeNumber);
         if (!$bike = $this->bikeRepo->findByBikeNum($bikeNumber)) {
             $user->notify(new BikeDoesNotExist($bikeNumber));
             return;
@@ -227,7 +234,7 @@ class SmsController extends Controller
 
         try
         {
-            $rent = app(RentService::class)->rentBike($user, $bike);
+            $rent = $this->rentService->rentBike($user, $bike);
             $user->notify(new BikeRented($rent));
         }
         catch (LowCreditException $e)
@@ -250,4 +257,63 @@ class SmsController extends Controller
             throw $e; // unknown type, rethrow
         }
     }
+
+    private function returnCommand(Sms $sms, $bikeNumber, $standName)
+    {
+        $user = $sms->sender;
+
+        if (!$bike = $this->bikeRepo->findByBikeNum($bikeNumber)) {
+            $user->notify(new BikeDoesNotExist($bikeNumber));
+            return;
+        }
+
+        if (!$stand = $this->standsRepo->findByStandNameCI($standName)) {
+            $user->notify(new StandDoesNotExist($standName));
+            return;
+        }
+
+        if ($this->bikeRepo->bikesRentedByUserCount($user) == 0){
+            $user->notify(new NoBikesRented());
+            return;
+        }
+
+        try {
+            $rent = $this->rentService->returnBike($user, $bike, $stand);
+            // TODO
+//            $this->user->notify()
+        }
+        catch (BikeNotRentedException $e)
+        {
+            // TODO
+        }
+        catch (BikeRentedByOtherUserException $e)
+        {
+            // TODO
+        }
+        catch (ReturnException $e)
+        {
+            throw $e; // unknown type, rethrow
+        }
+
+        if ($userNote = self::parseNoteFromReturnSms($sms->sms_text)){
+            $this->rentService->addNote($bike, $user, $userNote);
+        }
+    }
+
+    public static function parseSmsArguments($smsText)
+    {
+        //preg_split must be used instead of explode because of multiple spaces
+        return preg_split("/\s+/", strtoupper(trim(urldecode($smsText))));
+    }
+
+    public static function parseNoteFromReturnSms($smsText)
+    {
+        if (preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $smsText, $matches)) {
+            return trim($matches[1]);
+        } else {
+            return null;
+        }
+    }
+
+
 }

@@ -2,8 +2,9 @@
 namespace BikeShare\Http\Services\Rents;
 
 use BikeShare\Domain\Bike\Bike;
-use BikeShare\Domain\Bike\BikesRepository;
 use BikeShare\Domain\Bike\BikeStatus;
+use BikeShare\Domain\Bike\Events\BikeWasReturned;
+use BikeShare\Domain\Rent\Events\RentWasClosed;
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
@@ -13,6 +14,8 @@ use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
+use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
+use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
 use Carbon\Carbon;
@@ -20,30 +23,11 @@ use Exception;
 
 class RentService
 {
-
-    protected $oldCode;
-
-    protected $standFrom;
-
-    protected $standTo;
-
-    protected $user;
-
-    public $bike;
-
-    public $rent;
-
-    public $note;
-
     /**
      * @var AppConfig
      */
     private $appConfig;
 
-    /**
-     * RentService constructor.
-     * @param AppConfig $appConfig
-     */
     public function __construct(AppConfig $appConfig)
     {
         $this->appConfig = $appConfig;
@@ -61,14 +45,11 @@ class RentService
      */
     public function rentBike(User $user, Bike $bike)
     {
-        $this->user = $user;
-        $this->bike = $bike;
-
         if ($this->appConfig->isCreditEnabled()){
             $requiredCredit = $this->appConfig->getRequiredCredit();
 
-            if ($this->user->credit < $requiredCredit){
-                throw new LowCreditException($this->user->credit, $requiredCredit);
+            if ($user->credit < $requiredCredit){
+                throw new LowCreditException($user->credit, $requiredCredit);
             }
         }
 
@@ -76,120 +57,160 @@ class RentService
 
         if ($bike->status != BikeStatus::FREE) {
             if (!$bike->user){
-                throw new Exception("Bike not free but no owner", [$bike->user]);
+                throw new Exception("Bike not free but no owner, bike_id = {$bike->user_id}");
             }
             throw new BikeNotFreeException();
         }
 
-        $currentRents = $this->user->bikes()->get()->count();
-        if ($currentRents >= $this->user->limit) {
-            throw new MaxNumberOfRentsException($this->user->limit, $currentRents);
+        $currentRents = $user->bikes()->get()->count();
+        if ($currentRents >= $user->limit) {
+            throw new MaxNumberOfRentsException($user->limit, $currentRents);
         }
 
         if ($this->appConfig->isStackBikeEnabled() && !$this->checkTopOfStack($bike)){
-            throw new BikeNotOnTopException($this->bike->stand->getTopBike());
+            throw new BikeNotOnTopException($bike->stand->getTopBike());
         }
 
-        $this->rentBikeInternal();
-        $rent = $this->createRentLog();
-        // TODO enable events
-//        event(new RentWasCreated($rent));
-//        event(new BikeWasRented($bike, $rent->new_code, $this->user));
-        return $rent;
-    }
-
-    private function rentBikeInternal()
-    {
-        if ($this->appConfig->isStackWatchEnabled()
-            && !$this->checkTopOfStack($this->bike)){
+        if ($this->appConfig->isStackWatchEnabled() && !$this->checkTopOfStack($bike)){
             // TODO notifyAdmin
         }
 
-        $this->oldCode = $this->bike->current_code;
-        $this->standFrom = $this->bike->stand;
-        $this->bike->status = BikeStatus::OCCUPIED;
-        $this->bike->current_code = Bike::generateBikeCode();
-        $this->bike->stack_position = 0;
-        $this->bike->stand()->dissociate();
-        $this->bike->user()->associate($this->user);
-        $this->bike->save();
+        $oldCode = $bike->current_code;
+        $standFrom = $bike->stand;
+
+        $this->rentBikeInternal($bike, $user);
+        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code);
+        // TODO enable events
+//        event(new RentWasCreated($rent));
+//        event(new BikeWasRented($bike, $rent->new_code, $user));
+        return $rent;
+    }
+
+    private function rentBikeInternal(Bike $bike, User $user)
+    {
+        $bike->status = BikeStatus::OCCUPIED;
+        $bike->current_code = Bike::generateBikeCode();
+        $bike->stack_position = 0;
+        $bike->stand()->dissociate();
+        $bike->user()->associate($user);
+        $bike->save();
     }
 
     /**
      * @return Rent
      */
-    private function createRentLog()
+    private function createRentLog(User $user, Bike $bike, Stand $standFrom, $oldCode, $newCode)
     {
-        $this->rent = new Rent();
-        $this->rent->status = RentStatus::OPEN;
-        $this->rent->user()->associate($this->user);
-        $this->rent->bike()->associate($this->bike);
-        $this->rent->standFrom()->associate($this->standFrom);
-        $this->rent->started_at = Carbon::now();
-        $this->rent->old_code = $this->oldCode;
-        $this->rent->new_code = $this->bike->current_code;
-        $this->rent->save();
-        return $this->rent;
+        $rent = new Rent();
+        $rent->status = RentStatus::OPEN;
+        $rent->user()->associate($user);
+        $rent->bike()->associate($bike);
+        $rent->standFrom()->associate($standFrom);
+        $rent->started_at = Carbon::now();
+        $rent->old_code = $oldCode;
+        $rent->new_code = $newCode;
+        $rent->save();
+        return $rent;
     }
 
-
-    public function returnBike($user, Stand $stand, Rent $rent)
+    public function closeRent(Rent $rent, Stand $standToReturn)
     {
-        $this->user = $user;
-        $this->rent = $rent;
-        $this->bike = $rent->bike;
-        $this->standTo = $stand;
-        $this->bike->stack_position = $this->standTo->getTopPosition() + 1;
-        $this->bike->status = BikeStatus::FREE;
-        $this->bike->stand()->associate($stand);
-        $this->bike->save();
-
-        return $this;
+        return $this->returnBike($rent->user, $rent->bike, $standToReturn, $rent);
     }
 
-    public function closeRentLog()
+    /**
+     * @param User $user
+     * @param Bike $bike
+     * @param Stand $standTo
+     * @param Rent|null $rent
+     * @throws BikeRentedByOtherUserException
+     * @throws BikeNotRentedException
+     * @return Rent
+     */
+    public function returnBike(User $user, Bike $bike, Stand $standTo, Rent $rent=null)
     {
-        $this->rent->ended_at = Carbon::now();
-        $this->rent->duration = $this->rent->ended_at->diffInSeconds($this->rent->started_at);
-        $this->rent->status = RentStatus::CLOSE;
-        $this->rent->standTo()->associate($this->standTo);
-        $this->rent->save();
+        if ($bike->status !== BikeStatus::OCCUPIED){
+            throw new BikeNotRentedException($bike->status);
+        }
+        if ($bike->user_id != $user->id){
+            throw new BikeRentedByOtherUserException($bike->user);
+        }
 
-        return $this;
+        $rent = $rent ?? app(RentsRepository::class)->findOpenRent($user, $bike);
+        $this->checkRentConsistency($user, $bike, $rent);
+
+        $this->returnBikeInternal($bike, $standTo);
+        $this->closeRentLogInternal($rent, $standTo);
+        $this->updateCredit($rent);
+
+        event(new RentWasClosed($rent));
+        event(new BikeWasReturned($bike, $standTo));
+
+        return $rent;
     }
 
-
-    public function updateCredit()
+    private function checkRentConsistency($user, $bike, $rent)
     {
-        if (! app(AppConfig::class)->isCreditEnabled()) {
-            return $this;
+        if ($rent->bike->id != $bike->id ||
+            $rent->user->id != $user->id ||
+            $rent->status != RentStatus::OPEN){
+            throw new Exception("Invalid DB state, Rent object does not correspond to Bike state: ".
+                "bike->id:{$bike->id}, user->id:{$user->id}, rent:" . $rent->toJson());
+        }
+    }
+
+    private function returnBikeInternal(Bike $bike, Stand $standTo)
+    {
+        $topPosition = $standTo->getTopPosition();
+        $bike->stack_position = $topPosition ? $topPosition + 1 : 0;
+        $bike->status = BikeStatus::FREE;
+        $bike->stand()->associate($standTo);
+        $bike->user()->dissociate();
+        $bike->save();
+    }
+
+    private function closeRentLogInternal(Rent $rent, Stand $stand)
+    {
+        $rent->ended_at = Carbon::now();
+        $rent->duration = $rent->ended_at->diffInSeconds($rent->started_at);
+        $rent->status = RentStatus::CLOSE;
+        $rent->standTo()->associate($stand);
+        $rent->save();
+        return $rent;
+    }
+
+    private function updateCredit(Rent $rent)
+    {
+        $config = $this->appConfig;
+        if (! $config->isCreditEnabled()) {
+            return;
         }
 
         $realRentCredit = 0;
-        $timeDiff = $this->rent->started_at->diffInMinutes($this->rent->ended_at);
+        $timeDiff = $rent->started_at->diffInMinutes($rent->ended_at);
 
-        $freeTime = app(AppConfig::class)->getFreeTime();
-        $rentCredit = app(AppConfig::class)->getRentCredit();
+        $freeTime = $config->getFreeTime();
+        $rentCredit = $config->getRentCredit();
         if ($timeDiff > $freeTime) {
             $realRentCredit += $rentCredit;
         }
 
         // after first paid period, i.e. free_time * 2; if price_cycle enabled
-        $priceCycle = app(AppConfig::class)->getPriceCycle();
+        $priceCycle = $config->getPriceCycle();
         if ($priceCycle) {
             if ($timeDiff > $freeTime * 2) {
                 $tempTimeDiff = $timeDiff - ($freeTime * 2);
 
                 if ($priceCycle == 1) {             // flat price per cycle
-                    $cycles = ceil($tempTimeDiff / app(AppConfig::class)->getFlatPriceCycle());
+                    $cycles = ceil($tempTimeDiff / $config->getFlatPriceCycle());
                     $realRentCredit += ($rentCredit * $cycles);
                 } elseif ($priceCycle == 2) {       // double price per cycle
-                    $cycles = ceil($tempTimeDiff / app(AppConfig::class)->getDoublePriceCycle());
+                    $cycles = ceil($tempTimeDiff / $config->getDoublePriceCycle());
                     $tmpCreditRent = $rentCredit;
 
                     for ($i = 1; $i <= $cycles; $i++) {
                         $multiplier = $i;
-                        $doublePriceCycleCap = app(AppConfig::class)->getDoublePriceCycleCap();
+                        $doublePriceCycleCap = $config->getDoublePriceCycleCap();
 
                         if ($multiplier > $doublePriceCycleCap) {
                             $multiplier = $doublePriceCycleCap;
@@ -204,33 +225,31 @@ class RentService
             }
         }
 
-        if ($timeDiff > app(AppConfig::class)->getWatchersLongRental() * 60) {
-            $realRentCredit += app(AppConfig::class)->getCreditLongRental();
+        if ($timeDiff > $config->getWatchersLongRental() * 60) {
+            $realRentCredit += $config->getCreditLongRental();
         }
 
-        $this->rent->credit = $realRentCredit;
-        $this->rent->save();
-        $this->user->credit -= $realRentCredit;
-        $this->user->save();
-
-        return $this;
+        $rent->credit = $realRentCredit;
+        $rent->save();
+        $rent->user->credit -= $realRentCredit;
+        $rent->user->save();
     }
 
-
-    public function addNote(Bike $bike, $note)
+    public function addNote(Bike $bike, User $user, $noteText)
     {
-        $this->note = $bike->notes()->create([
-            'note' => $note,
-            'user_id' => $this->user->id
+        $note = $bike->notes()->create([
+            'note' => $noteText,
+            'user_id' => $user->id
         ]);
 
         // TODO notify Admins (email and sms if enabled)
+//        $users = app(UsersRepository::class)->getUsersWithRole('admin')->get();
+//        Notification::send($users, new NoteCreated($note));
 
-        return $this;
+        return $note;
     }
 
-
-    public function checkTopOfStack($bike)
+    private function checkTopOfStack($bike)
     {
         return $bike->stand->getTopPosition() == $bike->stack_position;
     }
@@ -249,7 +268,6 @@ class RentService
 
         // TODO send notification report to admins about all long rentals
     }
-
 
     public function checkManyRents(User $user = null)
     {
