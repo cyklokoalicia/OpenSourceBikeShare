@@ -21,6 +21,7 @@ use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\UnknownCommand;
+use BikeShare\Notifications\Sms\WhereIsBike;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Notification;
 use Tests\TestCase;
@@ -263,6 +264,32 @@ class SmsApiTest extends TestCase
         $this->get($this->buildSmsUrl($user, 'RETURN 1 SAFKO'));
 
         Notification::assertSentTo($user, BikeReturnedSuccess::class);
+    }
+
+    /** @test */
+    public function where_command_non_existing_bike_number()
+    {
+        $user = create(User::class);
+        create(Stand::class)->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'WHERE 2'));
+
+        Notification::assertSentTo($user, BikeDoesNotExist::class);
+    }
+
+    /** @test */
+    public function where_command_ok()
+    {
+        $user = create(User::class);
+        create(Stand::class)->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'WHERE 1'));
+        Notification::assertSentTo($user, WhereIsBike::class);
+
+        $this->get($this->buildSmsUrl($user, 'WHO 1'));
+        Notification::assertSentTo($user, WhereIsBike::class);
     }
 
     private function buildSmsUrl($user, $text)
