@@ -234,7 +234,7 @@ class SmsController extends Controller
 
     private function helpCommand(Sms $sms)
     {
-        $sms->sender->notify(new Help($this->appConfig));
+        $sms->sender->notify(new Help($sms->sender, $this->appConfig));
     }
 
     private function unknownCommand(Sms $sms, $command)

@@ -6,6 +6,7 @@ use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Notifications\Sms\Credit;
+use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\StandInfo;
 use Tests\TestCase;
 
@@ -15,11 +16,24 @@ use Tests\TestCase;
 class NotificationsTest extends TestCase
 {
     /** @test */
+    public function help_notification_contains_commands()
+    {
+        $appConfig = $this->mockObj(AppConfig::class);
+        $appConfig->method('isCreditEnabled')->willReturn(true);
+        $user = $this->mockObj(User::class);
+        $user->method('hasRole')->willReturn(true);
+
+        $text = (new Help($user, $appConfig))->text();
+        // test at least these basic commands
+        foreach (['CREDIT', 'RENT', 'RETURN', 'FORCERENT', 'FORCERETURN', 'REVERT'] as $cmd){
+            self::assertContains($cmd, $text);
+        }
+    }
+
+    /** @test */
     public function credit_notification_contains_user_credit()
     {
-        $appConfig = $this->getMockBuilder(AppConfig::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $appConfig = $this->mockObj(AppConfig::class);
         $appConfig->method('getCreditCurrency')->willReturn('$');
 
         $user = factory(User::class)->make([]);
@@ -41,5 +55,12 @@ class NotificationsTest extends TestCase
         self::assertContains($standNoGps->name, $notifText2);
         self::assertContains($standNoGps->description, $notifText2);
         self::assertNotContains('GPS', $notifText2);
+    }
+
+    private function mockObj($className)
+    {
+        return $this->getMockBuilder($className)
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }
