@@ -5,6 +5,7 @@ namespace BikeShare\Http\Controllers\Api\v1\Sms;
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikesRepository;
 use BikeShare\Domain\Sms\Sms;
+use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\AppConfig;
@@ -17,6 +18,7 @@ use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\ReturnException;
+use BikeShare\Http\Services\Rents\Exceptions\StandDoesNotExistException;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
@@ -33,6 +35,7 @@ use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
+use BikeShare\Notifications\Sms\StandInfo;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
 use Dingo\Api\Routing\Helpers;
@@ -138,7 +141,7 @@ class SmsController extends Controller
                     if (count($args) < 3){
                         $this->invalidArgumentsCommand($sms, "with bike number and stand name: RENT 47 RACKO");
                     } else {
-                        $this->returnCommand($sms, $this->getBikeOrFail($args[1]), $args[2]);
+                        $this->returnCommand($sms, $this->getBikeOrFail($args[1]), $this->getStandOrFail($args[2]));
                     }
                     break;
 
@@ -164,11 +167,14 @@ class SmsController extends Controller
                     }
                     break;
 
+                case "INFO":
+                    if (count($args) < 2) {
+                        $this->invalidArgumentsCommand($sms, "with stand name: INFO RACKO");
+                    } else {
+                        $this->infoCommand($sms, $this->getStandOrFail($args[1]));
+                    }
+                    break;
 
-//            case "INFO":
-//                validateReceivedSMS($sms->Number(),count($args),2,_('with stand name:')." INFO RACKO");
-//                info($sms->Number(),$args[1]);
-//                break;
 //            case "NOTE":
 //                validateReceivedSMS($sms->Number(),count($args),2,_('with bike number/stand name and problem description:')." NOTE 47 "._('Flat tire on front wheel'));
 //                note($sms->Number(),$args[1],trim(urldecode($sms->Text())));
@@ -215,8 +221,14 @@ class SmsController extends Controller
                     break;
             }
 
-        } catch (BikeDoesNotExistException $e) {
+        }
+        catch (BikeDoesNotExistException $e)
+        {
             $sms->sender->notify(new BikeDoesNotExist($e->bikeNumber));
+        }
+        catch (StandDoesNotExistException $e)
+        {
+            $sms->sender->notify(new StandDoesNotExist($e->standName));
         }
     }
 
@@ -274,14 +286,9 @@ class SmsController extends Controller
         }
     }
 
-    private function returnCommand(Sms $sms, Bike $bike, $standName)
+    private function returnCommand(Sms $sms, Bike $bike, Stand $stand)
     {
         $user = $sms->sender;
-
-        if (!$stand = $this->standsRepo->findByStandNameCI($standName)) {
-            $user->notify(new StandDoesNotExist($standName));
-            return;
-        }
 
         if ($this->bikeRepo->bikesRentedByUserCount($user) == 0){
             $user->notify(new NoBikesRented());
@@ -312,6 +319,11 @@ class SmsController extends Controller
         $sms->sender->notify(new WhereIsBike($bike));
     }
 
+    private function infoCommand(Sms $sms, Stand $stand)
+    {
+        $sms->sender->notify(new StandInfo($stand));
+    }
+
     private function getBikeOrFail($bikeNumber)
     {
         $bike = $this->bikeRepo->findByBikeNum($bikeNumber);
@@ -319,6 +331,15 @@ class SmsController extends Controller
             throw new BikeDoesNotExistException($bikeNumber);
         }
         return $bike;
+    }
+
+    private function getStandOrFail($standName)
+    {
+        $stand = $this->standsRepo->findByStandNameCI($standName);
+        if (!$stand){
+            throw new StandDoesNotExistException($standName);
+        }
+        return $stand;
     }
 
     public static function parseSmsArguments($smsText)

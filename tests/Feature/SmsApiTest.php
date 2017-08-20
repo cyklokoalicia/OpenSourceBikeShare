@@ -20,6 +20,7 @@ use BikeShare\Notifications\Sms\NoBikesRented;
 use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
+use BikeShare\Notifications\Sms\StandInfo;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -128,7 +129,7 @@ class SmsApiTest extends TestCase
     /** @test */
     public function rent_command_ok()
     {
-        $user = create(User::class, ['credit' => $this->appConfig->getRequiredCredit(), 'limit' => 1]);
+        $user = userWithResources();
         create(Stand::class)->bikes()->save(make(Bike::class, ['bike_num'=>1]));
 
         Notification::fake();
@@ -152,7 +153,7 @@ class SmsApiTest extends TestCase
     /** @test */
     public function rent_command_bike_already_rented()
     {
-        $user = create(User::class, ['credit' => $this->appConfig->getRequiredCredit()*10, 'limit' => 10]);
+        $user = userWithResources();
         create(Stand::class)->bikes()->save(make(Bike::class, ['bike_num'=>1]));
 
         Notification::fake();
@@ -165,7 +166,7 @@ class SmsApiTest extends TestCase
     /** @test */
     public function rent_command_bike_not_top_of_stack()
     {
-        $user = create(User::class, ['credit' => $this->appConfig->getRequiredCredit(), 'limit' => 1]);
+        $user = userWithResources();
         $stand = create(Stand::class);
         $stand->bikes()->save(make(Bike::class, ['bike_num' => 1, 'stack_position'=>0]));
         $stand->bikes()->save(make(Bike::class, ['bike_num' => 2, 'stack_position'=>1]));
@@ -228,8 +229,8 @@ class SmsApiTest extends TestCase
     public function return_command_bike_not_rented_or_rented_by_other_user()
     {
 
-        $user = create(User::class, ['credit' => $this->appConfig->getRequiredCredit(), 'limit' => 1]);
-        $otherUser = create(User::class, ['credit' => $this->appConfig->getRequiredCredit(), 'limit' => 1]);
+        $user = userWithResources();
+        $otherUser = userWithResources();
         $stand = create(Stand::class, ['name' => 'SAFKO']);
         $stand->bikes()->save(make(Bike::class, ['bike_num'=>1]));
         $stand->bikes()->save(make(Bike::class, ['bike_num'=>2]));
@@ -255,7 +256,7 @@ class SmsApiTest extends TestCase
     /** @test */
     public function return_command_ok()
     {
-        $user = create(User::class, ['credit' => $this->appConfig->getRequiredCredit(), 'limit' => 1]);
+        $user = userWithResources();
         create(Stand::class, ['name' => 'SAFKO'])->bikes()->save(make(Bike::class, ['bike_num'=>1]));
 
         $this->get($this->buildSmsUrl($user, 'RENT 1'));
@@ -290,6 +291,30 @@ class SmsApiTest extends TestCase
 
         $this->get($this->buildSmsUrl($user, 'WHO 1'));
         Notification::assertSentTo($user, WhereIsBike::class);
+    }
+
+    /** @test */
+    public function info_command_non_existing_stand_name()
+    {
+        $stand = create(Stand::class, ['name' => 'SAFKO']);
+        $user = create(User::class);
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'INFO NONEXISTING'));
+
+        Notification::assertSentTo($user, StandDoesNotExist::class);
+    }
+
+    /** @test */
+    public function info_command_ok()
+    {
+        $stand = create(Stand::class);
+        $user = create(User::class);
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'INFO ' . $stand->name));
+
+        Notification::assertSentTo($user, StandInfo::class);
     }
 
     private function buildSmsUrl($user, $text)
