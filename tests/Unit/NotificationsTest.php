@@ -11,6 +11,7 @@ use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\NoteForBikeSaved;
 use BikeShare\Notifications\Sms\NoteForStandSaved;
 use BikeShare\Notifications\Sms\StandInfo;
+use BikeShare\Notifications\Sms\TagForStandSaved;
 use Tests\TestCase;
 
 /**
@@ -73,6 +74,14 @@ class NotificationsTest extends TestCase
     {
         $stand = make(Stand::class);
         $text = (new NoteForStandSaved($stand))->text();
+        self::assertContains((string) $stand->name, $text);
+    }
+    
+    /** @test */
+    public function tag_notification_contains_stand_name()
+    {
+        $stand = make(Stand::class);
+        $text = (new TagForStandSaved($stand))->text();
         self::assertContains((string) $stand->name, $text);
     }
 

@@ -263,6 +263,20 @@ class RentService
         return $note;
     }
 
+    public function addNoteToAllStandBikes(Stand $stand, User $user, $noteText)
+    {
+        $stand->bikes->each(function($bike) use ($noteText, $user){
+            $bike->notes()->create([
+                'note' => $noteText,
+                'user_id' => $user->id
+            ]);
+        });
+
+        // TODO notify Admins (email and sms if enabled)
+//        $users = app(UsersRepository::class)->getUsersWithRole('admin')->get();
+//        Notification::send($users, new NoteCreated($note));
+    }
+
 
     private function checkTopOfStack($bike)
     {

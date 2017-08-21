@@ -21,6 +21,7 @@ use BikeShare\Http\Services\Rents\Exceptions\ReturnException;
 use BikeShare\Http\Services\Rents\Exceptions\StandDoesNotExistException;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
+use BikeShare\Http\Services\Sms\SmsUtils;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
 use BikeShare\Notifications\Sms\BikeDoesNotExist;
 use BikeShare\Notifications\Sms\BikeReturnedSuccess;
@@ -39,6 +40,7 @@ use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandInfo;
+use BikeShare\Notifications\Sms\TagForStandSaved;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
 use BikeShare\Notifications\SmsNotification;
@@ -112,7 +114,7 @@ class SmsController extends Controller
 
     protected function parseCommand(Sms $sms)
     {
-        $args = self::parseSmsArguments($sms->sms_text);
+        $args = SmsUtils::parseSmsArguments($sms->sms_text);
 
         try {
             switch($args[0])
@@ -185,14 +187,16 @@ class SmsController extends Controller
                     } else {
                         $this->noteCommand($sms, $args[1]);
                     }
-
-//                    validateReceivedSMS($sms->Number(),count($args),2,_('with bike number/stand name and problem description:')." NOTE 47 "._('Flat tire on front wheel'));
-//                    note($sms->Number(),$args[1],trim(urldecode($sms->Text())));
                     break;
-//            case "TAG":
-//                validateReceivedSMS($sms->Number(),count($args),2,_('with stand name and problem description:')." TAG MAINSQUARE "._('vandalism'));
-//                tag($sms->Number(),$args[1],trim(urldecode($sms->Text())));
-//                break;
+
+                case "TAG":
+                    if (count($args) < 2) {
+                        $this->invalidArgumentsCommand($sms, 'with stand name and problem description: TAG MAINSQUARE vandalism');
+                    } else {
+                        $this->tagCommand($sms, $this->getStandOrFail($args[1]));
+                    }
+                    break;
+
 //            case "DELNOTE":
 //                validateReceivedSMS($sms->Number(),count($args),1,_('with bike number and optional pattern. All messages or notes matching pattern will be deleted:')." NOTE 47 wheel");
 //                delnote($sms->Number(),$args[1],trim(urldecode($sms->Text())));
@@ -305,7 +309,7 @@ class SmsController extends Controller
             return;
         }
 
-        $noteText = self::parseNoteFromReturnSms($sms->sms_text);
+        $noteText = SmsUtils::parseNoteFromReturnSms($sms->sms_text);
 
         try {
             $rent = $this->rentService->returnBike($user, $bike, $stand);
@@ -338,7 +342,7 @@ class SmsController extends Controller
     {
         $param = trim($param);
 
-        $noteText = self::parseNoteFromNoteSms($sms->sms_text);
+        $noteText = SmsUtils::parseNoteFromSms($sms->sms_text, "note");
 
         if (!$noteText){
             $sms->sender->notify(new NoteTextMissing());
@@ -375,6 +379,19 @@ class SmsController extends Controller
         $sms->sender->notify(new NoteForStandSaved($stand));
     }
 
+    private function tagCommand($sms, Stand $stand)
+    {
+        $noteText = SmsUtils::parseNoteFromSms($sms->sms_text, "note");
+
+        if (!$noteText){
+            $sms->sender->notify(new NoteTextMissing());
+            return;
+        }
+
+        $this->rentService->addNoteToAllStandBikes($stand, $sms->sender, $noteText);
+        $sms->sender->notify(new TagForStandSaved($stand));
+    }
+
     private function getBikeOrFail($bikeNumber)
     {
         $bike = $this->bikeRepo->findByBikeNum($bikeNumber);
@@ -391,31 +408,6 @@ class SmsController extends Controller
             throw new StandDoesNotExistException($standName);
         }
         return $stand;
-    }
-
-    public static function parseSmsArguments($smsText)
-    {
-        //preg_split must be used instead of explode because of multiple spaces
-        return preg_split("/\s+/", strtoupper(trim(urldecode($smsText))));
-    }
-
-    public static function parseNoteFromReturnSms($smsText)
-    {
-        if (preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $smsText, $matches)) {
-            return trim($matches[1]);
-        } else {
-            return null;
-        }
-    }
-
-    public static function parseNoteFromNoteSms($smsText)
-    {
-
-        if (preg_match("/note[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $smsText, $matches)) {
-            return trim($matches[1]);
-        } else {
-            return null;
-        }
     }
 
 }

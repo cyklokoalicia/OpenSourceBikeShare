@@ -24,6 +24,7 @@ use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\StandInfo;
+use BikeShare\Notifications\Sms\TagForStandSaved;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
 use BikeShare\Notifications\SmsNotification;
@@ -368,6 +369,18 @@ class SmsApiTest extends TestCase
         $this->get($this->buildSmsUrl($user, 'NOTE SAFKO note text is here'));
 
         Notification::assertSentTo($user, NoteForStandSaved::class);
+    }
+
+    /** @test */
+    public function tag_command_ok()
+    {
+        $user = create(User::class);
+        create(Stand::class, ['name' => 'SAFKO'])->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'TAG SAFKO note text is here'));
+
+        Notification::assertSentTo($user, TagForStandSaved::class);
     }
 
     private function buildSmsUrl($user, $text)

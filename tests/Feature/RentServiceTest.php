@@ -9,7 +9,7 @@ use BikeShare\Http\Services\Rents\RentService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
-class RentServiceNotesTest extends TestCase
+class RentServiceTest extends TestCase
 {
     use DatabaseMigrations;
 
@@ -64,5 +64,29 @@ class RentServiceNotesTest extends TestCase
             ->where('note', $noteText)
             ->where('notable_id', $stand->id)
             ->where('user_id', $user->id)->first());
+    }
+
+    /** @test */
+    public function add_notes_to_all_bikes_on_stand()
+    {
+        // Arrange
+        $user = userWithResources();
+        $stand = create(Stand::class);
+        for ($i=0; $i<=3; $i++){
+            $stand->bikes()->save(make(Bike::class));
+        }
+        $noteText = "some note text";
+
+        // Act
+        $this->rentService->addNoteToAllStandBikes($stand, $user, $noteText);
+
+//         Assert
+        foreach ($stand->bikes as $bike){
+            $note = $bike->notes
+                ->where('note', $noteText)
+                ->where('notable_id', $bike->id)
+                ->where('user_id', $user->id)->first();
+            self::assertNotNull($note);
+        }
     }
 }

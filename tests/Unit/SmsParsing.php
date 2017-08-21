@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Controllers\Api\v1\Sms\SmsController;
 use BikeShare\Http\Services\AppConfig;
+use BikeShare\Http\Services\Sms\SmsUtils;
 use BikeShare\Notifications\Sms\Credit;
 use Tests\TestCase;
 
@@ -22,7 +23,7 @@ class SmsParsing extends TestCase
             " \t\n CMD \t\n  4    \t\n  ABC  \t\n\n  efg \n\n " => ['CMD', '4', 'ABC', 'EFG'],
         ];
         foreach ($tests as $input => $expectedOutput){
-            self::assertEquals($expectedOutput, SmsController::parseSmsArguments($input));
+            self::assertEquals($expectedOutput, SmsUtils::parseSmsArguments($input));
         }
     }
 
@@ -42,7 +43,7 @@ class SmsParsing extends TestCase
         ];
 
         foreach ($tests as $input => $expectedOutput){
-            self::assertEquals($expectedOutput, SmsController::parseNoteFromReturnSms($input), $input);
+            self::assertEquals($expectedOutput, SmsUtils::parseNoteFromReturnSms($input), $input);
         }
     }
 
@@ -56,7 +57,7 @@ class SmsParsing extends TestCase
         ];
 
         foreach ($tests as $input => $expectedOutput){
-            self::assertEquals($expectedOutput, SmsController::parseNoteFromNoteSms($input), $input);
+            self::assertEquals($expectedOutput, SmsUtils::parseNoteFromSms($input, "note"), $input);
         }
     }
 }
