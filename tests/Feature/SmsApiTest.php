@@ -17,12 +17,16 @@ use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\NoBikesRented;
+use BikeShare\Notifications\Sms\NoteForBikeSaved;
+use BikeShare\Notifications\Sms\NoteForStandSaved;
+use BikeShare\Notifications\Sms\NoteTextMissing;
 use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\StandInfo;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
+use BikeShare\Notifications\SmsNotification;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Notification;
 use Tests\TestCase;
@@ -315,6 +319,55 @@ class SmsApiTest extends TestCase
         $this->get($this->buildSmsUrl($user, 'INFO ' . $stand->name));
 
         Notification::assertSentTo($user, StandInfo::class);
+    }
+
+    /** @test */
+    public function note_command_non_existing_bike_and_stand()
+    {
+        $user = create(User::class);
+
+        Notification::fake();
+
+        $this->get($this->buildSmsUrl($user, 'NOTE 1 xyz'));
+        Notification::assertSentTo($user, BikeDoesNotExist::class);
+
+        $this->get($this->buildSmsUrl($user, 'NOTE ABCD xyz'));
+        Notification::assertSentTo($user, StandDoesNotExist::class);
+    }
+
+    /** @test */
+    public function note_command_missing_note_text()
+    {
+        $user = create(User::class);
+
+        Notification::fake();
+
+        $this->get($this->buildSmsUrl($user, 'NOTE 1'));
+        Notification::assertSentTo($user, NoteTextMissing::class);
+    }
+
+    /** @test */
+    public function note_command_note_to_bike_ok()
+    {
+        $user = create(User::class);
+        create(Stand::class)->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'NOTE 1 note text is here'));
+
+        Notification::assertSentTo($user, NoteForBikeSaved::class);
+    }
+
+    /** @test */
+    public function note_command_note_to_stand_ok()
+    {
+        $user = create(User::class);
+        create(Stand::class, ['name' => 'SAFKO']);
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'NOTE SAFKO note text is here'));
+
+        Notification::assertSentTo($user, NoteForStandSaved::class);
     }
 
     private function buildSmsUrl($user, $text)

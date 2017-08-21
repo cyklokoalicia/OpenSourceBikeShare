@@ -45,4 +45,18 @@ class SmsParsing extends TestCase
             self::assertEquals($expectedOutput, SmsController::parseNoteFromReturnSms($input), $input);
         }
     }
+
+    /** @test */
+    public function sms_note_parsing()
+    {
+        $tests = [
+            'note 0 somenote' => 'somenote',
+            'NOTE STANDNAME   somenote' => 'somenote',
+            'Note 2 DACO STANDNAME' => 'DACO STANDNAME',
+        ];
+
+        foreach ($tests as $input => $expectedOutput){
+            self::assertEquals($expectedOutput, SmsController::parseNoteFromNoteSms($input), $input);
+        }
+    }
 }

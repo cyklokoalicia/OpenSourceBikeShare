@@ -2,11 +2,14 @@
 
 namespace Tests\Unit;
 
+use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Notifications\Sms\Credit;
 use BikeShare\Notifications\Sms\Help;
+use BikeShare\Notifications\Sms\NoteForBikeSaved;
+use BikeShare\Notifications\Sms\NoteForStandSaved;
 use BikeShare\Notifications\Sms\StandInfo;
 use Tests\TestCase;
 
@@ -55,6 +58,22 @@ class NotificationsTest extends TestCase
         self::assertContains($standNoGps->name, $notifText2);
         self::assertContains($standNoGps->description, $notifText2);
         self::assertNotContains('GPS', $notifText2);
+    }
+
+    /** @test */
+    public function note_notification_to_bike_contains_bike_number()
+    {
+        $bike = make(Bike::class);
+        $text = (new NoteForBikeSaved($bike))->text();
+        self::assertContains((string) $bike->bike_num, $text);
+    }
+
+    /** @test */
+    public function note_notification_to_stand_contains_stand_name()
+    {
+        $stand = make(Stand::class);
+        $text = (new NoteForStandSaved($stand))->text();
+        self::assertContains((string) $stand->name, $text);
     }
 
     private function mockObj($className)

@@ -26,6 +26,9 @@ use BikeShare\Notifications\Sms\BikeDoesNotExist;
 use BikeShare\Notifications\Sms\BikeReturnedSuccess;
 use BikeShare\Notifications\Sms\BikeToReturnNotRentedByMe;
 use BikeShare\Notifications\Sms\NoBikesRented;
+use BikeShare\Notifications\Sms\NoteForBikeSaved;
+use BikeShare\Notifications\Sms\NoteForStandSaved;
+use BikeShare\Notifications\Sms\NoteTextMissing;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\BikeNotTopOfStack;
 use BikeShare\Notifications\Sms\BikeRentedSuccess;
@@ -38,6 +41,7 @@ use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandInfo;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
+use BikeShare\Notifications\SmsNotification;
 use Dingo\Api\Routing\Helpers;
 use Illuminate\Http\Request;
 use Validator;
@@ -175,10 +179,16 @@ class SmsController extends Controller
                     }
                     break;
 
-//            case "NOTE":
-//                validateReceivedSMS($sms->Number(),count($args),2,_('with bike number/stand name and problem description:')." NOTE 47 "._('Flat tire on front wheel'));
-//                note($sms->Number(),$args[1],trim(urldecode($sms->Text())));
-//                break;
+                case "NOTE":
+                    if (count($args) < 2) {
+                        $this->invalidArgumentsCommand($sms, 'with bike number/stand name and problem description: NOTE 47 Flat tire on front wheel');
+                    } else {
+                        $this->noteCommand($sms, $args[1]);
+                    }
+
+//                    validateReceivedSMS($sms->Number(),count($args),2,_('with bike number/stand name and problem description:')." NOTE 47 "._('Flat tire on front wheel'));
+//                    note($sms->Number(),$args[1],trim(urldecode($sms->Text())));
+                    break;
 //            case "TAG":
 //                validateReceivedSMS($sms->Number(),count($args),2,_('with stand name and problem description:')." TAG MAINSQUARE "._('vandalism'));
 //                tag($sms->Number(),$args[1],trim(urldecode($sms->Text())));
@@ -300,7 +310,7 @@ class SmsController extends Controller
         try {
             $rent = $this->rentService->returnBike($user, $bike, $stand);
             if ($noteText){
-                $this->rentService->addNote($bike, $user, $noteText);
+                $this->rentService->addNoteToBike($bike, $user, $noteText);
             }
             $user->notify(new BikeReturnedSuccess($this->appConfig, $rent, $noteText));
         }
@@ -322,6 +332,47 @@ class SmsController extends Controller
     private function infoCommand(Sms $sms, Stand $stand)
     {
         $sms->sender->notify(new StandInfo($stand));
+    }
+
+    private function noteCommand(Sms $sms, $param)
+    {
+        $param = trim($param);
+
+        $noteText = self::parseNoteFromNoteSms($sms->sms_text);
+
+        if (!$noteText){
+            $sms->sender->notify(new NoteTextMissing());
+            return;
+        }
+
+        if (preg_match("/^[0-9]*$/", $param)) {
+            $this->bikeNoteCommand($sms, $this->getBikeOrFail($param), $noteText);
+        } else if (preg_match("/^[A-Z]+[0-9]*$/i", $param)) {
+            $this->standNoteCommand($sms, $this->getStandOrFail($param), $noteText);
+        } else {
+            $sms->sender->notify(new class($this->param) extends SmsNotification{
+                public function __construct($param)
+                {
+                    $this->param = $param;
+                }
+                public function text()
+                {
+                    return "Error in bike number / stand name specification:" . $this->param;
+                }
+            });
+        }
+    }
+
+    private function bikeNoteCommand(Sms $sms, Bike $bike, $noteText)
+    {
+        $this->rentService->addNoteToBike($bike, $sms->sender, $noteText);
+        $sms->sender->notify(new NoteForBikeSaved($bike));
+    }
+
+    private function standNoteCommand(Sms $sms, Stand $stand, $noteText)
+    {
+        $this->rentService->addNoteToStand($stand, $sms->sender, $noteText);
+        $sms->sender->notify(new NoteForStandSaved($stand));
     }
 
     private function getBikeOrFail($bikeNumber)
@@ -356,4 +407,15 @@ class SmsController extends Controller
             return null;
         }
     }
+
+    public static function parseNoteFromNoteSms($smsText)
+    {
+
+        if (preg_match("/note[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $smsText, $matches)) {
+            return trim($matches[1]);
+        } else {
+            return null;
+        }
+    }
+
 }

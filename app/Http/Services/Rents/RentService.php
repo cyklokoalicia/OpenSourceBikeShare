@@ -235,7 +235,7 @@ class RentService
         $rent->user->save();
     }
 
-    public function addNote(Bike $bike, User $user, $noteText)
+    public function addNoteToBike(Bike $bike, User $user, $noteText)
     {
         $note = $bike->notes()->create([
             'note' => $noteText,
@@ -248,6 +248,21 @@ class RentService
 
         return $note;
     }
+
+    public function addNoteToStand(Stand $stand, User $user, $noteText)
+    {
+        $note = $stand->notes()->create([
+            'note' => $noteText,
+            'user_id' => $user->id
+        ]);
+
+        // TODO notify Admins (email and sms if enabled)
+//        $users = app(UsersRepository::class)->getUsersWithRole('admin')->get();
+//        Notification::send($users, new NoteCreated($note));
+
+        return $note;
+    }
+
 
     private function checkTopOfStack($bike)
     {

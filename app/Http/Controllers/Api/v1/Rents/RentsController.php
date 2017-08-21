@@ -149,7 +149,7 @@ class RentsController extends Controller
         // TODO catch exceptions
 
         if ($request->has('note')) {
-            $rentService->addNote($rent->bike, $rent->user, $request->get('note'));
+            $rentService->addNoteToBike($rent->bike, $rent->user, $request->get('note'));
         }
 
         return $this->response->item($rent, new RentTransformer());
