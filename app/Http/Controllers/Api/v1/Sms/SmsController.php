@@ -45,6 +45,7 @@ use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
 use BikeShare\Notifications\SmsNotification;
 use Dingo\Api\Routing\Helpers;
+use Gate;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -139,7 +140,7 @@ class SmsController extends Controller
                     if (count($args) < 2){
                         $this->invalidArgumentsCommand($sms, "with bike number: RENT 47");
                     } else {
-                        $this->rentCommand($sms, $this->getBikeOrFail($args[1]));
+                        $this->rentCommand($sms, $this->bikeRepo->getBikeOrFail($args[1]));
                     }
                     break;
 
@@ -147,7 +148,7 @@ class SmsController extends Controller
                     if (count($args) < 3){
                         $this->invalidArgumentsCommand($sms, "with bike number and stand name: RENT 47 RACKO");
                     } else {
-                        $this->returnCommand($sms, $this->getBikeOrFail($args[1]), $this->getStandOrFail($args[2]));
+                        $this->returnCommand($sms, $this->bikeRepo->getBikeOrFail($args[1]), $this->standsRepo->getStandOrFail($args[2]));
                     }
                     break;
 
@@ -169,7 +170,7 @@ class SmsController extends Controller
                     if (count($args) < 2) {
                         $this->invalidArgumentsCommand($sms, "with bike number: WHERE 47");
                     } else {
-                        $this->whereCommand($sms, $this->getBikeOrFail($args[1]));
+                        $this->whereCommand($sms, $this->bikeRepo->getBikeOrFail($args[1]));
                     }
                     break;
 
@@ -177,7 +178,7 @@ class SmsController extends Controller
                     if (count($args) < 2) {
                         $this->invalidArgumentsCommand($sms, "with stand name: INFO RACKO");
                     } else {
-                        $this->infoCommand($sms, $this->getStandOrFail($args[1]));
+                        $this->infoCommand($sms, $this->standsRepo->getStandOrFail($args[1]));
                     }
                     break;
 
@@ -193,14 +194,19 @@ class SmsController extends Controller
                     if (count($args) < 2) {
                         $this->invalidArgumentsCommand($sms, 'with stand name and problem description: TAG MAINSQUARE vandalism');
                     } else {
-                        $this->tagCommand($sms, $this->getStandOrFail($args[1]));
+                        $this->tagCommand($sms, $this->standsRepo->getStandOrFail($args[1]));
                     }
                     break;
 
-//            case "DELNOTE":
-//                validateReceivedSMS($sms->Number(),count($args),1,_('with bike number and optional pattern. All messages or notes matching pattern will be deleted:')." NOTE 47 wheel");
-//                delnote($sms->Number(),$args[1],trim(urldecode($sms->Text())));
-//                break;
+                case "DELNOTE":
+                    if (count($args) < 2) {
+                        $this->invalidArgumentsCommand($sms, "with bike number/stand name and optional pattern. All messages or notes matching pattern will be deleted: DELNOTE 47 wheel");
+                    } else {
+                        $this->deleteNoteCommand($sms, $args[1]);
+                    }
+                    break;
+
+
 //            case "UNTAG":
 //                validateReceivedSMS($sms->Number(),count($args),1,_('with stand name and optional pattern. All notes matching pattern will be deleted for all bikes on that stand:')." UNTAG SAFKO1 pohoda");
 //                untag($sms->Number(),$args[1],trim(urldecode($sms->Text())));
@@ -349,22 +355,13 @@ class SmsController extends Controller
             return;
         }
 
-        if (preg_match("/^[0-9]*$/", $param)) {
-            $this->bikeNoteCommand($sms, $this->getBikeOrFail($param), $noteText);
-        } else if (preg_match("/^[A-Z]+[0-9]*$/i", $param)) {
-            $this->standNoteCommand($sms, $this->getStandOrFail($param), $noteText);
-        } else {
-            $sms->sender->notify(new class($this->param) extends SmsNotification{
-                public function __construct($param)
-                {
-                    $this->param = $param;
-                }
-                public function text()
-                {
-                    return "Error in bike number / stand name specification:" . $this->param;
-                }
-            });
-        }
+        $this->bikeOrStandInvoke($sms, $param,
+            function ($bikeNum) use ($sms, $noteText){
+                $this->bikeNoteCommand($sms, $bikeNum, $noteText);
+            }, function ($standName) use ($sms, $noteText){
+                $this->standNoteCommand($sms, $standName, $noteText);
+            }
+        );
     }
 
     private function bikeNoteCommand(Sms $sms, Bike $bike, $noteText)
@@ -392,22 +389,54 @@ class SmsController extends Controller
         $sms->sender->notify(new TagForStandSaved($stand));
     }
 
-    private function getBikeOrFail($bikeNumber)
+    private function deleteNoteCommand(Sms $sms, Bike $bike)
     {
-        $bike = $this->bikeRepo->findByBikeNum($bikeNumber);
-        if (!$bike){
-            throw new BikeDoesNotExistException($bikeNumber);
+        $noteText = SmsUtils::parseNoteFromSms($sms->sms_text, "delnote");
+        if (!$noteText){
+            $sms->sender->notify(new NoteTextMissing());
+            return;
         }
-        return $bike;
+        $this->bikeOrStandInvoke($sms, $param,
+            function ($bike) use ($sms, $noteText){
+                $this->bikeDeleteNoteCommand($sms, $bike, $noteText);
+            }, function ($stand) use ($sms, $noteText){
+                $this->standDeleteNoteCommand($sms, $stand, $noteText);
+            }
+        );
     }
 
-    private function getStandOrFail($standName)
+    // Helper function to call method depending on parameter type (bike/stand)
+    private function bikeOrStandInvoke(Sms $sms, $bikeOrStand, callable $callableBike, callable $callableStand)
     {
-        $stand = $this->standsRepo->findByStandNameCI($standName);
-        if (!$stand){
-            throw new StandDoesNotExistException($standName);
+        if (preg_match("/^[0-9]*$/", $bikeOrStand))
+        {
+            $callableBike($this->bikeRepo->getBikeOrFail($bikeOrStand));
         }
-        return $stand;
+        else if (preg_match("/^[A-Z]+[0-9]*$/i", $bikeOrStand))
+        {
+            $callableStand($this->standsRepo->getStandOrFail($bikeOrStand));
+        }
+        else {
+            $sms->sender->notify(new class($bikeOrStand) extends SmsNotification{
+                public function __construct($param)
+                {
+                    $this->param = $param;
+                }
+                public function text()
+                {
+                    return "Error in bike number / stand name specification:" . $this->param;
+                }
+            });
+        }
+    }
+
+    private function bikeDeleteNoteCommand($sms, Bike $bike, $noteText)
+    {
+
+    }
+
+    private function standDeleteNoteCommand($sms, Stand $stand, $noteText)
+    {
     }
 
 }

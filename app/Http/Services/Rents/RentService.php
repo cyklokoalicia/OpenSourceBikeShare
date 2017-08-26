@@ -2,8 +2,10 @@
 namespace BikeShare\Http\Services\Rents;
 
 use BikeShare\Domain\Bike\Bike;
+use BikeShare\Domain\Bike\BikePermissions;
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Bike\Events\BikeWasReturned;
+use BikeShare\Domain\Note\NotesRepository;
 use BikeShare\Domain\Rent\Events\RentWasClosed;
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
@@ -20,6 +22,8 @@ use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
 use Carbon\Carbon;
 use Exception;
+use Gate;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class RentService
 {
@@ -261,6 +265,13 @@ class RentService
 //        Notification::send($users, new NoteCreated($note));
 
         return $note;
+    }
+
+    public function deleteNoteFromBike(Bike $bike, User $user, $pattern)
+    {
+        Gate::forUser($user)->authorize(BikePermissions::DELETE_NOTE);
+        $bike->notes()
+            ->where('note', 'like', '%' . $pattern . '%')->delete();
     }
 
     public function addNoteToAllStandBikes(Stand $stand, User $user, $noteText)

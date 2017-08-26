@@ -129,23 +129,8 @@ class BikesController extends Controller
     {
         $bike = $this->bikeRepo->findByUuid($uuid);
 
-        // only if i have rented this bike
-        if ($bike->user_id != $this->user->id) {
-            return $this->response->errorUnauthorized();
-        }
-
         $stand = app(StandsRepository::class)->findByUuid($request->get('stand'));
-        $bike->status = BikeStatus::FREE;
-        $bike->stand()->associate($stand);
-        $bike->save();
 
-        event(new BikeWasReturned($bike));
-
-        $rent = $bike->rents()->where('rents.status', RentStatus::OPEN);
-        $rent->standTo()->associate($stand);
-        $rent->ended_at = Carbon::now();
-        $rent->status = RentStatus::CLOSE;
-        $rent->save();
-
+        app(RentService::class)->returnBike($this->user, $bike, $stand);
     }
 }

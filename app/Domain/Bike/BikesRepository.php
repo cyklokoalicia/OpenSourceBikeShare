@@ -4,6 +4,7 @@ namespace BikeShare\Domain\Bike;
 
 use BikeShare\Domain\Core\Repository;
 use BikeShare\Domain\User\User;
+use BikeShare\Http\Services\Rents\Exceptions\BikeDoesNotExistException;
 
 class BikesRepository extends Repository
 {
@@ -19,6 +20,14 @@ class BikesRepository extends Repository
         return $this->findBy('bike_num', $bikeNum, $columns);
     }
 
+    public function getBikeOrFail($bikeNumber)
+    {
+        $bike = $this->findByBikeNum($bikeNumber);
+        if (!$bike){
+            throw new BikeDoesNotExistException($bikeNumber);
+        }
+        return $bike;
+    }
 
     public function bikesRentedByUserCount(User $user)
     {

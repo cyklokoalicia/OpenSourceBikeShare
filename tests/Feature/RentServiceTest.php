@@ -6,10 +6,11 @@ use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\RentService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Tests\TestCase;
+use Tests\DbTestCaseWithSeeding;
 
-class RentServiceTest extends TestCase
+class RentServiceTest extends DbTestCaseWithSeeding
 {
     use DatabaseMigrations;
 
@@ -88,5 +89,54 @@ class RentServiceTest extends TestCase
                 ->where('user_id', $user->id)->first();
             self::assertNotNull($note);
         }
+    }
+
+    /** @test */
+    public function normal_user_cannot_delete_note()
+    {
+        $user = userWithResources();
+        $bike = create(Stand::class)->bikes()->save(make(Bike::class));
+
+        $noteText = "some note is here";
+        $this->rentService->addNoteToBike($bike, $user, $noteText);
+
+        $this->expectException(AuthorizationException::class);
+        $this->rentService->deleteNoteFromBike($bike, $user, "note");
+
+        self::assertEquals(1, $bike->notes->count());
+    }
+
+    /** @test */
+    public function admin_can_delete_notes_from_bike()
+    {
+        // Arrange
+        $user = userWithResources();
+        $admin = userWithResources([], true);
+
+        $stand = create(Stand::class);
+        $bike = $stand->bikes()->save(make(Bike::class));
+        $bike2 = $stand->bikes()->save(make(Bike::class));
+
+        $noteText1 = "flatten wheel and stolen bell";
+        $noteText2 = "wheel is missing";
+        $noteText3 = "vandalized";
+
+        // Act
+        $this->rentService->addNoteToBike($bike, $user, $noteText1);
+        $this->rentService->addNoteToBike($bike, $admin, $noteText2);
+        $this->rentService->addNoteToBike($bike, $user, $noteText3);
+        $this->rentService->addNoteToBike($bike2, $user, $noteText1);
+
+        // Assert
+        self::assertEquals(3, $bike->notes->count());
+
+        // Act
+        $this->rentService->deleteNoteFromBike($bike, $admin, "wheel");
+
+        // Test
+        $bike->refresh();
+        $bike2->refresh();
+        self::assertEquals(1, $bike->notes->count());
+        self::assertEquals(1, $bike2->notes->count());
     }
 }
