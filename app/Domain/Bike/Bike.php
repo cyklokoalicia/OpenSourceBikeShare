@@ -6,12 +6,13 @@ use BikeShare\Domain\Note\Note;
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Bike extends Model
 {
 
-    use LogsActivity;
+    use LogsActivity, SoftDeletes;
 
     public $table = 'bikes';
 

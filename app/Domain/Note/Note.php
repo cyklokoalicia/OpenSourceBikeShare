@@ -1,12 +1,13 @@
 <?php
 namespace BikeShare\Domain\Note;
 
-use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Core\Model;
 use BikeShare\Domain\User\User;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Note extends Model
 {
+    use SoftDeletes;
 
     public $table = 'notes';
 
