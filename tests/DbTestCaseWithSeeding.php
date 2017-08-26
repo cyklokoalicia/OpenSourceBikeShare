@@ -4,7 +4,7 @@ namespace Tests;
 
 use Spatie\Permission\PermissionRegistrar;
 
-abstract class DbTestWithSeededPermission extends TestCase
+abstract class DbTestCaseWithSeeding extends TestCase
 {
     protected function setUp()
     {
