@@ -92,7 +92,7 @@ class RentServiceTest extends DbTestCaseWithSeeding
     }
 
     /** @test */
-    public function normal_user_cannot_delete_note()
+    public function normal_user_cannot_delete_note_from_bike()
     {
         $user = userWithResources();
         $bike = create(Stand::class)->bikes()->save(make(Bike::class));
@@ -103,6 +103,7 @@ class RentServiceTest extends DbTestCaseWithSeeding
         $this->expectException(AuthorizationException::class);
         $this->rentService->deleteNoteFromBike($bike, $user, "note");
 
+        $bike->refresh();
         self::assertEquals(1, $bike->notes->count());
     }
 
@@ -139,4 +140,50 @@ class RentServiceTest extends DbTestCaseWithSeeding
         self::assertEquals(1, $bike->notes->count());
         self::assertEquals(1, $bike2->notes->count());
     }
+
+    /** @test */
+    public function normal_user_cannot_delete_note_from_stand()
+    {
+        $user = userWithResources();
+        $stand = create(Stand::class);
+
+        $noteText = "some note is here";
+        $this->rentService->addNoteToStand($stand, $user, $noteText);
+
+        $this->expectException(AuthorizationException::class);
+        $this->rentService->deleteNoteFromStand($stand, $user, "note");
+
+        $stand->refresh();
+        self::assertEquals(1, $stand->notes->count());
+    }
+
+    /** @test */
+    public function admin_can_delete_notes_from_stand()
+    {
+        // Arrange
+        $user = userWithResources();
+        $admin = userWithResources([], true);
+
+        $stand = create(Stand::class);
+
+        $noteText1 = "flatten wheel and stolen bell";
+        $noteText2 = "wheel is missing";
+        $noteText3 = "vandalized";
+
+        // Act
+        $this->rentService->addNoteToStand($stand, $user, $noteText1);
+        $this->rentService->addNoteToStand($stand, $user, $noteText2);
+        $this->rentService->addNoteToStand($stand, $user, $noteText3);
+
+        // Assert
+        self::assertEquals(3, $stand->notes->count());
+
+        // Act
+        $this->rentService->deleteNoteFromStand($stand, $admin, "wheel");
+
+        // Test
+        $stand->refresh();
+        self::assertEquals(1, $stand->notes->count());
+    }
+
 }

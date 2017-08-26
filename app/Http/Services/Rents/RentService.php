@@ -11,6 +11,7 @@ use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Stand\Stand;
+use BikeShare\Domain\Stand\StandPermissions;
 use BikeShare\Domain\User\User;
 use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Http\Services\AppConfig;
@@ -270,8 +271,19 @@ class RentService
     public function deleteNoteFromBike(Bike $bike, User $user, $pattern)
     {
         Gate::forUser($user)->authorize(BikePermissions::DELETE_NOTE);
+        $pattern = $pattern ? "%{$pattern}%" : "%";
+        
         $bike->notes()
-            ->where('note', 'like', '%' . $pattern . '%')->delete();
+            ->where('note', 'like', $pattern)->delete();
+    }
+
+    public function deleteNoteFromStand(Stand $stand, User $user, $pattern)
+    {
+        Gate::forUser($user)->authorize(StandPermissions::DELETE_NOTE);
+        $pattern = $pattern ? "%{$pattern}%" : "%";
+
+        $stand->notes()
+            ->where('note', 'like', $pattern)->delete();
     }
 
     public function addNoteToAllStandBikes(Stand $stand, User $user, $noteText)
