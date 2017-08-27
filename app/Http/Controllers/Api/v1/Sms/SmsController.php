@@ -27,6 +27,7 @@ use BikeShare\Notifications\Sms\BikeDoesNotExist;
 use BikeShare\Notifications\Sms\BikeReturnedSuccess;
 use BikeShare\Notifications\Sms\BikeToReturnNotRentedByMe;
 use BikeShare\Notifications\Sms\NoBikesRented;
+use BikeShare\Notifications\Sms\NoNotesDeleted;
 use BikeShare\Notifications\Sms\NoteForBikeSaved;
 use BikeShare\Notifications\Sms\NoteForStandSaved;
 use BikeShare\Notifications\Sms\NoteTextMissing;
@@ -41,11 +42,13 @@ use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandInfo;
 use BikeShare\Notifications\Sms\TagForStandSaved;
+use BikeShare\Notifications\Sms\Unauthorized;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
 use BikeShare\Notifications\SmsNotification;
 use Dingo\Api\Routing\Helpers;
 use Gate;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -250,6 +253,10 @@ class SmsController extends Controller
         {
             $sms->sender->notify(new StandDoesNotExist($e->standName));
         }
+        catch (AuthorizationException $e)
+        {
+            $sms->sender->notify(new Unauthorized);
+        }
     }
 
     private function helpCommand(Sms $sms)
@@ -381,7 +388,7 @@ class SmsController extends Controller
         $noteText = SmsUtils::parseNoteFromSms($sms->sms_text, "note");
 
         if (!$noteText){
-            $sms->sender->notify(new NoteTextMissing());
+            $sms->sender->notify(new NoteTextMissing);
             return;
         }
 
@@ -389,14 +396,15 @@ class SmsController extends Controller
         $sms->sender->notify(new TagForStandSaved($stand));
     }
 
-    private function deleteNoteCommand(Sms $sms, Bike $bike)
+    private function deleteNoteCommand(Sms $sms, $bikeOrStand)
     {
         $noteText = SmsUtils::parseNoteFromSms($sms->sms_text, "delnote");
         if (!$noteText){
-            $sms->sender->notify(new NoteTextMissing());
+            $sms->sender->notify(new NoteTextMissing);
             return;
         }
-        $this->bikeOrStandInvoke($sms, $param,
+
+        $this->bikeOrStandInvoke($sms, $bikeOrStand,
             function ($bike) use ($sms, $noteText){
                 $this->bikeDeleteNoteCommand($sms, $bike, $noteText);
             }, function ($stand) use ($sms, $noteText){
@@ -418,6 +426,7 @@ class SmsController extends Controller
         }
         else {
             $sms->sender->notify(new class($bikeOrStand) extends SmsNotification{
+                private $param;
                 public function __construct($param)
                 {
                     $this->param = $param;
@@ -430,13 +439,24 @@ class SmsController extends Controller
         }
     }
 
-    private function bikeDeleteNoteCommand($sms, Bike $bike, $noteText)
+    private function bikeDeleteNoteCommand(Sms $sms, Bike $bike, $pattern)
     {
+        $deletedCount = $this->rentService->deleteNoteFromBike($bike, $sms->sender, $pattern);
 
+        if ($deletedCount == 0){
+            $sms->sender->notify(new NoNotesDeleted($sms->sender, $pattern, $bike));
+        }
+        // do not notify user directly, he will be notified as admin.
     }
 
-    private function standDeleteNoteCommand($sms, Stand $stand, $noteText)
+    private function standDeleteNoteCommand($sms, Stand $stand, $pattern)
     {
-    }
+        $deletedCount = $this->rentService->deleteNoteFromStand($stand, $sms->sender, $pattern);
 
+        if ($deletedCount == 0){
+            $sms->sender->notify(new NoNotesDeleted($sms->sender, $pattern, null, $stand));
+        }
+
+        // do not notify user directly, he will be notified as admin.
+    }
 }

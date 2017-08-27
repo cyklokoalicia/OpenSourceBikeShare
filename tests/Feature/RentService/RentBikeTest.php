@@ -17,7 +17,7 @@ use BikeShare\Http\Services\Rents\RentService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
-class RentServiceRentBikeTest extends TestCase
+class RentBikeTest extends TestCase
 {
     use DatabaseMigrations;
 

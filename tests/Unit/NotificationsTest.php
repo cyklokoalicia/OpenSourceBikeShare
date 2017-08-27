@@ -27,7 +27,7 @@ class NotificationsTest extends TestCase
         $user = $this->mockObj(User::class);
         $user->method('hasRole')->willReturn(true);
 
-        $text = (new Help($user, $appConfig))->text();
+        $text = (new Help($user, $appConfig))->smsText();
         // test at least these basic commands
         foreach (['CREDIT', 'RENT', 'RETURN', 'FORCERENT', 'FORCERETURN', 'REVERT'] as $cmd){
             self::assertContains($cmd, $text);
@@ -42,20 +42,20 @@ class NotificationsTest extends TestCase
 
         $user = factory(User::class)->make([]);
         $notification = new Credit($appConfig, $user);
-        self::assertContains((string) $user->credit, $notification->text());
+        self::assertContains((string) $user->credit, $notification->smsText());
     }
 
     /** @test */
     public function info_notification_contains_stand_name_description_and_possibly_gps()
     {
         $stand = make(Stand::class);
-        $notifText = (new StandInfo($stand))->text();
+        $notifText = (new StandInfo($stand))->smsText();
         self::assertContains($stand->name, $notifText);
         self::assertContains($stand->description, $notifText);
         self::assertContains('GPS', $notifText);
 
         $standNoGps = make(Stand::class, ['name'=>'XYZ', 'description' => 'desc', 'longitude' => null, 'latitude' => null]);
-        $notifText2 = (new StandInfo($standNoGps))->text();
+        $notifText2 = (new StandInfo($standNoGps))->smsText();
         self::assertContains($standNoGps->name, $notifText2);
         self::assertContains($standNoGps->description, $notifText2);
         self::assertNotContains('GPS', $notifText2);
@@ -65,7 +65,7 @@ class NotificationsTest extends TestCase
     public function note_notification_to_bike_contains_bike_number()
     {
         $bike = make(Bike::class);
-        $text = (new NoteForBikeSaved($bike))->text();
+        $text = (new NoteForBikeSaved($bike))->smsText();
         self::assertContains((string) $bike->bike_num, $text);
     }
 
@@ -73,7 +73,7 @@ class NotificationsTest extends TestCase
     public function note_notification_to_stand_contains_stand_name()
     {
         $stand = make(Stand::class);
-        $text = (new NoteForStandSaved($stand))->text();
+        $text = (new NoteForStandSaved($stand))->smsText();
         self::assertContains((string) $stand->name, $text);
     }
     
@@ -81,7 +81,7 @@ class NotificationsTest extends TestCase
     public function tag_notification_contains_stand_name()
     {
         $stand = make(Stand::class);
-        $text = (new TagForStandSaved($stand))->text();
+        $text = (new TagForStandSaved($stand))->smsText();
         self::assertContains((string) $stand->name, $text);
     }
 

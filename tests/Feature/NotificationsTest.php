@@ -32,7 +32,7 @@ class NotificationsTest extends TestCase
                 });
             });
 
-        $notificationText = app(Free::class)->text();
+        $notificationText = app(Free::class)->smsText();
 
         foreach ($emptyStands as $stand){
             self::assertContains($stand->name, $notificationText);
@@ -55,7 +55,7 @@ class NotificationsTest extends TestCase
         $stand = create(Stand::class);
         $bike = $stand->bikes()->save(make(Bike::class));
 
-        $notifText = (new WhereIsBike($bike))->text();
+        $notifText = (new WhereIsBike($bike))->smsText();
 
         self::assertContains((string) $bike->bike_num, $notifText);
         self::assertContains($stand->name, $notifText);
@@ -69,7 +69,7 @@ class NotificationsTest extends TestCase
         $bike = $stand->bikes()->save(make(Bike::class));
 
         app(RentService::class)->rentBike($user, $bike);
-        $notifText = (new WhereIsBike($bike))->text();
+        $notifText = (new WhereIsBike($bike))->smsText();
 
         self::assertContains((string) $bike->bike_num, $notifText);
         self::assertContains($user->name, $notifText);

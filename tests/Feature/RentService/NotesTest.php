@@ -10,7 +10,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\DbTestCaseWithSeeding;
 
-class RentServiceTest extends DbTestCaseWithSeeding
+class NotesTest extends DbTestCaseWithSeeding
 {
     use DatabaseMigrations;
 
@@ -132,9 +132,11 @@ class RentServiceTest extends DbTestCaseWithSeeding
         self::assertEquals(3, $bike->notes->count());
 
         // Act
-        $this->rentService->deleteNoteFromBike($bike, $admin, "wheel");
+        $count = $this->rentService->deleteNoteFromBike($bike, $admin, "wheel");
 
         // Test
+        self::assertEquals(2, $count);
+
         $bike->refresh();
         $bike2->refresh();
         self::assertEquals(1, $bike->notes->count());
@@ -179,9 +181,10 @@ class RentServiceTest extends DbTestCaseWithSeeding
         self::assertEquals(3, $stand->notes->count());
 
         // Act
-        $this->rentService->deleteNoteFromStand($stand, $admin, "wheel");
+        $count = $this->rentService->deleteNoteFromStand($stand, $admin, "wheel");
 
         // Test
+        self::assertEquals(2, $count);
         $stand->refresh();
         self::assertEquals(1, $stand->notes->count());
     }

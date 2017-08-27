@@ -5,7 +5,6 @@ use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikePermissions;
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Bike\Events\BikeWasReturned;
-use BikeShare\Domain\Note\NotesRepository;
 use BikeShare\Domain\Rent\Events\RentWasClosed;
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
@@ -21,10 +20,11 @@ use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
+use BikeShare\Notifications\Admin\NotesDeleted;
 use Carbon\Carbon;
 use Exception;
 use Gate;
-use Illuminate\Auth\Access\AuthorizationException;
+use Notification;
 
 class RentService
 {
@@ -273,8 +273,17 @@ class RentService
         Gate::forUser($user)->authorize(BikePermissions::DELETE_NOTE);
         $pattern = $pattern ? "%{$pattern}%" : "%";
         
-        $bike->notes()
+        $count =  $bike->notes()
             ->where('note', 'like', $pattern)->delete();
+
+        if ($count > 0){
+            Notification::send(
+                app(UsersRepository::class)->getAdmins(),
+                new NotesDeleted($user, $pattern, $count, $bike)
+            );
+        }
+
+        return $count;
     }
 
     public function deleteNoteFromStand(Stand $stand, User $user, $pattern)
@@ -282,8 +291,17 @@ class RentService
         Gate::forUser($user)->authorize(StandPermissions::DELETE_NOTE);
         $pattern = $pattern ? "%{$pattern}%" : "%";
 
-        $stand->notes()
+        $count = $stand->notes()
             ->where('note', 'like', $pattern)->delete();
+
+        if ($count > 0){
+            Notification::send(
+                app(UsersRepository::class)->getAdmins(),
+                new NotesDeleted($user, $pattern, $count, null, $stand)
+            );
+        }
+
+        return $count;
     }
 
     public function addNoteToAllStandBikes(Stand $stand, User $user, $noteText)

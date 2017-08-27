@@ -14,19 +14,15 @@ class UsersRepository extends Repository
         return User::class;
     }
 
-    public function getUsersWithRole($role)
+    public function getAdmins()
     {
-        if (is_array($role)) {
-            return $this->model->whereHas('roles', function ($q) use ($role) {
-                $q->whereIn('name', $role);
-            });
-        }
-
-        return $this->model->whereHas('roles', function ($q) use ($role) {
-            $q->where('name', $role);
-        });
+        return $this->getUsersWithRole(Roles::ADMIN);
     }
 
+    public function getUsersWithRole($role)
+    {
+        return User::role($role)->get();
+    }
 
     public function create(array $data)
     {

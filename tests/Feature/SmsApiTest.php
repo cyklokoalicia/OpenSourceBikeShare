@@ -6,6 +6,7 @@ use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
+use BikeShare\Notifications\Admin\NotesDeleted;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
 use BikeShare\Notifications\Sms\BikeDoesNotExist;
 use BikeShare\Notifications\Sms\BikeNotTopOfStack;
@@ -17,6 +18,7 @@ use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\NoBikesRented;
+use BikeShare\Notifications\Sms\NoNotesDeleted;
 use BikeShare\Notifications\Sms\NoteForBikeSaved;
 use BikeShare\Notifications\Sms\NoteForStandSaved;
 use BikeShare\Notifications\Sms\NoteTextMissing;
@@ -25,14 +27,14 @@ use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\StandInfo;
 use BikeShare\Notifications\Sms\TagForStandSaved;
+use BikeShare\Notifications\Sms\Unauthorized;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
-use BikeShare\Notifications\SmsNotification;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Notification;
-use Tests\TestCase;
+use Tests\DbTestCaseWithSeeding;
 
-class SmsApiTest extends TestCase
+class SmsApiTest extends DbTestCaseWithSeeding
 {
     use DatabaseMigrations;
 
@@ -381,6 +383,81 @@ class SmsApiTest extends TestCase
         $this->get($this->buildSmsUrl($user, 'TAG SAFKO note text is here'));
 
         Notification::assertSentTo($user, TagForStandSaved::class);
+    }
+
+
+    /** @test */
+    public function delnote_command_from_bike_not_authorized()
+    {
+        $user = create(User::class);
+        create(Stand::class)->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'DELNOTE 1 something'));
+
+        Notification::assertSentTo($user, Unauthorized::class);
+    }
+
+    /** @test */
+    public function delnote_command_from_bike_without_notes()
+    {
+        $admin = userWithResources([], true);
+        create(Stand::class)->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($admin, 'DELNOTE 1 something'));
+
+        Notification::assertSentTo($admin, NoNotesDeleted::class);
+    }
+
+
+    /** @test */
+    public function delnote_command_from_bike_ok()
+    {
+        $user = userWithResources();
+        $admin = userWithResources([], true);
+        create(Stand::class)->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'NOTE 1 note_text is here'));
+        $this->get($this->buildSmsUrl($admin, 'DELNOTE 1 note_text'));
+        $this->get($this->buildSmsUrl($admin, 'DELNOTE 1 note_text'));
+        $this->get($this->buildSmsUrl($admin, 'DELNOTE 2 something'));
+
+        Notification::assertSentTo($user, NoteForBikeSaved::class);
+        Notification::assertSentTo($admin, NotesDeleted::class);
+        Notification::assertSentTo($admin, NoNotesDeleted::class);
+        Notification::assertSentTo($admin, BikeDoesNotExist::class);
+    }
+
+    /** @test */
+    public function delnote_command_from_stand_not_authorized()
+    {
+        $user = create(User::class);
+        create(Stand::class, ['name' => 'SAFKO']);
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($user, 'DELNOTE SAFKO something'));
+
+        Notification::assertSentTo($user, Unauthorized::class);
+    }
+
+    /** @test */
+    public function delnote_command_from_stand_ok()
+    {
+        $admin = userWithResources([], true);
+        create(Stand::class, ['name' => 'SAFKO']);
+
+        Notification::fake();
+        $this->get($this->buildSmsUrl($admin, 'NOTE SAFKO poznamka text is here'));
+        $this->get($this->buildSmsUrl($admin, 'DELNOTE SAFKO poznamka'));
+        $this->get($this->buildSmsUrl($admin, 'DELNOTE SAFKO poznamka'));
+        $this->get($this->buildSmsUrl($admin, 'DELNOTE SAFKO2 something'));
+
+        Notification::assertSentTo($admin, NoteForStandSaved::class);
+        Notification::assertSentTo($admin, NotesDeleted::class);
+        Notification::assertSentTo($admin, NoNotesDeleted::class);
+        Notification::assertSentTo($admin, StandDoesNotExist::class);
     }
 
     private function buildSmsUrl($user, $text)
