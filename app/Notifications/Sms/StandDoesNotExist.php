@@ -13,7 +13,7 @@ class StandDoesNotExist extends SmsNotification
         $this->standName = $standName;
     }
 
-    public function text()
+    public function smsText()
     {
         return "Stand name {$this->standName} does not exist.";
     }

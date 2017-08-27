@@ -17,7 +17,7 @@ class Free extends SmsNotification
         $this->repo = $repo;
     }
 
-    public function text()
+    public function smsText()
     {
         $stands = $this->repo
             ->withCount('bikes')

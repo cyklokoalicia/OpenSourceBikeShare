@@ -6,7 +6,7 @@ use BikeShare\Notifications\SmsNotification;
 
 class NoBikesRented extends SmsNotification
 {
-    public function text()
+    public function smsText()
     {
         return "You have no rented bikes currently.";
     }

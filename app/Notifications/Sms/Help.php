@@ -20,7 +20,7 @@ class Help extends SmsNotification
         $this->user = $user;
     }
 
-    public function text()
+    public function smsText()
     {
         $message="Commands:\nHELP\n";
         if ($this->isCreditEnabled) {

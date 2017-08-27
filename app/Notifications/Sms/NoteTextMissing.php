@@ -7,7 +7,7 @@ use BikeShare\Notifications\SmsNotification;
 
 class NoteTextMissing extends SmsNotification
 {
-    public function text()
+    public function smsText()
     {
         return "Error: Note text is missing. Usage: NOTE [Bike number/Stand name] [Note text].";
     }

@@ -17,7 +17,7 @@ class BikeNotTopOfStack extends SmsNotification
         $this->topBike = $topBike;
     }
 
-    public function text()
+    public function smsText()
     {
         return "Bike {$this->requestedBike->bike_num} is not rentable now, you have to rent bike {$this->topBike->bike_num} from this stand.";
     }

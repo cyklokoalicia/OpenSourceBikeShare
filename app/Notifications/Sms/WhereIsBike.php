@@ -17,7 +17,7 @@ class WhereIsBike extends SmsNotification
         $this->bike = $bike;
     }
 
-    public function text()
+    public function smsText()
     {
         if ($this->bike->stand)
             return "Bike {$this->bike->bike_num} is at stand {$this->bike->stand->name}.";

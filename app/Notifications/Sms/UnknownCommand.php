@@ -14,7 +14,7 @@ class UnknownCommand extends SmsNotification
         $this->command = $command;
     }
 
-    public function text()
+    public function smsText()
     {
         return "Error. The command {$this->command} does not exist. If you need help, send: HELP";
     }

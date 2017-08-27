@@ -18,7 +18,7 @@ class Credit extends SmsNotification
         $this->user = $user;
     }
 
-    public function text()
+    public function smsText()
     {
         $usercredit = $this->user->credit . $this->creditCurrency;
         return "Your remaining credit: {$usercredit}";

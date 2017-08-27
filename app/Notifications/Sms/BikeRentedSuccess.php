@@ -17,7 +17,7 @@ class BikeRentedSuccess extends SmsNotification
         $this->rent = $rent;
     }
 
-    public function text()
+    public function smsText()
     {
         $msg = "Bike {$this->rent->bike->bike_num}: Open with code {$this->rent->old_code}. Change code immediately to {$this->rent->new_code} (open,rotate metal part,set new code,rotate metal part back).";
         $notes = $this->rent->bike->notes;

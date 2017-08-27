@@ -23,7 +23,7 @@ class RentLimitExceeded extends SmsNotification
         $this->currentRents = $currentRents;
     }
 
-    public function text()
+    public function smsText()
     {
         if ($this->userLimit == 0) {
             return 'You can not rent any bikes. Contact the admins to lift the ban.';

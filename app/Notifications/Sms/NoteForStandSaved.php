@@ -17,7 +17,7 @@ class NoteForStandSaved extends SmsNotification
         $this->stand = $stand;
     }
 
-    public function text()
+    public function smsText()
     {
         return "Note for stand {$this->stand->name} saved.";
     }

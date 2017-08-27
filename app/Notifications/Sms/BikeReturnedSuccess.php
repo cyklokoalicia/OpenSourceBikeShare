@@ -27,7 +27,7 @@ class BikeReturnedSuccess extends SmsNotification
         $this->noteText = $noteText;
     }
 
-    public function text()
+    public function smsText()
     {
         $message = "Bike {$this->rent->bike->bike_num} returned to stand {$this->rent->standTo->name}. Make sure you set code to {$this->rent->new_code}.";
         if ($this->noteText){

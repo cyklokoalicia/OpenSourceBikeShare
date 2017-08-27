@@ -18,7 +18,7 @@ class NoteForBikeSaved extends SmsNotification
         $this->bike = $bike;
     }
 
-    public function text()
+    public function smsText()
     {
         return "Note for bike {$this->bike->bike_num} saved.";
     }

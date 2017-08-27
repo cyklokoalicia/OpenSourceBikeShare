@@ -19,7 +19,7 @@ class TagForStandSaved extends SmsNotification
         $this->stand = $stand;
     }
 
-    public function text()
+    public function smsText()
     {
         return "All bikes on stand {$this->stand->name} tagged.";
     }

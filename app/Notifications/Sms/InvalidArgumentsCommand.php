@@ -17,7 +17,7 @@ class InvalidArgumentsCommand extends SmsNotification
         $this->errorMessage = $errorMessage;
     }
 
-    public function text()
+    public function smsText()
     {
         return 'Error. More arguments needed, use command ' . $this->errorMessage;
     }

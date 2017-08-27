@@ -20,7 +20,7 @@ class RechargeCredit extends SmsNotification
         $this->requiredCredit = $requiredCredit;
     }
 
-    public function text()
+    public function smsText()
     {
         $text = 'Please, recharge your credit: '
              . $this->userCredit

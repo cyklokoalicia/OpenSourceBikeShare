@@ -18,7 +18,7 @@ class StandInfo extends SmsNotification
         $this->stand = $stand;
     }
 
-    public function text()
+    public function smsText()
     {
         $msg = $this->stand->name . " - " . $this->stand->description;
         if ($this->stand->longitude && $this->stand->latitude){

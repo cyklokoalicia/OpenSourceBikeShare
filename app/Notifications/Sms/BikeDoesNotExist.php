@@ -15,7 +15,7 @@ class BikeDoesNotExist extends SmsNotification
         $this->bikeNumber = $bikeNumber;
     }
 
-    public function text()
+    public function smsText()
     {
         return "Bike {$this->bikeNumber} does not exist.";
     }

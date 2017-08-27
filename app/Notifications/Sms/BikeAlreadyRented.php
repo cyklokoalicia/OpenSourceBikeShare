@@ -23,7 +23,7 @@ class BikeAlreadyRented extends SmsNotification
         $this->bike = $bike;
     }
 
-    public function text()
+    public function smsText()
     {
         $bikeOwner = $this->bike->user;
         if ($this->currentUser->id == $bikeOwner->id) {

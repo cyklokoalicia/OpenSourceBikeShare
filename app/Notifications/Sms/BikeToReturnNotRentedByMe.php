@@ -31,7 +31,7 @@ class BikeToReturnNotRentedByMe extends SmsNotification
         $this->userRentedBikes = $userRentedBikes;
     }
 
-    public function text()
+    public function smsText()
     {
         $msg = "You do not have bike  {$this->bikeToReturn->bike_num} rented.";
         if ($this->userRentedBikes && $this->userRentedBikes->count() > 0){
