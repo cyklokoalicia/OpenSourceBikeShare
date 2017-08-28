@@ -6,8 +6,11 @@ use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\RentService;
+use BikeShare\Notifications\Admin\BikeNoteAdded;
+use BikeShare\Notifications\Admin\StandNoteAdded;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Notification;
 use Tests\DbTestCaseWithSeeding;
 
 class NotesTest extends DbTestCaseWithSeeding
@@ -32,14 +35,16 @@ class NotesTest extends DbTestCaseWithSeeding
     }
 
     /** @test */
-    public function add_note_to_bike()
+    public function add_note_to_bike_ok()
     {
         // Arrange
         $user = userWithResources();
+        $admin = userWithResources([], true);
         $bike = create(Stand::class)->bikes()->save(make(Bike::class));
         $noteText = "some note text";
 
         // Act
+        Notification::fake();
         $this->rentService->addNoteToBike($bike, $user, $noteText);
 
         // Assert
@@ -47,6 +52,8 @@ class NotesTest extends DbTestCaseWithSeeding
             ->where('note', $noteText)
             ->where('notable_id', $bike->id)
             ->where('user_id', $user->id)->first());
+
+        Notification::assertSentTo($admin, BikeNoteAdded::class);
     }
 
     /** @test */
@@ -54,10 +61,12 @@ class NotesTest extends DbTestCaseWithSeeding
     {
         // Arrange
         $user = userWithResources();
+        $admin = userWithResources([], true);
         $stand = create(Stand::class);
         $noteText = "some note text";
 
         // Act
+        Notification::fake();
         $this->rentService->addNoteToStand($stand, $user, $noteText);
 
         // Assert
@@ -65,6 +74,8 @@ class NotesTest extends DbTestCaseWithSeeding
             ->where('note', $noteText)
             ->where('notable_id', $stand->id)
             ->where('user_id', $user->id)->first());
+
+        Notification::assertSentTo($admin, StandNoteAdded::class);
     }
 
     /** @test */

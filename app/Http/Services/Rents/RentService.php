@@ -20,7 +20,9 @@ use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
+use BikeShare\Notifications\Admin\BikeNoteAdded;
 use BikeShare\Notifications\Admin\NotesDeleted;
+use BikeShare\Notifications\Admin\StandNoteAdded;
 use Carbon\Carbon;
 use Exception;
 use Gate;
@@ -246,11 +248,7 @@ class RentService
             'note' => $noteText,
             'user_id' => $user->id
         ]);
-
-        // TODO notify Admins (email and sms if enabled)
-//        $users = app(UsersRepository::class)->getUsersWithRole('admin')->get();
-//        Notification::send($users, new NoteCreated($note));
-
+        $this->notifyAdmins(new BikeNoteAdded($bike, $note, $user));
         return $note;
     }
 
@@ -260,11 +258,7 @@ class RentService
             'note' => $noteText,
             'user_id' => $user->id
         ]);
-
-        // TODO notify Admins (email and sms if enabled)
-//        $users = app(UsersRepository::class)->getUsersWithRole('admin')->get();
-//        Notification::send($users, new NoteCreated($note));
-
+        $this->notifyAdmins(new StandNoteAdded($stand, $note, $user));
         return $note;
     }
 
@@ -295,10 +289,7 @@ class RentService
             ->where('note', 'like', $pattern)->delete();
 
         if ($count > 0){
-            Notification::send(
-                app(UsersRepository::class)->getAdmins(),
-                new NotesDeleted($user, $pattern, $count, null, $stand)
-            );
+            $this->notifyAdmins(new NotesDeleted($user, $pattern, $count, null, $stand));
         }
 
         return $count;
@@ -360,5 +351,11 @@ class RentService
         }
 
         // TODO notify admins (create report) about too many rentals of users
+    }
+
+    private function notifyAdmins($notification)
+    {
+        Notification::send(
+            app(UsersRepository::class)->getAdmins(), $notification);
     }
 }
