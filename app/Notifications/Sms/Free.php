@@ -24,20 +24,18 @@ class Free extends SmsNotification
             ->orderBy('name')
             ->all();
 
-        $standsWithBikes = $stands->filter(function ($s){
-            return $s->bikes_count > 0;
-        })->map(function ($s){
+        list($withBikes, $withoutBikes) = $stands->partition(function ($stand){
+            return $stand->bikes_count > 0;
+        });
+
+        $withBikes = $withBikes->map(function ($s){
             return "{$s->name}:{$s->bikes_count}";
         })->implode(',');
 
-        $msg = empty($standsWithBikes) ? "No free bikes." : $standsWithBikes;
+        $msg = empty($withBikes) ? "No free bikes." : $withBikes;
 
-        $standsWithoutBikes = $stands->filter(function ($s){
-            return $s->bikes_count == 0;
-        })->pluck('name')->implode(',');
-
-        if (!empty($standsWithoutBikes)){
-            $msg .= " Empty stands:{$standsWithoutBikes}";
+        if (!empty($withoutBikes)){
+            $msg .= " Empty stands:" . $withoutBikes->pluck('name')->implode(',');
         }
 
         return $msg;

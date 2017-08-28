@@ -318,7 +318,7 @@ class SmsController extends Controller
         $user = $sms->sender;
 
         if ($this->bikeRepo->bikesRentedByUserCount($user) == 0){
-            $user->notify(new NoBikesRented());
+            $user->notify(new NoBikesRented);
             return;
         }
 

@@ -137,10 +137,8 @@ class NotesTest extends DbTestCaseWithSeeding
         // Test
         self::assertEquals(2, $count);
 
-        $bike->refresh();
-        $bike2->refresh();
-        self::assertEquals(1, $bike->notes->count());
-        self::assertEquals(1, $bike2->notes->count());
+        self::assertEquals(1, $bike->fresh()->notes->count());
+        self::assertEquals(1, $bike2->fresh()->notes->count());
     }
 
     /** @test */
