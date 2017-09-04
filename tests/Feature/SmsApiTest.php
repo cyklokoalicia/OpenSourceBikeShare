@@ -28,6 +28,7 @@ use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\StandInfo;
+use BikeShare\Notifications\Sms\StandListBikes;
 use BikeShare\Notifications\Sms\TagForStandSaved;
 use BikeShare\Notifications\Sms\Unauthorized;
 use BikeShare\Notifications\Sms\UnknownCommand;
@@ -494,6 +495,19 @@ class SmsApiTest extends DbTestCaseWithSeeding
 
         $this->get($this->buildSmsUrl($admin, 'UNTAG MANDERLAK'));
         Notification::assertSentTo($admin, NoBikesUntagged::class);
+    }
+
+    /** @test */
+    public function list_command_ok()
+    {
+        $user = userWithResources();
+        create(Stand::class, ['name' => 'SAFKO'])->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+
+        Notification::fake();
+
+        $this->get($this->buildSmsUrl($user, 'LIST SAFKO'));
+
+        Notification::assertSentTo($user, StandListBikes::class);
     }
 
     private function buildSmsUrl($user, $text)

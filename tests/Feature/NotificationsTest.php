@@ -6,6 +6,7 @@ use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Notifications\Sms\Free;
+use BikeShare\Notifications\Sms\StandListBikes;
 use BikeShare\Notifications\Sms\WhereIsBike;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
@@ -74,5 +75,23 @@ class NotificationsTest extends TestCase
         self::assertContains((string) $bike->bike_num, $notifText);
         self::assertContains($user->name, $notifText);
         self::assertContains($user->phone_number, $notifText);
+    }
+
+    /** @test */
+    public function list_notification_contains_bike_numbers_on_a_given_stand()
+    {
+        $standWithBikes = create(Stand::class);
+        $bikeNumbers = [138, 223, 3661];
+        foreach ($bikeNumbers as $number){
+            $standWithBikes->bikes()->save(make(Bike::class, ['bike_num' => $number]));
+        }
+        $standWithoutBikes = create(Stand::class);
+
+        $textForStandWithBikes = (new StandListBikes($standWithBikes))->smsText();
+        $textForStandWithNoBikes = (new StandListBikes($standWithoutBikes))->smsText();
+        foreach ($bikeNumbers as $number){
+            self::assertContains((string) $number, $textForStandWithBikes);
+            self::assertNotContains((string) $number, $textForStandWithNoBikes);
+        }
     }
 }

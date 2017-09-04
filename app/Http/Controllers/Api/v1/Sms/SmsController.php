@@ -42,6 +42,7 @@ use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
 use BikeShare\Notifications\Sms\StandInfo;
+use BikeShare\Notifications\Sms\StandListBikes;
 use BikeShare\Notifications\Sms\TagForStandSaved;
 use BikeShare\Notifications\Sms\Unauthorized;
 use BikeShare\Notifications\Sms\UnknownCommand;
@@ -231,7 +232,14 @@ class SmsController extends Controller
                         );
                     }
                     break;
-//            case "LIST":
+                case "LIST":
+                    if (count($args) < 2) {
+                        $this->invalidArgumentsCommand($sms, "with stand name: LIST RACKO");
+                    } else {
+                        $this->listCommand($sms, $this->standsRepo->getStandOrFail($args[1]));
+                    }
+                    break;
+
 //                //checkUserPrivileges($sms->Number()); //allowed for all users as agreed
 //                checkUserPrivileges($sms->Number());
 //                validateReceivedSMS($sms->Number(),count($args),2,_('with stand name:')." LIST RACKO");
@@ -483,5 +491,10 @@ class SmsController extends Controller
         if ($deletedCount == 0){
             $sms->sender->notify(new NoBikesUntagged($pattern, $stand));
         }
+    }
+
+    private function listCommand(Sms $sms, Stand $stand)
+    {
+        $sms->sender->notify(new StandListBikes($stand));
     }
 }
