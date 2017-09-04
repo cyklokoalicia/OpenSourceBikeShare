@@ -6,6 +6,7 @@ use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;
+use BikeShare\Notifications\Admin\AllNotesDeleted;
 use BikeShare\Notifications\Admin\NotesDeleted;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
 use BikeShare\Notifications\Sms\BikeDoesNotExist;
@@ -18,6 +19,7 @@ use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\NoBikesRented;
+use BikeShare\Notifications\Sms\NoBikesUntagged;
 use BikeShare\Notifications\Sms\NoNotesDeleted;
 use BikeShare\Notifications\Sms\NoteForBikeSaved;
 use BikeShare\Notifications\Sms\NoteForStandSaved;
@@ -458,6 +460,40 @@ class SmsApiTest extends DbTestCaseWithSeeding
         Notification::assertSentTo($admin, NotesDeleted::class);
         Notification::assertSentTo($admin, NoNotesDeleted::class);
         Notification::assertSentTo($admin, StandDoesNotExist::class);
+    }
+
+    /** @test */
+    public function untag_command_ok()
+    {
+        $user = userWithResources();
+        $admin = userWithResources([], true);
+        create(Stand::class, ['name' => 'SAFKO'])->bikes()->save(make(Bike::class, ['bike_num'=>1]));
+        create(Stand::class, ['name' => 'MANDERLAK'])->bikes()->save(make(Bike::class, ['bike_num'=>2]));
+
+        Notification::fake();
+
+        // Tag SAFKO
+        $this->get($this->buildSmsUrl($user, 'TAG SAFKO note text is here'));
+        Notification::assertSentTo($user, TagForStandSaved::class);
+
+        $this->get($this->buildSmsUrl($admin, 'UNTAG SAFKO text'));
+        Notification::assertSentTo($admin, AllNotesDeleted::class);
+
+        $this->get($this->buildSmsUrl($admin, 'UNTAG SAFKO text'));
+        Notification::assertSentTo($admin, NoBikesUntagged::class);
+
+        $this->get($this->buildSmsUrl($admin, 'UNTAG SAFKO2'));
+        Notification::assertSentTo($admin, NoBikesUntagged::class);
+
+        // Tag MANDERLAK
+        $this->get($this->buildSmsUrl($admin, 'TAG MANDERLAK now something completely different'));
+        Notification::assertSentTo($admin, TagForStandSaved::class);
+
+        $this->get($this->buildSmsUrl($admin, 'UNTAG MANDERLAK'));
+        Notification::assertSentTo($admin, AllNotesDeleted::class);
+
+        $this->get($this->buildSmsUrl($admin, 'UNTAG MANDERLAK'));
+        Notification::assertSentTo($admin, NoBikesUntagged::class);
     }
 
     private function buildSmsUrl($user, $text)

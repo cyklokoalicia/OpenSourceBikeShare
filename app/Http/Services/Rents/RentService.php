@@ -307,7 +307,6 @@ class RentService
         foreach ($stand->bikes as $b){
             $deleted += $b->notes()->where('note', 'like', $pattern)->delete();
         }
-
         if ($deleted > 0){
             $this->notifyAdmins(new AllNotesDeleted($user, $pattern, $deleted, $stand));
         }

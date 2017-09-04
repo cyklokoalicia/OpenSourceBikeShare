@@ -27,6 +27,7 @@ use BikeShare\Notifications\Sms\BikeDoesNotExist;
 use BikeShare\Notifications\Sms\BikeReturnedSuccess;
 use BikeShare\Notifications\Sms\BikeToReturnNotRentedByMe;
 use BikeShare\Notifications\Sms\NoBikesRented;
+use BikeShare\Notifications\Sms\NoBikesUntagged;
 use BikeShare\Notifications\Sms\NoNotesDeleted;
 use BikeShare\Notifications\Sms\NoteForBikeSaved;
 use BikeShare\Notifications\Sms\NoteForStandSaved;
@@ -119,9 +120,10 @@ class SmsController extends Controller
     protected function parseCommand(Sms $sms)
     {
         $args = SmsUtils::parseSmsArguments($sms->sms_text);
+        $command = $args[0];
 
         try {
-            switch($args[0])
+            switch($command)
             {
                 case "HELP":
                     $this->helpCommand($sms);
@@ -129,7 +131,7 @@ class SmsController extends Controller
 
                 case "CREDIT":
                     if (!$this->appConfig->isCreditEnabled()){
-                        $this->unknownCommand($sms, $args[0]);
+                        $this->unknownCommand($sms, $command);
                     } else {
                         $this->creditCommand($sms);
                     }
@@ -197,7 +199,11 @@ class SmsController extends Controller
                     if (count($args) < 2) {
                         $this->invalidArgumentsCommand($sms, 'with stand name and problem description: TAG MAINSQUARE vandalism');
                     } else {
-                        $this->tagCommand($sms, $this->standsRepo->getStandOrFail($args[1]));
+                        $this->tagCommand(
+                            $sms,
+                            $this->standsRepo->getStandOrFail($args[1]),
+                            SmsUtils::parseNoteFromSms($sms->sms_text, $command)
+                        );
                     }
                     break;
 
@@ -205,15 +211,26 @@ class SmsController extends Controller
                     if (count($args) < 2) {
                         $this->invalidArgumentsCommand($sms, "with bike number/stand name and optional pattern. All messages or notes matching pattern will be deleted: DELNOTE 47 wheel");
                     } else {
-                        $this->deleteNoteCommand($sms, $args[1]);
+                        $this->deleteNoteCommand(
+                            $sms,
+                            $args[1],
+                            SmsUtils::parseNoteFromSms($sms->sms_text, $command)
+                        );
                     }
                     break;
 
 
-//            case "UNTAG":
-//                validateReceivedSMS($sms->Number(),count($args),1,_('with stand name and optional pattern. All notes matching pattern will be deleted for all bikes on that stand:')." UNTAG SAFKO1 pohoda");
-//                untag($sms->Number(),$args[1],trim(urldecode($sms->Text())));
-//                break;
+                case "UNTAG":
+                    if (count($args) < 2) {
+                        $this->invalidArgumentsCommand($sms, "with stand name and optional pattern. All notes matching pattern will be deleted for all bikes on that stand: UNTAG SAFKO1 pohoda");
+                    } else {
+                        $this->untagCommand(
+                            $sms,
+                            $this->standsRepo->getStandOrFail($args[1]),
+                            SmsUtils::parseNoteFromSms($sms->sms_text, $command)
+                        );
+                    }
+                    break;
 //            case "LIST":
 //                //checkUserPrivileges($sms->Number()); //allowed for all users as agreed
 //                checkUserPrivileges($sms->Number());
@@ -383,35 +400,34 @@ class SmsController extends Controller
         $sms->sender->notify(new NoteForStandSaved($stand));
     }
 
-    private function tagCommand($sms, Stand $stand)
+    private function tagCommand($sms, Stand $stand, $note)
     {
-        $noteText = SmsUtils::parseNoteFromSms($sms->sms_text, "note");
-
-        if (!$noteText){
+        if (!$note){
             $sms->sender->notify(new NoteTextMissing);
             return;
         }
 
-        $this->rentService->addNoteToAllStandBikes($stand, $sms->sender, $noteText);
+        $this->rentService->addNoteToAllStandBikes($stand, $sms->sender, $note);
         $sms->sender->notify(new TagForStandSaved($stand));
     }
 
-    private function deleteNoteCommand(Sms $sms, $bikeOrStand)
+    private function deleteNoteCommand(Sms $sms, $bikeOrStand, $pattern)
     {
-        $noteText = SmsUtils::parseNoteFromSms($sms->sms_text, "delnote");
-        if (!$noteText){
+        if (!$pattern){
             $sms->sender->notify(new NoteTextMissing);
             return;
         }
 
         $this->bikeOrStandInvoke($sms, $bikeOrStand,
-            function ($bike) use ($sms, $noteText){
-                $this->bikeDeleteNoteCommand($sms, $bike, $noteText);
-            }, function ($stand) use ($sms, $noteText){
-                $this->standDeleteNoteCommand($sms, $stand, $noteText);
+            function ($bike) use ($sms, $pattern){
+                $this->bikeDeleteNoteCommand($sms, $bike, $pattern);
+            }, function ($stand) use ($sms, $pattern){
+                $this->standDeleteNoteCommand($sms, $stand, $pattern);
             }
         );
     }
+
+
 
     // Helper function to call method depending on parameter type (bike/stand)
     private function bikeOrStandInvoke(Sms $sms, $bikeOrStand, callable $callableBike, callable $callableStand)
@@ -431,7 +447,7 @@ class SmsController extends Controller
                 {
                     $this->param = $param;
                 }
-                public function text()
+                public function smsText()
                 {
                     return "Error in bike number / stand name specification:" . $this->param;
                 }
@@ -443,20 +459,29 @@ class SmsController extends Controller
     {
         $deletedCount = $this->rentService->deleteNoteFromBike($bike, $sms->sender, $pattern);
 
+        // notify user only in case no notes were deleted, otherwise he/she will be notified as admin
         if ($deletedCount == 0){
             $sms->sender->notify(new NoNotesDeleted($sms->sender, $pattern, $bike));
         }
-        // do not notify user directly, he will be notified as admin.
     }
 
     private function standDeleteNoteCommand($sms, Stand $stand, $pattern)
     {
         $deletedCount = $this->rentService->deleteNoteFromStand($stand, $sms->sender, $pattern);
 
+        // notify user only in case no notes were deleted, otherwise he/she will be notified as admin
         if ($deletedCount == 0){
             $sms->sender->notify(new NoNotesDeleted($sms->sender, $pattern, null, $stand));
         }
+    }
 
-        // do not notify user directly, he will be notified as admin.
+    private function untagCommand($sms, Stand $stand, $pattern)
+    {
+        $deletedCount = $this->rentService->deleteNoteFromAllStandBikes($stand, $sms->sender, $pattern);
+
+        // notify user only in case no notes were deleted, otherwise he/she will be notified as admin
+        if ($deletedCount == 0){
+            $sms->sender->notify(new NoBikesUntagged($pattern, $stand));
+        }
     }
 }
