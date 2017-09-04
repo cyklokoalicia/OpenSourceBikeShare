@@ -6,6 +6,7 @@ use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\RentService;
+use BikeShare\Notifications\Admin\AllNotesDeleted;
 use BikeShare\Notifications\Admin\BikeNoteAdded;
 use BikeShare\Notifications\Admin\StandNoteAdded;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -196,6 +197,66 @@ class NotesTest extends DbTestCaseWithSeeding
         self::assertEquals(2, $count);
         $stand->refresh();
         self::assertEquals(1, $stand->notes->count());
+    }
+
+
+    /** @test */
+    public function normal_user_cannot_delete_all_notes_from_stand_bikes()
+    {
+        // Arrange
+        $user = userWithResources();
+        $stand = create(Stand::class);
+        for ($i=0; $i<=3; $i++){
+            $stand->bikes()->save(make(Bike::class));
+        }
+        $noteText = "some note text";
+        $this->rentService->addNoteToAllStandBikes($stand, $user, $noteText);
+
+        // Act
+        $this->expectException(AuthorizationException::class);
+
+        $pattern = "ote";
+        $this->rentService->deleteNoteFromAllStandBikes($stand, $user, $pattern);
+    }
+
+    /** @test */
+    public function admin_can_delete_all_notes_from_stand_bikes_and_only_correct_notes_are_deleted()
+    {
+        // Arrange
+        Notification::fake();
+        $user = userWithResources();
+        $admin = userWithResources([], true);
+
+        $stand = create(Stand::class);
+        for ($i=0; $i < 3; $i++){
+            $stand->bikes()->save(make(Bike::class));
+        }
+        $noteText = "some note text";
+        $pattern = "ote";
+        $this->rentService->addNoteToAllStandBikes($stand, $user, $noteText);
+
+        // Add the same note to other bike
+        $otherBike = create(Bike::class);
+        $this->rentService->addNoteToBike($otherBike, $user, $noteText);
+
+        // Assert
+        foreach ($stand->fresh()->bikes as $b){
+            self::assertEquals(1, $b->notes->count());
+        }
+
+        // Act
+        $deleted = $this->rentService->deleteNoteFromAllStandBikes($stand, $admin, $pattern);
+
+        // Assert
+        self::assertEquals(3, $deleted);
+
+        foreach ($stand->fresh()->bikes as $b){
+            self::assertEquals(0, $b->notes->count());
+        }
+
+        self::assertEquals(1, $otherBike->fresh()->notes->count());
+
+        Notification::assertSentTo($admin, AllNotesDeleted::class);
     }
 
 }

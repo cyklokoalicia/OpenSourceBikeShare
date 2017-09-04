@@ -3,8 +3,10 @@ namespace BikeShare\Http\Services\Rents;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikePermissions;
+use BikeShare\Domain\Bike\BikesRepository;
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Bike\Events\BikeWasReturned;
+use BikeShare\Domain\Note\NotesRepository;
 use BikeShare\Domain\Rent\Events\RentWasClosed;
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
@@ -20,6 +22,7 @@ use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
+use BikeShare\Notifications\Admin\AllNotesDeleted;
 use BikeShare\Notifications\Admin\BikeNoteAdded;
 use BikeShare\Notifications\Admin\NotesDeleted;
 use BikeShare\Notifications\Admin\StandNoteAdded;
@@ -295,6 +298,23 @@ class RentService
         return $count;
     }
 
+    public function deleteNoteFromAllStandBikes(Stand $stand, User $user, $pattern)
+    {
+        Gate::forUser($user)->authorize(StandPermissions::UNTAG);
+        $pattern = $pattern ? "%{$pattern}%" : "%";
+
+        $deleted = 0;
+        foreach ($stand->bikes as $b){
+            $deleted += $b->notes()->where('note', 'like', $pattern)->delete();
+        }
+
+        if ($deleted > 0){
+            $this->notifyAdmins(new AllNotesDeleted($user, $pattern, $deleted, $stand));
+        }
+        return $deleted;
+    }
+
+
     public function addNoteToAllStandBikes(Stand $stand, User $user, $noteText)
     {
         $stand->bikes->each(function($bike) use ($noteText, $user){
@@ -308,7 +328,6 @@ class RentService
 //        $users = app(UsersRepository::class)->getUsersWithRole('admin')->get();
 //        Notification::send($users, new NoteCreated($note));
     }
-
 
     private function checkTopOfStack($bike)
     {
