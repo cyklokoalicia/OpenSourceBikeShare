@@ -36,7 +36,7 @@ class ReturnBikeTest extends TestCase
     }
 
     /** @test */
-    public function return_non_occupied_bike()
+    public function returning_non_occupied_bike_throws_exception()
     {
         // Arrange
         $user = create(User::class);
@@ -50,7 +50,7 @@ class ReturnBikeTest extends TestCase
     }
 
     /** @test */
-    public function return_bike_rented_by_other_user()
+    public function returning_bike_rented_by_other_user_throws_exception()
     {
         // Arrange
         $userWithoutBike = create(User::class);

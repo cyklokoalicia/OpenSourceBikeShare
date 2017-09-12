@@ -17,7 +17,7 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\DbTestCaseWithSeeding;
 use Tests\TestCase;
 
-class ReturnBikeTest extends DbTestCaseWithSeeding
+class RevertTest extends DbTestCaseWithSeeding
 {
     use DatabaseMigrations;
 

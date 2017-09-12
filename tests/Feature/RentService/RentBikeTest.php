@@ -39,7 +39,7 @@ class RentBikeTest extends TestCase
     }
 
     /** @test */
-    public function rent_bike_low_credit()
+    public function renting_bike_with_low_credit_throws_exception()
     {
         // Arrange
         $lowCredit = $this->appConfig->getRequiredCredit() - 1;
@@ -54,7 +54,7 @@ class RentBikeTest extends TestCase
     }
 
     /** @test */
-    public function rent_bike_which_is_already_rented_by_me()
+    public function renting_bike_already_rented_by_me_throws_exception()
     {
         // Arrange
         $user = userWithResources();
@@ -69,7 +69,7 @@ class RentBikeTest extends TestCase
     }
 
     /** @test */
-    public function rent_bike_already_rented_by_other_user()
+    public function renting_bike_already_rented_by_other_user_throws_exception()
     {
         // Arrange
         $myUser = userWithResources();
@@ -85,7 +85,7 @@ class RentBikeTest extends TestCase
     }
 
     /** @test */
-    public function rent_bike_with_zero_user_limit()
+    public function renting_bike_with_zero_user_rent_limit_throws_exception()
     {
         // Arrange
         $myUser = userWithResources(['limit' => 0]);
@@ -99,7 +99,7 @@ class RentBikeTest extends TestCase
     }
 
     /** @test */
-    public function rent_bike_not_from_top_with_top_stack_enforced()
+    public function renting_bike_not_from_top_with_topstack_enforced_throws_exception()
     {
         // Arrange
         $user = userWithResources();
@@ -136,7 +136,7 @@ class RentBikeTest extends TestCase
     }
 
     /** @test */
-    public function rent_bike_ok_with_stack_enforced()
+    public function rent_bike_ok_with_stack_enforced_ok()
     {
         // Arrange
         $user = userWithResources();

@@ -58,7 +58,7 @@ class NotesTest extends DbTestCaseWithSeeding
     }
 
     /** @test */
-    public function add_note_to_stand()
+    public function add_note_to_stand_ok()
     {
         // Arrange
         $user = userWithResources();
@@ -80,7 +80,7 @@ class NotesTest extends DbTestCaseWithSeeding
     }
 
     /** @test */
-    public function add_notes_to_all_bikes_on_stand()
+    public function add_notes_to_all_bikes_on_stand_ok()
     {
         // Arrange
         $user = userWithResources();
@@ -104,7 +104,7 @@ class NotesTest extends DbTestCaseWithSeeding
     }
 
     /** @test */
-    public function normal_user_cannot_delete_note_from_bike()
+    public function non_admin_user_deleting_note_from_bike_throws_exception()
     {
         $user = userWithResources();
         $bike = create(Stand::class)->bikes()->save(make(Bike::class));
@@ -154,7 +154,7 @@ class NotesTest extends DbTestCaseWithSeeding
     }
 
     /** @test */
-    public function normal_user_cannot_delete_note_from_stand()
+    public function non_admin_user_delete_note_from_stand_throws_exception()
     {
         $user = userWithResources();
         $stand = create(Stand::class);
@@ -201,7 +201,7 @@ class NotesTest extends DbTestCaseWithSeeding
 
 
     /** @test */
-    public function normal_user_cannot_delete_all_notes_from_stand_bikes()
+    public function non_admin_user_delete_all_notes_from_stand_bikes_throws_exception()
     {
         // Arrange
         $user = userWithResources();
