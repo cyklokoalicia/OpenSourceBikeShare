@@ -11,10 +11,13 @@ use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\RentService;
+use BikeShare\Notifications\Sms\Revert\BikeNotRented;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Tests\DbTestCaseWithSeeding;
 use Tests\TestCase;
 
-class ReturnBikeTest extends TestCase
+class ReturnBikeTest extends DbTestCaseWithSeeding
 {
     use DatabaseMigrations;
 
@@ -36,43 +39,32 @@ class ReturnBikeTest extends TestCase
     }
 
     /** @test */
-    public function return_non_occupied_bike()
+    public function reverting_non_occupied_bike_throws_exception()
     {
-        // Arrange
-        $user = create(User::class);
+        $admin = userWithResources([], true);
         list($stand, $bike) = standWithBike();
-
-        // Assert
         $this->expectException(BikeNotRentedException::class);
-
-        // Act
-        $this->rentService->returnBike($user, $bike, $stand);
+        $this->rentService->revertBikeRent($admin, $bike);
     }
 
     /** @test */
-    public function return_bike_rented_by_other_user()
+    public function non_admin_user_reverting_bike_throws_exception()
     {
-        // Arrange
-        $userWithoutBike = create(User::class);
-        $userWithBike = userWithResources();
+        $user = userWithResources();
         list($stand, $bike) = standWithBike();
-        $standTo = create(Stand::class);
-        $this->rentService->rentBike($userWithBike, $bike);
+        $this->rentService->rentBike($user, $bike);
 
-        // Assert
-        $this->expectException(BikeRentedByOtherUserException::class);
-
-        // Act
-        $this->rentService->returnBike($userWithoutBike, $bike, $standTo);
+        $this->expectException(AuthorizationException::class);
+        $this->rentService->revertBikeRent($user, $bike);
     }
 
     /** @test */
-    public function rent_and_return_bike_ok()
+    public function rent_and_revert_bike_all_ok()
     {
         // Arrange
         $user = userWithResources();
+        $admin = userWithResources([], true);
         list($stand, $bike) = standWithBike();
-        $standTo = create(Stand::class);
 
         // Act
         $rent = $this->rentService->rentBike($user, $bike);
@@ -84,12 +76,15 @@ class ReturnBikeTest extends TestCase
         self::assertEquals(RentStatus::OPEN, $rent->status);
 
         // Act
-        $rentAfterReturn = $this->rentService->returnBike($user, $bike, $standTo);
+        $rentAfterRevert = $this->rentService->revertBikeRent($admin, $bike);
+
+        $bike->refresh();
 
         // Assert
         self::assertEquals(BikeStatus::FREE, $bike->status);
-        self::assertEquals($standTo->id, $bike->stand->id);
+        self::assertEquals($stand->id, $bike->stand->id);
         self::assertNull($bike->user);
-        self::assertEquals(RentStatus::CLOSE, $rentAfterReturn->status);
+        self::assertEquals(RentStatus::CLOSE, $rentAfterRevert->status);
+
     }
 }

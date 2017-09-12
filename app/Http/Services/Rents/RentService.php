@@ -125,48 +125,55 @@ class RentService
 
     public function closeRent(Rent $rent, Stand $standToReturn)
     {
-        return $this->returnBike($rent->user, $rent->bike, $standToReturn, $rent);
+        return $this->returnBike($rent->user, $rent->bike, $standToReturn);
     }
 
     /**
-     * @param User $user
+     * @param User $user User initiating the command
      * @param Bike $bike
      * @param Stand $standTo
-     * @param Rent|null $rent
-     * @throws BikeRentedByOtherUserException
-     * @throws BikeNotRentedException
      * @return Rent
+     * @internal param Rent|null $rent
      */
-    public function returnBike(User $user, Bike $bike, Stand $standTo, Rent $rent=null)
+    public function returnBike(User $user, Bike $bike, Stand $standTo)
     {
         if ($bike->status !== BikeStatus::OCCUPIED){
             throw new BikeNotRentedException($bike->status);
         }
+
         if ($bike->user_id != $user->id){
             throw new BikeRentedByOtherUserException($bike->user);
         }
 
-        $rent = $rent ?? app(RentsRepository::class)->findOpenRent($user, $bike);
-        $this->checkRentConsistency($user, $bike, $rent);
+        $rent = app(RentsRepository::class)->findOpenRent($bike);
 
         $this->returnBikeInternal($bike, $standTo);
         $this->closeRentLogInternal($rent, $standTo);
         $this->updateCredit($rent);
-
-        event(new RentWasClosed($rent));
-        event(new BikeWasReturned($bike, $standTo));
-
         return $rent;
     }
 
-    private function checkRentConsistency($user, $bike, $rent)
-    {
-        if ($rent->bike->id != $bike->id ||
-            $rent->user->id != $user->id ||
-            $rent->status != RentStatus::OPEN){
-            throw new Exception("Invalid DB state, Rent object does not correspond to Bike state: ".
-                "bike->id:{$bike->id}, user->id:{$user->id}, rent:" . $rent->toJson());
+    /**
+     * Return bike to old stand, no matter if user is currently renting the bike
+     * Admin only
+     * @param User $user
+     * @param Bike $bike
+     * @return null
+     */
+    public function revertBikeRent(User $user, Bike $bike){
+        Gate::forUser($user)->authorize(BikePermissions::REVERT);
+
+        if ($bike->status !== BikeStatus::OCCUPIED){
+            throw new BikeNotRentedException($bike->status);
         }
+
+        $rent = app(RentsRepository::class)->findOpenRent($bike);
+
+        $oldStand = $rent->standFrom;
+
+        $this->returnBikeInternal($bike, $oldStand);
+        $this->closeRentLogInternal($rent, $oldStand);
+        return $rent;
     }
 
     private function returnBikeInternal(Bike $bike, Stand $standTo)
@@ -177,6 +184,8 @@ class RentService
         $bike->stand()->associate($standTo);
         $bike->user()->dissociate();
         $bike->save();
+
+        event(new BikeWasReturned($bike, $standTo));
     }
 
     private function closeRentLogInternal(Rent $rent, Stand $stand)
@@ -186,6 +195,7 @@ class RentService
         $rent->status = RentStatus::CLOSE;
         $rent->standTo()->associate($stand);
         $rent->save();
+        event(new RentWasClosed($rent));
         return $rent;
     }
 
@@ -269,7 +279,7 @@ class RentService
     {
         Gate::forUser($user)->authorize(BikePermissions::DELETE_NOTE);
         $pattern = $pattern ? "%{$pattern}%" : "%";
-        
+
         $count =  $bike->notes()
             ->where('note', 'like', $pattern)->delete();
 
@@ -312,7 +322,6 @@ class RentService
         }
         return $deleted;
     }
-
 
     public function addNoteToAllStandBikes(Stand $stand, User $user, $noteText)
     {

@@ -44,7 +44,7 @@ class RentBikeTest extends TestCase
         // Arrange
         $lowCredit = $this->appConfig->getRequiredCredit() - 1;
         $user = create(User::class, ['credit' => $lowCredit]);
-        $bike = create(Stand::class)->bikes()->save(make(Bike::class));
+        list($stand, $bike) = standWithBike();
 
         // Assert
         $this->expectException(LowCreditException::class);
@@ -58,7 +58,7 @@ class RentBikeTest extends TestCase
     {
         // Arrange
         $user = userWithResources();
-        $bike = create(Stand::class)->bikes()->save(make(Bike::class));
+        list($stand, $bike) = standWithBike();
         $this->rentService->rentBike($user, $bike);
 
         // Assert
@@ -74,7 +74,7 @@ class RentBikeTest extends TestCase
         // Arrange
         $myUser = userWithResources();
         $otherUser = userWithResources();
-        $bike = create(Stand::class)->bikes()->save(make(Bike::class));
+        list($stand, $bike) = standWithBike();
         $this->rentService->rentBike($otherUser, $bike);
 
         // Assert
@@ -89,7 +89,7 @@ class RentBikeTest extends TestCase
     {
         // Arrange
         $myUser = userWithResources(['limit' => 0]);
-        $bike = create(Stand::class)->bikes()->save(make(Bike::class));
+        list($stand, $bike) = standWithBike();
 
         // Assert
         $this->expectException(MaxNumberOfRentsException::class);
@@ -103,9 +103,7 @@ class RentBikeTest extends TestCase
     {
         // Arrange
         $user = userWithResources();
-        $stand = create(Stand::class);
-        $bikeNotOnTop = $stand->bikes()->save(make(Bike::class, ['stack_position' => 0]));
-        $bikeOnTop = $stand->bikes()->save(make(Bike::class, ['stack_position' => 1]));
+        list($bikeNotOnTop, $bikeOnTop) = twoBikesOnStand();
         config(['bike-share.stack_bike' => true]);
 
         // Assert
@@ -142,9 +140,7 @@ class RentBikeTest extends TestCase
     {
         // Arrange
         $user = userWithResources();
-        $stand = create(Stand::class);
-        $bikeNotOnTop = $stand->bikes()->save(make(Bike::class, ['stack_position'=>0]));
-        $bikeOnTop = $stand->bikes()->save(make(Bike::class, ['stack_position'=>1]));
+        list($bikeNotOnTop, $bikeOnTop) = twoBikesOnStand();
         config(['bike-share.stack_bike' => true]);
 
         // Act

@@ -2,6 +2,7 @@
 namespace BikeShare\Domain\Rent;
 
 use BikeShare\Domain\Bike\Bike;
+use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Core\Repository;
 use BikeShare\Domain\User\User;
 
@@ -13,8 +14,11 @@ class RentsRepository extends Repository
         return Rent::class;
     }
 
-    public function findOpenRent(User $user, Bike $bike)
+    public function findOpenRent(Bike $bike)
     {
-        return $this->findWhere(['user_id'=>$user->id, 'bike_id'=>$bike->id, 'status' => RentStatus::OPEN])->first();
+        if ($bike->status !== BikeStatus::OCCUPIED || !$bike->user){
+            return null;
+        }
+        return $this->findWhere(['user_id'=>$bike->user->id, 'bike_id'=>$bike->id, 'status' => RentStatus::OPEN])->first();
     }
 }

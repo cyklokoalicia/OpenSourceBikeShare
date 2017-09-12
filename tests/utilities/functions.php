@@ -1,5 +1,7 @@
 <?php
 
+use BikeShare\Domain\Bike\Bike;
+use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\Roles;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
@@ -32,4 +34,30 @@ function userWithResources($attributes = [], $isAdmin=false, $numberOfBikesHeCan
     }
 
     return $user;
+}
+
+/**
+ * @param array $standAttributes
+ * @param array $bikeAttributes
+ * @return array [$stand, $bike]
+ */
+function standWithBike($standAttributes = [], $bikeAttributes = [])
+{
+    $stand = create(Stand::class, $standAttributes);
+    $bike = $stand->bikes()->save(make(Bike::class, $bikeAttributes));
+    return [$stand, $bike];
+}
+
+/**
+ * @param array $standAttributes
+ * @param array $bikesAttributes
+ * @return array [$bikePos0, $$bikePos1]
+ */
+function twoBikesOnStand($standAttributes = [], $bikesAttributes = [])
+{
+    $stand = create(Stand::class);
+    $bikePos0 = $stand->bikes()->save(make(Bike::class, ['stack_position' => 0]));
+    $bikePos1 = $stand->bikes()->save(make(Bike::class, ['stack_position' => 1]));
+
+    return [$bikePos0, $bikePos1];
 }
