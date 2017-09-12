@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Stand\Stand;
