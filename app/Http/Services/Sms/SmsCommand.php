@@ -33,6 +33,9 @@ use BikeShare\Notifications\Sms\Help;
 use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\RechargeCredit;
 use BikeShare\Notifications\Sms\RentLimitExceeded;
+use BikeShare\Notifications\Sms\Revert\BikeNotRented;
+use BikeShare\Notifications\Sms\Revert\RentedBikeReverted;
+use BikeShare\Notifications\Sms\Revert\RevertSuccess;
 use BikeShare\Notifications\Sms\StandInfo;
 use BikeShare\Notifications\Sms\StandListBikes;
 use BikeShare\Notifications\Sms\TagForStandSaved;
@@ -127,8 +130,6 @@ class SmsCommand
             return;
         }
 
-//        $noteText = SmsUtils::parseNoteFromReturnSms($sms->sms_text);
-
         try {
             $rent = $this->rentService->returnBike($this->user, $bike, $stand);
             if ($noteText){
@@ -136,7 +137,7 @@ class SmsCommand
             }
             $this->user->notify(new BikeReturnedSuccess($this->appConfig, $rent, $noteText));
         }
-        catch (BikeNotRentedException | BikeRentedByOtherUserException $e )
+        catch (BikeNotRentedException | BikeRentedByOtherUserException $e)
         {
             $this->user->notify(new BikeToReturnNotRentedByMe($this->user, $bike, $this->bikeRepo->bikesRentedByUser($this->user)));
         }
@@ -158,9 +159,6 @@ class SmsCommand
 
     public function note($bikeOrStand, $noteText)
     {
-
-//        $noteText = ;
-
         if (!$noteText){
             $this->user->notify(new NoteTextMissing());
             return;
@@ -279,6 +277,12 @@ class SmsCommand
 
     public function revert(Bike $bike)
     {
-        // TODO
+        try {
+            $rent = $this->rentService->revertBikeRent($this->user, $bike);
+            $this->user->notify(new RevertSuccess($rent));
+            $rent->user->notify(new RentedBikeReverted($bike));
+        } catch (BikeNotRentedException $e) {
+            $this->user->notify(new BikeNotRented($bike));
+        }
     }
 }
