@@ -17,7 +17,7 @@ function make($class, $attributes = [], $times = null)
 }
 
 /**
- * Helper method - create user with enough resources to rent bikes
+ * Test helper - create user with enough resources to rent bikes
  * @param array $attributes
  * @param int $numberOfBikesHeCanRent
  * @return mixed
@@ -36,7 +36,14 @@ function userWithResources($attributes = [], $isAdmin=false, $numberOfBikesHeCan
     return $user;
 }
 
+function adminWithResources($attributes = [], $numberOfBikesHeCanRent = 1000)
+{
+    return userWithResources($attributes, true, $numberOfBikesHeCanRent);
+}
+
+
 /**
+ * Test helper - creates stand with bike on it and returns models
  * @param array $standAttributes
  * @param array $bikeAttributes
  * @return array [$stand, $bike]
