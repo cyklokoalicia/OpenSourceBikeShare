@@ -1,18 +1,20 @@
 <?php
 
-namespace Test\Feature\RentService;
+namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Rent\RentStatus;
+use BikeShare\Domain\Stand\Stand;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Notifications\Sms\Rent\ForceRentOverrideRent;
+use BikeShare\Notifications\Sms\Rent\ForceReturnOverrideRent;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Notification;
 use Tests\DbTestCaseWithSeeding;
 
-class ForceRentReturnTest extends DbTestCaseWithSeeding
+class ForceReturnTest extends DbTestCaseWithSeeding
 {
     use DatabaseMigrations;
 
@@ -34,55 +36,50 @@ class ForceRentReturnTest extends DbTestCaseWithSeeding
     }
 
     /** @test */
-    public function non_privileged_user_cannot_force_rent_bike()
+    public function non_privileged_user_cannot_force_return_bike()
     {
         $user = userWithResources();
         list($stand, $bike) = standWithBike([], ['bike_num' => 1]);
         $this->expectException(AuthorizationException::class);
-        $this->rentService->forceRentBike($user, $bike);
+        $this->rentService->forceReturnBike($user, $bike, $stand);
     }
 
+
     /** @test */
-    public function admin_can_force_rent_non_occupied_bike()
+    public function admin_can_force_return_non_occupied_bike()
     {
         $admin = adminWithResources();
         list($stand, $bike) = standWithBike([], ['bike_num' => 1]);
+        $stand2 = create(Stand::class);
 
-        $bike->fresh();
+        $this->rentService->forceReturnBike($admin, $bike, $stand2);
 
-        $this->rentService->forceRentBike($admin, $bike);
-
-        self::assertEquals($bike->status, BikeStatus::OCCUPIED);
-        self::assertNull($bike->stand);
-        self::assertEquals($bike->user->id, $admin->id);
+        $bike->refresh();
+        self::assertEquals($stand2->id, $bike->stand->id);
     }
 
     /** @test */
-    public function admin_can_force_rent_occupied_bike()
+    public function admin_can_force_return_occupied_bike()
     {
         $user = userWithResources();
         $admin = adminWithResources();
         list($stand, $bike) = standWithBike([], ['bike_num' => 1]);
+        $stand2 = create(Stand::class);
 
         Notification::fake();
 
         $userRent = $this->rentService->rentBike($user, $bike);
-        $bike->fresh();
 
-        self::assertEquals($bike->status, BikeStatus::OCCUPIED);
-        self::assertNull($bike->stand);
+        $bike->fresh();
         self::assertEquals($bike->user->id, $user->id);
 
-        $adminRent = $this->rentService->forceRentBike($admin, $bike);
-        $bike->fresh();
+        $this->rentService->forceReturnBike($admin, $bike, $stand2);
 
-        self::assertEquals($bike->status, BikeStatus::OCCUPIED);
-        self::assertNull($bike->stand);
-        self::assertEquals($bike->user->id, $admin->id);
+        $bike->fresh();
+        self::assertEquals($bike->status, BikeStatus::FREE);
+        self::assertEquals($stand2->id, $bike->stand->id);
 
         self::assertEquals(RentStatus::CLOSE, $userRent->fresh()->status);
-        self::assertEquals(RentStatus::OPEN, $adminRent->status);
-
-        Notification::assertSentTo($user, ForceRentOverrideRent::class);
+        Notification::assertSentTo($user, ForceReturnOverrideRent::class);
     }
 }

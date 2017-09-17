@@ -27,6 +27,7 @@ use BikeShare\Notifications\Admin\BikeNoteAdded;
 use BikeShare\Notifications\Admin\NotesDeleted;
 use BikeShare\Notifications\Admin\StandNoteAdded;
 use BikeShare\Notifications\Sms\Rent\ForceRentOverrideRent;
+use BikeShare\Notifications\Sms\Rent\ForceReturnOverrideRent;
 use Carbon\Carbon;
 use Exception;
 use Gate;
@@ -166,6 +167,20 @@ class RentService
         $this->returnBikeInternal($bike, $standTo);
         $this->closeRentLogInternal($rent, $standTo);
         $this->updateCredit($rent);
+        return $rent;
+    }
+
+    public function forceReturnBike(User $user, Bike $bike, Stand $standTo)
+    {
+        Gate::forUser($user)->authorize(BikePermissions::FORCE_RETURN);
+
+        $rent = app(RentsRepository::class)->findOpenRent($bike);
+
+        $this->returnBikeInternal($bike, $standTo);
+        if ($rent){
+            $rent->user->notify(new ForceReturnOverrideRent($bike));
+            $this->closeRentLogInternal($rent, $standTo);
+        }
         return $rent;
     }
 
