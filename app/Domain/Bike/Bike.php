@@ -51,4 +51,9 @@ class Bike extends Model
     {
         return mt_rand(1010, 9900);
     }
+
+    public function isTopOfStack()
+    {
+        return $this->stand && $this->stand->getTopPosition() == $this->stack_position;
+    }
 }

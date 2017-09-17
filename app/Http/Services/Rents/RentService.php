@@ -3,11 +3,11 @@ namespace BikeShare\Http\Services\Rents;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikePermissions;
-use BikeShare\Domain\Bike\BikesRepository;
 use BikeShare\Domain\Bike\BikeStatus;
+use BikeShare\Domain\Bike\Events\BikeWasRented;
 use BikeShare\Domain\Bike\Events\BikeWasReturned;
-use BikeShare\Domain\Note\NotesRepository;
 use BikeShare\Domain\Rent\Events\RentWasClosed;
+use BikeShare\Domain\Rent\Events\RentWasCreated;
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
@@ -26,6 +26,7 @@ use BikeShare\Notifications\Admin\AllNotesDeleted;
 use BikeShare\Notifications\Admin\BikeNoteAdded;
 use BikeShare\Notifications\Admin\NotesDeleted;
 use BikeShare\Notifications\Admin\StandNoteAdded;
+use BikeShare\Notifications\Sms\Rent\ForceRentOverrideRent;
 use Carbon\Carbon;
 use Exception;
 use Gate;
@@ -37,10 +38,15 @@ class RentService
      * @var AppConfig
      */
     private $appConfig;
+    /**
+     * @var RentChecks
+     */
+    private $rentChecks;
 
-    public function __construct(AppConfig $appConfig)
+    public function __construct(AppConfig $appConfig, RentChecks $rentChecks)
     {
         $this->appConfig = $appConfig;
+        $this->rentChecks = $rentChecks;
     }
 
     /**
@@ -55,33 +61,14 @@ class RentService
      */
     public function rentBike(User $user, Bike $bike)
     {
-        if ($this->appConfig->isCreditEnabled()){
-            $requiredCredit = $this->appConfig->getRequiredCredit();
-
-            if ($user->credit < $requiredCredit){
-                throw new LowCreditException($user->credit, $requiredCredit);
-            }
-        }
-
+        // any failing check throws exception
+        $this->rentChecks->sufficientCredit($user);
+        $this->rentChecks->bikeIsFree($bike);
+        $this->rentChecks->userRentLimit($user);
+        $this->rentChecks->bikeTopOfStack($bike);
         // TODO checkTooMany
 
-        if ($bike->status != BikeStatus::FREE) {
-            if (!$bike->user){
-                throw new Exception("Bike not free but no owner, bike_id = {$bike->user_id}");
-            }
-            throw new BikeNotFreeException();
-        }
-
-        $currentRents = $user->bikes()->get()->count();
-        if ($currentRents >= $user->limit) {
-            throw new MaxNumberOfRentsException($user->limit, $currentRents);
-        }
-
-        if ($this->appConfig->isStackBikeEnabled() && !$this->checkTopOfStack($bike)){
-            throw new BikeNotOnTopException($bike->stand->getTopBike());
-        }
-
-        if ($this->appConfig->isStackWatchEnabled() && !$this->checkTopOfStack($bike)){
+        if ($this->appConfig->isStackWatchEnabled() && !$bike->isTopOfStack()){
             // TODO notifyAdmin
         }
 
@@ -90,9 +77,31 @@ class RentService
 
         $this->rentBikeInternal($bike, $user);
         $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code);
-        // TODO enable events
-//        event(new RentWasCreated($rent));
-//        event(new BikeWasRented($bike, $rent->new_code, $user));
+
+        return $rent;
+    }
+
+    public function forceRentBike(User $user, Bike $bike)
+    {
+        Gate::forUser($user)->authorize(BikePermissions::FORCE_RENT);
+
+        $oldCode = $bike->current_code;
+        $standFrom = $bike->stand;
+
+        if ($bike->status == BikeStatus::OCCUPIED){
+            // if occupied, we have to close previous rent
+            // and notify original user
+            // TODO record somehow that rent was closed forcefully
+            $originalRent = $this->closeRentLogInternal(
+                app(RentsRepository::class)->findOpenRent($bike), null
+            );
+
+            $originalRent->user->notify(new ForceRentOverrideRent($bike));
+        }
+
+        $this->rentBikeInternal($bike, $user);
+        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code);
+
         return $rent;
     }
 
@@ -104,22 +113,29 @@ class RentService
         $bike->stand()->dissociate();
         $bike->user()->associate($user);
         $bike->save();
+
+        event(new BikeWasRented($bike, $bike->current_code, $user));
     }
 
     /**
      * @return Rent
      */
-    private function createRentLog(User $user, Bike $bike, Stand $standFrom, $oldCode, $newCode)
+    private function createRentLog(User $user, Bike $bike, $standFrom, $oldCode, $newCode)
     {
         $rent = new Rent();
         $rent->status = RentStatus::OPEN;
         $rent->user()->associate($user);
         $rent->bike()->associate($bike);
-        $rent->standFrom()->associate($standFrom);
+        if ($standFrom){ // may be null e.g. if FORCERENTing
+            $rent->standFrom()->associate($standFrom);
+        }
         $rent->started_at = Carbon::now();
         $rent->old_code = $oldCode;
         $rent->new_code = $newCode;
         $rent->save();
+
+        event(new RentWasCreated($rent));
+
         return $rent;
     }
 
@@ -188,12 +204,14 @@ class RentService
         event(new BikeWasReturned($bike, $standTo));
     }
 
-    private function closeRentLogInternal(Rent $rent, Stand $stand)
+    private function closeRentLogInternal(Rent $rent, $standTo)
     {
         $rent->ended_at = Carbon::now();
         $rent->duration = $rent->ended_at->diffInSeconds($rent->started_at);
         $rent->status = RentStatus::CLOSE;
-        $rent->standTo()->associate($stand);
+        if ($standTo){ // can be null e.g in case of FORCERENTing
+            $rent->standTo()->associate($standTo);
+        }
         $rent->save();
         event(new RentWasClosed($rent));
         return $rent;
@@ -335,11 +353,6 @@ class RentService
         // TODO notify Admins (email and sms if enabled)
 //        $users = app(UsersRepository::class)->getUsersWithRole('admin')->get();
 //        Notification::send($users, new NoteCreated($note));
-    }
-
-    private function checkTopOfStack($bike)
-    {
-        return $bike->stand->getTopPosition() == $bike->stack_position;
     }
 
     public function checkLongRent()
