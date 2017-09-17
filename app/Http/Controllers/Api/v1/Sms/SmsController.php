@@ -119,6 +119,14 @@ class SmsController extends Controller
                     }
                     break;
 
+                case "FORCERENT":
+                    if (count($args) < 2){
+                        $smsCommand->invalidArguments("with bike number: FORCERENT 47");
+                    } else {
+                        $smsCommand->forceRentBike($this->bikeRepo->getBikeOrFail($args[1]));
+                    }
+                    break;
+
                 case "RETURN":
                     if (count($args) < 3){
                         $smsCommand->invalidArguments( "with bike number and stand name: RENT 47 RACKO");
@@ -127,18 +135,13 @@ class SmsController extends Controller
                     }
                     break;
 
-
-//            case "FORCERENT":
-//                checkUserPrivileges($sms->Number());
-//                validateReceivedSMS($sms->Number(),count($args),2,_('with bike number:')." FORCERENT 47");
-//                rent($sms->Number(),$args[1],TRUE);
-//                break;
-//            case "FORCERETURN":
-//                checkUserPrivileges($sms->Number());
-//                validateReceivedSMS($sms->Number(),count($args),3,_('with bike number and stand name:')." FORCERETURN 47 RACKO");
-//                returnBike($sms->Number(),$args[1],$args[2],trim(urldecode($sms->Text())),TRUE);
-//                break;
-
+                case "FORCERETURN":
+                    if (count($args) < 3){
+                        $smsCommand->invalidArguments( "with bike number and stand name: FORCERETURN 47 RACKO");
+                    } else {
+                        $smsCommand->forceReturnBike($this->bikeRepo->getBikeOrFail($args[1]), $this->standsRepo->getStandOrFail($args[2]));
+                    }
+                    break;
 
                 case "WHERE":
                 case "WHO":
@@ -189,6 +192,7 @@ class SmsController extends Controller
                         $smsCommand->untag($this->standsRepo->getStandOrFail($args[1]), SmsUtils::parseNoteFromSms($sms->sms_text, $command));
                     }
                     break;
+
                 case "LIST":
                     if (count($args) < 2) {
                         $smsCommand->invalidArguments( "with stand name: LIST RACKO");

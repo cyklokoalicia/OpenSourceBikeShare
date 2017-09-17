@@ -123,6 +123,17 @@ class SmsCommand
         }
     }
 
+    public function forceRentBike(Bike $bike)
+    {
+        $rent = $this->rentService->forceRentBike($this->user, $bike);
+        $this->user->notify(new BikeRentedSuccess($rent));
+    }
+
+    public function forceReturnBike(Bike $bike, Stand $stand)
+    {
+
+    }
+
     public function returnBike(Bike $bike, Stand $stand, $noteText = null)
     {
         if ($this->bikeRepo->bikesRentedByUserCount($this->user) == 0){
@@ -196,6 +207,8 @@ class SmsCommand
         $this->user->notify(new TagForStandSaved($stand));
     }
 
+
+
     public function deleteNote($bikeOrStand, $notePattern)
     {
         if (!$notePattern){
@@ -211,10 +224,8 @@ class SmsCommand
             }
         );
     }
-
-
-
     // Helper function to call method depending on parameter type (bike/stand)
+
     public function bikeOrStandInvoke($bikeOrStand, callable $callableBike, callable $callableStand)
     {
         if (preg_match("/^[0-9]*$/", $bikeOrStand))
@@ -285,4 +296,5 @@ class SmsCommand
             $this->user->notify(new BikeNotRented($bike));
         }
     }
+
 }
