@@ -1,5 +1,5 @@
 <?php
-namespace Test\Feature\SmsApi;
+namespace Tests\Feature\SmsApi;
 
 use BikeShare\Notifications\Sms\Revert\BikeNotRented;
 use BikeShare\Notifications\Sms\Revert\RevertSuccess;

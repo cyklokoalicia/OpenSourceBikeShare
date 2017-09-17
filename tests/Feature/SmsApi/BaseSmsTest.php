@@ -1,5 +1,5 @@
 <?php
-namespace Test\Feature\SmsApi;
+namespace Tests\Feature\SmsApi;
 
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Sms\Receivers\SmsRequestContract;

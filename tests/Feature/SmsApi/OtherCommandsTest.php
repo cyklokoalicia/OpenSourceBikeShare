@@ -1,5 +1,5 @@
 <?php
-namespace Test\Feature\SmsApi;
+namespace Tests\Feature\SmsApi;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Stand\Stand;
