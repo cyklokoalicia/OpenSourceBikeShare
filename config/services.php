@@ -46,4 +46,8 @@ return [
         'auth_token' => env('TWILIO_AUTH_TOKEN'),
         'from' => env('TWILIO_FROM'),
     ],
+
+    'google' => [
+        'map_api_key' => env('GOOGLE_MAP_API_KEY'),
+    ]
 ];

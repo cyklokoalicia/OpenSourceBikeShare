@@ -85,6 +85,8 @@ Route::group(['prefix' => 'app', 'middleware' => 'auth'], function () {
         Route::get('{uuid}', 'StandsController@show')->name('app.stands.show');
         Route::get('{uuid}/edit', 'StandsController@edit')->name('app.stands.edit');
         Route::put('{uuid}', 'StandsController@update')->name('app.stands.update');
+        Route::delete('{uuid}/media/{id}', 'StandsController@destroyMedia')->name('app.stand.media.destroy');
+        //Route::post('media', 'StandsController@upload')->name('app.stand.media.store');
     });
 
     Route::group(['prefix' => 'bikes', 'namespace' => 'Bikes'], function () {

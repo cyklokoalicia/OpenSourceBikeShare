@@ -9,13 +9,15 @@
                         <h3 class="box-title">Create new Stand</h3>
                     </div>
 
-                    <form action="{{ route('app.stands.store') }}" method="POST">
+                    <form action="{{ route('app.stands.store') }}" method="POST" enctype="multipart/form-data">
                         {{ csrf_field() }}
                         <div class="box-body">
                             @include('stands._form')
                         </div>
                         <div class="box-footer">
-                            <input type="submit" class="btn btn-success btn-flat" value="Submit">
+                            <button type="submit" class="btn btn-success btn-flat">Submit</button>
+
+                            {{--<input type="submit" class="btn btn-success btn-flat" value="Submit">--}}
                         </div>
                     </form>
                 </div>

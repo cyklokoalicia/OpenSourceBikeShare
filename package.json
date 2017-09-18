@@ -24,6 +24,7 @@
     "vue-resource": "^0.9.3"
   },
   "dependencies": {
-    "vue-select": "github:sagalbot/vue-select"
+    "vue-select": "github:sagalbot/vue-select",
+    "dropzone": "^4.3.0"
   }
 }

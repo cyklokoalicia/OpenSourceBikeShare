@@ -18,7 +18,7 @@
 @endsection
 
 @push('scripts')
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKqLy2d6OBXzMHLmzlpOPE3Ei9KOKvRIQ&callback=initMap"
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.map_api_key') }}&callback=initMap"
             async defer></script>
 
 

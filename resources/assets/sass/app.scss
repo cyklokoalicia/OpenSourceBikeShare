@@ -1,5 +1,7 @@
 // Fonts
 @import url("https://fonts.googleapis.com/css?family=Raleway:300,400,600");
+// Dropzone
+@import "node_modules/dropzone/src/dropzone";
 
 // Variables
 @import "variables";
@@ -73,4 +75,15 @@
   font-size: 8px;
   color: #333;
   font-weight: 700
+}
+
+.dropzone {
+  border: 2px dashed #0087F7;
+  border-radius: 5px;
+  background: white;
+}
+
+.dropzone .dz-message {
+  font-weight: 400;
+  font-size: 2em;
 }

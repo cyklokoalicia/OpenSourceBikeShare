@@ -182,6 +182,7 @@ return [
         Spatie\BladeJavaScript\BladeJavaScriptServiceProvider::class,
         Prettus\Repository\Providers\RepositoryServiceProvider::class,
         NotificationChannels\Twilio\TwilioProvider::class,
+        Spatie\MediaLibrary\MediaLibraryServiceProvider::class,
         //
 
         /*

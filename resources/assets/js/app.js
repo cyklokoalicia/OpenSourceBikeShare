@@ -13,6 +13,10 @@ window.Vue = require('vue');
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
+
+import './helpers/httpMethodLinks';
+
+
 import vSelect from 'vue-select'
 Vue.component('example', require('./components/Example.vue'));
 Vue.component('control-sidebar', require('./components/Control-sidebar.vue'));

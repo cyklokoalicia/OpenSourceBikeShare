@@ -6,11 +6,13 @@ use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Core\Model;
 use BikeShare\Domain\Note\Note;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+use Spatie\MediaLibrary\HasMedia\Interfaces\HasMedia;
 
-class Stand extends Model
+class Stand extends Model implements HasMedia
 {
 
-    use LogsActivity;
+    use LogsActivity, HasMediaTrait;
 
     public $table = 'stands';
 

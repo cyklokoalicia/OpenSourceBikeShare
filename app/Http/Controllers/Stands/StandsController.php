@@ -5,12 +5,14 @@ namespace BikeShare\Http\Controllers\Stands;
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Stand\Requests\CreateStandRequest;
 use BikeShare\Domain\Stand\Requests\UpdateStandRequest;
+use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\Stand\StandService;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Domain\Stand\StandStatus;
 use BikeShare\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use BikeShare\Http\Requests;
+use Spatie\MediaLibrary\FileAdder\FileAdder;
 
 class StandsController extends Controller
 {
@@ -51,6 +53,7 @@ class StandsController extends Controller
     {
         return view('stands.create', [
             'statuses' => with(new StandStatus())->toArray(),
+            'media' => collect()
         ]);
     }
 
@@ -64,7 +67,11 @@ class StandsController extends Controller
      */
     public function store(CreateStandRequest $request)
     {
-        $this->standRepo->create($request->all());
+        $stand = $this->standRepo->create($request->all());
+
+        foreach ($request->images as $image) {
+            $stand->addMedia($image)->toMediaCollection('stand');
+        }
 
         toastr()->success('Stand successfully created');
 
@@ -91,6 +98,7 @@ class StandsController extends Controller
         return view('stands.show', [
             'stand' => $stand,
             'bikes' => $bikes,
+            'media' => $stand->getMedia('stand')
         ]);
     }
 
@@ -111,6 +119,7 @@ class StandsController extends Controller
         return view('stands.edit', [
             'stand' => $stand,
             'statuses' => with(new StandStatus())->toArray(),
+            'media' => $stand->getMedia('stand')
         ]);
     }
 
@@ -142,5 +151,31 @@ class StandsController extends Controller
     public function destroy($uuid)
     {
         $stand = $this->standRepo->findByUuid($uuid);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $mediaId
+     * @return \Illuminate\Http\Response
+     */
+    public function destroyMedia($uuid, $mediaId)
+    {
+        $stand = $this->standRepo->findByUuid($uuid);
+        $stand->getMedia('stand')->keyBy('id')->get($mediaId)->delete();
+
+        return redirect()->back()->with('status', 'Media file deleted!');
+    }
+
+    public function destroyAll()
+    {
+        $this->blogpost->clearMediaCollection();
+        return redirect()->back()->with('status', 'All media deleted!');
+    }
+
+
+    public function upload()
+    {
+        
     }
 }
