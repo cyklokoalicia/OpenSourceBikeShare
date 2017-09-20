@@ -24,7 +24,10 @@
     "vue-resource": "^0.9.3"
   },
   "dependencies": {
-    "vue-select": "github:sagalbot/vue-select",
-    "dropzone": "^4.3.0"
+    "dropzone": "^4.3.0",
+    "popper.js": "^1.12.5",
+    "tether": "^1.4.0",
+    "bootstrap": "^4.0.0-beta",
+    "vue-select": "github:sagalbot/vue-select"
   }
 }

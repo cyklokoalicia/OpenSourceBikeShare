@@ -60,5 +60,8 @@ class Kernel extends HttpKernel
         'role'        => \BikeShare\Http\Middleware\RoleMiddleware::class,
         'jwt.auth'    => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
         'jwt.refresh' => \Tymon\JWTAuth\Http\Middleware\RefreshToken::class,
+
+        'admin' => \BikeShare\Http\Middleware\AuthenticateAdmin::class,
+        'admin.guest' => \BikeShare\Http\Middleware\RedirectIfAdminAuthenticated::class,
     ];
 }

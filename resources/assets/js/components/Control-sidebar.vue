@@ -90,7 +90,17 @@
                 } else {
                     return 'btn-success';
                 }
+            },
+
+            handler: function (data) {
+               console.log(data);
+               console.log('oo');
             }
+        },
+        events: {
+            'stand_bind' : function(data){
+                console.log('ouu');
+            },
         },
         mounted() {
             console.log('Component mounted.')

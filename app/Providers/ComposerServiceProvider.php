@@ -15,7 +15,7 @@ class ComposerServiceProvider extends ServiceProvider
     public function boot()
     {
         // Uing class based composers...
-        view()->composer('layouts.app', AppComposer::class);
+        view()->composer('admin.layouts.app', AppComposer::class);
         //view()->composer('*', AppComposer::class);
     }
 

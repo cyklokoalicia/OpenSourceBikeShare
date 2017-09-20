@@ -1,6 +1,8 @@
 {
     "/js/app.js": "/js/app.js",
     "/css/app.css": "/css/app.css",
+    "/css/base.css": "/css/base.css",
+    "/js/base.js": "/js/base.js",
     "/css/libs/bootstrap.css": "/css/libs/bootstrap.css",
     "/css/libs/admin-lte.css": "/css/libs/admin-lte.css",
     "/css/libs/admin-lte-skin.css": "/css/libs/admin-lte-skin.css",
@@ -22,7 +24,6 @@
     "/js/libs/daterangepicker.js": "/js/libs/daterangepicker.js",
     "/js/libs/moment.js": "/js/libs/moment.js",
     "/css/libs/daterangepicker.css": "/css/libs/daterangepicker.css",
-    "/js/libs/dropzone.js": "/js/libs/dropzone.js",
     "/css/min.css": "/css/min.css",
     "/js/min.js": "/js/min.js"
 }

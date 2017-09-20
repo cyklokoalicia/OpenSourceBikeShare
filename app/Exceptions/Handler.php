@@ -51,7 +51,7 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
         if ($exception instanceof TokenMismatchException) {
-            return redirect()->route('auth.login')->withInput()->with('_token', csrf_token());
+            return redirect()->route('app.auth.login')->withInput()->with('_token', csrf_token());
         }
 
         return parent::render($request, $exception);
@@ -72,6 +72,6 @@ class Handler extends ExceptionHandler
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }
 
-        return redirect()->guest(route('auth.login'));
+        return redirect()->guest(route('app.auth.login'));
     }
 }

@@ -10,14 +10,6 @@ use League\Fractal\Manager;
 
 class Controller extends BaseController
 {
+
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-
-    protected $user;
-    protected $fractal;
-
-    public function __construct()
-    {
-        $this->user = auth()->user();
-        $this->fractal = new Manager();
-    }
 }

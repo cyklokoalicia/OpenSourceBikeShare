@@ -14,6 +14,9 @@ let mix = require('laravel-mix');
 mix.js('resources/assets/js/app.js', 'public/js')
     .sass('resources/assets/sass/app.scss', 'public/css');
 
+mix.js('resources/assets/js/user/base.js', 'public/js')
+    .sass('resources/assets/sass/user/base.scss', 'public/css');
+
 
 // Copy bootstrap and AdminLTE CSS files to public directory
 mix.copy('bower_components/AdminLTE/bootstrap/css/bootstrap.css', 'public/css/libs/bootstrap.css');

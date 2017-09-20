@@ -14,7 +14,7 @@ window.Vue = require('vue');
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-import './helpers/httpMethodLinks';
+// import 'helpers/httpMethodLinks';
 
 
 import vSelect from 'vue-select'

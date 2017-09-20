@@ -1,0 +1,17 @@
+// Variables
+@import "user_variables";
+// Bootstrap
+@import "node_modules/bootstrap/scss/bootstrap.scss";
+
+html, body {
+  height: 100%;
+}
+
+.user-login.container {
+  @extend .container;
+  height: 100%;
+}
+
+.form-box {
+  background: $gray-lighter;
+}

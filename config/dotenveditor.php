@@ -28,7 +28,7 @@ return [
     'activated'         => true,
 
     // Set the base-route. All requests start here
-    'route'             =>  '/app/enveditor',
+    'route'             =>  '/admin/enveditor',
 
     // middleware and middlewwaregroups. Add your own middleware if you want.
     'middleware'        => ['web'/*, 'jwt.auth', 'role:admin'*/],
