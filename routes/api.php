@@ -24,8 +24,6 @@ Api::version('v1', ['namespace' => 'BikeShare\Http\Controllers\Api\v1'], functio
         // Password Reset Routes...
         Api::post('password/email', 'ForgotPasswordController@sendResetLinkEmail')->name('api.auth.password.email');
         Api::post('password/reset', 'ResetPasswordController@reset')->name('api.auth.password.post.reset');
-
-
     });
 
     Api::group(['middleware' => 'jwt.auth'], function () {
@@ -42,10 +40,17 @@ Api::version('v1', ['namespace' => 'BikeShare\Http\Controllers\Api\v1'], functio
             Api::get('{uuid}', 'StandsController@show')->name('api.stands.show');
         });
 
-        Api::group(['prefix' => 'rents', 'namespace' => 'Rents'], function () {
-            Api::post('', 'RentsController@store')->name('api.rents.store');
-            Api::get('{uuid}', 'RentsController@show')->name('api.rents.show');
-            Api::post('{uuid}/close', 'RentsController@close')->name('api.rents.close');
+        Api::group(['prefix' => 'rents'], function () {
+            Api::group(['prefix' => 'qrscan', 'namespace' => 'QrCodes'], function () {
+                Api::post('bikes/{bikeNum}', 'QrCodesController@rentBike');
+                Api::post('bikes/{bikeNum}/stands/{standName}', 'QrCodesController@returnBike');
+            });
+
+            Api::group(['namespace' => 'Rents'], function () {
+                Api::post('', 'RentsController@store')->name('api.rents.store');
+                Api::get('{uuid}', 'RentsController@show')->name('api.rents.show');
+                Api::post('{uuid}/close', 'RentsController@close')->name('api.rents.close');
+            });
         });
 
         Api::group(['middleware' => 'role:admin'], function () {
