@@ -12,7 +12,7 @@
                     <form action="{{ route('admin.stands.store') }}" method="POST" enctype="multipart/form-data">
                         {{ csrf_field() }}
                         <div class="box-body">
-                            @include('stands._form')
+                            @include('admin.stands._form')
                         </div>
                         <div class="box-footer">
                             <button type="submit" class="btn btn-success btn-flat">Submit</button>

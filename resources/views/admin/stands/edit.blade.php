@@ -13,7 +13,7 @@
                         {{ csrf_field() }}
                         {{ method_field('PUT') }}
                         <div class="box-body">
-                            @include('stands._form')
+                            @include('admin.stands._form')
 
                             @if($media->isEmpty())
                                 <div class="panel-body">

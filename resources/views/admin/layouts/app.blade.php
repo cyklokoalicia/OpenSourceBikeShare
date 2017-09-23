@@ -7,7 +7,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head>
     <meta charset="UTF-8">
     <title>@yield('html_header_title', 'Page title') - BikeShare </title>
-   
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
 @include('admin.layouts.partials.html-header')
 </head>

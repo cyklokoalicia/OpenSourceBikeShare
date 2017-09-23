@@ -13,7 +13,7 @@
                         {{ csrf_field() }}
                         {{ method_field('PUT') }}
                         <div class="box-body">
-                            @include('bikes._form')
+                            @include('admin.bikes._form')
                         </div>
                         <div class="box-footer">
                             <input type="submit" class="btn btn-success btn-flat" value="Update">

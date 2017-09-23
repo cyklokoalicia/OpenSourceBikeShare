@@ -12,7 +12,7 @@
                     <form action="{{ route('admin.users.store') }}" method="POST">
                         {{ csrf_field() }}
                         <div class="box-body">
-                            @include('users._form')
+                            @include('admin.users._form')
                         </div>
                         <div class="box-footer">
                             <input type="submit" class="btn btn-success btn-flat" value="Submit">
