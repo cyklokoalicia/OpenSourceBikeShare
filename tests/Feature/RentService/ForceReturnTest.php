@@ -7,8 +7,7 @@ use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\RentService;
-use BikeShare\Notifications\Sms\Rent\ForceRentOverrideRent;
-use BikeShare\Notifications\Sms\Rent\ForceReturnOverrideRent;
+use BikeShare\Notifications\Sms\Ret\ForceReturnOverrideRent;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Notification;
@@ -39,7 +38,7 @@ class ForceReturnTest extends DbTestCaseWithSeeding
     public function non_privileged_user_cannot_force_return_bike()
     {
         $user = userWithResources();
-        list($stand, $bike) = standWithBike([], ['bike_num' => 1]);
+        list($stand, $bike) = standWithBike();
         $this->expectException(AuthorizationException::class);
         $this->rentService->forceReturnBike($user, $bike, $stand);
     }
@@ -49,7 +48,7 @@ class ForceReturnTest extends DbTestCaseWithSeeding
     public function admin_can_force_return_non_occupied_bike()
     {
         $admin = adminWithResources();
-        list($stand, $bike) = standWithBike([], ['bike_num' => 1]);
+        list($stand, $bike) = standWithBike();
         $stand2 = create(Stand::class);
 
         $this->rentService->forceReturnBike($admin, $bike, $stand2);
@@ -63,7 +62,7 @@ class ForceReturnTest extends DbTestCaseWithSeeding
     {
         $user = userWithResources();
         $admin = adminWithResources();
-        list($stand, $bike) = standWithBike([], ['bike_num' => 1]);
+        list($stand, $bike) = standWithBike();
         $stand2 = create(Stand::class);
 
         Notification::fake();

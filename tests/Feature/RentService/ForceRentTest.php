@@ -37,7 +37,7 @@ class ForceRentTest extends DbTestCaseWithSeeding
     public function non_privileged_user_cannot_force_rent_bike()
     {
         $user = userWithResources();
-        list($stand, $bike) = standWithBike([], ['bike_num' => 1]);
+        list($stand, $bike) = standWithBike();
         $this->expectException(AuthorizationException::class);
         $this->rentService->forceRentBike($user, $bike);
     }
@@ -46,7 +46,7 @@ class ForceRentTest extends DbTestCaseWithSeeding
     public function admin_can_force_rent_non_occupied_bike()
     {
         $admin = adminWithResources();
-        list($stand, $bike) = standWithBike([], ['bike_num' => 1]);
+        list($stand, $bike) = standWithBike();
 
         $bike->fresh();
 
@@ -62,7 +62,7 @@ class ForceRentTest extends DbTestCaseWithSeeding
     {
         $user = userWithResources();
         $admin = adminWithResources();
-        list($stand, $bike) = standWithBike([], ['bike_num' => 1]);
+        list($stand, $bike) = standWithBike();
 
         Notification::fake();
 

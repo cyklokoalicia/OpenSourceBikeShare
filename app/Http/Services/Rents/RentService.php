@@ -27,7 +27,7 @@ use BikeShare\Notifications\Admin\BikeNoteAdded;
 use BikeShare\Notifications\Admin\NotesDeleted;
 use BikeShare\Notifications\Admin\StandNoteAdded;
 use BikeShare\Notifications\Sms\Rent\ForceRentOverrideRent;
-use BikeShare\Notifications\Sms\Rent\ForceReturnOverrideRent;
+use BikeShare\Notifications\Sms\Ret\ForceReturnOverrideRent;
 use Carbon\Carbon;
 use Exception;
 use Gate;
@@ -224,7 +224,7 @@ class RentService
         $rent->ended_at = Carbon::now();
         $rent->duration = $rent->ended_at->diffInSeconds($rent->started_at);
         $rent->status = RentStatus::CLOSE;
-        if ($standTo){ // can be null e.g in case of FORCERENTing
+        if ($standTo){ // can be null e.g in case of FORCERENT
             $rent->standTo()->associate($standTo);
         }
         $rent->save();

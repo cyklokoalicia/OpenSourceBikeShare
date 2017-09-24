@@ -43,7 +43,7 @@ class SmsParsing extends TestCase
         ];
 
         foreach ($tests as $input => $expectedOutput){
-            self::assertEquals($expectedOutput, SmsUtils::parseNoteFromReturnSms($input), $input);
+            self::assertEquals($expectedOutput, SmsUtils::parseNoteFromReturnSms($input, "RETURN"), $input);
         }
     }
 

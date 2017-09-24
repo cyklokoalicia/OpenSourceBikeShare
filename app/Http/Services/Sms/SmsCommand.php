@@ -4,6 +4,7 @@
 namespace BikeShare\Http\Services\Sms;
 
 use BikeShare\Domain\Bike\Bike;
+use BikeShare\Domain\Bike\BikePermissions;
 use BikeShare\Domain\Bike\BikesRepository;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\Stand\StandsRepository;
@@ -17,7 +18,8 @@ use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\ReturnException;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
-use BikeShare\Notifications\Sms\BikeReturnedSuccess;
+use BikeShare\Notifications\Sms\Ret\BikeForceReturnedSuccess;
+use BikeShare\Notifications\Sms\Ret\BikeReturnedSuccess;
 use BikeShare\Notifications\Sms\BikeToReturnNotRentedByMe;
 use BikeShare\Notifications\Sms\NoBikesRented;
 use BikeShare\Notifications\Sms\NoBikesUntagged;
@@ -44,6 +46,7 @@ use BikeShare\Notifications\Sms\WhereIsBike;
 use BikeShare\Notifications\SmsNotification;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
+use Illuminate\Support\Facades\Gate;
 
 class SmsCommand
 {
@@ -104,7 +107,7 @@ class SmsCommand
         }
         catch (LowCreditException $e)
         {
-            $this->user->notify(new RechargeCredit($this->appConfig, $e->userCredit, $e->userCredit));
+            $this->user->notify(new RechargeCredit($this->appConfig, $e->userCredit, $e->requiredCredit));
         }
         catch (BikeNotFreeException $e)
         {
@@ -129,10 +132,7 @@ class SmsCommand
         $this->user->notify(new BikeRentedSuccess($rent));
     }
 
-    public function forceReturnBike(Bike $bike, Stand $stand)
-    {
 
-    }
 
     public function returnBike(Bike $bike, Stand $stand, $noteText = null)
     {
@@ -156,6 +156,17 @@ class SmsCommand
         {
             throw $e; // unknown type, rethrow
         }
+    }
+
+    public function forceReturnBike(Bike $bike, Stand $stand, $noteText = null)
+    {
+        $this->rentService->forceReturnBike($this->user, $bike, $stand);
+
+        if ($noteText){
+            $this->rentService->addNoteToBike($bike, $this->user, $noteText);
+        }
+
+        $this->user->notify(new BikeForceReturnedSuccess($bike->bike_num, $stand->name, $bike->current_code, $noteText));
     }
 
     public function whereIsBike(Bike $bike)
@@ -295,6 +306,13 @@ class SmsCommand
         } catch (BikeNotRentedException $e) {
             $this->user->notify(new BikeNotRented($bike));
         }
+    }
+
+    public function last(Bike $bike)
+    {
+        Gate::forUser($this->user)->authorize(BikePermissions::LAST_RENTS);
+
+        $this->user->notify(new LastRents($bike));
     }
 
 }

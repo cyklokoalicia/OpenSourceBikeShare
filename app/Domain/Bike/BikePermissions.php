@@ -14,4 +14,5 @@ class BikePermissions extends MyEnum
     const REVERT = "bike_revert";
     const FORCE_RENT = "bike_force_rent";
     const FORCE_RETURN = "bike_force_return";
+    const LAST_RENTS = "bike_last_rents";
 }

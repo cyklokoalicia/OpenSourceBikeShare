@@ -23,8 +23,6 @@ use Validator;
 
 class SmsController extends Controller
 {
-    use Helpers;
-
     /**
      * @var SmsRequestContract
      */
@@ -131,7 +129,11 @@ class SmsController extends Controller
                     if (count($args) < 3){
                         $smsCommand->invalidArguments( "with bike number and stand name: RENT 47 RACKO");
                     } else {
-                        $smsCommand->returnBike($this->bikeRepo->getBikeOrFail($args[1]), $this->standsRepo->getStandOrFail($args[2]));
+                        $smsCommand->returnBike(
+                            $this->bikeRepo->getBikeOrFail($args[1]),
+                            $this->standsRepo->getStandOrFail($args[2]),
+                            SmsUtils::parseNoteFromReturnSms($sms->sms_text, $command)
+                        );
                     }
                     break;
 
@@ -139,7 +141,11 @@ class SmsController extends Controller
                     if (count($args) < 3){
                         $smsCommand->invalidArguments( "with bike number and stand name: FORCERETURN 47 RACKO");
                     } else {
-                        $smsCommand->forceReturnBike($this->bikeRepo->getBikeOrFail($args[1]), $this->standsRepo->getStandOrFail($args[2]));
+                        $smsCommand->forceReturnBike(
+                            $this->bikeRepo->getBikeOrFail($args[1]),
+                            $this->standsRepo->getStandOrFail($args[2]),
+                            SmsUtils::parseNoteFromReturnSms($sms->sms_text, $command)
+                        );
                     }
                     break;
 
@@ -164,7 +170,10 @@ class SmsController extends Controller
                     if (count($args) < 2) {
                         $smsCommand->invalidArguments( 'with bike number/stand name and problem description: NOTE 47 Flat tire on front wheel');
                     } else {
-                        $smsCommand->note($args[1], SmsUtils::parseNoteFromSms($sms->sms_text, $command));
+                        $smsCommand->note(
+                            $args[1],
+                            SmsUtils::parseNoteFromSms($sms->sms_text, $command)
+                        );
                     }
                     break;
 
@@ -172,7 +181,10 @@ class SmsController extends Controller
                     if (count($args) < 2) {
                         $smsCommand->invalidArguments( 'with stand name and problem description: TAG MAINSQUARE vandalism');
                     } else {
-                        $smsCommand->tag($this->standsRepo->getStandOrFail($args[1]), SmsUtils::parseNoteFromSms($sms->sms_text, $command));
+                        $smsCommand->tag(
+                            $this->standsRepo->getStandOrFail($args[1]),
+                            SmsUtils::parseNoteFromSms($sms->sms_text, $command)
+                        );
                     }
                     break;
 
@@ -180,7 +192,10 @@ class SmsController extends Controller
                     if (count($args) < 2) {
                         $smsCommand->invalidArguments( "with bike number/stand name and optional pattern. All messages or notes matching pattern will be deleted: DELNOTE 47 wheel");
                     } else {
-                        $smsCommand->deleteNote($args[1], SmsUtils::parseNoteFromSms($sms->sms_text, $command));
+                        $smsCommand->deleteNote(
+                            $args[1],
+                            SmsUtils::parseNoteFromSms($sms->sms_text, $command)
+                        );
                     }
                     break;
 
@@ -208,11 +223,13 @@ class SmsController extends Controller
                         $smsCommand->revert($this->bikeRepo->getBikeOrFail($args[1]));
                     }
                     break;
-//            case "LAST":
-//                checkUserPrivileges($sms->Number());
-//                validateReceivedSMS($sms->Number(),count($args),2,_('with bike number:')." LAST 47");
-//                last($sms->Number(),$args[1]);
-//                break;
+                case "LAST":
+                    if (count($args) < 2) {
+                        $smsCommand->invalidArguments( "with bike number: LAST 47");
+                    } else {
+                        $smsCommand->last($this->bikeRepo->getBikeOrFail($args[1]));
+                    }
+                    break;
                 default:
                     $smsCommand->unknown($command);
                     break;

@@ -1,6 +1,6 @@
 <?php
 
-namespace BikeShare\Notifications\Sms;
+namespace BikeShare\Notifications\Sms\Ret;
 
 use BikeShare\Domain\Rent\Rent;
 use BikeShare\Http\Services\AppConfig;

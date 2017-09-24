@@ -5,7 +5,7 @@ use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Notifications\Sms\BikeDoesNotExist;
-use BikeShare\Notifications\Sms\BikeReturnedSuccess;
+use BikeShare\Notifications\Sms\Ret\BikeReturnedSuccess;
 use BikeShare\Notifications\Sms\BikeToReturnNotRentedByMe;
 use BikeShare\Notifications\Sms\InvalidArgumentsCommand;
 use BikeShare\Notifications\Sms\NoBikesRented;

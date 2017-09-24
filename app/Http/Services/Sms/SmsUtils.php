@@ -13,9 +13,9 @@ class SmsUtils
         return preg_split("/\s+/", strtoupper(trim(urldecode($smsText))));
     }
 
-    public static function parseNoteFromReturnSms($smsText)
+    public static function parseNoteFromReturnSms($smsText, $command)
     {
-        if (preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $smsText, $matches)) {
+        if (preg_match("/{$command}[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $smsText, $matches)) {
             return trim($matches[1]);
         } else {
             return null;
@@ -24,7 +24,6 @@ class SmsUtils
 
     public static function parseNoteFromSms($smsText, $command)
     {
-
         if (preg_match("/{$command}[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $smsText, $matches)) {
             return trim($matches[1]);
         } else {
