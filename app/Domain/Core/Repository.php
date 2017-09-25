@@ -14,6 +14,7 @@ abstract class Repository extends BaseRepository implements CacheableInterface
 
     use CacheableRepository;
 
+
     public function findByOrFail($field, $value = null, $columns = ['*'])
     {
         $this->applyCriteria();
@@ -23,6 +24,7 @@ abstract class Repository extends BaseRepository implements CacheableInterface
 
         return $this->parserResult($model);
     }
+
 
     // TODO cache this custom method
     public function findBy($field, $value = null, $columns = ['*'])
@@ -45,6 +47,18 @@ abstract class Repository extends BaseRepository implements CacheableInterface
     public function findByUuid($uuid, $columns = ['*'])
     {
         return $this->findBy('uuid', $uuid, $columns);
+    }
+
+
+    /**
+     * @param       $uuid
+     * @param array $columns
+     *
+     * @return mixed
+     */
+    public function findByUuidOrFail($uuid, $columns = ['*'])
+    {
+        return $this->findByOrFail('uuid', $uuid, $columns);
     }
 
 

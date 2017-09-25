@@ -11,13 +11,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+use Spatie\MediaLibrary\HasMedia\Interfaces\HasMedia;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, HasMedia
 {
 
-    use Notifiable, HasRoles, Uuid, SoftDeletes, LogsActivity;
+    use Notifiable, HasRoles, Uuid, SoftDeletes, LogsActivity, HasMediaTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -62,6 +64,8 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
+    protected $appends = ['avatar'];
+
     public function rents()
     {
         return $this->hasMany(Rent::class);
@@ -94,5 +98,12 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function getAvatarAttribute()
+    {
+        $avatarUrl = $this->getFirstMediaUrl('avatars') ?? null;
+
+        return $avatarUrl ? url($avatarUrl) : null;
     }
 }
