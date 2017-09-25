@@ -4,7 +4,9 @@ namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
+use BikeShare\Domain\Rent\RentMethod;
 use BikeShare\Domain\Rent\RentStatus;
+use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
@@ -46,7 +48,7 @@ class ReturnBikeTest extends TestCase
         $this->expectException(BikeNotRentedException::class);
 
         // Act
-        $this->rentService->returnBike($user, $bike, $stand);
+        $this->rentService->returnBike($user, $bike, $stand, ReturnMethod::WEB);
     }
 
     /** @test */
@@ -57,13 +59,13 @@ class ReturnBikeTest extends TestCase
         $userWithBike = userWithResources();
         list($stand, $bike) = standWithBike();
         $standTo = create(Stand::class);
-        $this->rentService->rentBike($userWithBike, $bike);
+        $this->rentService->rentBike($userWithBike, $bike, RentMethod::WEB);
 
         // Assert
         $this->expectException(BikeRentedByOtherUserException::class);
 
         // Act
-        $this->rentService->returnBike($userWithoutBike, $bike, $standTo);
+        $this->rentService->returnBike($userWithoutBike, $bike, $standTo, ReturnMethod::WEB);
     }
 
     /** @test */
@@ -75,7 +77,7 @@ class ReturnBikeTest extends TestCase
         $standTo = create(Stand::class);
 
         // Act
-        $rent = $this->rentService->rentBike($user, $bike);
+        $rent = $this->rentService->rentBike($user, $bike, RentMethod::WEB);
 
         // Assert
         self::assertEquals(BikeStatus::OCCUPIED, $bike->status);
@@ -84,7 +86,7 @@ class ReturnBikeTest extends TestCase
         self::assertEquals(RentStatus::OPEN, $rent->status);
 
         // Act
-        $rentAfterReturn = $this->rentService->returnBike($user, $bike, $standTo);
+        $rentAfterReturn = $this->rentService->returnBike($user, $bike, $standTo, ReturnMethod::WEB);
 
         // Assert
         self::assertEquals(BikeStatus::FREE, $bike->status);

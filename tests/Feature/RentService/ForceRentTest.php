@@ -3,6 +3,7 @@
 namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\BikeStatus;
+use BikeShare\Domain\Rent\RentMethod;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\RentService;
@@ -39,7 +40,7 @@ class ForceRentTest extends DbTestCaseWithSeeding
         $user = userWithResources();
         list($stand, $bike) = standWithBike();
         $this->expectException(AuthorizationException::class);
-        $this->rentService->forceRentBike($user, $bike);
+        $this->rentService->forceRentBike($user, $bike, RentMethod::WEB);
     }
 
     /** @test */
@@ -50,7 +51,7 @@ class ForceRentTest extends DbTestCaseWithSeeding
 
         $bike->fresh();
 
-        $this->rentService->forceRentBike($admin, $bike);
+        $this->rentService->forceRentBike($admin, $bike, RentMethod::WEB);
 
         self::assertEquals($bike->status, BikeStatus::OCCUPIED);
         self::assertNull($bike->stand);
@@ -66,14 +67,14 @@ class ForceRentTest extends DbTestCaseWithSeeding
 
         Notification::fake();
 
-        $userRent = $this->rentService->rentBike($user, $bike);
+        $userRent = $this->rentService->rentBike($user, $bike, RentMethod::WEB);
         $bike->fresh();
 
         self::assertEquals($bike->status, BikeStatus::OCCUPIED);
         self::assertNull($bike->stand);
         self::assertEquals($bike->user->id, $user->id);
 
-        $adminRent = $this->rentService->forceRentBike($admin, $bike);
+        $adminRent = $this->rentService->forceRentBike($admin, $bike, RentMethod::WEB);
         $bike->fresh();
 
         self::assertEquals($bike->status, BikeStatus::OCCUPIED);

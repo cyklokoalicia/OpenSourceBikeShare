@@ -3,10 +3,12 @@
 namespace BikeShare\Http\Controllers\Api\v1\Rents;
 
 use BikeShare\Domain\Bike\BikesRepository;
+use BikeShare\Domain\Rent\RentMethod;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Rent\RentTransformer;
 use BikeShare\Domain\Rent\Requests\CreateRentRequest;
+use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
@@ -71,7 +73,7 @@ class RentsController extends Controller
         $rent = null;
         try {
             // TODO check too many, i don't understand yet
-            $rent = $rentService->rentBike($this->user, $bike);
+            $rent = $rentService->rentBike($this->user, $bike, RentMethod::APP);
         }
         catch (LowCreditException $e)
         {
@@ -145,7 +147,7 @@ class RentsController extends Controller
             $this->response->errorNotFound('Stand not found!');
         }
 
-        $rent = $rentService->closeRent($rent, $stand);
+        $rent = $rentService->closeRent($rent, $stand, ReturnMethod::APP);
         // TODO catch exceptions
 
         if ($request->has('note')) {

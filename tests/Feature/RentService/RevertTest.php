@@ -4,7 +4,9 @@ namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
+use BikeShare\Domain\Rent\RentMethod;
 use BikeShare\Domain\Rent\RentStatus;
+use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
@@ -44,7 +46,7 @@ class RevertTest extends DbTestCaseWithSeeding
         $admin = userWithResources([], true);
         list($stand, $bike) = standWithBike();
         $this->expectException(BikeNotRentedException::class);
-        $this->rentService->revertBikeRent($admin, $bike);
+        $this->rentService->revertBikeRent($admin, $bike, ReturnMethod::WEB);
     }
 
     /** @test */
@@ -52,10 +54,10 @@ class RevertTest extends DbTestCaseWithSeeding
     {
         $user = userWithResources();
         list($stand, $bike) = standWithBike();
-        $this->rentService->rentBike($user, $bike);
+        $this->rentService->rentBike($user, $bike, RentMethod::WEB);
 
         $this->expectException(AuthorizationException::class);
-        $this->rentService->revertBikeRent($user, $bike);
+        $this->rentService->revertBikeRent($user, $bike, ReturnMethod::WEB);
     }
 
     /** @test */
@@ -67,7 +69,7 @@ class RevertTest extends DbTestCaseWithSeeding
         list($stand, $bike) = standWithBike();
 
         // Act
-        $rent = $this->rentService->rentBike($user, $bike);
+        $rent = $this->rentService->rentBike($user, $bike, RentMethod::WEB);
 
         // Assert
         self::assertEquals(BikeStatus::OCCUPIED, $bike->status);
@@ -76,7 +78,7 @@ class RevertTest extends DbTestCaseWithSeeding
         self::assertEquals(RentStatus::OPEN, $rent->status);
 
         // Act
-        $rentAfterRevert = $this->rentService->revertBikeRent($admin, $bike);
+        $rentAfterRevert = $this->rentService->revertBikeRent($admin, $bike, ReturnMethod::WEB);
 
         $bike->refresh();
 

@@ -5,6 +5,7 @@ namespace Tests\Feature\RentService;
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Rent\Rent;
+use BikeShare\Domain\Rent\RentMethod;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
@@ -50,7 +51,7 @@ class RentBikeTest extends TestCase
         $this->expectException(LowCreditException::class);
 
         // Act
-        $this->rentService->rentBike($user, $bike);
+        $this->rentService->rentBike($user, $bike, RentMethod::WEB);
     }
 
     /** @test */
@@ -59,13 +60,13 @@ class RentBikeTest extends TestCase
         // Arrange
         $user = userWithResources();
         list($stand, $bike) = standWithBike();
-        $this->rentService->rentBike($user, $bike);
+        $this->rentService->rentBike($user, $bike, RentMethod::WEB);
 
         // Assert
         $this->expectException(BikeNotFreeException::class);
 
         // Act
-        $this->rentService->rentBike($user, $bike);
+        $this->rentService->rentBike($user, $bike, RentMethod::WEB);
     }
 
     /** @test */
@@ -75,13 +76,13 @@ class RentBikeTest extends TestCase
         $myUser = userWithResources();
         $otherUser = userWithResources();
         list($stand, $bike) = standWithBike();
-        $this->rentService->rentBike($otherUser, $bike);
+        $this->rentService->rentBike($otherUser, $bike, RentMethod::WEB);
 
         // Assert
         $this->expectException(BikeNotFreeException::class);
 
         // Act
-        $this->rentService->rentBike($myUser, $bike);
+        $this->rentService->rentBike($myUser, $bike, RentMethod::WEB);
     }
 
     /** @test */
@@ -95,7 +96,7 @@ class RentBikeTest extends TestCase
         $this->expectException(MaxNumberOfRentsException::class);
 
         // Act
-        $this->rentService->rentBike($myUser, $bike);
+        $this->rentService->rentBike($myUser, $bike, RentMethod::WEB);
     }
 
     /** @test */
@@ -111,7 +112,7 @@ class RentBikeTest extends TestCase
         $this->expectException(BikeNotOnTopException::class);
 
         // Act
-        $this->rentService->rentBike($user, $bikeNotOnTop);
+        $this->rentService->rentBike($user, $bikeNotOnTop, RentMethod::WEB);
     }
 
     /** @test */
@@ -122,7 +123,7 @@ class RentBikeTest extends TestCase
         $bike = create(Stand::class)->bikes()->save(make(Bike::class));
 
         // Act
-        $rent = $this->rentService->rentBike($user, $bike);
+        $rent = $this->rentService->rentBike($user, $bike, RentMethod::WEB);
         $bike->fresh();
 
         // Assert
@@ -144,7 +145,7 @@ class RentBikeTest extends TestCase
         config(['bike-share.stack_bike' => true]);
 
         // Act
-        $rent = $this->rentService->rentBike($user, $bikeOnTop);
+        $rent = $this->rentService->rentBike($user, $bikeOnTop, RentMethod::WEB);
 
         // Assert
         self::assertEquals($rent->bike->id, $bikeOnTop->id);

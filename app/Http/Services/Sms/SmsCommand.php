@@ -6,6 +6,8 @@ namespace BikeShare\Http\Services\Sms;
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikePermissions;
 use BikeShare\Domain\Bike\BikesRepository;
+use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
@@ -102,7 +104,7 @@ class SmsCommand
     {
         try
         {
-            $rent = $this->rentService->rentBike($this->user, $bike);
+            $rent = $this->rentService->rentBike($this->user, $bike, RentMethod::SMS);
             $this->user->notify(new BikeRentedSuccess($rent));
         }
         catch (LowCreditException $e)
@@ -128,7 +130,7 @@ class SmsCommand
 
     public function forceRentBike(Bike $bike)
     {
-        $rent = $this->rentService->forceRentBike($this->user, $bike);
+        $rent = $this->rentService->forceRentBike($this->user, $bike, RentMethod::SMS);
         $this->user->notify(new BikeRentedSuccess($rent));
     }
 
@@ -142,7 +144,7 @@ class SmsCommand
         }
 
         try {
-            $rent = $this->rentService->returnBike($this->user, $bike, $stand);
+            $rent = $this->rentService->returnBike($this->user, $bike, $stand, ReturnMethod::SMS);
             if ($noteText){
                 $this->rentService->addNoteToBike($bike, $this->user, $noteText);
             }
@@ -160,7 +162,7 @@ class SmsCommand
 
     public function forceReturnBike(Bike $bike, Stand $stand, $noteText = null)
     {
-        $this->rentService->forceReturnBike($this->user, $bike, $stand);
+        $this->rentService->forceReturnBike($this->user, $bike, $stand, ReturnMethod::SMS);
 
         if ($noteText){
             $this->rentService->addNoteToBike($bike, $this->user, $noteText);
@@ -300,7 +302,7 @@ class SmsCommand
     public function revert(Bike $bike)
     {
         try {
-            $rent = $this->rentService->revertBikeRent($this->user, $bike);
+            $rent = $this->rentService->revertBikeRent($this->user, $bike, ReturnMethod::SMS);
             $this->user->notify(new RevertSuccess($rent));
             $rent->user->notify(new RentedBikeReverted($bike));
         } catch (BikeNotRentedException $e) {

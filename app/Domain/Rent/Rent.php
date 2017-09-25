@@ -14,7 +14,7 @@ class Rent extends Model
 
     public $table = 'rents';
 
-    public $fillable = ['status'];
+    public $fillable = ['status', 'method'];
 
     public $dates = ['deleted_at', 'started_at', 'ended_at'];
 

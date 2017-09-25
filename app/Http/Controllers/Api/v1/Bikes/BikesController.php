@@ -8,9 +8,11 @@ use BikeShare\Domain\Bike\BikeTransformer;
 use BikeShare\Domain\Bike\Events\BikeWasRented;
 use BikeShare\Domain\Bike\Events\BikeWasReturned;
 use BikeShare\Domain\Bike\Requests\CreateBikeRequest;
+use BikeShare\Domain\Rent\RentMethod;
 use BikeShare\Domain\Rent\RentTransformer;
 use BikeShare\Domain\Rent\Requests\RentRequest;
 use BikeShare\Domain\Rent\Requests\ReturnRequest;
+use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\Rents\RentService;
@@ -120,7 +122,7 @@ class BikesController extends Controller
         $bike = $this->bikeRepo->findByUuid($uuid);
 
         // TODO catch all exception types
-        $rent = $rentService->rentBike($this->user, $bike);
+        $rent = $rentService->rentBike($this->user, $bike, RentMethod::APP);
 
         return $this->response->item($rent, new RentTransformer());
     }
@@ -131,6 +133,6 @@ class BikesController extends Controller
 
         $stand = app(StandsRepository::class)->findByUuid($request->get('stand'));
 
-        app(RentService::class)->returnBike($this->user, $bike, $stand);
+        app(RentService::class)->returnBike($this->user, $bike, $stand, ReturnMethod::APP);
     }
 }

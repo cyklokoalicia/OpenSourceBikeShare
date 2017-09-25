@@ -9,8 +9,10 @@ use BikeShare\Domain\Bike\Events\BikeWasReturned;
 use BikeShare\Domain\Rent\Events\RentWasClosed;
 use BikeShare\Domain\Rent\Events\RentWasCreated;
 use BikeShare\Domain\Rent\Rent;
+use BikeShare\Domain\Rent\RentMethod;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
+use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\Stand\StandPermissions;
 use BikeShare\Domain\User\User;
@@ -50,17 +52,15 @@ class RentService
         $this->rentChecks = $rentChecks;
     }
 
+
     /**
-     * @param User $user
-     * @param Bike $bike
+     * @param User       $user
+     * @param Bike       $bike
+     * @param string $rentMethod
+     *
      * @return Rent
-     * @throws LowCreditException
-     * @throws BikeNotFreeException
-     * @throws BikeNotOnTopException
-     * @throws MaxNumberOfRentsException
-     * @throws Exception
      */
-    public function rentBike(User $user, Bike $bike)
+    public function rentBike(User $user, Bike $bike, $rentMethod)
     {
         // any failing check throws exception
         $this->rentChecks->sufficientCredit($user);
@@ -77,12 +77,12 @@ class RentService
         $standFrom = $bike->stand;
 
         $this->rentBikeInternal($bike, $user);
-        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code);
+        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code, $rentMethod);
 
         return $rent;
     }
 
-    public function forceRentBike(User $user, Bike $bike)
+    public function forceRentBike(User $user, Bike $bike, $rentMethod)
     {
         Gate::forUser($user)->authorize(BikePermissions::FORCE_RENT);
 
@@ -94,14 +94,14 @@ class RentService
             // and notify original user
             // TODO record somehow that rent was closed forcefully
             $originalRent = $this->closeRentLogInternal(
-                app(RentsRepository::class)->findOpenRent($bike), null
+                app(RentsRepository::class)->findOpenRent($bike), null, $rentMethod
             );
 
             $originalRent->user->notify(new ForceRentOverrideRent($bike));
         }
 
         $this->rentBikeInternal($bike, $user);
-        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code);
+        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code, $rentMethod);
 
         return $rent;
     }
@@ -121,7 +121,7 @@ class RentService
     /**
      * @return Rent
      */
-    private function createRentLog(User $user, Bike $bike, $standFrom, $oldCode, $newCode)
+    private function createRentLog(User $user, Bike $bike, $standFrom, $oldCode, $newCode, $method)
     {
         $rent = new Rent();
         $rent->status = RentStatus::OPEN;
@@ -133,6 +133,7 @@ class RentService
         $rent->started_at = Carbon::now();
         $rent->old_code = $oldCode;
         $rent->new_code = $newCode;
+        $rent->method = $method;
         $rent->save();
 
         event(new RentWasCreated($rent));
@@ -140,19 +141,22 @@ class RentService
         return $rent;
     }
 
-    public function closeRent(Rent $rent, Stand $standToReturn)
+    public function closeRent(Rent $rent, Stand $standToReturn, $returnMethod)
     {
-        return $this->returnBike($rent->user, $rent->bike, $standToReturn);
+        return $this->returnBike($rent->user, $rent->bike, $standToReturn, $returnMethod);
     }
 
+
     /**
-     * @param User $user User initiating the command
-     * @param Bike $bike
+     * @param User  $user User initiating the command
+     * @param Bike  $bike
      * @param Stand $standTo
+     * @param string $returnMethod
+     *
      * @return Rent
      * @internal param Rent|null $rent
      */
-    public function returnBike(User $user, Bike $bike, Stand $standTo)
+    public function returnBike(User $user, Bike $bike, Stand $standTo, $returnMethod)
     {
         if ($bike->status !== BikeStatus::OCCUPIED){
             throw new BikeNotRentedException($bike->status);
@@ -165,12 +169,12 @@ class RentService
         $rent = app(RentsRepository::class)->findOpenRent($bike);
 
         $this->returnBikeInternal($bike, $standTo);
-        $this->closeRentLogInternal($rent, $standTo);
+        $this->closeRentLogInternal($rent, $standTo, $returnMethod);
         $this->updateCredit($rent);
         return $rent;
     }
 
-    public function forceReturnBike(User $user, Bike $bike, Stand $standTo)
+    public function forceReturnBike(User $user, Bike $bike, Stand $standTo, $returnMethod)
     {
         Gate::forUser($user)->authorize(BikePermissions::FORCE_RETURN);
 
@@ -179,7 +183,7 @@ class RentService
         $this->returnBikeInternal($bike, $standTo);
         if ($rent){
             $rent->user->notify(new ForceReturnOverrideRent($bike));
-            $this->closeRentLogInternal($rent, $standTo);
+            $this->closeRentLogInternal($rent, $standTo, $returnMethod);
         }
         return $rent;
     }
@@ -191,7 +195,7 @@ class RentService
      * @param Bike $bike
      * @return null
      */
-    public function revertBikeRent(User $user, Bike $bike){
+    public function revertBikeRent(User $user, Bike $bike, $returnMethod){
         Gate::forUser($user)->authorize(BikePermissions::REVERT);
 
         if ($bike->status !== BikeStatus::OCCUPIED){
@@ -203,7 +207,7 @@ class RentService
         $oldStand = $rent->standFrom;
 
         $this->returnBikeInternal($bike, $oldStand);
-        $this->closeRentLogInternal($rent, $oldStand);
+        $this->closeRentLogInternal($rent, $oldStand, $returnMethod);
         return $rent;
     }
 
@@ -219,11 +223,12 @@ class RentService
         event(new BikeWasReturned($bike, $standTo));
     }
 
-    private function closeRentLogInternal(Rent $rent, $standTo)
+    private function closeRentLogInternal(Rent $rent, $standTo, $method)
     {
         $rent->ended_at = Carbon::now();
         $rent->duration = $rent->ended_at->diffInSeconds($rent->started_at);
         $rent->status = RentStatus::CLOSE;
+        $rent->method = $method;
         if ($standTo){ // can be null e.g in case of FORCERENT
             $rent->standTo()->associate($standTo);
         }
