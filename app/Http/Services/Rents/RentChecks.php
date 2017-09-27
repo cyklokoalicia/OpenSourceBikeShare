@@ -35,7 +35,7 @@ class RentChecks
      * @param User $user
      * @throws LowCreditException
      */
-    function sufficientCredit(User $user)
+    public function sufficientCredit(User $user)
     {
         if ($this->appConfig->isCreditEnabled()){
             $requiredCredit = $this->appConfig->getRequiredCredit();
@@ -51,7 +51,7 @@ class RentChecks
      * @throws BikeNotFreeException
      * @throws Exception
      */
-    function bikeIsFree(Bike $bike)
+    public function bikeIsFree(Bike $bike)
     {
         if ($bike->status != BikeStatus::FREE) {
             if (!$bike->user){
@@ -65,7 +65,7 @@ class RentChecks
      * @param User $user
      * @throws MaxNumberOfRentsException
      */
-    function userRentLimit(User $user)
+    public function userRentLimit(User $user)
     {
         $currentRents = $user->bikes()->get()->count();
         if ($currentRents >= $user->limit) {
