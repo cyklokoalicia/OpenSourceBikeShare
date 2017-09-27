@@ -3,6 +3,7 @@
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Stand\Stand;
+use BikeShare\Domain\Stand\StandStatus;
 use BikeShare\Domain\User\User;
 
 /*
@@ -34,6 +35,7 @@ $factory->define(Stand::class, function (Faker\Generator $faker) {
         'name' => $faker->firstName,
         'description' => $faker->paragraph,
         'place_name' => $faker->streetName,
+        'status' => StandStatus::ACTIVE,
         // locations in Bratislava
         'longitude' => $faker->longitude(17.0732198, 17.135304),
         'latitude' => $faker->latitude(48.096330, 48.1594594)
