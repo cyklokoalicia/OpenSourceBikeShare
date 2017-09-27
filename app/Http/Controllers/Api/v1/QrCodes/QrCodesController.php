@@ -15,6 +15,7 @@ use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
+use BikeShare\Http\Services\Rents\Exceptions\NotRentableStandException;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\ReturnException;
 use BikeShare\Http\Services\Rents\RentService;
@@ -75,6 +76,8 @@ class QrCodesController extends Controller
             $this->response->errorBadRequest('You can only rent ' . $e->userLimit . ' bike at once.');
         } catch (BikeNotOnTopException $e) {
             $this->response->errorBadRequest('Bike ' . $bike->bike_num . ' is not rentable now, you have to rent bike ' . $e->topBike->bike_num . ' from this stand.');
+        } catch (NotRentableStandException $e) {
+            $this->response->errorBadRequest($e->getMessage());
         } catch (RentException $e) {
             throw $e; // unknown type, rethrow
         }

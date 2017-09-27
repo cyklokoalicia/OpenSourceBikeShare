@@ -20,6 +20,7 @@ use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\ReturnException;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
+use BikeShare\Notifications\Sms\NotRentableStand;
 use BikeShare\Notifications\Sms\Ret\BikeForceReturnedSuccess;
 use BikeShare\Notifications\Sms\Ret\BikeReturnedSuccess;
 use BikeShare\Notifications\Sms\BikeToReturnNotRentedByMe;
@@ -122,6 +123,10 @@ class SmsCommand
         catch (BikeNotOnTopException $e)
         {
             $this->user->notify(new BikeNotTopOfStack($bike, $e->topBike));
+        }
+        catch (NotRentableStandException $e)
+        {
+            $this->user->notify(new NotRentableStand($e->stand));
         }
         catch (RentException $e){
             throw $e; // unknown type, rethrow

@@ -46,10 +46,17 @@ class RentService
      */
     private $rentChecks;
 
-    public function __construct(AppConfig $appConfig, RentChecks $rentChecks)
+    /**
+     * @var ReturnChecks
+     */
+    private $returnChecks;
+
+
+    public function __construct(AppConfig $appConfig, RentChecks $rentChecks, ReturnChecks $returnChecks)
     {
         $this->appConfig = $appConfig;
         $this->rentChecks = $rentChecks;
+        $this->returnChecks = $returnChecks;
     }
 
 
@@ -67,6 +74,7 @@ class RentService
         $this->rentChecks->bikeIsFree($bike);
         $this->rentChecks->userRentLimit($user);
         $this->rentChecks->bikeTopOfStack($bike);
+        $this->rentChecks->isRentableStand($bike);
         // TODO checkTooMany
 
         if ($this->appConfig->isStackWatchEnabled() && !$bike->isTopOfStack()){

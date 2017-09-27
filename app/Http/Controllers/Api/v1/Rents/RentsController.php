@@ -15,6 +15,7 @@ use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
+use BikeShare\Http\Services\Rents\Exceptions\NotRentableStandException;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\RentService;
 use Illuminate\Http\Request;
@@ -90,6 +91,10 @@ class RentsController extends Controller
         catch (MaxNumberOfRentsException $e)
         {
             $this->response->errorBadRequest('You reached the maximum number of rents!');
+        }
+        catch (NotRentableStandException $e)
+        {
+            $this->response->errorBadRequest($e->getMessage());
         }
         catch (RentException $e)
         {

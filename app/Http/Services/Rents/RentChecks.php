@@ -6,12 +6,14 @@ namespace BikeShare\Http\Services\Rents;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
+use BikeShare\Domain\Stand\StandStatus;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
+use BikeShare\Http\Services\Rents\Exceptions\NotRentableStandException;
 use Exception;
 
 class RentChecks
@@ -79,6 +81,19 @@ class RentChecks
     {
         if ($this->appConfig->isStackBikeEnabled() && !$bike->isTopOfStack()){
             throw new BikeNotOnTopException($bike->stand->getTopBike());
+        }
+    }
+
+
+    /**
+     * @param $bike
+     *
+     * @throws \BikeShare\Http\Services\Rents\Exceptions\NotRentableStandException
+     */
+    public function isRentableStand($bike): void
+    {
+        if (! in_array($bike->stand->status, [StandStatus::ACTIVE, StandStatus::ACTIVE_RENT_ONLY], true)) {
+            throw new NotRentableStandException($bike->stand);
         }
     }
 }

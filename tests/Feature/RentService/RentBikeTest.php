@@ -8,12 +8,14 @@ use BikeShare\Domain\Rent\Rent;
 use BikeShare\Domain\Rent\RentMethod;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Stand\Stand;
+use BikeShare\Domain\Stand\StandStatus;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
+use BikeShare\Http\Services\Rents\Exceptions\NotRentableStandException;
 use BikeShare\Http\Services\Rents\RentService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
@@ -94,6 +96,20 @@ class RentBikeTest extends TestCase
 
         // Assert
         $this->expectException(MaxNumberOfRentsException::class);
+
+        // Act
+        $this->rentService->rentBike($myUser, $bike, RentMethod::WEB);
+    }
+
+    /** @test */
+    public function renting_bike_from_not_rentable_stand_throws_exception()
+    {
+        // Arrange
+        $myUser = userWithResources();
+        list($stand, $bike) = standWithBike(['status' => StandStatus::INACTIVE]);
+
+        // Assert
+        $this->expectException(NotRentableStandException::class);
 
         // Act
         $this->rentService->rentBike($myUser, $bike, RentMethod::WEB);
