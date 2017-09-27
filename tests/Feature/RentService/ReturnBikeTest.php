@@ -14,6 +14,7 @@ use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\NotRentableStandException;
+use BikeShare\Http\Services\Rents\Exceptions\NotReturnableStandException;
 use BikeShare\Http\Services\Rents\RentService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
@@ -57,14 +58,16 @@ class ReturnBikeTest extends TestCase
     public function returning_not_returnable_stand_throws_exception()
     {
         // Arrange
-        $user = create(User::class);
-        list($stand, $bike) = standWithBike(['status' => StandStatus::INACTIVE]);
+        $user = userWithResources();
+        list($stand, $bike) = standWithBike();
+        $standTo = create(Stand::class, ['status' => StandStatus::INACTIVE]);
+        $this->rentService->rentBike($user, $bike, RentMethod::WEB);
 
         // Assert
-        $this->expectException(NotRentableStandException::class);
+        $this->expectException(NotReturnableStandException::class);
 
         // Act
-        $this->rentService->returnBike($user, $bike, $stand, ReturnMethod::WEB);
+        $this->rentService->returnBike($user, $bike, $standTo, ReturnMethod::WEB);
     }
 
     /** @test */
