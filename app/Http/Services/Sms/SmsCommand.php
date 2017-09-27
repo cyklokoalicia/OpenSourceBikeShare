@@ -16,11 +16,14 @@ use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
+use BikeShare\Http\Services\Rents\Exceptions\NotRentableStandException;
+use BikeShare\Http\Services\Rents\Exceptions\NotReturnableStandException;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\ReturnException;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
 use BikeShare\Notifications\Sms\NotRentableStand;
+use BikeShare\Notifications\Sms\NotReturnableStand;
 use BikeShare\Notifications\Sms\Ret\BikeForceReturnedSuccess;
 use BikeShare\Notifications\Sms\Ret\BikeReturnedSuccess;
 use BikeShare\Notifications\Sms\BikeToReturnNotRentedByMe;
@@ -158,6 +161,10 @@ class SmsCommand
         catch (BikeNotRentedException | BikeRentedByOtherUserException $e)
         {
             $this->user->notify(new BikeToReturnNotRentedByMe($this->user, $bike, $this->bikeRepo->bikesRentedByUser($this->user)));
+        }
+        catch (NotReturnableStandException $e)
+        {
+            $this->user->notify(new NotReturnableStand($stand));
         }
         catch (ReturnException $e)
         {

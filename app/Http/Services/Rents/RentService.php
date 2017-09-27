@@ -156,29 +156,29 @@ class RentService
 
 
     /**
-     * @param User  $user User initiating the command
-     * @param Bike  $bike
-     * @param Stand $standTo
+     * @param User   $user User initiating the command
+     * @param Bike   $bike
+     * @param Stand  $standTo
      * @param string $returnMethod
      *
      * @return Rent
+     * @throws \BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException
+     * @throws \BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException
+     * @throws \BikeShare\Http\Services\Rents\Exceptions\NotReturnableStandException
      * @internal param Rent|null $rent
      */
     public function returnBike(User $user, Bike $bike, Stand $standTo, $returnMethod)
     {
-        if ($bike->status !== BikeStatus::OCCUPIED){
-            throw new BikeNotRentedException($bike->status);
-        }
-
-        if ($bike->user_id != $user->id){
-            throw new BikeRentedByOtherUserException($bike->user);
-        }
+        $this->returnChecks->bikeRentedByMe($user, $bike);
+        $this->returnChecks->bikeIsRented($bike);
+        $this->returnChecks->isReturnableStand($standTo);
 
         $rent = app(RentsRepository::class)->findOpenRent($bike);
 
         $this->returnBikeInternal($bike, $standTo);
         $this->closeRentLogInternal($rent, $standTo, $returnMethod);
         $this->updateCredit($rent);
+
         return $rent;
     }
 
@@ -196,19 +196,21 @@ class RentService
         return $rent;
     }
 
+
     /**
      * Return bike to old stand, no matter if user is currently renting the bike
      * Admin only
+     *
      * @param User $user
      * @param Bike $bike
+     *
      * @return null
+     * @throws \BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException
      */
     public function revertBikeRent(User $user, Bike $bike, $returnMethod){
         Gate::forUser($user)->authorize(BikePermissions::REVERT);
 
-        if ($bike->status !== BikeStatus::OCCUPIED){
-            throw new BikeNotRentedException($bike->status);
-        }
+        $this->returnChecks->bikeIsRented($bike);
 
         $rent = app(RentsRepository::class)->findOpenRent($bike);
 
@@ -245,6 +247,7 @@ class RentService
         return $rent;
     }
 
+    // TODO need rewrite, more modular, customizable, readable ...
     private function updateCredit(Rent $rent)
     {
         $config = $this->appConfig;

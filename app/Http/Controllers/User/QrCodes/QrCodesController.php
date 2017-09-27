@@ -15,6 +15,7 @@ use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
 use BikeShare\Http\Services\Rents\Exceptions\NotRentableStandException;
+use BikeShare\Http\Services\Rents\Exceptions\NotReturnableStandException;
 use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\ReturnException;
 use BikeShare\Http\Services\Rents\RentService;
@@ -119,12 +120,14 @@ class QrCodesController extends Controller
             toastr()->success('You return action was successful');
         } catch (BikeNotRentedException | BikeRentedByOtherUserException $e) {
             toastr()->error('You do not have bike' . $bike->bike_num . ' rented.');
+        } catch (NotReturnableStandException $e) {
+            toastr()->error($e->getMessage());
         } catch (ReturnException $e) {
             throw $e; // unknown type, rethrow
         }
 
         return view('')->with([
-            'rent' => $rent
+            'rent' => $rent,
         ]);
     }
 }
