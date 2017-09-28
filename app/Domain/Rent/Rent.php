@@ -51,4 +51,9 @@ class Rent extends Model
     {
         return $this->belongsTo(Stand::class);
     }
+
+    public function closedByUser()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
