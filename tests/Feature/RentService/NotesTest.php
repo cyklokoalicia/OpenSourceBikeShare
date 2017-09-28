@@ -3,6 +3,7 @@
 namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\Bike;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\RentService;
@@ -31,8 +32,8 @@ class NotesTest extends DbTestCaseWithSeeding
     protected function setUp()
     {
         parent::setUp();
-        $this->rentService = app(RentService::class);
         $this->appConfig = app(AppConfig::class);
+        $this->rentService = new RentService($this->appConfig, MethodType::SMS);
     }
 
     /** @test */

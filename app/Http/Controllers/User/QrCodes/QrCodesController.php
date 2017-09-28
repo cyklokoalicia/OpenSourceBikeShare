@@ -3,7 +3,7 @@
 namespace BikeShare\Http\Controllers\User\QrCodes;
 
 use BikeShare\Domain\Bike\BikesRepository;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Controller;
@@ -61,7 +61,7 @@ class QrCodesController extends Controller
     {
         $bike = $this->bikesRepository->getBikeOrFail($bikeNo);
         try {
-            $rent = $this->rentService->rentBike(auth()->user(), $bike, RentMethod::QR_CODE);
+            $rent = $this->rentService->rentBike(auth()->user(), $bike);
             toastr()->success('Bike was successfully rented');
         } catch (LowCreditException $e) {
             $text = 'Please, recharge your credit: '
@@ -116,7 +116,7 @@ class QrCodesController extends Controller
         $bike = $this->bikesRepository->getBikeOrFail($bikeNo);
         $stand = $this->standsRepository->getStandOrFail($standName);
         try {
-            $rent = $this->rentService->returnBike(auth()->user(), $bike, $stand, ReturnMethod::QR_CODE);
+            $rent = $this->rentService->returnBike(auth()->user(), $bike, $stand);
             toastr()->success('You return action was successful');
         } catch (BikeNotRentedException | BikeRentedByOtherUserException $e) {
             toastr()->error('You do not have bike' . $bike->bike_num . ' rented.');

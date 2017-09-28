@@ -4,7 +4,7 @@ namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\Stand;
@@ -36,8 +36,8 @@ class ReturnBikeTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->rentService = app(RentService::class);
         $this->appConfig = app(AppConfig::class);
+        $this->rentService = new RentService($this->appConfig, MethodType::SMS);
     }
 
     /** @test */
@@ -51,7 +51,7 @@ class ReturnBikeTest extends TestCase
         $this->expectException(BikeNotRentedException::class);
 
         // Act
-        $this->rentService->returnBike($user, $bike, $stand, ReturnMethod::WEB);
+        $this->rentService->returnBike($user, $bike, $stand);
     }
 
     /** @test */
@@ -61,13 +61,13 @@ class ReturnBikeTest extends TestCase
         $user = userWithResources();
         list($stand, $bike) = standWithBike();
         $standTo = create(Stand::class, ['status' => StandStatus::INACTIVE]);
-        $this->rentService->rentBike($user, $bike, RentMethod::WEB);
+        $this->rentService->rentBike($user, $bike);
 
         // Assert
         $this->expectException(NotReturnableStandException::class);
 
         // Act
-        $this->rentService->returnBike($user, $bike, $standTo, ReturnMethod::WEB);
+        $this->rentService->returnBike($user, $bike, $standTo);
     }
 
     /** @test */
@@ -78,13 +78,13 @@ class ReturnBikeTest extends TestCase
         $userWithBike = userWithResources();
         list($stand, $bike) = standWithBike();
         $standTo = create(Stand::class);
-        $this->rentService->rentBike($userWithBike, $bike, RentMethod::WEB);
+        $this->rentService->rentBike($userWithBike, $bike);
 
         // Assert
         $this->expectException(BikeRentedByOtherUserException::class);
 
         // Act
-        $this->rentService->returnBike($userWithoutBike, $bike, $standTo, ReturnMethod::WEB);
+        $this->rentService->returnBike($userWithoutBike, $bike, $standTo);
     }
 
     /** @test */
@@ -96,7 +96,7 @@ class ReturnBikeTest extends TestCase
         $standTo = create(Stand::class);
 
         // Act
-        $rent = $this->rentService->rentBike($user, $bike, RentMethod::WEB);
+        $rent = $this->rentService->rentBike($user, $bike);
 
         // Assert
         self::assertEquals(BikeStatus::OCCUPIED, $bike->status);
@@ -105,7 +105,7 @@ class ReturnBikeTest extends TestCase
         self::assertEquals(RentStatus::OPEN, $rent->status);
 
         // Act
-        $rentAfterReturn = $this->rentService->returnBike($user, $bike, $standTo, ReturnMethod::WEB);
+        $rentAfterReturn = $this->rentService->returnBike($user, $bike, $standTo);
 
         // Assert
         self::assertEquals(BikeStatus::FREE, $bike->status);

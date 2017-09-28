@@ -3,7 +3,7 @@
 namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\BikeStatus;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\RentService;
@@ -30,8 +30,8 @@ class ForceRentTest extends DbTestCaseWithSeeding
     protected function setUp()
     {
         parent::setUp();
-        $this->rentService = app(RentService::class);
         $this->appConfig = app(AppConfig::class);
+        $this->rentService = new RentService($this->appConfig, MethodType::SMS);
     }
 
     /** @test */
@@ -40,7 +40,7 @@ class ForceRentTest extends DbTestCaseWithSeeding
         $user = userWithResources();
         list($stand, $bike) = standWithBike();
         $this->expectException(AuthorizationException::class);
-        $this->rentService->forceRentBike($user, $bike, RentMethod::WEB);
+        $this->rentService->forceRentBike($user, $bike);
     }
 
     /** @test */
@@ -51,7 +51,7 @@ class ForceRentTest extends DbTestCaseWithSeeding
 
         $bike->fresh();
 
-        $this->rentService->forceRentBike($admin, $bike, RentMethod::WEB);
+        $this->rentService->forceRentBike($admin, $bike);
 
         self::assertEquals($bike->status, BikeStatus::OCCUPIED);
         self::assertNull($bike->stand);
@@ -67,14 +67,14 @@ class ForceRentTest extends DbTestCaseWithSeeding
 
         Notification::fake();
 
-        $userRent = $this->rentService->rentBike($user, $bike, RentMethod::WEB);
+        $userRent = $this->rentService->rentBike($user, $bike);
         $bike->fresh();
 
         self::assertEquals($bike->status, BikeStatus::OCCUPIED);
         self::assertNull($bike->stand);
         self::assertEquals($bike->user->id, $user->id);
 
-        $adminRent = $this->rentService->forceRentBike($admin, $bike, RentMethod::WEB);
+        $adminRent = $this->rentService->forceRentBike($admin, $bike);
         $bike->fresh();
 
         self::assertEquals($bike->status, BikeStatus::OCCUPIED);

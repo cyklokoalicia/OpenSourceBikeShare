@@ -1,22 +1,16 @@
 <?php
 namespace BikeShare\Http\Controllers\Api\v1\Bikes;
 
-use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikesRepository;
-use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Bike\BikeTransformer;
-use BikeShare\Domain\Bike\Events\BikeWasRented;
-use BikeShare\Domain\Bike\Events\BikeWasReturned;
 use BikeShare\Domain\Bike\Requests\CreateBikeRequest;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Rent\RentTransformer;
 use BikeShare\Domain\Rent\Requests\RentRequest;
 use BikeShare\Domain\Rent\Requests\ReturnRequest;
-use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\Rents\RentService;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BikesController extends Controller
@@ -24,10 +18,12 @@ class BikesController extends Controller
 
     protected $bikeRepo;
 
+    private $rentService;
 
     public function __construct(BikesRepository $bikesRepository)
     {
         $this->bikeRepo = $bikesRepository;
+        $this->rentService = app(RentService::class, ['methodType' => MethodType::WEB]);
     }
 
 
@@ -116,13 +112,13 @@ class BikesController extends Controller
         return $this->response->item($bike, new BikeTransformer());
     }
 
-    public function rentBike(RentRequest $request, $uuid, RentService $rentService)
+    public function rentBike(RentRequest $request, $uuid)
     {
         // TODO limits, credits
         $bike = $this->bikeRepo->findByUuid($uuid);
 
         // TODO catch all exception types
-        $rent = $rentService->rentBike($this->user, $bike, RentMethod::APP);
+        $rent = $this->rentService->rentBike($this->user, $bike);
 
         return $this->response->item($rent, new RentTransformer());
     }
@@ -133,6 +129,6 @@ class BikesController extends Controller
 
         $stand = app(StandsRepository::class)->findByUuid($request->get('stand'));
 
-        app(RentService::class)->returnBike($this->user, $bike, $stand, ReturnMethod::APP);
+        $this->rentService->returnBike($this->user, $bike, $stand);
     }
 }

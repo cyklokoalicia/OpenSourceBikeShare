@@ -9,10 +9,9 @@ use BikeShare\Domain\Bike\Events\BikeWasReturned;
 use BikeShare\Domain\Rent\Events\RentWasClosed;
 use BikeShare\Domain\Rent\Events\RentWasCreated;
 use BikeShare\Domain\Rent\Rent;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
-use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\Stand\StandPermissions;
 use BikeShare\Domain\User\User;
@@ -20,10 +19,9 @@ use BikeShare\Domain\User\UsersRepository;
 use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotFreeException;
 use BikeShare\Http\Services\Rents\Exceptions\BikeNotOnTopException;
-use BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException;
-use BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException;
 use BikeShare\Http\Services\Rents\Exceptions\LowCreditException;
 use BikeShare\Http\Services\Rents\Exceptions\MaxNumberOfRentsException;
+use BikeShare\Http\Services\Rents\Exceptions\NotRentableStandException;
 use BikeShare\Notifications\Admin\AllNotesDeleted;
 use BikeShare\Notifications\Admin\BikeNoteAdded;
 use BikeShare\Notifications\Admin\NotesDeleted;
@@ -51,23 +49,25 @@ class RentService
      */
     private $returnChecks;
 
+    private $methodType;
 
-    public function __construct(AppConfig $appConfig, RentChecks $rentChecks, ReturnChecks $returnChecks)
+
+    public function __construct(AppConfig $appConfig, $methodType)
     {
         $this->appConfig = $appConfig;
-        $this->rentChecks = $rentChecks;
-        $this->returnChecks = $returnChecks;
+        $this->rentChecks = new RentChecks($appConfig);
+        $this->returnChecks = new ReturnChecks();
+        $this->methodType = $methodType;
     }
 
 
     /**
-     * @param User       $user
-     * @param Bike       $bike
-     * @param string $rentMethod
+     * @param User $user
+     * @param Bike $bike
      *
      * @return Rent
      */
-    public function rentBike(User $user, Bike $bike, $rentMethod)
+    public function rentBike(User $user, Bike $bike)
     {
         // any failing check throws exception
         $this->rentChecks->sufficientCredit($user);
@@ -85,12 +85,12 @@ class RentService
         $standFrom = $bike->stand;
 
         $this->rentBikeInternal($bike, $user);
-        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code, $rentMethod);
+        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code);
 
         return $rent;
     }
 
-    public function forceRentBike(User $user, Bike $bike, $rentMethod)
+    public function forceRentBike(User $user, Bike $bike)
     {
         Gate::forUser($user)->authorize(BikePermissions::FORCE_RENT);
 
@@ -102,14 +102,14 @@ class RentService
             // and notify original user
             // TODO record somehow that rent was closed forcefully
             $originalRent = $this->closeRentLogInternal(
-                app(RentsRepository::class)->findOpenRent($bike), null, $rentMethod
+                app(RentsRepository::class)->findOpenRent($bike), null
             );
 
             $originalRent->user->notify(new ForceRentOverrideRent($bike));
         }
 
         $this->rentBikeInternal($bike, $user);
-        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code, $rentMethod);
+        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code);
 
         return $rent;
     }
@@ -129,7 +129,7 @@ class RentService
     /**
      * @return Rent
      */
-    private function createRentLog(User $user, Bike $bike, $standFrom, $oldCode, $newCode, $method)
+    private function createRentLog(User $user, Bike $bike, $standFrom, $oldCode, $newCode)
     {
         $rent = new Rent();
         $rent->status = RentStatus::OPEN;
@@ -141,7 +141,7 @@ class RentService
         $rent->started_at = Carbon::now();
         $rent->old_code = $oldCode;
         $rent->new_code = $newCode;
-        $rent->method = $method;
+        $rent->open_method = $this->methodType;
         $rent->save();
 
         event(new RentWasCreated($rent));
@@ -149,9 +149,9 @@ class RentService
         return $rent;
     }
 
-    public function closeRent(Rent $rent, Stand $standToReturn, $returnMethod)
+    public function closeRent(Rent $rent, Stand $standToReturn)
     {
-        return $this->returnBike($rent->user, $rent->bike, $standToReturn, $returnMethod);
+        return $this->returnBike($rent->user, $rent->bike, $standToReturn);
     }
 
 
@@ -159,7 +159,6 @@ class RentService
      * @param User   $user User initiating the command
      * @param Bike   $bike
      * @param Stand  $standTo
-     * @param string $returnMethod
      *
      * @return Rent
      * @throws \BikeShare\Http\Services\Rents\Exceptions\BikeRentedByOtherUserException
@@ -167,7 +166,7 @@ class RentService
      * @throws \BikeShare\Http\Services\Rents\Exceptions\NotReturnableStandException
      * @internal param Rent|null $rent
      */
-    public function returnBike(User $user, Bike $bike, Stand $standTo, $returnMethod)
+    public function returnBike(User $user, Bike $bike, Stand $standTo)
     {
         $this->returnChecks->bikeRentedByMe($user, $bike);
         $this->returnChecks->bikeIsRented($bike);
@@ -176,13 +175,13 @@ class RentService
         $rent = app(RentsRepository::class)->findOpenRent($bike);
 
         $this->returnBikeInternal($bike, $standTo);
-        $this->closeRentLogInternal($rent, $standTo, $returnMethod);
+        $this->closeRentLogInternal($rent, $standTo);
         $this->updateCredit($rent);
 
         return $rent;
     }
 
-    public function forceReturnBike(User $user, Bike $bike, Stand $standTo, $returnMethod)
+    public function forceReturnBike(User $user, Bike $bike, Stand $standTo)
     {
         Gate::forUser($user)->authorize(BikePermissions::FORCE_RETURN);
 
@@ -191,7 +190,7 @@ class RentService
         $this->returnBikeInternal($bike, $standTo);
         if ($rent){
             $rent->user->notify(new ForceReturnOverrideRent($bike));
-            $this->closeRentLogInternal($rent, $standTo, $returnMethod);
+            $this->closeRentLogInternal($rent, $standTo);
         }
         return $rent;
     }
@@ -207,7 +206,7 @@ class RentService
      * @return null
      * @throws \BikeShare\Http\Services\Rents\Exceptions\BikeNotRentedException
      */
-    public function revertBikeRent(User $user, Bike $bike, $returnMethod){
+    public function revertBikeRent(User $user, Bike $bike){
         Gate::forUser($user)->authorize(BikePermissions::REVERT);
 
         $this->returnChecks->bikeIsRented($bike);
@@ -217,7 +216,7 @@ class RentService
         $oldStand = $rent->standFrom;
 
         $this->returnBikeInternal($bike, $oldStand);
-        $this->closeRentLogInternal($rent, $oldStand, $returnMethod);
+        $this->closeRentLogInternal($rent, $oldStand);
         return $rent;
     }
 
@@ -233,12 +232,12 @@ class RentService
         event(new BikeWasReturned($bike, $standTo));
     }
 
-    private function closeRentLogInternal(Rent $rent, $standTo, $method)
+    private function closeRentLogInternal(Rent $rent, $standTo)
     {
         $rent->ended_at = Carbon::now();
         $rent->duration = $rent->ended_at->diffInSeconds($rent->started_at);
         $rent->status = RentStatus::CLOSE;
-        $rent->method = $method;
+        $rent->close_method = $this->methodType;
         if ($standTo){ // can be null e.g in case of FORCERENT
             $rent->standTo()->associate($standTo);
         }
@@ -401,7 +400,7 @@ class RentService
         // TODO send notification report to admins about all long rentals
     }
 
-    public function checkManyRents(User $user = null)
+    public static function checkManyRents(User $user = null)
     {
         $timeToMany = app(AppConfig::class)->getTimeToMany();
         $numberToMany = app(AppConfig::class)->getNumberToMany();

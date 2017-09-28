@@ -14,7 +14,8 @@ class AddRentMethodsToRentsTable extends Migration
     public function up()
     {
         Schema::table('rents', function (Blueprint $table) {
-            $table->string('method')->nullable()->after('credit');
+            $table->string('open_method')->nullable()->after('credit');
+            $table->string('close_method')->nullable()->after('credit');
         });
     }
 
@@ -26,7 +27,8 @@ class AddRentMethodsToRentsTable extends Migration
     public function down()
     {
         Schema::table('rents', function (Blueprint $table) {
-            $table->dropColumn('method');
+            $table->dropColumn('open_method');
+            $table->dropColumn('close_method');
         });
     }
 }

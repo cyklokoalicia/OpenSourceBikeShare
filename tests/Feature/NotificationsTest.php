@@ -2,7 +2,7 @@
 namespace Test\Feature;
 
 use BikeShare\Domain\Bike\Bike;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\Rents\RentService;
@@ -70,7 +70,7 @@ class NotificationsTest extends TestCase
         $stand = create(Stand::class);
         $bike = $stand->bikes()->save(make(Bike::class));
 
-        app(RentService::class)->rentBike($user, $bike, RentMethod::SMS);
+        app(RentService::class, ['methodType' => MethodType::SMS])->rentBike($user, $bike);
         $notifText = (new WhereIsBike($bike))->smsText();
 
         self::assertContains((string) $bike->bike_num, $notifText);

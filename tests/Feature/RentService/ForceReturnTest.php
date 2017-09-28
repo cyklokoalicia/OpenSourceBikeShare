@@ -3,7 +3,7 @@
 namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\BikeStatus;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\Stand;
@@ -32,8 +32,8 @@ class ForceReturnTest extends DbTestCaseWithSeeding
     protected function setUp()
     {
         parent::setUp();
-        $this->rentService = app(RentService::class);
         $this->appConfig = app(AppConfig::class);
+        $this->rentService = new RentService($this->appConfig, MethodType::SMS);
     }
 
     /** @test */
@@ -42,7 +42,7 @@ class ForceReturnTest extends DbTestCaseWithSeeding
         $user = userWithResources();
         list($stand, $bike) = standWithBike();
         $this->expectException(AuthorizationException::class);
-        $this->rentService->forceReturnBike($user, $bike, $stand, ReturnMethod::WEB);
+        $this->rentService->forceReturnBike($user, $bike, $stand);
     }
 
 
@@ -53,7 +53,7 @@ class ForceReturnTest extends DbTestCaseWithSeeding
         list($stand, $bike) = standWithBike();
         $stand2 = create(Stand::class);
 
-        $this->rentService->forceReturnBike($admin, $bike, $stand2, ReturnMethod::WEB);
+        $this->rentService->forceReturnBike($admin, $bike, $stand2);
 
         $bike->refresh();
         self::assertEquals($stand2->id, $bike->stand->id);
@@ -69,12 +69,12 @@ class ForceReturnTest extends DbTestCaseWithSeeding
 
         Notification::fake();
 
-        $userRent = $this->rentService->rentBike($user, $bike, RentMethod::WEB);
+        $userRent = $this->rentService->rentBike($user, $bike);
 
         $bike->fresh();
         self::assertEquals($bike->user->id, $user->id);
 
-        $this->rentService->forceReturnBike($admin, $bike, $stand2, ReturnMethod::WEB);
+        $this->rentService->forceReturnBike($admin, $bike, $stand2);
 
         $bike->fresh();
         self::assertEquals($bike->status, BikeStatus::FREE);

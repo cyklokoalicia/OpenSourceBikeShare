@@ -3,9 +3,8 @@
 namespace BikeShare\Http\Controllers\Api\v1\QrCodes;
 
 use BikeShare\Domain\Bike\BikesRepository;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Rent\RentTransformer;
-use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Http\Controllers\Api\v1\Controller;
 use BikeShare\Http\Services\AppConfig;
@@ -47,14 +46,13 @@ class QrCodesController extends Controller
 
     public function __construct(
         BikesRepository $bikesRepository,
-        RentService $rentService,
         StandsRepository $standsRepository,
         AppConfig $appConfig
     ) {
         $this->bikesRepository = $bikesRepository;
-        $this->rentService = $rentService;
         $this->standsRepository = $standsRepository;
         $this->appConfig = $appConfig;
+        $this->rentService = new RentService($appConfig, MethodType::QR_CODE);
     }
 
 
@@ -62,7 +60,7 @@ class QrCodesController extends Controller
     {
         $bike = $this->bikesRepository->getBikeOrFail($bikeNo);
         try {
-            $rent = $this->rentService->rentBike($this->user, $bike, RentMethod::QR_CODE);
+            $rent = $this->rentService->rentBike($this->user, $bike);
         } catch (LowCreditException $e) {
             $text = 'Please, recharge your credit: '
                 . $e->userCredit
@@ -96,7 +94,7 @@ class QrCodesController extends Controller
         $bike = $this->bikesRepository->getBikeOrFail($bikeNo);
         $stand = $this->standsRepository->getStandOrFail($standName);
         try {
-            $rent = $this->rentService->returnBike($this->user, $bike, $stand, ReturnMethod::QR_CODE);
+            $rent = $this->rentService->returnBike($this->user, $bike, $stand);
         } catch (BikeNotRentedException | BikeRentedByOtherUserException $e) {
             $this->response->error('You do not have bike' . $bike->bike_num . ' rented.', 400);
         } catch (NotReturnableStandException $e) {

@@ -3,7 +3,7 @@
 namespace BikeShare\Http\Controllers\Api\v1\Rents;
 
 use BikeShare\Domain\Bike\BikesRepository;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Rent\RentsRepository;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Rent\RentTransformer;
@@ -27,6 +27,7 @@ class RentsController extends Controller
     public function __construct(RentsRepository $repository)
     {
         $this->rentRepo = $repository;
+        $this->rentService = app(RentService::class, ['methodType' => MethodType::APP]);
     }
 
     /**
@@ -74,7 +75,7 @@ class RentsController extends Controller
         $rent = null;
         try {
             // TODO check too many, i don't understand yet
-            $rent = $rentService->rentBike($this->user, $bike, RentMethod::APP);
+            $rent = $rentService->rentBike($this->user, $bike);
         }
         catch (LowCreditException $e)
         {
@@ -142,7 +143,7 @@ class RentsController extends Controller
         $rent = $this->rentRepo->findByUuid($uuid);
     }
 
-    public function close(Request $request, $uuid, RentService $rentService)
+    public function close(Request $request, $uuid)
     {
         if (! $rent = $this->rentRepo->findByUuid($uuid)) {
             $this->response->errorNotFound('Rent not found!');
@@ -152,11 +153,11 @@ class RentsController extends Controller
             $this->response->errorNotFound('Stand not found!');
         }
 
-        $rent = $rentService->closeRent($rent, $stand, ReturnMethod::APP);
+        $rent = $this->rentService->closeRent($rent, $stand);
         // TODO catch exceptions
 
         if ($request->has('note')) {
-            $rentService->addNoteToBike($rent->bike, $rent->user, $request->get('note'));
+            $this->rentService->addNoteToBike($rent->bike, $rent->user, $request->get('note'));
         }
 
         return $this->response->item($rent, new RentTransformer());

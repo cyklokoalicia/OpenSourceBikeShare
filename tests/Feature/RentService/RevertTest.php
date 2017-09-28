@@ -4,7 +4,7 @@ namespace Tests\Feature\RentService;
 
 use BikeShare\Domain\Bike\Bike;
 use BikeShare\Domain\Bike\BikeStatus;
-use BikeShare\Domain\Rent\RentMethod;
+use BikeShare\Domain\Rent\MethodType;
 use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\Stand;
@@ -36,8 +36,8 @@ class RevertTest extends DbTestCaseWithSeeding
     protected function setUp()
     {
         parent::setUp();
-        $this->rentService = app(RentService::class);
         $this->appConfig = app(AppConfig::class);
+        $this->rentService = new RentService($this->appConfig, MethodType::SMS);
     }
 
     /** @test */
@@ -46,7 +46,7 @@ class RevertTest extends DbTestCaseWithSeeding
         $admin = userWithResources([], true);
         list($stand, $bike) = standWithBike();
         $this->expectException(BikeNotRentedException::class);
-        $this->rentService->revertBikeRent($admin, $bike, ReturnMethod::WEB);
+        $this->rentService->revertBikeRent($admin, $bike);
     }
 
     /** @test */
@@ -54,10 +54,10 @@ class RevertTest extends DbTestCaseWithSeeding
     {
         $user = userWithResources();
         list($stand, $bike) = standWithBike();
-        $this->rentService->rentBike($user, $bike, RentMethod::WEB);
+        $this->rentService->rentBike($user, $bike);
 
         $this->expectException(AuthorizationException::class);
-        $this->rentService->revertBikeRent($user, $bike, ReturnMethod::WEB);
+        $this->rentService->revertBikeRent($user, $bike);
     }
 
     /** @test */
@@ -69,7 +69,7 @@ class RevertTest extends DbTestCaseWithSeeding
         list($stand, $bike) = standWithBike();
 
         // Act
-        $rent = $this->rentService->rentBike($user, $bike, RentMethod::WEB);
+        $rent = $this->rentService->rentBike($user, $bike);
 
         // Assert
         self::assertEquals(BikeStatus::OCCUPIED, $bike->status);
@@ -78,7 +78,7 @@ class RevertTest extends DbTestCaseWithSeeding
         self::assertEquals(RentStatus::OPEN, $rent->status);
 
         // Act
-        $rentAfterRevert = $this->rentService->revertBikeRent($admin, $bike, ReturnMethod::WEB);
+        $rentAfterRevert = $this->rentService->revertBikeRent($admin, $bike);
 
         $bike->refresh();
 

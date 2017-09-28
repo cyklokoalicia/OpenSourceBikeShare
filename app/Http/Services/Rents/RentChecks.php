@@ -49,7 +49,6 @@ class RentChecks
     /**
      * @param Bike $bike
      * @throws BikeNotFreeException
-     * @throws Exception
      */
     public function bikeIsFree(Bike $bike)
     {

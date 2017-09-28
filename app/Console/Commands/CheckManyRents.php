@@ -2,7 +2,11 @@
 
 namespace BikeShare\Console\Commands;
 
+use BikeShare\Domain\User\User;
+use BikeShare\Domain\User\UsersRepository;
+use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Services\Rents\RentService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
 
@@ -38,7 +42,7 @@ class CheckManyRents extends Command
     public function handle()
     {
         try {
-            app(RentService::class)->checkManyRents();
+            RentService::checkManyRents();
         } catch (Exception $e) {
             $this->error($e->getMessage());
         }
