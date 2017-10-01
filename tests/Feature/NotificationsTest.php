@@ -7,6 +7,7 @@ use BikeShare\Domain\Stand\Stand;
 use BikeShare\Domain\User\User;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Notifications\Sms\Free;
+use BikeShare\Notifications\Sms\LastRents;
 use BikeShare\Notifications\Sms\StandListBikes;
 use BikeShare\Notifications\Sms\WhereIsBike;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -93,6 +94,42 @@ class NotificationsTest extends TestCase
         foreach ($bikeNumbers as $number){
             self::assertContains((string) $number, $textForStandWithBikes);
             self::assertNotContains((string) $number, $textForStandWithNoBikes);
+        }
+    }
+
+    /** @test */
+    public function last_rent_notification_contains_rents_data()
+    {
+        $user1 = userWithResources();
+        $user2 = userWithResources();
+        $user3 = userWithResources();
+
+        list($stand1, $bike1) = standWithBike();
+        list($stand2, $bike2) = standWithBike();
+        list($stand3, $bike3) = standWithBike();
+
+        // Simulate behaviour
+        $service = app(RentService::class, ['methodType' => MethodType::SMS]);
+
+        $rent1 = $service->rentBike($user1, $bike1);
+        $service->returnBike($user1, $bike1, $stand2);
+
+        $rent2 = $service->rentBike($user2, $bike1);
+        $service->returnBike($user2, $bike1, $stand3);
+
+        $rent3 = $service->rentBike($user3, $bike1);
+
+        // Check data is in the notification
+        $dataNotificationShouldContain = [
+            $stand1->name, $stand2->name, $stand3->name,
+            $user1->name, $user2->name, $user3->name,
+            $rent1->new_code, $rent2->new_code, $rent3->new_code
+        ];
+
+        $notificationText = (new LastRents($bike1))->smsText();
+
+        foreach ($dataNotificationShouldContain as $d){
+            self::assertContains((string) $d, $notificationText);
         }
     }
 }

@@ -22,6 +22,7 @@ use BikeShare\Http\Services\Rents\Exceptions\RentException;
 use BikeShare\Http\Services\Rents\Exceptions\ReturnException;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Notifications\Sms\BikeAlreadyRented;
+use BikeShare\Notifications\Sms\LastRents;
 use BikeShare\Notifications\Sms\NotRentableStand;
 use BikeShare\Notifications\Sms\NotReturnableStand;
 use BikeShare\Notifications\Sms\Ret\BikeForceReturnedSuccess;

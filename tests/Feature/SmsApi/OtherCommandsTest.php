@@ -8,9 +8,11 @@ use BikeShare\Notifications\Sms\BikeDoesNotExist;
 use BikeShare\Notifications\Sms\Credit;
 use BikeShare\Notifications\Sms\Free;
 use BikeShare\Notifications\Sms\Help;
+use BikeShare\Notifications\Sms\LastRents;
 use BikeShare\Notifications\Sms\StandDoesNotExist;
 use BikeShare\Notifications\Sms\StandInfo;
 use BikeShare\Notifications\Sms\StandListBikes;
+use BikeShare\Notifications\Sms\Unauthorized;
 use BikeShare\Notifications\Sms\UnknownCommand;
 use BikeShare\Notifications\Sms\WhereIsBike;
 use Notification;
@@ -128,5 +130,29 @@ class OtherCommandsTest extends BaseSmsTest
         $this->sendSms($user, 'LIST SAFKO');
 
         Notification::assertSentTo($user, StandListBikes::class);
+    }
+
+    /** @test */
+    public function last_command_cannot_be_invoked_by_non_privileged_user()
+    {
+        $user = userWithResources();
+        standWithBike([], ['bike_num' => 1]);
+
+        Notification::fake();
+        $this->sendSms($user, 'LAST 1');
+
+        Notification::assertSentTo($user, Unauthorized::class);
+    }
+
+    /** @test */
+    public function last_command_ok()
+    {
+        $user = adminWithResources();
+        standWithBike([], ['bike_num' => 1]);
+
+        Notification::fake();
+        $this->sendSms($user, 'LAST 1');
+
+        Notification::assertSentTo($user, LastRents::class);
     }
 }
