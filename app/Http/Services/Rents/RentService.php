@@ -51,6 +51,8 @@ class RentService
 
     private $methodType;
 
+    private $rentsRepo;
+
 
     public function __construct(AppConfig $appConfig, $methodType)
     {
@@ -58,6 +60,7 @@ class RentService
         $this->rentChecks = new RentChecks($appConfig);
         $this->returnChecks = new ReturnChecks();
         $this->methodType = $methodType;
+        $this->rentsRepo = app(RentsRepository::class);
     }
 
 
@@ -85,9 +88,7 @@ class RentService
         $standFrom = $bike->stand;
 
         $this->rentBikeInternal($bike, $user);
-        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code);
-
-        return $rent;
+        return $this->createRentLog($user, $bike, $oldCode, $bike->current_code, $standFrom);
     }
 
     public function forceRentBike(User $user, Bike $bike)
@@ -95,23 +96,18 @@ class RentService
         Gate::forUser($user)->authorize(BikePermissions::FORCE_RENT);
 
         $oldCode = $bike->current_code;
-        $standFrom = $bike->stand;
 
         if ($bike->status == BikeStatus::OCCUPIED){
-            // if occupied, we have to close previous rent
-            // and notify original user
-            // TODO record somehow that rent was closed forcefully
             $originalRent = $this->closeRentLogInternal(
-                app(RentsRepository::class)->findOpenRent($bike), null
+                $this->rentsRepo->findOpenRent($bike),null, ForceCommand::rent($user)
             );
 
             $originalRent->user->notify(new ForceRentOverrideRent($bike));
         }
 
+        $standFrom = $bike->stand;
         $this->rentBikeInternal($bike, $user);
-        $rent = $this->createRentLog($user, $bike, $standFrom, $oldCode, $bike->current_code);
-
-        return $rent;
+        return $this->createRentLog($user, $bike, $oldCode, $bike->current_code, $standFrom, true);
     }
 
     private function rentBikeInternal(Bike $bike, User $user)
@@ -129,15 +125,21 @@ class RentService
     /**
      * @return Rent
      */
-    private function createRentLog(User $user, Bike $bike, $standFrom, $oldCode, $newCode)
+    private function createRentLog(User $user, Bike $bike, $oldCode, $newCode, Stand $standFrom = null, $force = false)
     {
         $rent = new Rent();
         $rent->status = RentStatus::OPEN;
         $rent->user()->associate($user);
         $rent->bike()->associate($bike);
-        if ($standFrom){ // may be null e.g. if FORCERENTing
+
+        if ($standFrom){
             $rent->standFrom()->associate($standFrom);
         }
+
+        if ($force){
+            $rent->force_opened = true;
+        }
+
         $rent->started_at = Carbon::now();
         $rent->old_code = $oldCode;
         $rent->new_code = $newCode;
@@ -190,7 +192,7 @@ class RentService
         $this->returnBikeInternal($bike, $standTo);
         if ($rent){
             $rent->user->notify(new ForceReturnOverrideRent($bike));
-            $this->closeRentLogInternal($rent, $standTo);
+            $this->closeRentLogInternal($rent, $standTo, ForceCommand::retrn($user));
         }
         return $rent;
     }
@@ -216,7 +218,7 @@ class RentService
         $oldStand = $rent->standFrom;
 
         $this->returnBikeInternal($bike, $oldStand);
-        $this->closeRentLogInternal($rent, $oldStand);
+        $this->closeRentLogInternal($rent, $oldStand, ForceCommand::revert($user));
         return $rent;
     }
 
@@ -232,14 +234,19 @@ class RentService
         event(new BikeWasReturned($bike, $standTo));
     }
 
-    private function closeRentLogInternal(Rent $rent, $standTo)
+    private function closeRentLogInternal(Rent $rent, $standTo, ForceCommand $force = null)
     {
         $rent->ended_at = Carbon::now();
         $rent->duration = $rent->ended_at->diffInSeconds($rent->started_at);
         $rent->status = RentStatus::CLOSE;
         $rent->close_method = $this->methodType;
-        if ($standTo){ // can be null e.g in case of FORCERENT
+        if ($standTo){
             $rent->standTo()->associate($standTo);
+        }
+        if ($force){
+            $rent->force_closed = true;
+            $rent->close_command = $force->forceCommand;
+            $rent->closedByUser()->associate($force->user);
         }
         $rent->save();
         event(new RentWasClosed($rent));

@@ -18,6 +18,11 @@ class Rent extends Model
 
     public $dates = ['deleted_at', 'started_at', 'ended_at'];
 
+    protected $casts = [
+        'force_opened' => 'boolean',
+        'force_closed' => 'boolean'
+    ];
+
     protected static $logAttributes = [
         'status',
     ];
