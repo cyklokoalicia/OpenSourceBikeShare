@@ -8,6 +8,7 @@ use BikeShare\Domain\Rent\RentStatus;
 use BikeShare\Domain\Rent\ReturnMethod;
 use BikeShare\Domain\Stand\Stand;
 use BikeShare\Http\Services\AppConfig;
+use BikeShare\Http\Services\Rents\ForceCommand;
 use BikeShare\Http\Services\Rents\RentService;
 use BikeShare\Notifications\Sms\Ret\ForceReturnOverrideRent;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -80,7 +81,11 @@ class ForceReturnTest extends DbTestCaseWithSeeding
         self::assertEquals($bike->status, BikeStatus::FREE);
         self::assertEquals($stand2->id, $bike->stand->id);
 
-        self::assertEquals(RentStatus::CLOSE, $userRent->fresh()->status);
+        $userRent->refresh();
+        self::assertEquals(RentStatus::CLOSE, $userRent->status);
+        self::assertTrue($userRent->force_closed);
+        self::assertEquals($admin->id, $userRent->closed_by_user_id);
+        self::assertEquals(ForceCommand::retrn($admin)->forceCommand, $userRent->close_command);
         Notification::assertSentTo($user, ForceReturnOverrideRent::class);
     }
 }
