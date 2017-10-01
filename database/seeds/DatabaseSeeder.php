@@ -12,7 +12,10 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call(RolesAndPermissionsSeeder::class);
-        $this->call(UsersSeeder::class);
-        $this->call(StandsWithBikesSeeder::class);
+
+        if (App::environment('local')) {
+            $this->call(UsersSeeder::class);
+            $this->call(StandsWithBikesSeeder::class);
+        }
     }
 }

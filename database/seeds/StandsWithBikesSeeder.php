@@ -5,6 +5,10 @@ use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Stand\Stand;
 use Illuminate\Database\Seeder;
 
+/**
+ * Class StandsWithBikesSeeder
+ * Seeder for development purposes
+ */
 class StandsWithBikesSeeder extends Seeder
 {
     function __construct(Faker\Generator $faker)
