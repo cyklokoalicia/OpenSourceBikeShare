@@ -20,7 +20,7 @@ class Free extends SmsNotification
     public function smsText()
     {
         $stands = $this->repo
-            ->withCount('bikes')
+            ->withCount('bikes as bikes_count')
             ->orderBy('name')
             ->all();
 

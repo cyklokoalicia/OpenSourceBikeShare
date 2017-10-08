@@ -44,7 +44,7 @@ class MeController extends Controller
 
     public function closestStands()
     {
-        if (request()->has('longitude') && request()->has('latitude')) {
+        if (request()->filled('longitude') && request()->filled('latitude')) {
             $lat = request()->get('latitude');
             $lng = request()->get('longitude');
             $stands = Stand::selectRaw("*, (6371 * acos(cos(radians('$lat')) * cos(radians(latitude)) * cos(radians(longitude) - radians('$lng')) + sin(radians('$lat')) * sin(radians(latitude )))) AS distance")

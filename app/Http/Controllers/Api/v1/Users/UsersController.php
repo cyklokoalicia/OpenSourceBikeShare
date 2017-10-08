@@ -44,7 +44,7 @@ class UsersController extends Controller
     {
         $user = $this->userRepo->create($request->all());
 
-        if ($request->has('roles')) {
+        if ($request->filled('roles')) {
             $user->assignRole($request->roles);
         }
         event(new UserWasRegistered($user));

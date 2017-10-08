@@ -37,7 +37,7 @@ class CouponsController extends Controller
 
         $value = app(AppConfig::class)->getRequiredCredit() * $request->get('multiplier');
 
-        $count = $request->has('count') ? $request->get('count') : 10;
+        $count = $request->filled('count') ? $request->get('count') : 10;
         $codes = $this->couponRepo->generateCodes($count);
 
         $duplicates = 0;

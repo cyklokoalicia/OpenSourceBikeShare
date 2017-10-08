@@ -156,7 +156,7 @@ class RentsController extends Controller
         $rent = $this->rentService->closeRent($rent, $stand);
         // TODO catch exceptions
 
-        if ($request->has('note')) {
+        if ($request->filled('note')) {
             $this->rentService->addNoteToBike($rent->bike, $rent->user, $request->get('note'));
         }
 

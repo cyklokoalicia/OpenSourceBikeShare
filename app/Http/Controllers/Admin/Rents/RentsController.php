@@ -33,7 +33,7 @@ class RentsController extends Controller
         if (auth()->user()->hasRole('admin')) {
             $rents = Rent::with('bike', 'standFrom', 'standTo', 'user');
 
-            if (request()->has('from') && request()->has('to')) {
+            if (request()->filled('from') && request()->filled('to')) {
                 $rents = $rents->where('started_at', '>=', request()->get('from'))
                     ->where(function ($query) {
                         $query->whereNull('ended_at')
@@ -41,16 +41,16 @@ class RentsController extends Controller
                     });
             }
 
-            if (request()->has('users')) {
+            if (request()->filled('users')) {
                 $rents = $rents->whereIn('user_id', request()->get('users'));
             }
 
-            if (request()->has('stands')) {
+            if (request()->filled('stands')) {
                 $rents = $rents->whereIn('stand_from_id', request()->get('stands'))
                     ->orWhereIn('stand_to_id', request()->get('stands'));
             }
 
-            if (request()->has('bikes')) {
+            if (request()->filled('bikes')) {
                 $rents = $rents->whereIn('bike_id', request()->get('bikes'));
             }
 
