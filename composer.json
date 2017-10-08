@@ -36,7 +36,8 @@
     "prettus/l5-repository": "^2.6",
     "laravel-notification-channels/twilio": "^2.0",
     "myclabs/php-enum": "^1.5",
-    "spatie/laravel-medialibrary": "^5.0.0"
+    "spatie/laravel-medialibrary": "^5.0.0",
+    "roave/security-advisories": "dev-master"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
