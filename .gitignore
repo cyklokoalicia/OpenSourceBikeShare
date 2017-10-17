@@ -16,3 +16,5 @@ storage/framework/views/
 storage/logs/
 /composer.lock
 /storage/app/backups/dotenv-editor/
+npm-debug.log
+yarn-error.log

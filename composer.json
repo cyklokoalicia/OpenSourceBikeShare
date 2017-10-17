@@ -20,9 +20,9 @@
     "barryvdh/laravel-cors": "^0.9.3",
     "spatie/laravel-permission": "^1.12",
     "toin0u/geotools-laravel": "~1.0",
-    "league/fractal": "^0.15.0",
-    "dingo/api": "1.0.0-beta8",
-    "rap2hpoutre/laravel-log-viewer": "^0.5.3",
+    "league/fractal": "^0.17.0",
+    "dingo/api": "v2.0.0-alpha1",
+    "rap2hpoutre/laravel-log-viewer": "^0.10.4",
     "doctrine/dbal": "^2.5",
     "jenssegers/date": "^3.2",
     "spatie/laravel-activitylog": "^2.1.2",
@@ -41,18 +41,19 @@
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
-    "mockery/mockery": "0.9.*",
+    "mockery/mockery": "~1.0",
     "phpunit/phpunit": "~6.0",
     "symfony/css-selector": "3.1.*",
     "symfony/dom-crawler": "3.1.*",
     "barryvdh/laravel-debugbar": "^2.2",
-    "pixwell-dev/laravel-api-debugger": "dev-master",
+    "lanin/laravel-api-debugger": "dev-master",
     "barryvdh/laravel-ide-helper": "^2.1",
     "filp/whoops": "~2.0"
   },
   "autoload": {
     "classmap": [
-      "database"
+      "database/seeds",
+      "database/factories"
     ],
     "psr-4": {
       "BikeShare\\": "app/"
@@ -67,12 +68,18 @@
     },
     "files": ["tests/utilities/functions.php"]
   },
+  "extra": {
+    "laravel": {
+      "dont-discover": [
+      ]
+    }
+  },
   "scripts": {
     "post-root-package-install": [
-      "php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
     ],
     "post-create-project-cmd": [
-      "php artisan key:generate"
+      "@php artisan key:generate"
     ],
     "post-install-cmd": [
       "Illuminate\\Foundation\\ComposerScripts::postInstall",

@@ -14,13 +14,13 @@ class AppServiceProvider extends ServiceProvider
 {
 
     protected $providers = [
-        \Lanin\ApiDebugger\DebuggerServiceProvider::class,
+        \Lanin\Laravel\ApiDebugger\ServiceProvider::class,
         \Barryvdh\Debugbar\ServiceProvider::class,
         \Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
     ];
 
     protected $aliases = [
-        'Debugger' => \Lanin\ApiDebugger\DebuggerFacade::class,
+        'Debugger' => \Lanin\Laravel\ApiDebugger\Support\Facade::class,
         'Debugbar' => \Barryvdh\Debugbar\Facade::class,
     ];
 
