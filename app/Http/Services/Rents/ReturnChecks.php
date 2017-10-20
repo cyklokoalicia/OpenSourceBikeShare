@@ -22,7 +22,7 @@ class ReturnChecks
      */
     public function bikeRentedByMe(User $user, Bike $bike): void
     {
-        if ($bike->user && $bike->user_id !== $user->id) {
+        if ($bike->user && $bike->user_id != $user->id) {
             throw new BikeRentedByOtherUserException($bike->user);
         }
     }
