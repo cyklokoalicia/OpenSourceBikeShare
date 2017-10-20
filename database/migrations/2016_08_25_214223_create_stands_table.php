@@ -20,7 +20,7 @@ class CreateStandsTable extends Migration
             $table->text('description')->nullable();
             $table->binary('photo')->nullable();
             $table->string('place_name')->nullable();
-            $table->integer('service_tag')->nullable();
+            $table->string('status')->nullable();
             $table->double('longitude', 10, 8)->nullable();
             $table->double('latitude', 10, 8)->nullable();
             $table->softDeletes();

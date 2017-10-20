@@ -23,6 +23,7 @@ class CreateBikesTable extends Migration
             $table->integer('user_id')->unsigned()->nullable();
             $table->foreign('user_id')->references('id')->on('users');
             $table->string('status');
+            $table->integer('stack_position')->nullable()->default(0);
             $table->text('note')->nullable();
             $table->softDeletes();
             $table->timestamps();

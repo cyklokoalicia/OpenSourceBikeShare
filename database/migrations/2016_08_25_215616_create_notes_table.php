@@ -16,10 +16,11 @@ class CreateNotesTable extends Migration
         Schema::create('notes', function (Blueprint $table) {
             $table->increments('id');
             $table->string('uuid');
-            $table->integer('bike_id')->unsigned();
-            $table->foreign('bike_id')->references('id')->on('bikes');
+            $table->string('notable_type');
+            $table->integer('notable_id')->unsigned();
             $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users');
+            $table->text('note')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
