@@ -7,9 +7,10 @@ use BikeShare\Domain\Core\Model;
 use BikeShare\Domain\Note\Note;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
-use Spatie\MediaLibrary\HasMedia\Interfaces\HasMedia;
+use Spatie\MediaLibrary\HasMedia\Interfaces\HasMediaConversions;
+use Spatie\MediaLibrary\Media;
 
-class Stand extends Model implements HasMedia
+class Stand extends Model implements HasMediaConversions
 {
 
     use LogsActivity, HasMediaTrait;
@@ -59,5 +60,17 @@ class Stand extends Model implements HasMedia
     public function notes()
     {
         return $this->morphMany(Note::class, 'notable');
+    }
+
+
+    public function registerMediaConversions(Media $media = null)
+    {
+        $this->addMediaConversion('small')
+            ->width(385)
+            ->height(284);
+
+        $this->addMediaConversion('thumb')
+            ->width(200)
+            ->height(150);
     }
 }

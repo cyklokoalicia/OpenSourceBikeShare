@@ -12,14 +12,16 @@
                     <div class="box-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <div id="detail-map" style="height: 300px;"></div>
+                                <div id="detail-map" style="height: 250px;"></div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="photo">
-                                    <h1>photo</h1>
-                                    @foreach($stand->getMedia('stand') as $image)
-                                        <img src="{{ $image->getUrl() }}" alt="">
+                                    <h1>Photos</h1>
+                                    @foreach($media as $image)
+                                        <a href="{{ $image->getUrl() }}">
+                                            <img src="{{ $image->getUrl('thumb') }}" alt="">
+                                        </a>
                                     @endforeach
                                 </div>
                             </div>

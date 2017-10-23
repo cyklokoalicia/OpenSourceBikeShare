@@ -22,39 +22,28 @@
                             @endif
 
                             <div class="row">
-                                @foreach($media as $file)
-                                    <div class="item">
-                                        <div class="col-md-8">
-                                            @if(starts_with($file->mime_type, 'image'))
-                                                <a href="{{ $file->getUrl() }}" target="_blank">
-                                                    <img class="media-object" src="{{ $file->getUrl() }}" alt="{{ $file->name }}" width="100%">
-                                                </a>
-                                            @else
-                                                <span class="glyphicon glyphicon-file large-icon"></span>
-                                            @endif
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="btn-group pull-right">
-                                                <a href="{{ route("admin.stand.media.destroy", [$stand->uuid, $file->id]) }}"
-                                                   data-method="DELETE"
-                                                   data-token="{{ csrf_token() }}"
-                                                   class="close">
-                                                    <span class="glyphicon glyphicon-remove"></span>
-                                                </a>
-                                            </div>
-                                            <h4 class="media-heading">{{ $file->name }}</h4>
-                                            <p>
-                                                <code>
-                                                    {{ $file->getPath() }}<br/>
-                                                </code>
-                                                <small>
-                                                    {{ $file->human_readable_size }} |
-                                                    {{ $file->mime_type }}
-                                                </small>
-                                            </p>
-                                        </div>
-                                    </div>
-                                @endforeach
+
+                                <div class="col-md-12">
+
+                                        <ul class="mailbox-attachments clearfix">
+                                            @foreach($media as $file)
+                                                <li>
+                                                    <span class="mailbox-attachment-icon has-img"><img
+                                                                src="{{ $file->getUrl('thumb') }}" alt="{{ $file->name }}"></span>
+
+                                                    <div class="mailbox-attachment-info">
+                                                        <a href="#" class="mailbox-attachment-name">{{ str_limit($file->name, 22) }}</a>
+                                                        <span class="mailbox-attachment-size">
+                              {{ $file->human_readable_size }} <br />
+                                                            {{ $file->mime_type }}
+                              <a href="{{ route("admin.stand.media.destroy", [$stand->uuid, $file->id]) }}" class="btn btn-default btn-xs pull-right"><i class="fa fa-trash-o"></i></a>
+                            </span>
+                                                    </div>
+                                                </li>
+                                            @endforeach
+
+                                        </ul>
+                                </div>
                             </div>
                         </div>
                         <div class="box-footer">
@@ -68,13 +57,13 @@
 @endsection
 
 @push('scripts')
-<script>
-    $(document).ready(function () {
-        $('#is-service').iCheck({
-            checkboxClass: 'icheckbox_square-green',
-            radioClass: 'iradio_square-green',
-            increaseArea: '20%' // optional
+    <script>
+        $(document).ready(function () {
+            $('#is-service').iCheck({
+                checkboxClass: 'icheckbox_square-green',
+                radioClass: 'iradio_square-green',
+                increaseArea: '20%' // optional
+            });
         });
-    });
-</script>
+    </script>
 @endpush

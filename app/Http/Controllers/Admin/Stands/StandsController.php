@@ -5,17 +5,15 @@ namespace BikeShare\Http\Controllers\Admin\Stands;
 use BikeShare\Domain\Bike\BikeStatus;
 use BikeShare\Domain\Stand\Requests\CreateStandRequest;
 use BikeShare\Domain\Stand\Requests\UpdateStandRequest;
-use BikeShare\Domain\Stand\Stand;
-use BikeShare\Domain\Stand\StandService;
 use BikeShare\Domain\Stand\StandsRepository;
 use BikeShare\Domain\Stand\StandStatus;
 use BikeShare\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use BikeShare\Http\Requests;
-use Spatie\MediaLibrary\FileAdder\FileAdder;
+use Illuminate\Http\Request;
 
 class StandsController extends Controller
 {
+    const STAND_MEDIA_COLLECTION = 'stand';
 
     protected $standRepo;
 
@@ -65,8 +63,10 @@ class StandsController extends Controller
     {
         $stand = $this->standRepo->create($request->all());
 
-        foreach ($request->images as $image) {
-            $stand->addMedia($image)->toMediaCollection('stand');
+        if (isset($request->images)) {
+            foreach ($request->images as $image) {
+                $stand->addMedia($image)->toMediaCollection(self::STAND_MEDIA_COLLECTION);
+            }
         }
 
         toastr()->success('Stand successfully created');
@@ -91,10 +91,12 @@ class StandsController extends Controller
             },
         ])->where('status', BikeStatus::FREE)->get();
 
+        //$img = $stand->getMedia(self::STAND_MEDIA_COLLECTION)[0];
+
         return view('admin.stands.show', [
             'stand' => $stand,
             'bikes' => $bikes,
-            'media' => $stand->getMedia('stand')
+            'media' => $stand->getMedia(self::STAND_MEDIA_COLLECTION)
         ]);
     }
 
@@ -131,6 +133,14 @@ class StandsController extends Controller
     public function update(UpdateStandRequest $request, $uuid)
     {
         $this->standRepo->update($request->all(), $uuid, 'uuid');
+        $stand = $this->standRepo->findByUuid($uuid);
+
+
+
+        foreach ($request->images as $image) {
+            $stand->addMedia($image)->toMediaCollection(self::STAND_MEDIA_COLLECTION);
+        }
+
         toastr()->success('Stand successfully updated');
 
         return redirect()->route('admin.stands.index');
