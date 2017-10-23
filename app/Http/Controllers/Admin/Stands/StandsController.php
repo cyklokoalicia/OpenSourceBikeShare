@@ -132,18 +132,18 @@ class StandsController extends Controller
      */
     public function update(UpdateStandRequest $request, $uuid)
     {
-        $this->standRepo->update($request->all(), $uuid, 'uuid');
+        $this->standRepo->update($request->except('images'), $uuid, 'uuid');
         $stand = $this->standRepo->findByUuid($uuid);
 
-
-
-        foreach ($request->images as $image) {
-            $stand->addMedia($image)->toMediaCollection(self::STAND_MEDIA_COLLECTION);
+        if ($request->images){
+            foreach ($request->images as $image) {
+                $stand->addMedia($image)->toMediaCollection(self::STAND_MEDIA_COLLECTION);
+            }
         }
 
         toastr()->success('Stand successfully updated');
 
-        return redirect()->route('admin.stands.index');
+        return redirect()->route('admin.stands.edit', $stand->uuid);
     }
 
 

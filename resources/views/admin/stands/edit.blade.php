@@ -9,7 +9,7 @@
                         <h3 class="box-title">Edit Stand</h3>
                     </div>
 
-                    <form action="{{ route('admin.stands.update', $stand->uuid) }}" method="POST">
+                    <form action="{{ route('admin.stands.update', $stand->uuid) }}" method="POST" enctype="multipart/form-data">
                         {{ csrf_field() }}
                         {{ method_field('PUT') }}
                         <div class="box-body">
