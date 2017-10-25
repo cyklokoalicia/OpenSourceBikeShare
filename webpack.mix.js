@@ -19,15 +19,15 @@ mix.js('resources/assets/js/user/base.js', 'public/js')
 
 
 // Copy bootstrap and AdminLTE CSS files to public directory
-mix.copy('bower_components/AdminLTE/bootstrap/css/bootstrap.css', 'public/css/libs/bootstrap.css');
+// mix.copy('bower_components/AdminLTE/bootstrap/css/bootstrap.css', 'public/css/libs/bootstrap.css');
 mix.copy('bower_components/AdminLTE/dist/css/AdminLTE.css', 'public/css/libs/admin-lte.css');
 mix.copy('bower_components/AdminLTE/dist/css/skins/_all-skins.css', 'public/css/libs/admin-lte-skin.css');
-mix.copy('bower_components/AdminLTE/dist/js/app.js', 'public/js/libs/admin-lte.js');
-mix.copy('bower_components/AdminLTE/plugins/jQuery/jquery-2.2.3.min.js', 'public/js/libs/jquery.js');
+mix.copy('bower_components/AdminLTE/dist/js/adminlte.js', 'public/js/libs/admin-lte.js');
+// mix.copy('bower_components/AdminLTE/plugins/jQuery/jquery-2.2.3.min.js', 'public/js/libs/jquery.js');
 
 
 // Copy fonts from Glypicons
-mix.copy('bower_components/AdminLTE/bootstrap/fonts', 'public/css/fonts');
+// mix.copy('bower_components/AdminLTE/bootstrap/fonts', 'public/css/fonts');
 
 // Font Awesome
 mix.copy('bower_components/font-awesome/css/font-awesome.css', 'public/css/libs/font-awesome.css');

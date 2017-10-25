@@ -13,15 +13,10 @@
     "axios": "^0.16.2",
     "bootstrap-sass": "^3.3.7",
     "cross-env": "^5.0.1",
-    "gulp": "^3.9.1",
-    "gulp-add-src": "^0.2.0",
-    "gulp-sort": "^2.0.0",
-    "gulp-concat": "^2.6.1",
     "jquery": "^3.1.1",
     "laravel-mix": "^1.0",
     "lodash": "^4.17.4",
-    "vue": "^2.1.10",
-    "vue-resource": "^0.9.3"
+    "vue": "^2.1.10"
   },
   "dependencies": {
     "dropzone": "^4.3.0",
