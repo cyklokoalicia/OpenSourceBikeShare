@@ -19,10 +19,11 @@
     "vue": "^2.1.10"
   },
   "dependencies": {
+    "bootstrap": "^4.0.0-beta",
     "dropzone": "^4.3.0",
     "popper.js": "^1.12.5",
     "tether": "^1.4.0",
-    "bootstrap": "^4.0.0-beta",
-    "vue-select": "github:sagalbot/vue-select"
+    "vue-select": "github:sagalbot/vue-select",
+    "vue2-google-maps": "^0.8.4"
   }
 }

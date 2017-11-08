@@ -29,16 +29,23 @@
     </label>
 </div>
 
-<div class="form-group">
-    <label for="latitude">Latitude</label>
-    <input type="number" step="any" class="form-control" id="latitude" name="latitude" placeholder="Enter latitude"
-           value="{{ $stand->latitude ?? old('latitude') }}">
-</div>
+{{--<div class="form-group">--}}
+    {{--<label for="latitude">Latitude</label>--}}
+    {{--<input type="number" step="any" class="form-control" id="latitude" name="latitude" placeholder="Enter latitude"--}}
+           {{--value="{{ $stand->latitude ?? old('latitude') }}">--}}
+{{--</div>--}}
+
+{{--<div class="form-group">--}}
+    {{--<label for="longitude">Longitude</label>--}}
+    {{--<input type="number" step="any" class="form-control" id="longitude" name="longitude" placeholder="Enter longitude"--}}
+           {{--value="{{ $stand->longitude ?? old('longitude') }}">--}}
+{{--</div>--}}
 
 <div class="form-group">
-    <label for="longitude">Longitude</label>
-    <input type="number" step="any" class="form-control" id="longitude" name="longitude" placeholder="Enter longitude"
-           value="{{ $stand->longitude ?? old('longitude') }}">
+    <stand-location
+            :initlng="{{ $stand->longitude ?? old('longitude') ?? $defaultLongitude }}"
+            :initlat="{{ $stand->latitude ?? old('latitude') ?? $defaultLatitude }}">
+    </stand-location>
 </div>
 
 <div class="form-group">

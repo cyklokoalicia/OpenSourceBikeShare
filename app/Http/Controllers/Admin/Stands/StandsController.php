@@ -45,9 +45,15 @@ class StandsController extends Controller
      */
     public function create()
     {
+        // Bratislava Coordinates
+        $defaultLongitude = '17.1071373';
+        $defaultLatitude = '48.1458923';
+
         return view('admin.stands.create', [
             'statuses' => with(new StandStatus())->toArray(),
-            'media' => collect()
+            'media' => collect(),
+            'defaultLongitude' => $defaultLongitude,
+            'defaultLatitude' => $defaultLatitude
         ]);
     }
 
