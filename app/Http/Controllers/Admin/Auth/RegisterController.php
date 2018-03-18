@@ -2,8 +2,12 @@
 
 namespace BikeShare\Http\Controllers\Admin\Auth;
 
-use BikeShare\User;
+use BikeShare\Domain\User\User;
+use Spatie\Permission\Exceptions\RoleDoesNotExist;
+use Spatie\Permission\Models\Role;
 use Validator;
+use BikeShare\Domain\User\Roles;
+use BikeShare\Http\Services\AppConfig;
 use BikeShare\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\RegistersUsers;
 
@@ -27,7 +31,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = 'admin/home';
+    protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
@@ -50,22 +54,29 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
+            'phone_number' => 'required|min:1|max:255|unique:users',
             'password' => 'required|min:6|confirmed',
         ]);
     }
 
+
     /**
      * Create a new user instance after a valid registration.
      *
-     * @param  array  $data
+     * @param  array $data
+     *
      * @return User
+     * @throws RoleDoesNotExist
      */
     protected function create(array $data)
     {
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
+            'phone_number' => $data['phone_number'],
             'password' => bcrypt($data['password']),
         ]);
+        $user->assignRole(Role::findByName(Roles::ADMIN));
+        return $user;
     }
 }
