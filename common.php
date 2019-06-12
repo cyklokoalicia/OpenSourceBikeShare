@@ -360,6 +360,7 @@ function confirmUser($userKey)
         $db->query("UPDATE limits SET userLimit='".$limits["registration"]."' WHERE userId=$userId");
 
         $db->query("DELETE FROM registration WHERE userId='$userId'");
+        $db->conn->commit();
 
         echo '<div class="alert alert-success" role="alert">',_('Your account has been activated. Welcome!'),'</div>';
 
