@@ -214,16 +214,18 @@ function checksession()
          $db->conn->commit();
          setcookie("loguserid","",time()-86400);
          setcookie("logsession","",time()-86400);
-         header("HTTP/1.1 301 Moved permanently");
+         header("HTTP/1.1 302 Found");
          header("Location: ".$systemURL."?error=2");
+         header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0'); 
          header("Connection: close");
          exit;
          }
       }
    else
       {
-      header("HTTP/1.1 301 Moved permanently");
+      header("HTTP/1.1 302 Found");
       header("Location: ".$systemURL."?error=2");
+      header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0'); 
       header("Connection: close");
       exit;
       }
