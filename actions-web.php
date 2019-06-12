@@ -547,15 +547,17 @@ function login($number,$password)
       $db->conn->commit();
       setcookie("loguserid",$userId,time()+86400*14);
       setcookie("logsession",$sessionId,time()+86400*14);
-      header("HTTP/1.1 301 Moved permanently");
+      header("HTTP/1.1 302 Found");
       header("Location: ".$systemURL);
+      header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0'); 
       header("Connection: close");
       exit;
       }
    else
       {
-      header("HTTP/1.1 301 Moved permanently");
+      header("HTTP/1.1 302 Found");
       header("Location: ".$systemURL."?error=1");
+      header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0'); 
       header("Connection: close");
       exit;
       }
@@ -572,8 +574,9 @@ function logout()
       $result=$db->query("DELETE FROM sessions WHERE userId='$userid'");
       $db->conn->commit();
       }
-   header("HTTP/1.1 301 Moved permanently");
+   header("HTTP/1.1 302 Found");
    header("Location: ".$systemURL);
+   header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0'); 
    header("Connection: close");
    exit;
 }
