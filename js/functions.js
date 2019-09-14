@@ -49,6 +49,11 @@ function mapinit()
 
    map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
    map.addLayer(osm);
+   L.control.locate({
+       locateOptions: {
+           enableHighAccuracy: true
+       }
+   }).addTo(map);
    sidebar = L.control.sidebar('sidebar', {
         position: 'left'
         });
