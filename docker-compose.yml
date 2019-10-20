@@ -1,0 +1,45 @@
+
+  version: '3'
+
+  volumes:
+      db-data:
+
+  services:
+    nginx:
+      image: nginx:latest
+      volumes:
+        - ./docker-data/nginx/nginx.conf:/etc/nginx/nginx.conf
+        #- ./docker-data/nginx/ssl/bikesharing.loc.crt:/etc/nginx/certs/bikesharing.loc.crt
+        #- ./docker-data/nginx/ssl/bikesharing.loc.key:/etc/nginx/certs/bikesharing.loc.key
+      ports:
+        - 80:80
+        #- 443:443
+      links:
+        - web
+    db:
+      image: mysql:5
+      ports:
+          - "3306:3306"
+      environment:
+        MYSQL_ROOT_PASSWORD: password
+        MYSQL_DATABASE: bikesharing
+      volumes:
+        - db-data:/var/lib/mysql
+    web:
+      build: .
+      ports:
+        - "8100::80"
+      volumes:
+        - ./:/var/www/html/
+      depends_on:
+        - db
+    phpmyadmin:
+      image: phpmyadmin/phpmyadmin
+      links:
+        - db
+      ports:
+        - 81:80
+      environment:
+        - PMA_HOST=db
+        - PMA_USER=root
+        - PMA_PASSWORD=password
