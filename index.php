@@ -17,6 +17,7 @@ $db->connect();
 <script type="text/javascript" src="js/viewportDetect.js"></script>
 <script type="text/javascript" src="js/leaflet.js"></script>
 <script type="text/javascript" src="js/L.Control.Sidebar.js"></script>
+<script type="text/javascript" src="js/L.Control.Locate.min.js"></script>
 <script type="text/javascript" src="js/translations.php"></script>
 <script type="text/javascript" src="js/functions.js"></script>
 <?php
@@ -33,6 +34,8 @@ if (isset($geojson))
 <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />
 <link rel="stylesheet" type="text/css" href="css/leaflet.css" />
 <link rel="stylesheet" type="text/css" href="css/L.Control.Sidebar.css" />
+<link rel="stylesheet" type="text/css" href="css/L.Control.Locate.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" type="text/css" href="css/map.css" />
 <script>
 var maplat=<?php echo $systemlat; ?>;
