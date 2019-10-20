@@ -4,11 +4,11 @@ Open Source Bike Share
  
 Bottom-up bicycle sharing system suitable for smaller communities or areas such as campuses, companies etc. 
  
-Use *fully functional* ["breakthrough" version](https://github.com/mmmaly/OpenSourceBikeShare/tree/breakthrough) in the meantime. 
+Use *fully functional* ["breakthrough" version](https://github.com/cyklokoalicia/OpenSourceBikeShare/tree/breakthrough) in the meantime. 
  
 Website: [OpenSourceBikeShare.com](http://opensourcebikeshare.com) 
  
-NOTE: Undergoing complete rewrite in Laravel framework. 
+NOTE: Looking for help/developers to develop new web app in Laravel framework.
 --------- 
  
 Features 
@@ -28,8 +28,8 @@ Where is it working?
 --------- 
 3 bike sharing systems in 2 cities. 
  
-### Pilot project 
-Currently running with about 50 bicycles in Bratislava, the capital of Slovakia. 
+### Community bikesharing
+Currently running with about 130 bicycles in Bratislava, the capital of Slovakia. 
  
 The bicycles in the bike share (featuring four digit code U-locks) 
 ![The bicycles in the bike share](http://i.cubeupload.com/Jr5pR3.jpg "Bicycles") 
@@ -51,7 +51,7 @@ Community run system with about 10 bicycles in Kezmarok, Slovakia.
  
 Demo 
 --------- 
-[Whitebikes](http://whitebikes.info) - do not share your location if you are out of Bratislava, otherwise map will jump out of the bike share area. 
+[Demo bike sharing](https://opensourcebikeshare.com/demo/) - do not share your location, otherwise map will jump out of the bike share area. 
  
 How does it work? 
 --------- 
