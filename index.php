@@ -43,10 +43,16 @@ var maplon=<?php echo $systemlong; ?>;
 var mapzoom=<?php echo $systemzoom; ?>;
 var standselected=0;
 <?php
+if (isset($_COOKIE["loguserid"])) {
+    $userid = $db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+} else {
+    $userid = 0;
+}
+
 if (isloggedin())
    {
    echo 'var loggedin=1;',"\n";
-   echo 'var priv=',getprivileges($_COOKIE["loguserid"]),";\n";
+   echo 'var priv=',getprivileges($userid),";\n";
    }
 else
    {
@@ -81,11 +87,11 @@ else
    <ul class="list-inline">
       <li><a href="<?php echo $systemrules; ?>"><span class="glyphicon glyphicon-question-sign"></span> <?php echo _('Help'); ?></a></li>
 <?php
-if (isloggedin() AND getprivileges($_COOKIE["loguserid"])>0) echo '<li><a href="admin.php"><span class="glyphicon glyphicon-cog"></span> ',_('Admin'),'</a></li>';
+if (isloggedin() AND getprivileges($userid)>0) echo '<li><a href="admin.php"><span class="glyphicon glyphicon-cog"></span> ',_('Admin'),'</a></li>';
 if (isloggedin())
    {
-   echo '<li><span class="glyphicon glyphicon-user"></span> <small>',getusername($_COOKIE["loguserid"]),'</small>';
-   if (iscreditenabled()) echo ' (<span id="usercredit" title="',_('Remaining credit'),'">',getusercredit($_COOKIE["loguserid"]),'</span> ',getcreditcurrency(),' <button type="button" class="btn btn-success btn-xs" id="opencredit" title="',_('Add credit'),'"><span class="glyphicon glyphicon-plus"></span></button>)<span id="couponblock"><br /><span class="form-inline"><input type="text" class="form-control input-sm" id="coupon" placeholder="XXXXXX" /><button type="button" class="btn btn-primary btn-sm" id="validatecoupon" title="',_('Confirm coupon'),'"><span class="glyphicon glyphicon-plus"></span></button></span></span></li>';
+   echo '<li><span class="glyphicon glyphicon-user"></span> <small>',getusername($userid),'</small>';
+   if (iscreditenabled()) echo ' (<span id="usercredit" title="',_('Remaining credit'),'">',getusercredit($userid),'</span> ',getcreditcurrency(),' <button type="button" class="btn btn-success btn-xs" id="opencredit" title="',_('Add credit'),'"><span class="glyphicon glyphicon-plus"></span></button>)<span id="couponblock"><br /><span class="form-inline"><input type="text" class="form-control input-sm" id="coupon" placeholder="XXXXXX" /><button type="button" class="btn btn-primary btn-sm" id="validatecoupon" title="',_('Confirm coupon'),'"><span class="glyphicon glyphicon-plus"></span></button></span></span></li>';
    echo '<li><a href="command.php?action=logout" id="logout"><span class="glyphicon glyphicon-log-out"></span> ',_('Log out'),'</a></li>';
    }
 ?>

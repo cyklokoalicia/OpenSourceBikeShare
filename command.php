@@ -6,9 +6,18 @@ require('actions-web.php');
 $db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
-if (isset($_COOKIE["loguserid"])) $userid=$_COOKIE["loguserid"];
-else $userid=0;
-if (isset($_COOKIE["logsession"])) $session=$_COOKIE["logsession"];
+if (isset($_COOKIE["loguserid"])) {
+    $userid = $db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+} else {
+    $userid = 0;
+}
+
+if (isset($_COOKIE["logsession"])) {
+    $session = $db->conn->real_escape_string(trim($_COOKIE["logsession"]));
+} else {
+    $session = '';
+}
+
 $action="";
 if (isset($_GET["action"])) $action=trim($_GET["action"]);
 
