@@ -6,9 +6,17 @@ require('actions-qrcode.php');
 $db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
-if (isset($_COOKIE["loguserid"])) $userid=$_COOKIE["loguserid"];
-else $userid=0;
-if (isset($_COOKIE["logsession"])) $session=$_COOKIE["logsession"];
+if (isset($_COOKIE["loguserid"])) {
+    $userid = $db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+} else {
+    $userid = 0;
+}
+
+if (isset($_COOKIE["logsession"])) {
+    $session = $db->conn->real_escape_string(trim($_COOKIE["logsession"]));
+} else {
+    $session = '';
+}
 $request=substr($_SERVER["REQUEST_URI"],strpos($_SERVER["REQUEST_URI"],".php")+5);
 $request=explode("/",$request);
 $action=$request[0];

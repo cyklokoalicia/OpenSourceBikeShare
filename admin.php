@@ -7,7 +7,14 @@ $db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
 checksession();
-if (getprivileges($_COOKIE["loguserid"])<=0) exit(_('You need admin privileges to access this page.'));
+
+if (isset($_COOKIE["loguserid"])) {
+    $userid = $db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+} else {
+    $userid = 0;
+}
+
+if (getprivileges($userid)<=0) exit(_('You need admin privileges to access this page.'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
