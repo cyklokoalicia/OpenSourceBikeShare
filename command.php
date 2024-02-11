@@ -27,7 +27,7 @@ switch($action)
       $number=trim($_GET["number"]);
       smscode($number);
       break;
-   case "register":
+   case "register": #"operationId": "user.register",
       $number=trim($_GET["validatednumber"]);
       $smscode=trim($_GET["smscode"]);
       $checkcode=trim($_GET["checkcode"]);
@@ -129,7 +129,7 @@ switch($action)
          }
       else last($userid);
       break;
-   case "stands":
+   case "stands": #"operationId": "stand.get",
       logrequest($userid,$action);
       checksession();
       checkprivileges($userid);
