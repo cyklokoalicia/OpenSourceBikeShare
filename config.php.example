@@ -50,6 +50,7 @@ $email["pass"]="pass"; // mail server password
 
 /*** SMS related ***/
 $connectors["sms"]=""; // API connector used for SMS operations (connectors/ directory); empty to disable SMS system, "loopback" to simulate dummy gateway API for testing
+$connectors["config"]["disabled"]="{}"; //json string for configuration of sms service
 $countrycode=""; // international dialing code (country code prefix), no plus sign
 
 /*** geoJSON files - uncomment line below to use, any number of geoJSON files can be included ***/
