@@ -1,6 +1,7 @@
 <?php
 
 include_once("SmsConnectorInterface.php");
+include_once("AbstractConnector.php");
 include_once("DisabledConnector.php");
 include_once("EuroSmsConnector.php");
 include_once("LoopbackConnector.php");
