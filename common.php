@@ -17,7 +17,7 @@ textdomain("messages");
 require_once('connectors/SmsConnectorFactory.php');
 $sms = (new SmsConnectorFactory())->getConnector(
     !empty($connectors["sms"]) ? $connectors["sms"] : 'disabled',
-    !empty(($connectors["config"][$connectors["sms"]]) ? json_decode($connectors["config"][$connectors["sms"]], true) : array())
+    !empty($connectors["config"][$connectors["sms"]]) ? json_decode($connectors["config"][$connectors["sms"]], true) : array()
 );
 
 function error($message)
