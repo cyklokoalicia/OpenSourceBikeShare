@@ -214,7 +214,7 @@ $newconfig=implode($configfile);
 file_put_contents($configfilename,$newconfig);
 $db=new Database($_POST["dbserver"],$_POST["dbuser"],$_POST["dbpassword"],$_POST["dbname"]);
 $db->connect();
-$sql=file_get_contents("../create-database.sql");
+$sql=file_get_contents("../docker-data/mysql/create-database.sql");
 $sql=explode(";",$sql);
 foreach ($sql as $value)
    {
