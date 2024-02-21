@@ -54,44 +54,32 @@ function sendSMS($number,$text)
 
    global $sms;
 
-   $message=$text;
-   if (strlen($message)>160)
-      {
-      $message=chunk_split($message,160,"|");
-      $message=explode("|",$message);
-      foreach ($message as $text)
-         {
-         $text=trim($text);
-         if ($text)
-            {
-            log_sendsms($number,$text);
-            if (DEBUG===TRUE)
-               {
-               echo $number,' -&gt ',$text,'<br />';
-               }
-            else
-               {
-               $sms->send($number,$text);
-               }
+    $message = $text;
+    if (strlen($message) > 160) {
+        $message = chunk_split($message, 160, '|');
+        $message = explode('|', $message);
+        foreach ($message as $text) {
+            $text = trim($text);
+            if ($text) {
+                logSendsms($number, $text);
+                if (DEBUG === true) {
+                    echo $number, ' -&gt ', $text, '<br />';
+                } else {
+                    $sms->send($number, $text);
+                }
             }
-         }
-      }
-   else
-      {
-      log_sendsms($number,$text);
-      if (DEBUG===TRUE)
-         {
-         echo $number,' -&gt ',$text,'<br />';
-         }
-      else
-         {
-         $sms->send($number,$text);
-         }
-      }
-
+        }
+    } else {
+        logSendsms($number, $text);
+        if (DEBUG === true) {
+            echo $number, ' -&gt ', $text, '<br />';
+        } else {
+            $sms->send($number, $text);
+        }
+    }
 }
 
-function log_sendsms($number, $text)
+function logSendsms($number, $text)
 {
         global $dbserver,$dbuser,$dbpassword,$dbname;
         $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
@@ -143,6 +131,18 @@ function getusername($userid)
    return FALSE;
 }
 
+function getusercity($userid)
+{
+    global $db;
+
+    $result = $db->query("SELECT city FROM users WHERE userId=$userid");
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        return $row['city'];
+    }
+    return false;
+}
+
 function getphonenumber($userid)
 {
    global $db;
@@ -171,437 +171,427 @@ function getuserid($number)
 
 function isloggedin()
 {
-   global $db;
-   if (isset($_COOKIE["loguserid"]) AND isset($_COOKIE["logsession"]))
-      {
-      $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
-      $session=$db->conn->real_escape_string(trim($_COOKIE["logsession"]));
-      $result=$db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'".time()."'");
-      if ($result->num_rows==1) return 1;
-      else return 0;
-      }
-   return 0;
-
+    global $db;
+    if (isset($_COOKIE['loguserid']) and isset($_COOKIE['logsession'])) {
+        $userid = $db->conn->real_escape_string(trim($_COOKIE['loguserid']));
+        $session = $db->conn->real_escape_string(trim($_COOKIE['logsession']));
+        $result = $db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'" . time() . "'");
+        if ($result->num_rows == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    return 0;
 }
 
 function checksession()
 {
-   global $db,$systemURL;
+    global $db, $systemURL;
 
-   $result=$db->query("DELETE FROM sessions WHERE timeStamp<='".time()."'");
-   if (isset($_COOKIE["loguserid"]) AND isset($_COOKIE["logsession"]))
-      {
-      $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
-      $session=$db->conn->real_escape_string(trim($_COOKIE["logsession"]));
-      $result=$db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'".time()."'");
-      if ($result->num_rows==1)
-         {
-         $timestamp=time()+86400*14;
-         $result=$db->query("UPDATE sessions SET timeStamp='$timestamp' WHERE userId='$userid' AND sessionId='$session'");
-         $db->conn->commit();
-         }
-      else
-         {
-         $result=$db->query("DELETE FROM sessions WHERE userId='$userid' OR sessionId='$session'");
-         $db->conn->commit();
-         setcookie("loguserid","",time()-86400);
-         setcookie("logsession","",time()-86400);
-         header("HTTP/1.1 302 Found");
-         header("Location: ".$systemURL."?error=2");
-         header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0'); 
-         header("Connection: close");
-         exit;
-         }
-      }
-   else
-      {
-      header("HTTP/1.1 302 Found");
-      header("Location: ".$systemURL."?error=2");
-      header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0'); 
-      header("Connection: close");
-      exit;
-      }
-
+    $result = $db->query("DELETE FROM sessions WHERE timeStamp<='" . time() . "'");
+    if (isset($_COOKIE['loguserid']) and isset($_COOKIE['logsession'])) {
+        $userid = $db->conn->real_escape_string(trim($_COOKIE['loguserid']));
+        $session = $db->conn->real_escape_string(trim($_COOKIE['logsession']));
+        $result = $db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'" . time() . "'");
+        if ($result->num_rows == 1) {
+            $timestamp = time() + 86400 * 14;
+            $result = $db->query("UPDATE sessions SET timeStamp='$timestamp' WHERE userId='$userid' AND sessionId='$session'");
+            $db->conn->commit();
+        } else {
+            $result = $db->query("DELETE FROM sessions WHERE userId='$userid' OR sessionId='$session'");
+            $db->conn->commit();
+            setcookie('loguserid', '', time() - 86400);
+            setcookie('logsession', '', time() - 86400);
+            header('HTTP/1.1 302 Found');
+            header('Location: ' . $systemURL . '?error=2');
+            header('Connection: close');
+            exit;
+        }
+    } else {
+        header('HTTP/1.1 302 Found');
+        header('Location: ' . $systemURL . '?error=2');
+        header('Connection: close');
+        exit;
+    }
 }
 
 function logrequest($userid)
 {
-   global $dbserver,$dbuser,$dbpassword,$dbname;
-   $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
-   $localdb->connect();
-   $localdb->conn->autocommit(TRUE);
+    global $dbserver, $dbuser, $dbpassword, $dbname;
+    $localdb = new Database($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb->connect();
+    $localdb->conn->autocommit(true);
 
-   $number=getphonenumber($userid);
+    $number = getphonenumber($userid);
 
-   $result = $localdb->query("INSERT INTO received SET sender='$number',receive_time='".date("Y-m-d H:i:s")."',sms_text='".$_SERVER['REQUEST_URI']."',ip='".$_SERVER['REMOTE_ADDR']."'");
-
+    $result = $localdb->query("INSERT INTO received SET sender='$number',receive_time='" . date('Y-m-d H:i:s') . "',sms_text='" . $_SERVER['REQUEST_URI'] . "',ip='" . $_SERVER['REMOTE_ADDR'] . "'");
 }
 
-function logresult($userid,$text)
+function logresult($userid, $text)
 {
-   global $dbserver,$dbuser,$dbpassword,$dbname;
+    global $dbserver, $dbuser, $dbpassword, $dbname;
 
-   $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
-   $localdb->connect();
-   $localdb->conn->autocommit(TRUE);
-   $userid = $localdb->conn->real_escape_string($userid);
-   $logtext="";
-   if (is_array($text))
-      {
-      foreach ($text as $value)
-         {
-         $logtext.=$value."; ";
-         }
-      }
-   else
-      {
-      $logtext=$text;
-      }
+    $localdb = new Database($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb->connect();
+    $localdb->conn->autocommit(true);
+    $userid = $localdb->conn->real_escape_string($userid);
+    $logtext = '';
+    if (is_array($text)) {
+        foreach ($text as $value) {
+            $logtext .= $value . '; ';
+        }
+    } else {
+        $logtext = $text;
+    }
 
-   $logtext = strip_tags($localdb->conn->real_escape_string($logtext));
+    $logtext = strip_tags($localdb->conn->real_escape_string($logtext));
 
-   $result = $localdb->query("INSERT INTO sent SET number='$userid',text='$logtext'");
-
+    $result = $localdb->query("INSERT INTO sent SET number='$userid',text='$logtext'");
 }
 
 function checkbikeno($bikeNum)
 {
-   global $db;
-   $bikeNum=intval($bikeNum);
-   $result=$db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
-   if (!$result->num_rows)
-      {
-      response('<h3>Bike '.$bikeNum.' does not exist!</h3>',ERROR);
-      }
+    global $db;
+    $bikeNum = intval($bikeNum);
+    $result = $db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
+    if (!$result->num_rows) {
+        response('<h3>Bike ' . $bikeNum . ' does not exist!</h3>', ERROR);
+    }
 }
 
 function checkstandname($stand)
 {
-   global $db;
-   $standname=trim(strtoupper($stand));
-   $result=$db->query("SELECT standName FROM stands WHERE standName='$stand'");
-   if (!$result->num_rows)
-      {
-      response('<h3>'._('Stand').' '.$stand.' '._('does not exist').'!</h3>',ERROR);
-      }
+    global $db;
+    $standname = trim(strtoupper($stand));
+    $result = $db->query("SELECT standName FROM stands WHERE standName='$stand'");
+    if (!$result->num_rows) {
+        response('<h3>' . _('Stand') . ' ' . $stand . ' ' . _('does not exist') . '!</h3>', ERROR);
+    }
 }
 
 /**
  * @param int $notificationtype 0 = via SMS, 1 = via email
-**/
-function notifyAdmins($message,$notificationtype=0)
+ **/
+function notifyAdmins($message, $notificationtype = 0)
 {
-   global $db,$systemname,$watches;
+    global $db, $systemname, $watches;
 
-   $result = $db->query("SELECT number,mail FROM users where privileges & 2 != 0");
-   while($row = $result->fetch_assoc())
-      {
-      if ($notificationtype==0)
-         {
-         sendSMS($row["number"],$message);
-         sendEmail($watches["email"],$systemname." "._('notification'),$message);
-         }
-      else
-         {
-         sendEmail($row["mail"],$systemname." "._('notification'),$message);
-         }
-      }
+    $result = $db->query('SELECT number,mail FROM users where privileges & 2 != 0');
+    while ($row = $result->fetch_assoc()) {
+        if ($notificationtype == 0) {
+            sendSMS($row['number'], $message);
+            sendEmail($watches['email'], $systemname . ' ' . _('notification'), $message);
+        } else {
+            sendEmail($row['mail'], $systemname . ' ' . _('notification'), $message);
+        }
+    }
+
+//copy to Trello board -- might be added as a person instead
+    if ($notificationtype == 0) {
+        sendEmail('cyklokoalicia1+q31wfjphbgkuelf19hlb@boards.trello.com', $message, $message);
+    }
 }
 
 function sendConfirmationEmail($emailto)
 {
+    global $db, $dbpassword, $systemname, $systemrules, $systemURL;
 
-   global $db, $dbpassword, $systemname, $systemrules, $systemURL;
+    $subject = _('Registration');
 
-   $subject = _('Registration');
+    $result = $db->query("SELECT userName,userId FROM users WHERE mail='" . $emailto . "'");
+    $row = $result->fetch_assoc();
 
-   $result=$db->query("SELECT userName,userId FROM users WHERE mail='".$emailto."'");
-   $row = $result->fetch_assoc();
+    $userId = $row['userId'];
+    $userKey = hash('sha256', $emailto . $dbpassword . rand(0, 1000000));
 
-   $userId=$row["userId"];
-   $userKey=hash('sha256', $emailto.$dbpassword.rand(0,1000000));
+    $db->query("INSERT INTO registration SET userKey='$userKey',userId='$userId'");
+    $db->query("INSERT INTO limits SET userId='$userId',userLimit=0");
+    $db->query("INSERT INTO credit SET userId='$userId',credit=0");
 
-   $db->query("INSERT INTO registration SET userKey='$userKey',userId='$userId'");
-   $db->query("INSERT INTO limits SET userId='$userId',userLimit=0");
-   $db->query("INSERT INTO credit SET userId='$userId',credit=0");
-
-   $names=preg_split("/[\s,]+/",$row["userName"]);
-   $firstname=$names[0];
-   $message=_('Hello').' '.$firstname.",\n\n".
-   _('you have been registered into community bike share system').' '.$systemname.".\n\n".
-   _('System rules are available here:')."\n".$systemrules."\n\n".
-   _('By clicking the following link you agree to the System rules:')."\n".$systemURL."agree.php?key=".$userKey;
-   sendEmail($emailto,$subject,$message);
+    $names = preg_split("/[\s,]+/", $row['userName']);
+    $firstname = $names[0];
+    $message = _('Hello') . ' ' . $firstname . ",\n\n" .
+    _('you have been registered into community bike share system') . ' ' . $systemname . ".\n\n" .
+    _('System rules are available here:') . "\n" . $systemrules . "\n\n" .
+    _('By clicking the following link you agree to the System rules:') . "\n" . $systemURL . 'agree.php?key=' . $userKey;
+    sendEmail($emailto, $subject, $message);
 }
 
 function confirmUser($userKey)
 {
-        global $db, $limits;
-        $userKey = $db->conn->real_escape_string($userKey);
+    global $db, $limits;
+    $userKey = $db->conn->real_escape_string($userKey);
 
-        $result=$db->query("SELECT userId FROM registration WHERE userKey='$userKey'");
-        if($result->num_rows==1)
-                {
-                        $row = $result->fetch_assoc();
-                        $userId = $row["userId"];
-                }
-                else
-                {
-                        echo '<div class="alert alert-danger" role="alert">',_('Registration key not found!'),'</div>';
-                        return FALSE;
-                }
+    $result = $db->query("SELECT userId FROM registration WHERE userKey='$userKey'");
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        $userId = $row['userId'];
+    } else {
+        echo '<div class="alert alert-danger" role="alert">', _('Registration key not found!'), '</div>';
+        return false;
+    }
 
-        $db->query("UPDATE limits SET userLimit='".$limits["registration"]."' WHERE userId=$userId");
+    $db->query("UPDATE limits SET userLimit='" . $limits['registration'] . "' WHERE userId=$userId");
 
-        $db->query("DELETE FROM registration WHERE userId='$userId'");
-        $db->conn->commit();
+    $db->query("DELETE FROM registration WHERE userId='$userId'");
 
-        echo '<div class="alert alert-success" role="alert">',_('Your account has been activated. Welcome!'),'</div>';
-
+    echo '<div class="alert alert-success" role="alert">', _('Your account has been activated. Welcome!'), '</div>';
 }
 
 function checktopofstack($standid)
 {
-   global $db;
-   $currentbikes=array();
-   // find current bikes at stand
-   $result=$db->query("SELECT bikeNum FROM bikes LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE standId='$standid'");
-   while($row=$result->fetch_assoc())
-      {
-      $currentbikes[]=$row["bikeNum"];
-      }
-   if (count($currentbikes))
-      {
-      // find last returned bike at stand
-      $result=$db->query("SELECT bikeNum FROM history WHERE action IN ('RETURN','FORCERETURN') AND parameter='$standid' AND bikeNum IN (".implode($currentbikes,",").") ORDER BY time DESC LIMIT 1");
-      if ($result->num_rows)
-         {
-         $row=$result->fetch_assoc();
-         return $row["bikeNum"];
-         }
-      }
-   return FALSE;
+    global $db;
+    $currentbikes = array();
+    // find current bikes at stand
+    $result = $db->query("SELECT bikeNum FROM bikes LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE standId='$standid'");
+    while ($row = $result->fetch_assoc()) {
+        $currentbikes[] = $row['bikeNum'];
+    }
+    if (count($currentbikes)) {
+        // find last returned bike at stand
+        $result = $db->query("SELECT bikeNum FROM history WHERE action IN ('RETURN','FORCERETURN') AND parameter='$standid' AND bikeNum IN (" . implode($currentbikes, ',') . ') ORDER BY time DESC LIMIT 1');
+        if ($result->num_rows) {
+            $row = $result->fetch_assoc();
+            return $row['bikeNum'];
+        }
+    }
+    return false;
 }
 
 function checklongrental()
 {
-   global $db,$watches,$notifyuser;
+    global $db, $watches, $notifyuser;
 
-   $abusers=""; $found=0;
-   $result=$db->query("SELECT bikeNum,currentUser,userName,number FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId WHERE currentStand IS NULL");
-   while($row=$result->fetch_assoc())
-      {
-      $bikenum=$row["bikeNum"];
-      $userid=$row["currentUser"];
-      $username=$row["userName"];
-      $userphone=$row["number"];
-      $result2=$db->query("SELECT time FROM history WHERE bikeNum=$bikenum AND userId=$userid AND action='RENT' ORDER BY time DESC LIMIT 1");
-      if ($result2->num_rows)
-         {
-         $row2=$result2->fetch_assoc();
-         $time=$row2["time"];
-         $time=strtotime($time);
-         if ($time+($watches["longrental"]*3600)<=time())
-            {
-            $abusers.=" b".$bikenum." "._('by')." ".$username.",";
-            $found=1;
-            if ($notifyuser) sendSMS($userphone,_('Please, return your bike ').$bikenum._(' immediately to the closest stand! Ignoring this warning can get you banned from the system.'));
+    $abusers = '';
+    $found = 0;
+    $result = $db->query('SELECT bikeNum,currentUser,userName,number FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId WHERE currentStand IS NULL');
+    while ($row = $result->fetch_assoc()) {
+        $bikenum = $row['bikeNum'];
+        $userid = $row['currentUser'];
+        $username = $row['userName'];
+        $userphone = $row['number'];
+        $result2 = $db->query("SELECT time FROM history WHERE bikeNum=$bikenum AND userId=$userid AND action='RENT' ORDER BY time DESC LIMIT 1");
+        if ($result2->num_rows) {
+            $row2 = $result2->fetch_assoc();
+            $time = $row2['time'];
+            $time = strtotime($time);
+            if ($time + ($watches['longrental'] * 3600) <= time()) {
+                $abusers .= ' b' . $bikenum . ' ' . _('by') . ' ' . $username . ',';
+                $found = 1;
+                if ($notifyuser) {
+                    sendSMS($userphone, _('Please, return your bike ') . $bikenum . _(' immediately to the closest stand! Ignoring this warning can get you banned from the system.'));
+                }
             }
-         }
-      }
-   if ($found)
-      {
-      $abusers=substr($abusers,0,strlen($abusers)-1);
-      notifyAdmins($watches["longrental"]."+ "._('hour rental').":".$abusers);
-      }
-
+        }
+    }
+    if ($found) {
+        $abusers = substr($abusers, 0, strlen($abusers) - 1);
+        notifyAdmins($watches['longrental'] . '+ ' . _('hour rental') . ':' . $abusers);
+    }
 }
 
 // cron - called from cron by default, set to 0 if from rent function, userid needs to be passed if cron=0
-function checktoomany($cron=1,$userid=0)
+function checktoomany($cron = 1, $userid = 0)
 {
-   global $db,$watches;
+    global $db, $watches;
 
-   $abusers=""; $found=0;
+    $abusers = '';
+    $found = 0;
 
-   if ($cron) // called from cron
-      {
-      $result=$db->query("SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId");
-      while($row=$result->fetch_assoc())
-         {
-         $userid=$row["userId"];
-         $username=$row["userName"];
-         $userlimit=$row["userLimit"];
-         $currenttime=date("Y-m-d H:i:s",time()-$watches["timetoomany"]*3600);
-         $result2=$db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
-         if ($result2->num_rows>=($userlimit+$watches["numbertoomany"]))
-            {
-            $abusers.=" ".$result2->num_rows." ("._('limit')." ".$userlimit.") "._('by')." ".$username.",";
-            $found=1;
+    if ($cron) { // called from cron
+        $result = $db->query('SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId');
+        while ($row = $result->fetch_assoc()) {
+            $userid = $row['userId'];
+            $username = $row['userName'];
+            $userlimit = $row['userLimit'];
+            $currenttime = date('Y-m-d H:i:s', time() - $watches['timetoomany'] * 3600);
+            $result2 = $db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
+            if ($result2->num_rows >= ($userlimit + $watches['numbertoomany'])) {
+                $abusers .= ' ' . $result2->num_rows . ' (' . _('limit') . ' ' . $userlimit . ') ' . _('by') . ' ' . $username . ',';
+                $found = 1;
             }
-         }
-      }
-   else // called from function for user userid
-      {
-      $result=$db->query("SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId WHERE users.userId=$userid");
-      $row=$result->fetch_assoc();
-      $username=$row["userName"];
-      $userlimit=$row["userLimit"];
-      $currenttime=date("Y-m-d H:i:s",time()-$watches["timetoomany"]*3600);
-      $result=$db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
-      if ($result->num_rows>=($userlimit+$watches["numbertoomany"]))
-         {
-         $abusers.=" ".$result->num_rows." ("._('limit')." ".$userlimit.") "._('by')." ".$username.",";
-         $found=1;
-         }
-      }
-   if ($found)
-      {
-      $abusers=substr($abusers,0,strlen($abusers)-1);
-      notifyAdmins(_('Over limit in')." ".$watches["timetoomany"]." "._('hs').":".$abusers);
-      }
-
+        }
+    } else { // called from function for user userid
+        $result = $db->query("SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId WHERE users.userId=$userid");
+        $row = $result->fetch_assoc();
+        $username = $row['userName'];
+        $userlimit = $row['userLimit'];
+        $currenttime = date('Y-m-d H:i:s', time() - $watches['timetoomany'] * 3600);
+        $result = $db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
+        if ($result->num_rows >= ($userlimit + $watches['numbertoomany'])) {
+            $abusers .= ' ' . $result->num_rows . ' (' . _('limit') . ' ' . $userlimit . ') ' . _('by') . ' ' . $username . ',';
+            $found = 1;
+        }
+    }
+    if ($found) {
+        $abusers = substr($abusers, 0, strlen($abusers) - 1);
+        notifyAdmins(_('Over limit in') . ' ' . $watches['timetoomany'] . ' ' . _('hs') . ':' . $abusers);
+    }
 }
 
 // check if user has credit >= minimum credit+rent fee+long rental fee
 function checkrequiredcredit($userid)
 {
-   global $db,$credit;
+    global $db, $credit;
 
-   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+    if (iscreditenabled() == false) {
+        return;
+    }
+    // if credit system disabled, exit
 
-   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
-   $result=$db->query("SELECT credit FROM credit WHERE userId=$userid AND credit>=$requiredcredit");
-   if ($result->num_rows==1)
-      {
-      $row=$result->fetch_assoc();
-      return TRUE;
-      }
-   return FALSE;
-
+    $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
+    $result = $db->query("SELECT credit FROM credit WHERE userId=$userid AND credit>=$requiredcredit");
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        return true;
+    }
+    return false;
 }
 
 // subtract credit for rental
-function changecreditendrental($bike,$userid)
+function changecreditendrental($bike, $userid)
 {
-   global $db,$watches,$credit;
+    global $db, $watches, $credit;
 
-   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+    if (iscreditenabled() == false) {
+        return;
+    }
+    // if credit system disabled, exit
 
-   $usercredit=getusercredit($userid);
+    $usercredit = getusercredit($userid);
 
-   $result=$db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RENT' OR action='FORCERENT') ORDER BY time DESC LIMIT 1");
-   if ($result->num_rows==1)
-      {
-      $row=$result->fetch_assoc();
-      $starttime=strtotime($row["time"]);
-      $endtime=time();
-      $timediff=$endtime-$starttime;
-      $creditchange=0;
-      $changelog="";
-      if ($timediff>$watches["freetime"]*60)
-         {
-         $creditchange=$creditchange+$credit["rent"];
-         $changelog.="overfree-".$credit["rent"].";";
-         }
-      if ($watches["freetime"]==0) $watches["freetime"]=1; // for further calculations
-      if ($credit["pricecycle"] AND $timediff>$watches["freetime"]*60*2) // after first paid period, i.e. freetime*2; if pricecycle enabled
-         {
-         $temptimediff=$timediff-($watches["freetime"]*60*2);
-         if ($credit["pricecycle"]==1) // flat price per cycle
-            {
-            $cycles=ceil($temptimediff/($watches["flatpricecycle"]*60));
-            $creditchange=$creditchange+($credit["rent"]*$cycles);
-            $changelog.="flat-".$credit["rent"]*$cycles.";";
+    $result = $db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RENT' OR action='FORCERENT') ORDER BY time DESC LIMIT 1");
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        $starttime = strtotime($row['time']);
+        $endtime = time();
+        $timediff = $endtime - $starttime;
+        $creditchange = 0;
+        $changelog = '';
+
+        //ak vrati a znova pozica bike do 10 min tak free time nebude mať.
+		  $oldRetrun = $db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RETURN' OR action='FORCERETURN') ORDER BY time DESC LIMIT 1");
+		  if ($oldRetrun->num_rows==1)
+		  {
+			  $oldRow=$oldRetrun->fetch_assoc();
+			  $returntime=strtotime($oldRow["time"]);
+			  if(($starttime-$returntime) < 10*60 && $timediff > 5*60) {
+				  $creditchange = $creditchange + $credit['rent'];
+				  $changelog .= 'rerent-' . $credit['rent'] . ';';
+			  }
+		  }
+        //end
+
+        if ($timediff > $watches['freetime'] * 60) {
+            $creditchange = $creditchange + $credit['rent'];
+            $changelog .= 'overfree-' . $credit['rent'] . ';';
+        }
+        if ($watches['freetime'] == 0) {
+            $watches['freetime'] = 1;
+        }
+        // for further calculations
+        if ($credit['pricecycle'] and $timediff > $watches['freetime'] * 60 * 2) { // after first paid period, i.e. freetime*2; if pricecycle enabled
+            $temptimediff = $timediff - ($watches['freetime'] * 60 * 2);
+            if ($credit['pricecycle'] == 1) { // flat price per cycle
+                $cycles = ceil($temptimediff / ($watches['flatpricecycle'] * 60));
+                $creditchange = $creditchange + ($credit['rent'] * $cycles);
+                $changelog .= 'flat-' . $credit['rent'] * $cycles . ';';
+            } elseif ($credit['pricecycle'] == 2) { // double price per cycle
+                $cycles = ceil($temptimediff / ($watches['doublepricecycle'] * 60));
+                $tempcreditrent = $credit['rent'];
+                for ($i = 1; $i <= $cycles; $i++) {
+                    $multiplier = $i;
+                    if ($multiplier > $watches['doublepricecyclecap']) {
+                        $multiplier = $watches['doublepricecyclecap'];
+                    }
+                    // exception for rent=1, otherwise square won't work:
+                    if ($tempcreditrent == 1) {
+                        $tempcreditrent = 2;
+                    }
+
+                    $creditchange = $creditchange + pow($tempcreditrent, $multiplier);
+                    $changelog .= 'double-' . pow($tempcreditrent, $multiplier) . ';';
+                }
             }
-         elseif ($credit["pricecycle"]==2) // double price per cycle
-            {
-            $cycles=ceil($temptimediff/($watches["doublepricecycle"]*60));
-            $tempcreditrent=$credit["rent"];
-            for ($i=1;$i<=$cycles;$i++)
-               {
-               $multiplier=$i;
-               if ($multiplier>$watches["doublepricecyclecap"])
-                  {
-                  $multiplier=$watches["doublepricecyclecap"];
-                  }
-               // exception for rent=1, otherwise square won't work:
-               if ($tempcreditrent==1) $tempcreditrent=2;
-               $creditchange=$creditchange+pow($tempcreditrent,$multiplier);
-               $changelog.="double-".pow($tempcreditrent,$multiplier).";";
-               }
-            }
-         }
-      if ($timediff>$watches["longrental"]*3600)
-         {
-         $creditchange=$creditchange+$credit["longrental"];
-         $changelog.="longrent-".$credit["longrental"].";";
-         }
-      $usercredit=$usercredit-$creditchange;
-      $result=$db->query("UPDATE credit SET credit=$usercredit WHERE userId=$userid");
-      $result=$db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDITCHANGE',parameter='".$creditchange."|".$changelog."'");
-      $result=$db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$usercredit");
-      return $creditchange;
-      }
-
+        }
+        if ($timediff > $watches['longrental'] * 3600) {
+            $creditchange = $creditchange + $credit['longrental'];
+            $changelog .= 'longrent-' . $credit['longrental'] . ';';
+        }
+        $usercredit = $usercredit - $creditchange;
+        $result = $db->query("UPDATE credit SET credit=$usercredit WHERE userId=$userid");
+        $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDITCHANGE',parameter='" . $creditchange . '|' . $changelog . "'");
+        $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$usercredit");
+        return $creditchange;
+    }
 }
 
 function iscreditenabled()
 {
-   global $credit;
+    global $credit;
 
-   if ($credit["enabled"]) return TRUE;
+    if ($credit['enabled']) {
+        return true;
+    }
 
-   return FALSE;
-
+    return false;
 }
 
 function getusercredit($userid)
 {
-   global $db,$credit;
+    global $db, $credit;
 
-   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+    if (iscreditenabled() == false) {
+        return;
+    }
+    // if credit system disabled, exit
 
-   $result=$db->query("SELECT credit FROM credit WHERE userId=$userid");
-   $row=$result->fetch_assoc();
-   $usercredit=$row["credit"];
+    $result = $db->query("SELECT credit FROM credit WHERE userId=$userid");
+    $row = $result->fetch_assoc();
+    $usercredit = $row['credit'];
 
-   return $usercredit;
-
+    return $usercredit;
 }
 
 function getcreditcurrency()
 {
-   global $credit;
+    global $credit;
 
-   if (iscreditenabled()==FALSE) return; // if credit system disabled, exit
+    if (iscreditenabled() == false) {
+        return;
+    }
+    // if credit system disabled, exit
 
-   return $credit["currency"];
-
+    return $credit['currency'];
 }
 
 function issmssystemenabled()
 {
-   global $connectors;
+    global $connectors;
 
-   if ($connectors["sms"]=="") return FALSE;
+    if ($connectors['sms'] == '') {
+        return false;
+    }
 
-   return TRUE;
-
+    return true;
 }
-
 
 function normalizephonenumber($number)
 {
-   global $countrycode;
-   $number=str_replace("+","",$number);
-   $number=str_replace(" ","",$number);
-   $number=str_replace("-","",$number);
-   $number=str_replace("/","",$number);
-   $number=str_replace(".","",$number);
-   if (substr($number,0,1)=="0") $number=substr($number,1);
-   if (substr($number,0,3)<>$countrycode) $number=$countrycode.$number;
-   return $number;
-}
+    global $countrycode;
+    $number = str_replace('+', '', $number);
+    $number = str_replace(' ', '', $number);
+    $number = str_replace('-', '', $number);
+    $number = str_replace('/', '', $number);
+    $number = str_replace('.', '', $number);
+    if (substr($number, 0, 1) == '0') {
+        $number = substr($number, 1);
+    }
 
-?>
+    if (substr($number, 0, 3) != $countrycode) {
+        $number = $countrycode . $number;
+    }
+
+    return $number;
+}
