@@ -147,7 +147,7 @@
             "description": "Phone number"
           },
           "password": {
-            "type": "password",
+            "type": "string",
             "description": "Password"
           }
         }

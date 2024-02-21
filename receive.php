@@ -5,6 +5,9 @@ $db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 require("actions-sms.php");
 
+/**
+ * @var SmsConnectorInterface $sms
+ */
 log_sms($sms->UUID(),$sms->Number(),$sms->Time(),$sms->Text(),$sms->IPAddress());
 
 $args=preg_split("/\s+/",$sms->ProcessedText());//preg_split must be used instead of explode because of multiple spaces

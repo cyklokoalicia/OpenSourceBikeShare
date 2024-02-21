@@ -67,6 +67,7 @@ if ($step==5)
       }
    }
 
+#TODO update getting info about sms connectors
 $files=scandir("../connectors/");
 $files=array_diff($files,array('..','.','loopback','smsGateway.me.class.php'));
 foreach ($files as $key=>$value)
