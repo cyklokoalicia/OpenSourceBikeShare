@@ -774,6 +774,8 @@ function resetpassword($number)
 {
    global $db, $systemname, $systemrules, $systemURL;
 
+   $number = $db->conn->real_escape_string(trim($number));
+
    $result=$db->query("SELECT mail,userName FROM users WHERE number='$number'");
    if (!$result->num_rows) response(_('No such user found.'),1);
    $row=$result->fetch_assoc();
