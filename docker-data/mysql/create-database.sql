@@ -68,9 +68,10 @@ CREATE TABLE `limits` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+-- THIS TABLE IS MISSED IN CODE, DO WE NEED IT?
 DROP TABLE IF EXISTS `pairing`;
 CREATE TABLE `pairing` (
-  `time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `standid` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -134,8 +135,6 @@ CREATE TABLE `users` (
   `mail` varchar(30) NOT NULL,
   `number` varchar(30) NOT NULL,
   `privileges` int(11) NOT NULL DEFAULT '0',
-  `note` text NOT NULL,
-  `recommendations` text NOT NULL,
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
