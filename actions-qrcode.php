@@ -19,6 +19,13 @@ function response($message,$error=0,$log=1)
    echo '<base href="',$systemURL,'" />';
    echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';
    echo '<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />';
+   echo '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">';
+   echo '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">';
+   echo '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">';
+   echo '<link rel="manifest" href="/site.webmanifest">';
+   echo '<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">';
+   echo '<meta name="msapplication-TileColor" content="#da532c">';
+   echo '<meta name="theme-color" content="#ffffff">';
    if (file_exists("analytics.php")) require("analytics.php");
    echo '</head><body><div class="container">';
    if ($error)
