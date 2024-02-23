@@ -1,13 +1,7 @@
 <?php
+
 require("external/PHPMailer/PHPMailerAutoload.php");
-require("external/htmlpurifier/HTMLPurifier.standalone.php");
-$htmlpurconfig=HTMLPurifier_Config::createDefault();
-$purifier=new HTMLPurifier($htmlpurconfig);
-@$purifier->purify($_GET);
-@$purifier->purify($_POST);
-@$purifier->purify($_COOKIE);
-@$purifier->purify($_FILES);
-@$purifier->purify($_SERVER);
+
 $locale=$systemlang.".utf8";
 setlocale(LC_ALL, $locale);
 putenv("LANG=".$locale);
