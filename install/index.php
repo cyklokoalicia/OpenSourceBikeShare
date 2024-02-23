@@ -10,8 +10,6 @@ $configfilename = "../config.php.example";
 require $configfilename;
 require "../db.class.php";
 
-$htmlpurconfig=HTMLPurifier_Config::createDefault();
-
 function changeconfigvalue($configvar,$postvar)
 {
    global $configfile;
