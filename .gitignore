@@ -1,2 +1,5 @@
+.idea
 docker-data
+vendor
 config.php
+composer.lock

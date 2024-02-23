@@ -5,9 +5,11 @@ if (file_exists("../config.php")) {
     exit("Project already installed. If you want to reinstall, please remove config.php file.");
 }
 
-$configfilename="../config.php.example";
-require($configfilename);
-require("../db.class.php");
+require_once '../vendor/autoload.php';
+$configfilename = "../config.php.example";
+require $configfilename;
+require "../db.class.php";
+
 $htmlpurconfig=HTMLPurifier_Config::createDefault();
 
 function changeconfigvalue($configvar,$postvar)
@@ -122,9 +124,9 @@ $check["config"]=is_writable($configfilename);
 $check["uploads"]=is_writable("../img/uploads");
 
 $error=0;
-if (version_compare($check["phpversion"],"5")==-1)
+if (version_compare($check["phpversion"],"5.6.0")==-1)
    {
-   error(_('Only PHP 5.0+ supported. You are using version').' '.$check["phpversion"].'. '._('Base requirement').'.');
+   error(_('Only PHP 5.6+ supported. You are using version').' '.$check["phpversion"].'. '._('Base requirement').'.');
    }
 if (!$check["hash"])
    {

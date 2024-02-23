@@ -34,6 +34,7 @@ services:
     volumes:
       - ./:/var/www/html/
       - ./docker-data/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./docker-data/php/override.ini:/usr/local/etc/php/conf.d/override.ini
     depends_on:
       - db
     extra_hosts:
