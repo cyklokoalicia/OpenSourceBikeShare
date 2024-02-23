@@ -1,11 +1,11 @@
 <?php
 
-require("external/PHPMailer/PHPMailerAutoload.php");
+require_once 'vendor/autoload.php';
 
-$locale=$systemlang.".utf8";
+$locale = $systemlang . ".utf8";
 setlocale(LC_ALL, $locale);
-putenv("LANG=".$locale);
-bindtextdomain("messages", dirname(__FILE__).'/languages');
+putenv("LANG=" . $locale);
+bindtextdomain("messages", dirname(__FILE__) . '/languages');
 textdomain("messages");
 
 require_once('connectors/SmsConnectorFactory.php');
@@ -21,30 +21,30 @@ function error($message)
    exit($message);
 }
 
-function sendEmail($emailto,$subject,$message)
+function sendEmail($emailto, $subject, $message)
 {
-   global $db, $systemname, $systememail, $email;
-   $mail=new PHPMailer;
-   $mail->isSMTP(); // Set mailer to use SMTP
-   //$mail->SMTPDebug  = 2;
-   $mail->Host=$email["smtp"]; // Specify main and backup SMTP servers
-   $mail->Username=$email["user"]; // SMTP username
-   $mail->Password=$email["pass"]; // SMTP password
-   $mail->SMTPAuth=true; // Enable SMTP authentication
-   $mail->SMTPSecure="ssl"; // Enable SSL
-   $mail->Port=465; // TCP port to connect to
-   $mail->CharSet="UTF-8";
-   $mail->From=$systememail;
-   $mail->FromName=$systemname;
-   $mail->addAddress($emailto);     // Add a recipient
-   $mail->addBCC($systememail);     // Add a recipient
-   $mail->Subject=$subject;
-   $mail->Body=$message;
-   if (DEBUG===FALSE)
-      {
-      $mail->send();
-      }
-   else echo $email,' | ',$subject,' | ',$message;
+    global $systemname, $systememail, $email;
+    $mail = new PHPMailer;
+    $mail->isSMTP(); // Set mailer to use SMTP
+    //$mail->SMTPDebug  = 2;
+    $mail->Host = $email["smtp"]; // Specify main and backup SMTP servers
+    $mail->Username = $email["user"]; // SMTP username
+    $mail->Password = $email["pass"]; // SMTP password
+    $mail->SMTPAuth = true; // Enable SMTP authentication
+    $mail->SMTPSecure = "ssl"; // Enable SSL
+    $mail->Port = 465; // TCP port to connect to
+    $mail->CharSet = "UTF-8";
+    $mail->From = $systememail;
+    $mail->FromName = $systemname;
+    $mail->addAddress($emailto);     // Add a recipient
+    $mail->addBCC($systememail);     // Add a recipient
+    $mail->Subject = $subject;
+    $mail->Body = $message;
+    if (DEBUG === FALSE) {
+        $mail->send();
+    } else {
+        echo $email, ' | ', $subject, ' | ', $message;
+    }
 }
 
 function sendSMS($number,$text)

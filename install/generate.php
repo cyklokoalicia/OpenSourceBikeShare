@@ -1,8 +1,13 @@
 <?php
-require("../external/tcpdf/tcpdf.php");
-if (file_exists("../config.php.example")) require("../config.php.example");
-else require("../config.php");
-require("../db.class.php");
+
+require_once '../vendor/autoload.php';
+if (file_exists("../config.php")) {
+    require "../config.php";
+} else {
+    require "../config.php.example";
+}
+require "../db.class.php";
+
 $db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
