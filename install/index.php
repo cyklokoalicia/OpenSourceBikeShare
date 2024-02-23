@@ -4,14 +4,7 @@
 $configfilename="../config.php.example";
 require($configfilename);
 require("../db.class.php");
-require("../external/htmlpurifier/HTMLPurifier.standalone.php");
 $htmlpurconfig=HTMLPurifier_Config::createDefault();
-$purifier=new HTMLPurifier($htmlpurconfig);
-$purifier->purify($_GET);
-$purifier->purify($_POST);
-$purifier->purify($_COOKIE);
-$purifier->purify($_FILES);
-$purifier->purify($_SERVER);
 
 function changeconfigvalue($configvar,$postvar)
 {
@@ -123,7 +116,6 @@ $check["gettext"]=array_search("gettext",get_loaded_extensions());
 $check["json"]=array_search("json",get_loaded_extensions());
 $check["config"]=is_writable($configfilename);
 $check["uploads"]=is_writable("../img/uploads");
-$check["purifier"]=is_writable("../external/htmlpurifier/standalone/HTMLPurifier/DefinitionCache/Serializer");
 
 $error=0;
 if (version_compare($check["phpversion"],"5")==-1)
@@ -153,10 +145,6 @@ if ($check["uploads"]===FALSE)
 if ($check["config"]===FALSE)
    {
    error($configfilename.' '._('is not writable! Set permissions (chmod it) to 777. Required for settings configuration values during the install process.'));
-   }
-if ($check["purifier"]===FALSE)
-   {
-   error('external/htmlpurifier/standalone/HTMLPurifier/DefinitionCache/Serializer '._('directory is not writable! Set permissions (chmod it) to 777. Required for security purposes.'));
    }
 if (!$error)
    {

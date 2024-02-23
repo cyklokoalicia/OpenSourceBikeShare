@@ -71,11 +71,6 @@ http://www.tcpdf.org
 Copyright (c) 2002+ Nicola Asuni, Tecnick.com LTD
 Released under GNU GPL v3.
 
-### HTML Purifier
-http://htmlpurifier.org
-Copyright (C) 2006-2008 Edward Z. Yang
-Released under GNU GPL v2.1 or later.
-
 ### PHPMailer
 http://phpmailer.worxware.com/
 Copyright (c) 2001+ multiple authors
