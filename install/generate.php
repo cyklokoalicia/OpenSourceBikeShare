@@ -6,9 +6,11 @@ if (file_exists("../config.php")) {
 } else {
     require "../config.php.example";
 }
-require "../db.class.php";
 
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+/**
+ * @var \Bikeshare\Db\DbInterface
+ */
+$db=new \Bikeshare\Db\MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
 // create new PDF document

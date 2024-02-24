@@ -1,15 +1,21 @@
 <?php
+
+use Bikeshare\Db\MysqliDb;
+
+require_once 'vendor/autoload.php';
 require("config.php");
-require("db.class.php");
 require('actions-web.php');
 
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+/**
+ * @var \Bikeshare\Db\DbInterface
+ */
+$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
 checksession();
 
 if (isset($_COOKIE["loguserid"])) {
-    $userid = $db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+    $userid = $db->escape(trim($_COOKIE["loguserid"]));
 } else {
     $userid = 0;
 }
