@@ -1,4 +1,6 @@
 <?php
+
+require_once 'vendor/autoload.php';
 require("common.php");
 
 function help($number)
@@ -320,7 +322,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       {
       $userNote="";
       }
-   else $userNote=$db->conn->real_escape_string(trim($matches[1]));
+   else $userNote=$db->escape(trim($matches[1]));
 
    $result=$db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum");
    if ($userNote)
@@ -509,28 +511,30 @@ function freeBikes($number)
 
 function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 {
-   global $dbserver,$dbuser,$dbpassword,$dbname;
-        $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
-        $localdb->connect();
-        $localdb->conn->autocommit(TRUE);
+    global $dbserver, $dbuser, $dbpassword, $dbname;
+    /**
+     * @var \Bikeshare\Db\DbInterface
+     */
+    $localdb = new \Bikeshare\Db\MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb->connect();
 
-   $sms_uuid =$localdb->conn->real_escape_string($sms_uuid);
-   $sender =$localdb->conn->real_escape_string($sender);
-   $receive_time =$localdb->conn->real_escape_string($receive_time);
-   $sms_text =$localdb->conn->real_escape_string($sms_text);
-   $ip =$localdb->conn->real_escape_string($ip);
+    #TODO does it needed???
+    $localdb->setAutocommit(true);
 
-        $result =$localdb->query("SELECT sms_uuid FROM received WHERE sms_uuid='$sms_uuid'");
-        if (DEBUG===FALSE AND $result->num_rows>=1) // sms already exists in DB, possible problem
-           {
-           notifyAdmins(_('Problem with SMS')." $sms_uuid!",1);
-           return FALSE;
-           }
-        else
-           {
-           $result =$localdb->query("INSERT INTO received SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'");
-           }
+    $sms_uuid = $localdb->escape($sms_uuid);
+    $sender = $localdb->escape($sender);
+    $receive_time = $localdb->escape($receive_time);
+    $sms_text = $localdb->escape($sms_text);
+    $ip = $localdb->escape($ip);
 
+    $result = $localdb->query("SELECT sms_uuid FROM received WHERE sms_uuid='$sms_uuid'");
+    if (DEBUG === FALSE and $result->num_rows >= 1) {
+        // sms already exists in DB, possible problem
+        notifyAdmins(_('Problem with SMS') . " $sms_uuid!", 1);
+        return FALSE;
+    } else {
+        $result = $localdb->query("INSERT INTO received SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'");
+    }
 }
 
 
@@ -554,7 +558,7 @@ function delnote($number,$bikeNum,$message)
 	}
 	else
 	{
-      	sendSMS($number,_('Error in bike number / stand name specification:'.$db->conn->real_escape_string($bikeNum)));
+      	sendSMS($number,_('Error in bike number / stand name specification:'.$db->escape($bikeNum)));
 		return;
 	}
 	   
@@ -587,7 +591,7 @@ function delnote($number,$bikeNum,$message)
    $reportedBy=$row["userName"];
 
       $matches=explode(" ",$message,3);
-      $userNote=$db->conn->real_escape_string(trim($matches[2]));
+      $userNote=$db->escape(trim($matches[2]));
 
 	if($userNote=='')
 	{
@@ -595,7 +599,7 @@ function delnote($number,$bikeNum,$message)
 	}
 
       $result=$db->query("UPDATE notes SET deleted=NOW() where bikeNum=$bikeNum and deleted is null and note like '%$userNote%'");
-      $count = $db->conn->affected_rows;
+      $count = $db->getAffectedRows();
 
 	if($count == 0)
 	{
@@ -647,7 +651,7 @@ function untag($number,$standName,$message)
 
 
       $matches=explode(" ",$message,3);
-      $userNote=$db->conn->real_escape_string(trim($matches[2]));
+      $userNote=$db->escape(trim($matches[2]));
 
 	if($userNote=='')
 	{
@@ -655,7 +659,7 @@ function untag($number,$standName,$message)
 	}
 
     $result=$db->query("update notes join bikes on notes.bikeNum = bikes.bikeNum set deleted=now() where bikes.currentStand='$standId' and note like '%$userNote%' and deleted is null");
-    $count = $db->conn->affected_rows;
+    $count = $db->getAffectedRows();
 
 	if($count == 0)
 	{
@@ -706,7 +710,7 @@ function delstandnote($number,$standName,$message)
 
 
       $matches=explode(" ",$message,3);
-      $userNote=$db->conn->real_escape_string(trim($matches[2]));
+      $userNote=$db->escape(trim($matches[2]));
 
 	if($userNote=='')
 	{
@@ -714,7 +718,7 @@ function delstandnote($number,$standName,$message)
 	}
 
       $result=$db->query("UPDATE notes SET deleted=NOW() where standId=$standId and deleted is null and note like '%$userNote%'");
-      $count = $db->conn->affected_rows;
+      $count = $db->getAffectedRows();
 
 	if($count == 0)
 	{
@@ -765,7 +769,7 @@ function standNote($number,$standName,$message)
 
 
     $matches=explode(" ",$message,3);
-    $userNote=$db->conn->real_escape_string(trim($matches[2]));
+    $userNote=$db->escape(trim($matches[2]));
 
    if ($userNote=="") //deletemmm
       {
@@ -781,7 +785,7 @@ function standNote($number,$standName,$message)
    else
       {
       $db->query("INSERT INTO notes SET standId='$standId',userId='$userId',note='$userNote'");
-      $noteid=$db->conn->insert_id;
+      $noteid=$db->getLastInsertId();
       sendSMS($number,_('Note for stand')." ".$standName." "._('saved').".");
       notifyAdmins(_('Note #').$noteid.": "._("on stand")." ".$standName." "._('by')." ".$reportedBy." (".$number."):".$userNote);
       }
@@ -813,7 +817,7 @@ function tag($number,$standName,$message)
 
 
     $matches=explode(" ",$message,3);
-    $userNote=$db->conn->real_escape_string(trim($matches[2]));
+    $userNote=$db->escape(trim($matches[2]));
 
    if ($userNote=="") //deletemmm
       {
@@ -829,7 +833,7 @@ function tag($number,$standName,$message)
    else
       {
       $db->query("INSERT INTO notes (bikeNum,userId,note) SELECT bikeNum,'$userId','$userNote' FROM bikes where currentStand='$standId'");
-      //$noteid=$db->conn->insert_id;
+      //$noteid=$db->getLastInsertId();
       sendSMS($number,_('All bikes on stand')." ".$standName." "._('tagged').".");
       notifyAdmins(_('All bikes on stand')." "."$standName".' '._('tagged by')." ".$reportedBy." (".$number.")". _("with note:").$userNote);
       }
@@ -855,7 +859,7 @@ function note($number,$bikeNum,$message)
 	}
 	else
 	{
-      	sendSMS($number,_('Error in bike number / stand name specification:'.$db->conn->real_escape_string($bikeNum)));
+      	sendSMS($number,_('Error in bike number / stand name specification:'.$db->escape($bikeNum)));
 		return;
 	}
 	   
@@ -892,7 +896,7 @@ function note($number,$bikeNum,$message)
    else
       {
       $matches=explode(" ",$message,3);
-      $userNote=$db->conn->real_escape_string(trim($matches[2]));
+      $userNote=$db->escape(trim($matches[2]));
       }
 
    if ($userNote=="")
@@ -911,7 +915,7 @@ function note($number,$bikeNum,$message)
    else
       {
       $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
-      $noteid=$db->conn->insert_id;
+      $noteid=$db->getLastInsertId();
       sendSMS($number,_('Note for bike')." ".$bikeNum." "._('saved').".");
       notifyAdmins(_('Note #').$noteid.": b.".$bikeNum." (".$bikeStatus.") "._('by')." ".$reportedBy." (".$number."):".$userNote);
       }
@@ -1028,8 +1032,8 @@ function add($number,$email,$phone,$message)
       sendSMS($number,_('Contact information is in incorrect format. Use:')." ADD king@earth.com 0901456789 Martin Luther King Jr.");
       return;
    }
-   $userName=$db->conn->real_escape_string(trim($matches[2]));
-   $email=$db->conn->real_escape_string(trim($matches[1]));
+   $userName=$db->escape(trim($matches[2]));
+   $email=$db->escape(trim($matches[1]));
 
    $result=$db->query("INSERT into users SET userName='$userName',number=$phone,mail='$email'");
 

@@ -10,7 +10,7 @@ RUN sed -i '/security.debian.org/d' /etc/apt/sources.list \
 RUN echo "deb http://archive.debian.org/debian/ stretch main" > /etc/apt/sources.list \
     && echo "deb http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list
 
-RUN apt-get update && apt-get install -y zlib1g-dev libicu-dev g++ wget git
+RUN apt-get update && apt-get install -y zlib1g-dev libicu-dev g++ wget git zip
 
 RUN wget --no-check-certificate https://pecl.php.net/get/xdebug-2.5.5.tgz \
     && pecl install --offline ./xdebug-2.5.5.tgz \

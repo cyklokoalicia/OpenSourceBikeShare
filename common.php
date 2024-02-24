@@ -37,7 +37,7 @@ if (DEBUG===TRUE) {
 function error($message)
 {
    global $db;
-   $db->conn->rollback();
+   $db->rollback();
    exit($message);
 }
 
@@ -73,14 +73,19 @@ function sendSMS($number,$text)
 
 function logSendsms($number, $text)
 {
-        global $dbserver,$dbuser,$dbpassword,$dbname;
-        $localdb=new Database($dbserver,$dbuser,$dbpassword,$dbname);
-        $localdb->connect();
-        $localdb->conn->autocommit(TRUE);
-        $number = $localdb->conn->real_escape_string($number);
-        $text = $localdb->conn->real_escape_string($text);
+    global $dbserver, $dbuser, $dbpassword, $dbname;
+    /**
+     * @var \Bikeshare\Db\DbInterface
+     */
+    $localdb = new \Bikeshare\Db\MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb->connect();
 
-        $result = $localdb->query("INSERT INTO sent SET number='$number',text='$text'");
+    #TODO does it needed???
+    $localdb->setAutocommit(true);
+    $number = $localdb->escape($number);
+    $text = $localdb->escape($text);
+
+    $result = $localdb->query("INSERT INTO sent SET number='$number',text='$text'");
 
 }
 
@@ -165,8 +170,8 @@ function isloggedin()
 {
     global $db;
     if (isset($_COOKIE['loguserid']) and isset($_COOKIE['logsession'])) {
-        $userid = $db->conn->real_escape_string(trim($_COOKIE['loguserid']));
-        $session = $db->conn->real_escape_string(trim($_COOKIE['logsession']));
+        $userid = $db->escape(trim($_COOKIE['loguserid']));
+        $session = $db->escape(trim($_COOKIE['logsession']));
         $result = $db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'" . time() . "'");
         if ($result->num_rows == 1) {
             return 1;
@@ -183,16 +188,16 @@ function checksession()
 
     $result = $db->query("DELETE FROM sessions WHERE timeStamp<='" . time() . "'");
     if (isset($_COOKIE['loguserid']) and isset($_COOKIE['logsession'])) {
-        $userid = $db->conn->real_escape_string(trim($_COOKIE['loguserid']));
-        $session = $db->conn->real_escape_string(trim($_COOKIE['logsession']));
+        $userid = $db->escape(trim($_COOKIE['loguserid']));
+        $session = $db->escape(trim($_COOKIE['logsession']));
         $result = $db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'" . time() . "'");
         if ($result->num_rows == 1) {
             $timestamp = time() + 86400 * 14;
             $result = $db->query("UPDATE sessions SET timeStamp='$timestamp' WHERE userId='$userid' AND sessionId='$session'");
-            $db->conn->commit();
+            $db->commit();
         } else {
             $result = $db->query("DELETE FROM sessions WHERE userId='$userid' OR sessionId='$session'");
-            $db->conn->commit();
+            $db->commit();
             setcookie('loguserid', '', time() - 86400);
             setcookie('logsession', '', time() - 86400);
             header('HTTP/1.1 302 Found');
@@ -210,10 +215,15 @@ function checksession()
 
 function logrequest($userid)
 {
-    global $dbserver, $dbuser, $dbpassword, $dbname;
-    $localdb = new Database($dbserver, $dbuser, $dbpassword, $dbname);
+   global $dbserver,$dbuser,$dbpassword,$dbname;
+    /**
+     * @var \Bikeshare\Db\DbInterface
+     */
+    $localdb = new \Bikeshare\Db\MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
     $localdb->connect();
-    $localdb->conn->autocommit(true);
+
+    #TODO does it needed???
+    $localdb->setAutocommit(true);
 
     $number = getphonenumber($userid);
 
@@ -224,20 +234,29 @@ function logresult($userid, $text)
 {
     global $dbserver, $dbuser, $dbpassword, $dbname;
 
-    $localdb = new Database($dbserver, $dbuser, $dbpassword, $dbname);
+    /**
+     * @var \Bikeshare\Db\DbInterface
+     */
+    $localdb = new \Bikeshare\Db\MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
     $localdb->connect();
-    $localdb->conn->autocommit(true);
-    $userid = $localdb->conn->real_escape_string($userid);
-    $logtext = '';
-    if (is_array($text)) {
-        foreach ($text as $value) {
-            $logtext .= $value . '; ';
-        }
-    } else {
-        $logtext = $text;
-    }
 
-    $logtext = strip_tags($localdb->conn->real_escape_string($logtext));
+    #TODO does it needed???
+    $localdb->setAutocommit(true);
+   $userid = $localdb->escape($userid);
+   $logtext="";
+   if (is_array($text))
+      {
+      foreach ($text as $value)
+         {
+         $logtext.=$value."; ";
+         }
+      }
+   else
+      {
+      $logtext=$text;
+      }
+
+    $logtext = strip_tags($localdb->escape($logtext));
 
     $result = $localdb->query("INSERT INTO sent SET number='$userid',text='$logtext'");
 }
@@ -312,7 +331,7 @@ function sendConfirmationEmail($emailto)
 function confirmUser($userKey)
 {
     global $db, $limits;
-    $userKey = $db->conn->real_escape_string($userKey);
+    $userKey = $db->escape($userKey);
 
     $result = $db->query("SELECT userId FROM registration WHERE userKey='$userKey'");
     if ($result->num_rows == 1) {
