@@ -9,10 +9,27 @@
       "email": "sveneld300@gmail.com"
     }
   ],
+  "autoload": {
+    "psr-4": {
+      "BikeShare\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Test\\BikeShare\\": "tests/"
+    }
+  },
   "require": {
     "php": ">=5.6.0",
     "phpmailer/phpmailer": "^5.2.9",
     "tecnickcom/tcpdf": "^6.2.6",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-mysqli": "*",
+    "ext-gettext": "*",
+    "ext-curl": "*"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.0",
+    "phpunit/phpunit": "^5.7"
   }
 }

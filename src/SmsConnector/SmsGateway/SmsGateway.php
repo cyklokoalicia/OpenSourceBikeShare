@@ -1,7 +1,12 @@
 <?php
 
+namespace BikeShare\SmsConnector\SmsGateway;
+
 class SmsGateway
 {
+    /**
+     * @phpcs:disable PSR12.Properties.ConstantVisibility
+     */
     const BASE_URL = "https://smsgateway.me";
 
 
@@ -106,8 +111,9 @@ class SmsGateway
 
         $return['response'] = json_decode($result, true);
 
-        if ($return['response'] == false)
+        if ($return['response'] == false) {
             $return['response'] = $result;
+        }
 
         $return['status'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 

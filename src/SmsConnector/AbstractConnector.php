@@ -1,7 +1,13 @@
 <?php
 
+namespace BikeShare\SmsConnector;
+
 abstract class AbstractConnector implements SmsConnectorInterface
 {
+    /**
+     * @var bool
+     */
+    protected $debugMode = false;
     /**
      * @var string
      */
@@ -23,40 +29,40 @@ abstract class AbstractConnector implements SmsConnectorInterface
      */
     protected $ipaddress = '';
 
-    public function Text()
+    public function getMessage()
     {
         return $this->message;
     }
 
-    public function ProcessedText()
+    public function getProcessedMessage()
     {
         return strtoupper(trim(urldecode($this->message)));
     }
 
-    public function Number()
+    public function getNumber()
     {
         return $this->number;
     }
 
-    public function UUID()
+    public function getUUID()
     {
         return $this->uuid;
     }
 
-    public function Time()
+    public function getTime()
     {
         return $this->time;
     }
 
-    public function IPAddress()
+    public function getIPAddress()
     {
         return $this->ipaddress;
     }
 
-    abstract public function CheckConfig(array $config);
+    abstract public function checkConfig(array $config);
 
-    abstract public function Send($number, $text);
+    abstract public function send($number, $text);
 
     // confirm SMS received to API
-    abstract public function Respond();
+    abstract public function respond();
 }
