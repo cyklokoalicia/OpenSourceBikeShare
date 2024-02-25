@@ -23,11 +23,21 @@ class EuroSmsConnector extends AbstractConnector
     ) {
         $this->debugMode = $debugMode;
         $this->checkConfig($config);
-        if (isset($_GET["sms_text"])) $this->message = $_GET["sms_text"];
-        if (isset($_GET["sender"])) $this->number = $_GET["sender"];
-        if (isset($_GET["sms_uuid"])) $this->uuid = $_GET["sms_uuid"];
-        if (isset($_GET["receive_time"])) $this->time = $_GET["receive_time"];
-        if (isset($_SERVER['REMOTE_ADDR'])) $this->ipaddress = $_SERVER['REMOTE_ADDR'];
+        if (isset($_GET["sms_text"])) {
+            $this->message = $_GET["sms_text"];
+        }
+        if (isset($_GET["sender"])) {
+            $this->number = $_GET["sender"];
+        }
+        if (isset($_GET["sms_uuid"])) {
+            $this->uuid = $_GET["sms_uuid"];
+        }
+        if (isset($_GET["receive_time"])) {
+            $this->time = $_GET["receive_time"];
+        }
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $this->ipaddress = $_SERVER['REMOTE_ADDR'];
+        }
     }
 
     public function checkConfig(array $config)

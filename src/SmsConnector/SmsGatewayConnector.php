@@ -1,6 +1,8 @@
 <?php
 
-/** https://smsgateway.me
+/**
+ * 
+ * https://smsgateway.me
  * Create callback at: https://smsgateway.me/admin/callbacks/index
  * Event: Received
  * Method: HTTP
@@ -33,11 +35,21 @@ class SmsGatewayConnector extends AbstractConnector
     ) {
         $this->debugMode = $debugMode;
         $this->checkConfig($config);
-        if (isset($_POST["message"])) $this->message = $_POST["message"];
-        if (isset($_POST["contact"])) $this->number = $_POST["contact"]["Number"];
-        if (isset($_POST["id"])) $this->uuid = $_POST["id"];
-        if (isset($_POST["received_at"])) $this->time = date("Y-m-d H:i:s", $_POST["received_at"]);
-        if (isset($_SERVER['REMOTE_ADDR'])) $this->ipaddress = $_SERVER['REMOTE_ADDR'];
+        if (isset($_POST["message"])) {
+            $this->message = $_POST["message"];
+        }
+        if (isset($_POST["contact"])) {
+            $this->number = $_POST["contact"]["Number"];
+        }
+        if (isset($_POST["id"])) {
+            $this->uuid = $_POST["id"];
+        }
+        if (isset($_POST["received_at"])) {
+            $this->time = date("Y-m-d H:i:s", $_POST["received_at"]);
+        }
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $this->ipaddress = $_SERVER['REMOTE_ADDR'];
+        }
         // when SMS received, check if secret matches or exit, if does not:
         if (isset($_POST["secret"]) and isset($_POST["id"]) and $_POST["secret"] <> $this->gatewaySecret) {
             exit;

@@ -63,8 +63,7 @@ class EuroSmsConnectorTest extends TestCase
         $gatewayId,
         $gatewayKey,
         $gatewaySenderNumber
-    )
-    {
+    ) {
         $this->expectException(\RuntimeException::class);
         $this->smsConnector->checkConfig(
             [

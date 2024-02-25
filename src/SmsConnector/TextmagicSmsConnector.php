@@ -28,11 +28,21 @@ class TextmagicSmsConnector extends AbstractConnector
     ) {
         $this->debugMode = $debugMode;
         $this->checkConfig($config);
-        if (isset($_POST["text"])) $this->message = $_POST["text"];
-        if (isset($_POST["from"])) $this->number = $_POST["from"];
-        if (isset($_POST["message_id"])) $this->uuid = $_POST["message_id"];
-        if (isset($_POST["timestamp"])) $this->time = date("Y-m-d H:i:s", $_POST["timestamp"]);
-        if (isset($_SERVER['REMOTE_ADDR'])) $this->ipaddress = $_SERVER['REMOTE_ADDR'];
+        if (isset($_POST["text"])) {
+            $this->message = $_POST["text"];
+        }
+        if (isset($_POST["from"])) {
+            $this->number = $_POST["from"];
+        }
+        if (isset($_POST["message_id"])) {
+            $this->uuid = $_POST["message_id"];
+        }
+        if (isset($_POST["timestamp"])) {
+            $this->time = date("Y-m-d H:i:s", $_POST["timestamp"]);
+        }
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $this->ipaddress = $_SERVER['REMOTE_ADDR'];
+        }
     }
 
     public function checkConfig(array $config)

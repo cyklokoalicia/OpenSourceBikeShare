@@ -25,7 +25,7 @@ class SmsConnectorFactory
                     return new DisabledConnector();
             }
         } catch (\Exception $e) {
-            #TODO add logging instead of triggering error
+            // TODO add logging instead of triggering error
             trigger_error($e->getMessage(), E_USER_WARNING);
             return new DisabledConnector();
         }
