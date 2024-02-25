@@ -30,3 +30,6 @@ jobs:
 
       - name: Run PHP Unit Tests
         run: vendor/bin/phpunit --configuration phpunit.xml.dist
+
+      - name: Run PHP CodeSniffer
+        run: vendor/bin/phpcs ./src ./tests

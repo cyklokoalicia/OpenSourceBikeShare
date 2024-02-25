@@ -1,6 +1,7 @@
 <?php
 
-/** https://smsgateway.me
+/**
+ * https://smsgateway.me
  * Create callback at: https://smsgateway.me/admin/callbacks/index
  * Event: Received
  * Method: HTTP
@@ -8,7 +9,9 @@
  * Secret: secretstring (e.g. your password)
  ***/
 
-require('smsGateway/SmsGateway.php');
+namespace BikeShare\SmsConnector;
+
+use Bikeshare\SmsConnector\SmsGateway\SmsGateway;
 
 class SmsGatewayConnector extends AbstractConnector
 {
@@ -25,23 +28,36 @@ class SmsGatewayConnector extends AbstractConnector
      */
     private $gatewaySecret = '';
 
-    public function __construct(array $config)
-    {
-        $this->CheckConfig($config);
-        if (isset($_POST["message"])) $this->message = $_POST["message"];
-        if (isset($_POST["contact"])) $this->number = $_POST["contact"]["Number"];
-        if (isset($_POST["id"])) $this->uuid = $_POST["id"];
-        if (isset($_POST["received_at"])) $this->time = date("Y-m-d H:i:s", $_POST["received_at"]);
-        if (isset($_SERVER['REMOTE_ADDR'])) $this->ipaddress = $_SERVER['REMOTE_ADDR'];
+    public function __construct(
+        array $config,
+        $debugMode = false
+    ) {
+        $this->debugMode = $debugMode;
+        $this->checkConfig($config);
+        if (isset($_POST["message"])) {
+            $this->message = $_POST["message"];
+        }
+        if (isset($_POST["contact"])) {
+            $this->number = $_POST["contact"]["Number"];
+        }
+        if (isset($_POST["id"])) {
+            $this->uuid = $_POST["id"];
+        }
+        if (isset($_POST["received_at"])) {
+            $this->time = date("Y-m-d H:i:s", $_POST["received_at"]);
+        }
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $this->ipaddress = $_SERVER['REMOTE_ADDR'];
+        }
         // when SMS received, check if secret matches or exit, if does not:
         if (isset($_POST["secret"]) and isset($_POST["id"]) and $_POST["secret"] <> $this->gatewaySecret) {
             exit;
         }
     }
 
-    public function CheckConfig(array $config)
+    public function checkConfig(array $config)
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         if (empty($config['gatewayEmail']) || empty($config['gatewayPassword']) || empty($config['gatewaySecret'])) {
@@ -52,25 +68,25 @@ class SmsGatewayConnector extends AbstractConnector
         $this->gatewaySecret = $config['gatewaySecret'];
     }
 
-    public function ProcessedText()
+    public function getProcessedMessage()
     {
         return strtoupper($this->message);
     }
 
 
     // confirm SMS received to API
-    public function Respond()
+    public function respond()
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         // do nothing as no response required
     }
 
     // send SMS message via API
-    public function Send($number, $text)
+    public function send($number, $text)
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         $smsgateway = new SmsGateway($this->gatewayEmail, $this->gatewayPassword);

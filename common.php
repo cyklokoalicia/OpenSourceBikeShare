@@ -1,5 +1,7 @@
 <?php
 
+use BikeShare\SmsConnector\SmsConnectorFactory;
+
 require_once 'vendor/autoload.php';
 
 $locale = $systemlang . ".utf8";
@@ -8,10 +10,10 @@ putenv("LANG=" . $locale);
 bindtextdomain("messages", dirname(__FILE__) . '/languages');
 textdomain("messages");
 
-require_once('connectors/SmsConnectorFactory.php');
 $sms = (new SmsConnectorFactory())->getConnector(
     !empty($connectors["sms"]) ? $connectors["sms"] : 'disabled',
-    !empty($connectors["config"][$connectors["sms"]]) ? json_decode($connectors["config"][$connectors["sms"]], true) : array()
+    !empty($connectors["config"][$connectors["sms"]]) ? json_decode($connectors["config"][$connectors["sms"]], true) : array(),
+    DEBUG
 );
 
 function error($message)
@@ -69,7 +71,7 @@ function sendSMS($number,$text)
                }
             else
                {
-               $sms->Send($number,$text);
+               $sms->send($number,$text);
                }
             }
          }
@@ -83,7 +85,7 @@ function sendSMS($number,$text)
          }
       else
          {
-         $sms->Send($number,$text);
+         $sms->send($number,$text);
          }
       }
 
