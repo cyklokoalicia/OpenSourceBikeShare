@@ -63,7 +63,8 @@ class EuroSmsConnectorTest extends TestCase
         $gatewayId,
         $gatewayKey,
         $gatewaySenderNumber
-    ) {
+    )
+    {
         $this->expectException(\RuntimeException::class);
         $this->smsConnector->checkConfig(
             [
@@ -114,22 +115,24 @@ class EuroSmsConnectorTest extends TestCase
 
 namespace BikeShare\SmsConnector;
 {
-    /**
-     * no need to send real request to as.eurosms.com
-     * TODO should be refactored to use Guzzle or similar
-     */
-    function fopen($filename, $mode, $use_include_path = null, $context = null)
-    {
-        $gatewayId = 'Id';
-        $gatewayKey = 'Key';
-        $gatewaySenderNumber = 'SenderNumber';
-        $message = 'text';
-        $number = 'number';
-        $s = substr(md5($gatewayKey . $number), 10, 11);
-        $um = urlencode($message);
 
-        if ($filename !== "http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um") {
-            throw new \RuntimeException('Invalid URL generated');
-        }
+/**
+ * no need to send real request to as.eurosms.com
+ * TODO should be refactored to use Guzzle or similar
+ */
+function fopen($filename, $mode, $use_include_path = null, $context = null)
+{
+    $gatewayId = 'Id';
+    $gatewayKey = 'Key';
+    $gatewaySenderNumber = 'SenderNumber';
+    $message = 'text';
+    $number = 'number';
+    $s = substr(md5($gatewayKey . $number), 10, 11);
+    $um = urlencode($message);
+
+    if ($filename !== "http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um") {
+        throw new \RuntimeException('Invalid URL generated');
     }
+}
+
 }

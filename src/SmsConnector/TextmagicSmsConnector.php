@@ -50,7 +50,11 @@ class TextmagicSmsConnector extends AbstractConnector
         if ($this->debugMode) {
             return;
         }
-        if (empty($config['gatewayUser']) || empty($config['gatewayPassword']) || empty($config['gatewaySenderNumber'])) {
+        if (
+            empty($config['gatewayUser'])
+            || empty($config['gatewayPassword'])
+            || empty($config['gatewaySenderNumber'])
+        ) {
             exit('Please, configure SMS API gateway access in ' . __FILE__ . '!');
         }
         $this->gatewayUser = $config['gatewayUser'];
@@ -74,7 +78,16 @@ class TextmagicSmsConnector extends AbstractConnector
             return;
         }
         $um = urlencode($text);
-        fopen("https://www.textmagic.com/app/api?cmd=send&unicode=0&from=" . $this->gatewaySenderNumber . "&username=" . $this->gatewayUser . "&password=" . $this->gatewayPassword . "&phone=" . $number . "&text=" . $um, "r");
+        $url = sprintf(
+            "https://www.textmagic.com/app/api?cmd=send&unicode=0&from=%s&username=%s&password=%s&phone=%s&text=%s",
+            $this->gatewaySenderNumber,
+            $this->gatewayUser,
+            $this->gatewayPassword,
+            $number,
+            $um
+        );
+
+        fopen($url, "r");
     }
 
 }

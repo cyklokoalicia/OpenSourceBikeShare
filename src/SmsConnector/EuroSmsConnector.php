@@ -19,8 +19,9 @@ class EuroSmsConnector extends AbstractConnector
 
     public function __construct(
         array $config,
-        $debugMode = false
-    ) {
+              $debugMode = false
+    )
+    {
         $this->debugMode = $debugMode;
         $this->checkConfig($config);
         if (isset($_GET["sms_text"])) {
@@ -70,6 +71,14 @@ class EuroSmsConnector extends AbstractConnector
         }
         $s = substr(md5($this->gatewayKey . $number), 10, 11);
         $um = urlencode($text);
-        fopen("http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$this->gatewayId&s=$s&d=1&sender=$this->gatewaySenderNumber&number=$number&msg=$um", "r");
+        $url = sprintf(
+            'http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=%s&s=%s&d=1&sender=%s&number=%s&msg=%s',
+            $this->gatewayId,
+            $s,
+            $this->gatewaySenderNumber,
+            $number,
+            $um
+        );
+        fopen($url, "r");
     }
 }
