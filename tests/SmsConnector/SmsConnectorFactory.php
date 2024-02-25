@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\Bikeshare\SmsConnector;
+namespace Test\BikeShare\SmsConnector;
 
 use BikeShare\SmsConnector\DisabledConnector;
 use BikeShare\SmsConnector\EuroSmsConnector;

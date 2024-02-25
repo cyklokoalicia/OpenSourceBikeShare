@@ -1,13 +1,16 @@
 <?php
 
+use BikeShare\Db\DbInterface;
+use BikeShare\Db\MysqliDb;
+
 require_once 'vendor/autoload.php';
 require("config.php");
 require("actions-web.php");
 
 /**
- * @var \Bikeshare\Db\DbInterface
+ * @var DbInterface
  */
-$db=new \Bikeshare\Db\MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
+$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
 checklongrental();
