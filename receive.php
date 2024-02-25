@@ -1,14 +1,16 @@
 <?php
 
+use BikeShare\Db\DbInterface;
+use BikeShare\Db\MysqliDb;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 
 require_once 'vendor/autoload.php';
 require("config.php");
 
 /**
- * @var \Bikeshare\Db\DbInterface
+ * @var DbInterface
  */
-$db=new \Bikeshare\Db\MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
+$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
 require("actions-sms.php");

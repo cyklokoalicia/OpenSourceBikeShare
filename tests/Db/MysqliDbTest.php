@@ -1,8 +1,8 @@
 <?php
 
-namespace Test\Bikeshare\Db;
+namespace Test\BikeShare\Db;
 
-use Bikeshare\Db\MysqliDb;
+use BikeShare\Db\MysqliDb;
 use PHPUnit\Framework\TestCase;
 
 class MysqliDbTest extends TestCase

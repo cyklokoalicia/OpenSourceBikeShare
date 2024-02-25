@@ -3,6 +3,8 @@
 use BikeShare\Mail\DebugMailSender;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Mail\PHPMailerMailSender;
+use BikeShare\Db\DbInterface;
+use BikeShare\Db\MysqliDb;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 
 require_once 'vendor/autoload.php';
@@ -75,9 +77,9 @@ function logSendsms($number, $text)
 {
     global $dbserver, $dbuser, $dbpassword, $dbname;
     /**
-     * @var \Bikeshare\Db\DbInterface
+     * @var DbInterface
      */
-    $localdb = new \Bikeshare\Db\MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
     $localdb->connect();
 
     #TODO does it needed???
@@ -217,9 +219,9 @@ function logrequest($userid)
 {
    global $dbserver,$dbuser,$dbpassword,$dbname;
     /**
-     * @var \Bikeshare\Db\DbInterface
+     * @var DbInterface
      */
-    $localdb = new \Bikeshare\Db\MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
     $localdb->connect();
 
     #TODO does it needed???
@@ -235,9 +237,9 @@ function logresult($userid, $text)
     global $dbserver, $dbuser, $dbpassword, $dbname;
 
     /**
-     * @var \Bikeshare\Db\DbInterface
+     * @var DbInterface
      */
-    $localdb = new \Bikeshare\Db\MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
     $localdb->connect();
 
     #TODO does it needed???

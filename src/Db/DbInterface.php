@@ -1,6 +1,6 @@
 <?php
 
-namespace Bikeshare\Db;
+namespace BikeShare\Db;
 
 interface DbInterface
 {

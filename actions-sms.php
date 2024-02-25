@@ -1,5 +1,8 @@
 <?php
 
+use BikeShare\Db\DbInterface;
+use BikeShare\Db\MysqliDb;
+
 require_once 'vendor/autoload.php';
 require("common.php");
 
@@ -513,9 +516,9 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 {
     global $dbserver, $dbuser, $dbpassword, $dbname;
     /**
-     * @var \Bikeshare\Db\DbInterface
+     * @var DbInterface
      */
-    $localdb = new \Bikeshare\Db\MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
     $localdb->connect();
 
     #TODO does it needed???

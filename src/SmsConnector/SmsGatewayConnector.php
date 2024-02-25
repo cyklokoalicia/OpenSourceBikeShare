@@ -11,7 +11,7 @@
 
 namespace BikeShare\SmsConnector;
 
-use Bikeshare\SmsConnector\SmsGateway\SmsGateway;
+use BikeShare\SmsConnector\SmsGateway\SmsGateway;
 
 class SmsGatewayConnector extends AbstractConnector
 {
