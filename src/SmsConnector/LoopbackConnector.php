@@ -1,15 +1,19 @@
 <?php
 
+namespace BikeShare\SmsConnector;
+
 class LoopbackConnector extends AbstractConnector
 {
-
     /**
      * @var array
      */
     private $store;
 
-    public function __construct(array $config)
-    {
+    public function __construct(
+        array $config,
+        $debugMode = false
+    ) {
+        $this->debugMode = $debugMode;
         $this->CheckConfig($config);
         if (isset($_GET["sms_text"])) $this->message = $_GET["sms_text"];
         if (isset($_GET["sender"])) $this->number = $_GET["sender"];
@@ -20,7 +24,7 @@ class LoopbackConnector extends AbstractConnector
 
     public function CheckConfig(array $config)
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         define('CURRENTDIR', dirname($_SERVER['SCRIPT_FILENAME']));

@@ -31,7 +31,9 @@ $lines = explode("\n", $sms);
         $lines = array_slice($lines, -5);
         foreach ($lines as $text) {
             $parts = explode("|~", urldecode($text));
-            $parts[2] = wordwrap($parts[2], 50, "<br />", TRUE);
+            if (isset($parts[2])) {
+                $parts[2] = wordwrap($parts[2], 50, "<br />", TRUE);
+            }
             if ($parts[0] == "<") echo '<div class="bubbledRight"><em>', $parts[1], '</em><br />', $parts[2], '</div>';
             if ($parts[0] == ">") echo '<div class="bubbledLeft"><em>', $parts[1], '</em><br />', $parts[2], '</div>';
         }

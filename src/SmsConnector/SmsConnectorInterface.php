@@ -1,5 +1,7 @@
 <?php
 
+namespace BikeShare\SmsConnector;
+
 interface SmsConnectorInterface
 {
     public function CheckConfig(array $config);

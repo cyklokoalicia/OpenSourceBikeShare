@@ -8,7 +8,9 @@
  * Secret: secretstring (e.g. your password)
  ***/
 
-require('smsGateway/SmsGateway.php');
+namespace BikeShare\SmsConnector;
+
+use Bikeshare\SmsConnector\SmsGateway\SmsGateway;
 
 class SmsGatewayConnector extends AbstractConnector
 {
@@ -25,8 +27,11 @@ class SmsGatewayConnector extends AbstractConnector
      */
     private $gatewaySecret = '';
 
-    public function __construct(array $config)
-    {
+    public function __construct(
+        array $config,
+        $debugMode = false
+    ) {
+        $this->debugMode = $debugMode;
         $this->CheckConfig($config);
         if (isset($_POST["message"])) $this->message = $_POST["message"];
         if (isset($_POST["contact"])) $this->number = $_POST["contact"]["Number"];
@@ -41,7 +46,7 @@ class SmsGatewayConnector extends AbstractConnector
 
     public function CheckConfig(array $config)
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         if (empty($config['gatewayEmail']) || empty($config['gatewayPassword']) || empty($config['gatewaySecret'])) {
@@ -61,7 +66,7 @@ class SmsGatewayConnector extends AbstractConnector
     // confirm SMS received to API
     public function Respond()
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         // do nothing as no response required
@@ -70,7 +75,7 @@ class SmsGatewayConnector extends AbstractConnector
     // send SMS message via API
     public function Send($number, $text)
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         $smsgateway = new SmsGateway($this->gatewayEmail, $this->gatewayPassword);

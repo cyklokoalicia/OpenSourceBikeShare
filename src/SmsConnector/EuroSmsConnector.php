@@ -1,5 +1,7 @@
 <?php
 
+namespace BikeShare\SmsConnector;
+
 class EuroSmsConnector extends AbstractConnector
 {
     /**
@@ -15,8 +17,11 @@ class EuroSmsConnector extends AbstractConnector
      */
     private $gatewaySenderNumber = '';
 
-    public function __construct(array $config)
-    {
+    public function __construct(
+        array $config,
+        $debugMode = false
+    ) {
+        $this->debugMode = $debugMode;
         $this->CheckConfig($config);
         if (isset($_GET["sms_text"])) $this->message = $_GET["sms_text"];
         if (isset($_GET["sender"])) $this->number = $_GET["sender"];
@@ -27,11 +32,11 @@ class EuroSmsConnector extends AbstractConnector
 
     public function CheckConfig(array $config)
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
-        if (empty($config['gatewayId']) or empty($config['gatewayKey']) or empty($config['gatewaySenderNumber'])) {
-            exit('Please, configure SMS API gateway access in config.php!');
+        if (empty($config['gatewayId']) || empty($config['gatewayKey']) || empty($config['gatewaySenderNumber'])) {
+            throw new \RuntimeException('Invalid EuroSms configuration');
         }
         $this->gatewayId = $config['gatewayId'];
         $this->gatewayKey = $config['gatewayKey'];
@@ -41,7 +46,7 @@ class EuroSmsConnector extends AbstractConnector
     // confirm SMS received to API
     public function Respond()
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         echo 'ok:', $this->uuid, "\n";
@@ -50,7 +55,7 @@ class EuroSmsConnector extends AbstractConnector
     // send SMS message via API
     public function Send($number, $text)
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         $s = substr(md5($this->gatewayKey . $number), 10, 11);

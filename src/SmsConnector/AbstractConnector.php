@@ -1,7 +1,13 @@
 <?php
 
+namespace BikeShare\SmsConnector;
+
 abstract class AbstractConnector implements SmsConnectorInterface
 {
+    /**
+     * @var bool
+     */
+    protected $debugMode = false;
     /**
      * @var string
      */

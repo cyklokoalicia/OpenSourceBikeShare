@@ -1,4 +1,8 @@
 <?php
+
+use BikeShare\SmsConnector\SmsConnectorInterface;
+
+require_once 'vendor/autoload.php';
 require("config.php");
 require("db.class.php");
 $db=new Database($dbserver,$dbuser,$dbpassword,$dbname);

@@ -1,11 +1,12 @@
 <?php
 
+namespace BikeShare\SmsConnector;
+
 /**
  * http://textmagic.com
  * Create callback at: https://textmagic.com
  * URL for callback: http://example.com/receive.php (replace example.com with your website URL)
  */
-
 class TextmagicSmsConnector extends AbstractConnector
 {
     /**
@@ -21,8 +22,11 @@ class TextmagicSmsConnector extends AbstractConnector
      */
     private $gatewaySenderNumber = '';
 
-    public function __construct(array $config)
-    {
+    public function __construct(
+        array $config,
+        $debugMode = false
+    ) {
+        $this->debugMode = $debugMode;
         $this->CheckConfig($config);
         if (isset($_POST["text"])) $this->message = $_POST["text"];
         if (isset($_POST["from"])) $this->number = $_POST["from"];
@@ -33,7 +37,7 @@ class TextmagicSmsConnector extends AbstractConnector
 
     public function CheckConfig(array $config)
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         if (empty($config['gatewayUser']) || empty($config['gatewayPassword']) || empty($config['gatewaySenderNumber'])) {
@@ -47,7 +51,7 @@ class TextmagicSmsConnector extends AbstractConnector
     // confirm SMS received to API
     public function Respond()
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         // do nothing as no response required
@@ -56,7 +60,7 @@ class TextmagicSmsConnector extends AbstractConnector
     // send SMS message via API
     public function Send($number, $text)
     {
-        if (DEBUG === TRUE) {
+        if ($this->debugMode) {
             return;
         }
         $um = urlencode($text);

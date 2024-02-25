@@ -1,5 +1,7 @@
 <?php
 
+namespace BikeShare\SmsConnector;
+
 class DisabledConnector extends AbstractConnector
 {
     public function CheckConfig(array $config)
