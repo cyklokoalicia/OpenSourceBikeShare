@@ -22,7 +22,7 @@ class EuroSmsConnector extends AbstractConnector
         $debugMode = false
     ) {
         $this->debugMode = $debugMode;
-        $this->CheckConfig($config);
+        $this->checkConfig($config);
         if (isset($_GET["sms_text"])) $this->message = $_GET["sms_text"];
         if (isset($_GET["sender"])) $this->number = $_GET["sender"];
         if (isset($_GET["sms_uuid"])) $this->uuid = $_GET["sms_uuid"];
@@ -30,7 +30,7 @@ class EuroSmsConnector extends AbstractConnector
         if (isset($_SERVER['REMOTE_ADDR'])) $this->ipaddress = $_SERVER['REMOTE_ADDR'];
     }
 
-    public function CheckConfig(array $config)
+    public function checkConfig(array $config)
     {
         if ($this->debugMode) {
             return;
@@ -44,7 +44,7 @@ class EuroSmsConnector extends AbstractConnector
     }
 
     // confirm SMS received to API
-    public function Respond()
+    public function respond()
     {
         if ($this->debugMode) {
             return;
@@ -53,7 +53,7 @@ class EuroSmsConnector extends AbstractConnector
     }
 
     // send SMS message via API
-    public function Send($number, $text)
+    public function send($number, $text)
     {
         if ($this->debugMode) {
             return;

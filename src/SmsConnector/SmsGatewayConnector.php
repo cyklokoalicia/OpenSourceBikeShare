@@ -32,7 +32,7 @@ class SmsGatewayConnector extends AbstractConnector
         $debugMode = false
     ) {
         $this->debugMode = $debugMode;
-        $this->CheckConfig($config);
+        $this->checkConfig($config);
         if (isset($_POST["message"])) $this->message = $_POST["message"];
         if (isset($_POST["contact"])) $this->number = $_POST["contact"]["Number"];
         if (isset($_POST["id"])) $this->uuid = $_POST["id"];
@@ -44,7 +44,7 @@ class SmsGatewayConnector extends AbstractConnector
         }
     }
 
-    public function CheckConfig(array $config)
+    public function checkConfig(array $config)
     {
         if ($this->debugMode) {
             return;
@@ -57,14 +57,14 @@ class SmsGatewayConnector extends AbstractConnector
         $this->gatewaySecret = $config['gatewaySecret'];
     }
 
-    public function ProcessedText()
+    public function getProcessedMessage()
     {
         return strtoupper($this->message);
     }
 
 
     // confirm SMS received to API
-    public function Respond()
+    public function respond()
     {
         if ($this->debugMode) {
             return;
@@ -73,7 +73,7 @@ class SmsGatewayConnector extends AbstractConnector
     }
 
     // send SMS message via API
-    public function Send($number, $text)
+    public function send($number, $text)
     {
         if ($this->debugMode) {
             return;

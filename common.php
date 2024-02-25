@@ -71,7 +71,7 @@ function sendSMS($number,$text)
                }
             else
                {
-               $sms->Send($number,$text);
+               $sms->send($number,$text);
                }
             }
          }
@@ -85,7 +85,7 @@ function sendSMS($number,$text)
          }
       else
          {
-         $sms->Send($number,$text);
+         $sms->send($number,$text);
          }
       }
 

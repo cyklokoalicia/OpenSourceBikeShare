@@ -4,21 +4,21 @@ namespace BikeShare\SmsConnector;
 
 interface SmsConnectorInterface
 {
-    public function CheckConfig(array $config);
+    public function checkConfig(array $config);
 
-    public function Text();
+    public function respond();
 
-    public function ProcessedText();
+    public function send($number, $text);
 
-    public function Number();
+    public function getMessage();
 
-    public function UUID();
+    public function getProcessedMessage();
 
-    public function Time();
+    public function getNumber();
 
-    public function IPAddress();
+    public function getUUID();
 
-    public function Respond();
+    public function getTime();
 
-    public function Send($number, $text);
+    public function getIPAddress();
 }

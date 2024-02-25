@@ -14,7 +14,7 @@ class LoopbackConnector extends AbstractConnector
         $debugMode = false
     ) {
         $this->debugMode = $debugMode;
-        $this->CheckConfig($config);
+        $this->checkConfig($config);
         if (isset($_GET["sms_text"])) $this->message = $_GET["sms_text"];
         if (isset($_GET["sender"])) $this->number = $_GET["sender"];
         if (isset($_GET["sms_uuid"])) $this->uuid = $_GET["sms_uuid"];
@@ -22,7 +22,7 @@ class LoopbackConnector extends AbstractConnector
         if (isset($_SERVER['REMOTE_ADDR'])) $this->ipaddress = $_SERVER['REMOTE_ADDR'];
     }
 
-    public function CheckConfig(array $config)
+    public function checkConfig(array $config)
     {
         if ($this->debugMode) {
             return;
@@ -31,7 +31,7 @@ class LoopbackConnector extends AbstractConnector
     }
 
     // confirm SMS received to API
-    public function Respond()
+    public function respond()
     {
         $log = "<|~" . $_GET["sender"] . "|~" . $this->message . "\n";
         foreach ($this->store as $message) {
@@ -42,7 +42,7 @@ class LoopbackConnector extends AbstractConnector
     }
 
     // send SMS message via API
-    public function Send($number, $text)
+    public function send($number, $text)
     {
         $this->store[] = ">|~" . $number . "|~" . urlencode($text) . "\n";
     }

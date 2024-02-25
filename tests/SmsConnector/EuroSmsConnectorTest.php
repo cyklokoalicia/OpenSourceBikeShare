@@ -31,7 +31,7 @@ class EuroSmsConnectorTest extends TestCase
 
     public function testCheckConfig()
     {
-        $this->smsConnector->CheckConfig(
+        $this->smsConnector->checkConfig(
             [
                 'gatewayId' => 'Id',
                 'gatewayKey' => 'Key',
@@ -66,7 +66,7 @@ class EuroSmsConnectorTest extends TestCase
     )
     {
         $this->expectException(\RuntimeException::class);
-        $this->smsConnector->CheckConfig(
+        $this->smsConnector->checkConfig(
             [
                 'gatewayId' => $gatewayId,
                 'gatewayKey' => $gatewayKey,
@@ -103,12 +103,12 @@ class EuroSmsConnectorTest extends TestCase
         $uuid->setValue($this->smsConnector, 'uuid');
 
         $this->expectOutputString('ok:uuid' . "\n");
-        $this->smsConnector->Respond();
+        $this->smsConnector->respond();
     }
 
     public function testSend()
     {
-        $this->smsConnector->Send('number', 'text');
+        $this->smsConnector->send('number', 'text');
         $this->expectOutputString('');
     }
 }

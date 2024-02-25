@@ -4,15 +4,15 @@ namespace BikeShare\SmsConnector;
 
 class DisabledConnector extends AbstractConnector
 {
-    public function CheckConfig(array $config)
+    public function checkConfig(array $config)
     {
     }
 
-    public function Respond()
+    public function respond()
     {
     }
 
-    public function Send($number, $text)
+    public function send($number, $text)
     {
     }
 }

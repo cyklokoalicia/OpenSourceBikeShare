@@ -87,7 +87,7 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
    if ($receivedargumentno<$requiredargumentno)
       {
       sendSMS($number,_('Error. More arguments needed, use command')." ".$errormessage);
-      $sms->Respond();
+      $sms->respond();
       exit;
       }
    // if more arguments provided than required, they will be silently ignored
@@ -1034,7 +1034,7 @@ function checkUserPrivileges($number)
    if ($privileges==0)
       {
       sendSMS($number,_('Sorry, this command is only available for the privileged users.'));
-      $sms->Respond();
+      $sms->respond();
       exit;
       }
 }
