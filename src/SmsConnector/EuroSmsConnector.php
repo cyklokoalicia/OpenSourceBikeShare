@@ -19,9 +19,8 @@ class EuroSmsConnector extends AbstractConnector
 
     public function __construct(
         array $config,
-              $debugMode = false
-    )
-    {
+        $debugMode = false
+    ) {
         $this->debugMode = $debugMode;
         $this->checkConfig($config);
         if (isset($_GET["sms_text"])) {

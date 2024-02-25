@@ -1,7 +1,6 @@
 <?php
 
 /**
- * 
  * https://smsgateway.me
  * Create callback at: https://smsgateway.me/admin/callbacks/index
  * Event: Received

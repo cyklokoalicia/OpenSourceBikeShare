@@ -4,6 +4,9 @@ namespace BikeShare\SmsConnector\SmsGateway;
 
 class SmsGateway
 {
+    /**
+     * @phpcs:disable PSR12.Properties.ConstantVisibility
+     */
     const BASE_URL = "https://smsgateway.me";
 
 

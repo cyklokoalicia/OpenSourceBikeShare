@@ -63,8 +63,7 @@ class EuroSmsConnectorTest extends TestCase
         $gatewayId,
         $gatewayKey,
         $gatewaySenderNumber
-    )
-    {
+    ) {
         $this->expectException(\RuntimeException::class);
         $this->smsConnector->checkConfig(
             [
@@ -113,6 +112,9 @@ class EuroSmsConnectorTest extends TestCase
     }
 }
 
+/**
+ * @phpcs:disable PSR1.Files.SideEffects
+ */
 namespace BikeShare\SmsConnector;
 {
 
@@ -130,7 +132,16 @@ function fopen($filename, $mode, $use_include_path = null, $context = null)
     $s = substr(md5($gatewayKey . $number), 10, 11);
     $um = urlencode($message);
 
-    if ($filename !== "http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=$gatewayId&s=$s&d=1&sender=$gatewaySenderNumber&number=$number&msg=$um") {
+    $url = sprintf(
+        'http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=%s&s=%s&d=1&sender=%s&number=%s&msg=%s',
+        $gatewayId,
+        $s,
+        $gatewaySenderNumber,
+        $number,
+        $um
+    );
+
+    if ($filename !== $url) {
         throw new \RuntimeException('Invalid URL generated');
     }
 }

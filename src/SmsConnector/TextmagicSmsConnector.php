@@ -89,5 +89,4 @@ class TextmagicSmsConnector extends AbstractConnector
 
         fopen($url, "r");
     }
-
 }
