@@ -5,6 +5,6 @@
     <file>src</file>
     <file>tests</file>
 
-    <rule ref="PSR-12"/>
+    <rule ref="PSR12"/>
 
 </ruleset>
