@@ -156,6 +156,18 @@ function rent($number,$bike,$force=FALSE)
             $row=$result->fetch_assoc();
             $standid=$row["currentStand"];
             $stacktopbike=checktopofstack($standid);
+
+
+         $result=$db->query("SELECT serviceTag FROM stands WHERE standId='$standid'");
+         $row=$result->fetch_assoc();
+         $serviceTag=$row["serviceTag"];
+
+        if ( $serviceTag <> 0 )
+        {
+	     sendSMS($number,"Renting from service stands is not allowed: The bike probably waits for a repair.");
+      		return;	
+        }
+
             if ($watches["stack"] AND $stacktopbike<>$bike)
                {
                $result=$db->query("SELECT standName FROM stands WHERE standId='$standid'");
@@ -184,6 +196,7 @@ function rent($number,$bike,$force=FALSE)
    $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
    $row=$result->fetch_assoc();
    $note=$row["note"];
+   $currentUserNumber = false;
    if ($currentUser)
       {
       $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
@@ -223,7 +236,7 @@ function rent($number,$bike,$force=FALSE)
         else
          {
            $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
-            if ($currentUser) { sendSMS($currentUserNumber,_('System override').": "._('Your rented bike')." ".$bikeNum." "._('has been rented by admin')."."); }
+            if ($currentUser) { sendSMS($number,_('System override').": "._('Your rented bike')." ".$bikeNum." "._('has been rented by admin')."."); }
          }
 
 
@@ -340,6 +353,7 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       }
    $message.=" "._('Rotate lockpad to 0000.');
 
+	$creditchange=0;
    if ($force==FALSE)
       {
       $creditchange=changecreditendrental($bikeNum,$userId);
@@ -348,10 +362,10 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
    else
       {
       $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId");
-      if($currentUserNumber)
+      /*if($currentUserNumber)
         {
     	    sendSMS($currentUserNumber,_('System override').": "._('Your rented bike')." ".$bikeNum." "._('has been returned by admin').".");
-        }
+        }*/
       }
 
    if (iscreditenabled())
@@ -478,7 +492,7 @@ function freeBikes($number)
    $result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes right join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount=0 order by placeName");
    $rentedBikes=$result->num_rows;
 
-   if (rentedBikes!=0)
+   if ($rentedBikes!=0)
    {
         $listBikes.=" "._('Empty stands').": ";
    }

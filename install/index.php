@@ -1,6 +1,9 @@
 <?php
 //@TODO ANaLYTICS!!!
 
+if (file_exists("../config.php")) {
+    exit("Project already installed. If you want to reinstall, please remove config.php file.");
+}
 $configfilename="../config.php.example";
 require($configfilename);
 require("../db.class.php");
