@@ -740,7 +740,7 @@ function changecity($userid, $city)
 
 function resetpassword($number)
 {
-    global $db, $systemname, $systemrules, $systemURL;
+    global $db, $mailer, $systemname, $systemrules, $systemURL;
 
     $number = $db->conn->real_escape_string(trim($number));
 
@@ -766,7 +766,7 @@ function resetpassword($number)
     _('Your password has been reset successfully.') . "\n\n" .
     _('Your new password is:') . "\n" . $password;
 
-    sendEmail($email, $subject, $message);
+    $mailer->send($email, $subject, $message);
     response(_('Your password has been reset successfully.') . ' ' . _('Check your email.'));
 }
 
