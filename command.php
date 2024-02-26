@@ -76,6 +76,12 @@ switch($action)
       $coupon=trim($_GET["coupon"]);
       validatecoupon($userid,$coupon);
       break;
+	case "changecity":
+      logrequest($userid,$action);
+      checksession();
+      $city=trim($_GET["city"]);
+      changecity($userid,$city);
+      break;
    case "forcerent":
       logrequest($userid,$action);
       checksession();
@@ -202,7 +208,7 @@ switch($action)
       sellcoupon($_GET["coupon"]);
       break;
    case "map:markers":
-      mapgetmarkers();
+      mapgetmarkers($userid);
       break;
    case "map:status":
       mapgetlimit($userid);

@@ -79,8 +79,8 @@ CRON job
 
 User registration
 ----------
-* Set `$limits["registration"]` to number of bikes user can rent after he registered. 0 is recommended, if you run a community system (admin can change this limit after verification).
-* Point users to yourweb/register.php to register.
+1. Set `$limits["registration"]` to number of bikes user can rent after he registered. 0 is recommended, if you run a community system (admin can change this limit after verification).
+2. Point users to yourweb/register.php to register.
 
 Connectors (SMS provider / gateway API files)
 ----------
