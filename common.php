@@ -1,5 +1,8 @@
 <?php
 
+use BikeShare\Mail\DebugMailSender;
+use BikeShare\Mail\MailSenderInterface;
+use BikeShare\Mail\PHPMailerMailSender;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 
 require_once 'vendor/autoload.php';
@@ -16,37 +19,26 @@ $sms = (new SmsConnectorFactory())->getConnector(
     DEBUG
 );
 
+/**
+ * @var MailSenderInterface $mailer
+ */
+if (DEBUG===TRUE) {
+    $mailer = new DebugMailSender();
+} else {
+    $mailer = new PHPMailerMailSender(
+        $systemname,
+        $systememail,
+        $email,
+        new PHPMailer(false)
+    );
+}
+
+
 function error($message)
 {
    global $db;
    $db->conn->rollback();
    exit($message);
-}
-
-function sendEmail($emailto, $subject, $message)
-{
-    global $systemname, $systememail, $email;
-    $mail = new PHPMailer;
-    $mail->isSMTP(); // Set mailer to use SMTP
-    //$mail->SMTPDebug  = 2;
-    $mail->Host = $email["smtp"]; // Specify main and backup SMTP servers
-    $mail->Username = $email["user"]; // SMTP username
-    $mail->Password = $email["pass"]; // SMTP password
-    $mail->SMTPAuth = true; // Enable SMTP authentication
-    $mail->SMTPSecure = "ssl"; // Enable SSL
-    $mail->Port = 465; // TCP port to connect to
-    $mail->CharSet = "UTF-8";
-    $mail->From = $systememail;
-    $mail->FromName = $systemname;
-    $mail->addAddress($emailto);     // Add a recipient
-    $mail->addBCC($systememail);     // Add a recipient
-    $mail->Subject = $subject;
-    $mail->Body = $message;
-    if (DEBUG === FALSE) {
-        $mail->send();
-    } else {
-        echo $email, ' | ', $subject, ' | ', $message;
-    }
 }
 
 function sendSMS($number,$text)
@@ -275,27 +267,26 @@ function checkstandname($stand)
  **/
 function notifyAdmins($message, $notificationtype = 0)
 {
-    global $db, $systemname, $watches;
+    global $db, $systemname, $watches, $mailer;
 
     $result = $db->query('SELECT number,mail FROM users where privileges & 2 != 0');
     while ($row = $result->fetch_assoc()) {
         if ($notificationtype == 0) {
             sendSMS($row['number'], $message);
-            sendEmail($watches['email'], $systemname . ' ' . _('notification'), $message);
+            $mailer->send($watches['email'], $systemname . ' ' . _('notification'), $message);
         } else {
-            sendEmail($row['mail'], $systemname . ' ' . _('notification'), $message);
+            $mailer->send($row['mail'], $systemname . ' ' . _('notification'), $message);
         }
-    }
-
-//copy to Trello board -- might be added as a person instead
+    }//copy to Trello board -- might be added as a person instead
     if ($notificationtype == 0) {
-        sendEmail('cyklokoalicia1+q31wfjphbgkuelf19hlb@boards.trello.com', $message, $message);
+        $mailer->send('cyklokoalicia1+q31wfjphbgkuelf19hlb@boards.trello.com', $message, $message);
     }
 }
 
 function sendConfirmationEmail($emailto)
 {
-    global $db, $dbpassword, $systemname, $systemrules, $systemURL;
+
+    global $db, $dbpassword, $systemname, $systemrules, $systemURL, $mailer;
 
     $subject = _('Registration');
 
@@ -312,10 +303,10 @@ function sendConfirmationEmail($emailto)
     $names = preg_split("/[\s,]+/", $row['userName']);
     $firstname = $names[0];
     $message = _('Hello') . ' ' . $firstname . ",\n\n" .
-    _('you have been registered into community bike share system') . ' ' . $systemname . ".\n\n" .
-    _('System rules are available here:') . "\n" . $systemrules . "\n\n" .
-    _('By clicking the following link you agree to the System rules:') . "\n" . $systemURL . 'agree.php?key=' . $userKey;
-    sendEmail($emailto, $subject, $message);
+        _('you have been registered into community bike share system') . ' ' . $systemname . ".\n\n" .
+        _('System rules are available here:') . "\n" . $systemrules . "\n\n" .
+        _('By clicking the following link you agree to the System rules:') . "\n" . $systemURL . 'agree.php?key=' . $userKey;
+    $mailer->send($emailto, $subject, $message);
 }
 
 function confirmUser($userKey)
