@@ -8,7 +8,7 @@ require_once 'vendor/autoload.php';
 require("config.php");
 
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
 $db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
@@ -25,7 +25,7 @@ $args=preg_split("/\s+/",$sms->getProcessedMessage());//preg_split must be used 
 if(!validateNumber($sms->getNumber()))
    {
    ####
-   #sendSMS($sms->getNumber(),_('Your number is not registered.'));
+   #$smsSender->send($sms->getNumber(),_('Your number is not registered.'));
    }
 else
    {

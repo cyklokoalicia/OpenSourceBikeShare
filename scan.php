@@ -8,7 +8,7 @@ require("config.php");
 require('actions-qrcode.php');
 
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
 $db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();

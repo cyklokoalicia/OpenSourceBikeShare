@@ -135,6 +135,7 @@ CREATE TABLE `users` (
   `mail` varchar(30) NOT NULL,
   `number` varchar(30) NOT NULL,
   `privileges` int(11) NOT NULL DEFAULT '0',
+  `city` varchar(45) NOT NULL DEFAULT 'Bratisalva',
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

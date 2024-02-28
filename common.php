@@ -5,6 +5,9 @@ use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Mail\PHPMailerMailSender;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
+use BikeShare\Sms\SmsSender;
+use BikeShare\Sms\SmsSenderInterface;
+use BikeShare\SmsConnector\DebugConnector;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 
 require_once 'vendor/autoload.php';
@@ -22,9 +25,15 @@ $sms = (new SmsConnectorFactory())->getConnector(
 );
 
 /**
+ * @var DbInterface $db
+ */
+$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+$db->connect();
+
+/**
  * @var MailSenderInterface $mailer
  */
-if (DEBUG===TRUE) {
+if (DEBUG === TRUE) {
     $mailer = new DebugMailSender();
 } else {
     $mailer = new PHPMailerMailSender(
@@ -35,6 +44,14 @@ if (DEBUG===TRUE) {
     );
 }
 
+/**
+ * @var SmsSenderInterface $smsSender
+ */
+$smsSender = new SmsSender(
+    DEBUG === TRUE ? new DebugConnector() : $sms,
+    $db
+);
+
 
 function error($message)
 {
@@ -43,53 +60,6 @@ function error($message)
    exit($message);
 }
 
-function sendSMS($number,$text)
-{
-
-   global $sms;
-
-    $message = $text;
-    if (strlen($message) > 160) {
-        $message = chunk_split($message, 160, '|');
-        $message = explode('|', $message);
-        foreach ($message as $text) {
-            $text = trim($text);
-            if ($text) {
-                logSendsms($number, $text);
-                if (DEBUG === true) {
-                    echo $number, ' -&gt ', $text, '<br />';
-                } else {
-                    $sms->send($number, $text);
-                }
-            }
-        }
-    } else {
-        logSendsms($number, $text);
-        if (DEBUG === true) {
-            echo $number, ' -&gt ', $text, '<br />';
-        } else {
-            $sms->send($number, $text);
-        }
-    }
-}
-
-function logSendsms($number, $text)
-{
-    global $dbserver, $dbuser, $dbpassword, $dbname;
-    /**
-     * @var DbInterface
-     */
-    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
-    $localdb->connect();
-
-    #TODO does it needed???
-    $localdb->setAutocommit(true);
-    $number = $localdb->escape($number);
-    $text = $localdb->escape($text);
-
-    $result = $localdb->query("INSERT INTO sent SET number='$number',text='$text'");
-
-}
 
 function generatecodes($numcodes,$codelength,$wastage=25)
 {
@@ -288,12 +258,12 @@ function checkstandname($stand)
  **/
 function notifyAdmins($message, $notificationtype = 0)
 {
-    global $db, $systemname, $watches, $mailer;
+    global $db, $systemname, $watches, $mailer, $smsSender;
 
     $result = $db->query('SELECT number,mail FROM users where privileges & 2 != 0');
     while ($row = $result->fetch_assoc()) {
         if ($notificationtype == 0) {
-            sendSMS($row['number'], $message);
+            $smsSender->send($row['number'], $message);
             $mailer->send($watches['email'], $systemname . ' ' . _('notification'), $message);
         } else {
             $mailer->send($row['mail'], $systemname . ' ' . _('notification'), $message);
@@ -373,7 +343,7 @@ function checktopofstack($standid)
 
 function checklongrental()
 {
-    global $db, $watches, $notifyuser;
+    global $db, $smsSender, $watches, $notifyuser;
 
     $abusers = '';
     $found = 0;
@@ -392,7 +362,7 @@ function checklongrental()
                 $abusers .= ' b' . $bikenum . ' ' . _('by') . ' ' . $username . ',';
                 $found = 1;
                 if ($notifyuser) {
-                    sendSMS($userphone, _('Please, return your bike ') . $bikenum . _(' immediately to the closest stand! Ignoring this warning can get you banned from the system.'));
+                    $smsSender->send($userphone, _('Please, return your bike ') . $bikenum . _(' immediately to the closest stand! Ignoring this warning can get you banned from the system.'));
                 }
             }
         }

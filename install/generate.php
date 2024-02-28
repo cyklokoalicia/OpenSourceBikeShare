@@ -11,7 +11,7 @@ if (file_exists("../config.php")) {
 }
 
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
 $db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
