@@ -208,7 +208,7 @@ else changeconfigvalue('countrycode',"");
 $newconfig=implode($configfile);
 file_put_contents($configfilename,$newconfig);
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
 $db=new MysqliDb($_POST["dbserver"],$_POST["dbuser"],$_POST["dbpassword"],$_POST["dbname"]);
 $db->connect();
@@ -239,7 +239,7 @@ require($configfilename);
 <?php endif; ?>
 <?php if ($step==3):
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
 $db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
@@ -263,7 +263,7 @@ $db->commit();
 <?php endif; ?>
 <?php if ($step==4):
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
 $db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
@@ -329,7 +329,7 @@ if ($connectors["sms"]):
 <?php endif; ?>
 <?php if ($step==5):
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
 $db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
@@ -401,7 +401,7 @@ foreach ($configfile as $line)
 <?php endif; ?>
 <?php if ($step==6):
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
 $db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();

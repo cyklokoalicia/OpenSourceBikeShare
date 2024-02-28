@@ -399,7 +399,7 @@ function userbikes($userId)
 
 function revert($userId, $bikeNum)
 {
-    global $db;
+    global $db, $smsSender;
 
     $standId = 0;
     $result = $db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser IS NOT NULL");
@@ -427,7 +427,7 @@ function revert($userId, $bikeNum)
         $result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code");
         $result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
         response('<h3>' . _('Bicycle') . ' ' . $bikeNum . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
-        sendSMS($revertusernumber, _('Bike') . ' ' . $bikeNum . ' ' . _('has been returned. You can now rent a new bicycle.'));
+        $smsSender->send($revertusernumber, _('Bike') . ' ' . $bikeNum . ' ' . _('has been returned. You can now rent a new bicycle.'));
     } else {
         response(_('No last stand or code for bicycle') . ' ' . $bikeNum . ' ' . _('found. Revert not successful!'), ERROR);
     }
@@ -539,7 +539,7 @@ function checkprivileges($userid)
 
 function smscode($number)
 {
-    global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $connectors;
+    global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $connectors, $smsSender;
     srand();
 
     $number = normalizephonenumber($number);
@@ -570,7 +570,7 @@ function smscode($number)
     if (DEBUG === true) {
         response($number, 0, array('checkcode' => $checkcode, 'smscode' => $smscode, 'existing' => $userexists));
     } else {
-        sendSMS($number, $text);
+        $smsSender->send($number, $text);
         if (issmssystemenabled() == true) {
             response($number, 0, array('checkcode' => $checkcode, 'existing' => $userexists));
         } else {
