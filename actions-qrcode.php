@@ -8,13 +8,13 @@ function response($message,$error=0,$log=1)
       {
       if (isset($_COOKIE["loguserid"]))
          {
-         $userid=$db->conn->real_escape_string(trim($_COOKIE["loguserid"]));
+         $userid=$db->escape(trim($_COOKIE["loguserid"]));
          }
       else $userid=0;
       $number=getphonenumber($userid);
       logresult($number,$message);
       }
-   $db->conn->commit();
+   $db->commit();
    echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$systemname,'</title>';
    echo '<base href="',$systemURL,'" />';
    echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';
