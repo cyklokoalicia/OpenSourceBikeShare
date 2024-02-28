@@ -1,6 +1,9 @@
 <?php
 //@TODO ANaLYTICS!!!
 
+use BikeShare\Db\DbInterface;
+use BikeShare\Db\MysqliDb;
+
 if (file_exists("../config.php")) {
     exit("Project already installed. If you want to reinstall, please remove config.php file.");
 }
@@ -8,7 +11,6 @@ if (file_exists("../config.php")) {
 require_once '../vendor/autoload.php';
 $configfilename = "../config.php.example";
 require $configfilename;
-require "../db.class.php";
 
 function changeconfigvalue($configvar,$postvar)
 {
@@ -205,7 +207,10 @@ if ($_POST["smsconnector"]) changeconfigvalue('countrycode',$_POST["countrycode"
 else changeconfigvalue('countrycode',"");
 $newconfig=implode($configfile);
 file_put_contents($configfilename,$newconfig);
-$db=new Database($_POST["dbserver"],$_POST["dbuser"],$_POST["dbpassword"],$_POST["dbname"]);
+/**
+ * @var DbInterface
+ */
+$db=new MysqliDb($_POST["dbserver"],$_POST["dbuser"],$_POST["dbpassword"],$_POST["dbname"]);
 $db->connect();
 $sql=file_get_contents("../docker-data/mysql/create-database.sql");
 $sql=explode(";",$sql);
@@ -233,16 +238,19 @@ require($configfilename);
          </form>
 <?php endif; ?>
 <?php if ($step==3):
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+/**
+ * @var DbInterface
+ */
+$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 $result=$db->query("REPLACE INTO users SET userName='".$_POST["username"]."',password=SHA2('".$_POST["password"]."',512),mail='".$_POST["email"]."',number='".$_POST["phone"]."',privileges=7");
-$userid=$db->conn->insert_id;
+$userid=$db->getLastInsertId();
 if (!$connectors["sms"])
    {
    $result=$db->query("UPDATE users SET number='$userid' WHERE userId='$userid'");
    }
 $result=$db->query("REPLACE INTO limits SET userId='$userid',userLimit='100'");
-$db->conn->commit();
+$db->commit();
 ?>
       <h2><?php echo _('Create bicycles and stands'); ?></h2>
        <?php echo '<div class="alert alert-success" role="alert">',_('Admin user'),' ',$_POST["username"],' ',_('created with password:'),' ',$_POST["password"]; if (!$connectors["sms"]) { echo '. ',_('Use number'),' <span class="label label-default">',$userid,'</span> ',_('for login'),'.'; } echo '</div>'; ?>
@@ -254,7 +262,10 @@ $db->conn->commit();
 
 <?php endif; ?>
 <?php if ($step==4):
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+/**
+ * @var DbInterface
+ */
+$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 $stands=explode(",",$_POST["stands"]);
 foreach ($stands as $stand)
@@ -267,7 +278,7 @@ for ($i=1;$i<=$_POST["bicyclestotal"];$i++)
    $code=sprintf("%04d",rand(100,9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
    $result=$db->query("REPLACE INTO bikes SET bikeNum='".$i."',currentStand=1,currentCode='".$code."'");
    }
-$db->conn->commit();
+$db->commit();
 ?>
       <h2><?php echo _('Set up stands'); ?></h2>
 <?php
@@ -317,7 +328,10 @@ if ($connectors["sms"]):
          </form>
 <?php endif; ?>
 <?php if ($step==5):
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+/**
+ * @var DbInterface
+ */
+$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 ?>
       <h2>Set system options</h2>
@@ -333,7 +347,7 @@ foreach ($_POST["standdesc"] as $standid=>$value)
       }
    if (isset($_POST["placename"][$standid])) $result=$db->query("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE standId='$standid'");
    }
-$db->conn->commit();
+$db->commit();
 echo '<div class="alert alert-success" role="alert">',sprintf(ngettext('%d stand','%d stands',count($_POST["standdesc"])),count($_POST["standdesc"])),' ',_('set up and'),' ',sprintf(ngettext('%d photo','%d photos',$uploadtotal),$uploadtotal),' ',_('uploaded'),'</div>';
 ?>
       <form class="container" method="post" action="index.php?step=6">
@@ -386,7 +400,10 @@ foreach ($configfile as $line)
          </form>
 <?php endif; ?>
 <?php if ($step==6):
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+/**
+ * @var DbInterface
+ */
+$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 $configfile=file($configfilename);
 foreach ($_POST as $variable=>$value)
@@ -413,7 +430,7 @@ if ($credit["enabled"]==1)
    $row=$result->fetch_assoc();
    $result=$db->query("REPLACE INTO credit SET userId='".$row["userId"]."',credit='$newcredit'");
    }
-$db->conn->commit();
+$db->commit();
 ?>
       <h2>Installation finished</h2>
       <div class="alert alert-success" role="alert"><?php echo _('System options set.'); ?></div>

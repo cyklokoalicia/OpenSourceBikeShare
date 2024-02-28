@@ -1,14 +1,19 @@
 <?php
 
+use BikeShare\Db\DbInterface;
+use BikeShare\Db\MysqliDb;
+
 require_once '../vendor/autoload.php';
 if (file_exists("../config.php")) {
     require "../config.php";
 } else {
     require "../config.php.example";
 }
-require "../db.class.php";
 
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+/**
+ * @var DbInterface
+ */
+$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
 
 // create new PDF document

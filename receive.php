@@ -1,12 +1,18 @@
 <?php
 
+use BikeShare\Db\DbInterface;
+use BikeShare\Db\MysqliDb;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 
 require_once 'vendor/autoload.php';
 require("config.php");
-require("db.class.php");
-$db=new Database($dbserver,$dbuser,$dbpassword,$dbname);
+
+/**
+ * @var DbInterface
+ */
+$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
+
 require("actions-sms.php");
 
 /**
@@ -112,7 +118,7 @@ else
       }
    }
 
-$db->conn->commit();
+$db->commit();
 $sms->respond();
 
 ?>
