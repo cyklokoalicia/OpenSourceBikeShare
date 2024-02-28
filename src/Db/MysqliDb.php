@@ -43,14 +43,16 @@ class MysqliDb implements DbInterface
         $this->conn = new \mysqli($this->dbserver, $this->dbuser, $this->dbpassword, $this->dbname);
         if (!$this->conn || $this->conn->connect_errno) {
             if ($this->throwException) {
-                throw new \RuntimeException('DB connection error!', !empty($this->conn->connect_errno ) ? $this->conn->connect_errno : 0);
+                throw new \RuntimeException(
+                    'DB connection error!',
+                    !empty($this->conn->connect_errno) ? $this->conn->connect_errno : 0
+                );
             } else {
                 die(_('DB connection error!'));
             }
-
         }
         $this->conn->set_charset("utf8");
-        $this->conn->autocommit(FALSE);
+        $this->conn->autocommit(false);
     }
 
     public function query($query, $params = array())
