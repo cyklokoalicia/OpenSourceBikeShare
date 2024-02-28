@@ -13,7 +13,7 @@ function response($message, $error = 0, $additional = '', $log = 1)
     $json = json_encode($json);
     if ($log == 1 and $message) {
         if (isset($_COOKIE['loguserid'])) {
-            $userid = $db->conn->real_escape_string(trim($_COOKIE['loguserid']));
+            $userid = $db->escape(trim($_COOKIE['loguserid']));
         } else {
             $userid = 0;
         }
@@ -21,7 +21,7 @@ function response($message, $error = 0, $additional = '', $log = 1)
         $number = getphonenumber($userid);
         logresult($number, $message);
     }
-    $db->conn->commit();
+    $db->commit();
     echo $json;
     exit;
 }
@@ -204,7 +204,7 @@ function where($userId, $bike)
 function addnote($userId, $bikeNum, $message)
 {
     global $db;
-    $userNote = $db->conn->real_escape_string(trim($message));
+    $userNote = $db->escape(trim($message));
 
     $result = $db->query("SELECT userName,number from users where userId='$userId'");
     $row = $result->fetch_assoc();
@@ -219,7 +219,7 @@ function addnote($userId, $bikeNum, $message)
         $bikeStatus = _('used by') . ' ' . $userName . ' +' . $phone;
     }
     $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
-    $noteid = $db->conn->insert_id;
+    $noteid = $db->getLastInsertId();
     notifyAdmins(_('Note #') . $noteid . ': b.' . $bikeNum . ' (' . $bikeStatus . ') ' . _('by') . ' ' . $userName . '/' . $phone . ':' . $userNote);
 }
 
@@ -228,7 +228,7 @@ function listbikes($stand)
     global $db, $forcestack;
 
     $stacktopbike = false;
-    $stand = $db->conn->real_escape_string($stand);
+    $stand = $db->escape($stand);
     if ($forcestack) {
         $result = $db->query("SELECT standId FROM stands WHERE standName='$stand'");
         $row = $result->fetch_assoc();
@@ -437,14 +437,14 @@ function register($number, $code, $checkcode, $fullname, $email, $password, $pas
 {
     global $db, $dbpassword, $countrycode, $systemURL;
 
-    $number = $db->conn->real_escape_string(trim($number));
-    $code = $db->conn->real_escape_string(trim($code));
-    $checkcode = $db->conn->real_escape_string(trim($checkcode));
-    $fullname = $db->conn->real_escape_string(trim($fullname));
-    $email = $db->conn->real_escape_string(trim($email));
-    $password = $db->conn->real_escape_string(trim($password));
-    $password2 = $db->conn->real_escape_string(trim($password2));
-    $existing = $db->conn->real_escape_string(trim($existing));
+    $number = $db->escape(trim($number));
+    $code = $db->escape(trim($code));
+    $checkcode = $db->escape(trim($checkcode));
+    $fullname = $db->escape(trim($fullname));
+    $email = $db->escape(trim($email));
+    $password = $db->escape(trim($password));
+    $password2 = $db->escape(trim($password2));
+    $existing = $db->escape(trim($existing));
     $parametercheck = $number . ';' . str_replace(' ', '', $code) . ';' . $checkcode;
     if ($password != $password2) {
         response(_('Password do not match. Please correct and try again.'), ERROR);
@@ -454,7 +454,7 @@ function register($number, $code, $checkcode, $fullname, $email, $password, $pas
         if ($result->num_rows == 1) {
             if (!$existing) { // new user registration
                 $result = $db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='$number',privileges=0");
-                $userId = $db->conn->insert_id;
+                $userId = $db->getLastInsertId();
                 sendConfirmationEmail($email);
                 response(_('You have been successfully registered. Please, check your email and read the instructions to finish your registration.'));
             } else { // existing user, password change
@@ -469,7 +469,7 @@ function register($number, $code, $checkcode, $fullname, $email, $password, $pas
         }
     } else { // SMS system disabled
         $result = $db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='',privileges=0");
-        $userId = $db->conn->insert_id;
+        $userId = $db->getLastInsertId();
         $result = $db->query("UPDATE users SET number='$userId' WHERE userId='$userId'");
         sendConfirmationEmail($email);
         response(_('You have been successfully registered. Please, check your email and read the instructions to finish your registration. Your number for login is:') . ' ' . $userId);
@@ -480,8 +480,8 @@ function login($number, $password)
 {
     global $db, $systemURL, $countrycode;
 
-    $number = $db->conn->real_escape_string(trim($number));
-    $password = $db->conn->real_escape_string(trim($password));
+    $number = $db->escape(trim($number));
+    $password = $db->escape(trim($password));
     $number = str_replace(' ', '', $number);
     $number = str_replace('-', '', $number);
     $number = str_replace('/', '', $number);
@@ -497,7 +497,7 @@ function login($number, $password)
         $timeStamp = time() + 86400 * 14; // 14 days to keep user logged in
         $result = $db->query("DELETE FROM sessions WHERE userId='$userId'");
         $result = $db->query("INSERT INTO sessions SET userId='$userId',sessionId='$sessionId',timeStamp='$timeStamp'");
-        $db->conn->commit();
+        $db->commit();
         setcookie('loguserid', $userId, time() + 86400 * 14);
         setcookie('logsession', $sessionId, time() + 86400 * 14);
         header('HTTP/1.1 302 Found');
@@ -516,10 +516,10 @@ function logout()
 {
     global $db, $systemURL;
     if (isset($_COOKIE['loguserid']) and isset($_COOKIE['logsession'])) {
-        $userid = $db->conn->real_escape_string(trim($_COOKIE['loguserid']));
-        $session = $db->conn->real_escape_string(trim($_COOKIE['logsession']));
+        $userid = $db->escape(trim($_COOKIE['loguserid']));
+        $session = $db->escape(trim($_COOKIE['logsession']));
         $result = $db->query("DELETE FROM sessions WHERE userId='$userid'");
-        $db->conn->commit();
+        $db->commit();
     }
     header('HTTP/1.1 302 Found');
     header('Location: ' . $systemURL);
@@ -543,7 +543,7 @@ function smscode($number)
     srand();
 
     $number = normalizephonenumber($number);
-    $number = $db->conn->real_escape_string($number);
+    $number = $db->escape($number);
     $userexists = 0;
     $result = $db->query("SELECT userId FROM users WHERE number='$number'");
     if ($result->num_rows) {
@@ -559,7 +559,7 @@ function smscode($number)
         $text = _('Enter this code to change password:') . ' ' . $smscode;
     }
 
-    $text = $db->conn->real_escape_string($text);
+    $text = $db->escape($text);
 
     if (!issmssystemenabled()) {
         $result = $db->query("INSERT INTO sent SET number='$number',text='$text'");
@@ -742,7 +742,7 @@ function resetpassword($number)
 {
     global $db, $mailer, $systemname, $systemrules, $systemURL;
 
-    $number = $db->conn->real_escape_string(trim($number));
+    $number = $db->escape(trim($number));
 
    $result = $db->query("SELECT mail,userName FROM users WHERE number='$number'");
     if (!$result->num_rows) {
