@@ -24,7 +24,7 @@ class SmsSender implements SmsSenderInterface
         $this->db = $db;
     }
 
-    public function send($number,$message)
+    public function send($number, $message)
     {
         if (strlen($message) > 160) {
             $messageParts = str_split($message, 160);

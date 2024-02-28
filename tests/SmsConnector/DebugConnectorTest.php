@@ -11,6 +11,6 @@ class DebugConnectorTest extends TestCase
     {
         $debugConnector = new DebugConnector();
         $debugConnector->send('123456789', 'Hello, World!');
-        $this->expectOutputString('123456789 -&gt Hello, World!'.PHP_EOL);
+        $this->expectOutputString('123456789 -&gt Hello, World!' . PHP_EOL);
     }
 }

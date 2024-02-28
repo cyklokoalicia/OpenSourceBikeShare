@@ -43,23 +43,30 @@ class SmsSenderTest extends TestCase
         $this->smsSender->send($number, $message);
     }
 
+
     public function testSendBig()
     {
         $number = '123456789';
+        // @codingStandardsIgnoreStart
         $message = 'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod       ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris tincidunt tincidunt. ';
+        // @codingStandardsIgnoreEnd
         $this->smsConnector
             ->expects($this->exactly(2))
             ->method('send')
             ->withConsecutive(
+                // @codingStandardsIgnoreStart
                 [$number, 'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod'],
                 [$number, 'ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris tincidunt tincidunt.']
+                // @codingStandardsIgnoreEnd
             );
         $this->db
             ->expects($this->exactly(2))
             ->method('query')
             ->withConsecutive(
+                // @codingStandardsIgnoreStart
                 ["INSERT INTO sent SET number='$number', text='Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod'"],
                 ["INSERT INTO sent SET number='$number', text='ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris tincidunt tincidunt.'"]
+                // @codingStandardsIgnoreEnd
             );
         $this->db
             ->expects($this->exactly(2))

@@ -11,8 +11,9 @@ class DebugConnector extends AbstractConnector
     public function respond()
     {
     }
+
     public function send($number, $text)
     {
-        echo $number. ' -&gt ' . $text .PHP_EOL;
+        echo $number . ' -&gt ' . $text . PHP_EOL;
     }
 }
