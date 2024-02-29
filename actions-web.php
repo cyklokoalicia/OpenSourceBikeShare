@@ -682,14 +682,14 @@ function getcouponlist()
 
 function generatecoupons($multiplier)
 {
-    global $db, $credit;
+    global $db, $credit, $codeGenerator;
     if (iscreditenabled() == false) {
         return;
     }
     // if credit system disabled, exit
     $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
     $value = $requiredcredit * $multiplier;
-    $codes = generatecodes(10, 6);
+    $codes = $codeGenerator->generate(10, 6);
     foreach ($codes as $code) {
         $result = $db->query("INSERT IGNORE INTO coupons SET coupon='" . $code . "',value='" . $value . "',status='0'");
     }
