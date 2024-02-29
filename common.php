@@ -1,5 +1,7 @@
 <?php
 
+use BikeShare\Credit\CodeGenerator\CodeGenerator;
+use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
 use BikeShare\Mail\DebugMailSender;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Mail\PHPMailerMailSender;
@@ -52,6 +54,11 @@ $smsSender = new SmsSender(
     $db
 );
 
+/**
+ * @var CodeGeneratorInterface $codeGenerator
+ */
+$codeGenerator = new CodeGenerator();
+
 
 function error($message)
 {
@@ -60,19 +67,6 @@ function error($message)
    exit($message);
 }
 
-
-function generatecodes($numcodes,$codelength,$wastage=25)
-{
-   // exclude problem chars: B8G6I1l0OQDS5Z2
-   // acceptable characters:
-   $goodchars='ACEFHJKMNPRTUVWXY4937';
-   // build array allowing for possible wastage through duplicate values
-   for ($i=0;$i<=$numcodes+$wastage+1;$i++)
-      {
-      $codes[]=substr(str_shuffle($goodchars),0,$codelength);
-      }
-   return array_slice($codes,0,($numcodes+1));
-}
 
 function getprivileges($userid)
 {
