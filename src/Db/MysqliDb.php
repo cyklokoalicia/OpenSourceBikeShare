@@ -64,7 +64,7 @@ class MysqliDb implements DbInterface
             if ($this->throwException) {
                 throw new \RuntimeException('DB error in : ' . $query);
             } else {
-                trigger_error('DB error in : ' . $query, E_USER_ERROR);
+                trigger_error('DB error' . ' ' . $this->conn->error . ' ' . _('in') . ': ' . $query, E_USER_ERROR);
                 die(_('DB error') . ' ' . $this->conn->error . ' ' . _('in') . ': ' . $query);
             }
         }
