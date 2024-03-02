@@ -48,6 +48,7 @@ class MysqliDb implements DbInterface
                     !empty($this->conn->connect_errno) ? $this->conn->connect_errno : 0
                 );
             } else {
+                trigger_error('DB connection error!', E_USER_ERROR);
                 die(_('DB connection error!'));
             }
         }
@@ -63,6 +64,7 @@ class MysqliDb implements DbInterface
             if ($this->throwException) {
                 throw new \RuntimeException('DB error in : ' . $query);
             } else {
+                trigger_error('DB error in : ' . $query, E_USER_ERROR);
                 die(_('DB error') . ' ' . $this->conn->error . ' ' . _('in') . ': ' . $query);
             }
         }
