@@ -19,7 +19,7 @@ class User
 
     public function findUserIdByNumber($number)
     {
-        $result = $this->db->query("SELECT userId FROM users WHERE userNumber='$number'");
+        $result = $this->db->query("SELECT userId FROM users WHERE number='$number'");
         if ($result->num_rows == 1) {
             return $result->fetch_assoc()["userId"];
         }

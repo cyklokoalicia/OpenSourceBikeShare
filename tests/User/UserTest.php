@@ -16,7 +16,7 @@ class UserTest extends TestCase
         $dbMock = $this->createMock(DbInterface::class);
         $dbMock->expects($this->exactly(2))
             ->method('query')
-            ->with("SELECT userId FROM users WHERE userNumber='{$userNumber}'")
+            ->with("SELECT userId FROM users WHERE number='{$userNumber}'")
             ->willReturnOnConsecutiveCalls(
                 new MysqliResult(1, [['userId' => $expectedUserId]]),
                 new MysqliResult(0, [])
