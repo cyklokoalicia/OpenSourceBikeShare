@@ -1,7 +1,9 @@
 <?php
 
+use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
+use BikeShare\User\User;
 
 require_once 'vendor/autoload.php';
 require "config.php";
@@ -12,6 +14,9 @@ require "actions-web.php";
  */
 $db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
+$user = new User($db);
+$auth = new Auth($db);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,25 +52,21 @@ var maplat=<?php echo $systemlat; ?>;
 var maplon=<?php echo $systemlong; ?>;
 var mapzoom=<?php echo $systemzoom; ?>;
 <?php
-if (isset($_COOKIE["loguserid"])) {
-    $userid = $db->escape(trim($_COOKIE["loguserid"]));
-} else {
-    $userid = 0;
-}
+$userid = $auth->getUserId();
 
-if ($cities && isloggedin()) {
-	$usercity = getusercity($userid);
+if ($cities && $auth->isLoggedIn()) {
+	$usercity = $user->findCity($userid);
 }
-if ($citiesGPS && isloggedin()) {
+if ($citiesGPS && $auth->isLoggedIn()) {
 	echo 'maplat=',$citiesGPS[$usercity][0],";\n";
 	echo 'maplon=',$citiesGPS[$usercity][1],";\n";
 }
 ?>
 var standselected=0;
 <?php
-if (isloggedin()) {
+if ($auth->isLoggedIn()) {
     echo 'var loggedin=1;', "\n";
-    echo 'var priv=', getprivileges($userid), ";\n";
+    echo 'var priv=', $user->findPrivileges($userid), ";\n";
 } else {
     echo 'var loggedin=0;', "\n";
     echo 'var priv=0;', "\n";
@@ -91,7 +92,7 @@ var serverTimeSeconds=<?php echo time(); ?>; // using the server timestamp for t
 </head>
 <body>
 <?php
-if (isloggedin()) {
+if ($auth->isLoggedIn()) {
     echo '<div id="map"></div>';
 } else {
     echo '<img src="img/wbsLogo.png" alt="White bikes - Biele bicykle" style="margin: auto; display: block; margin-top: 1em;" >';
@@ -104,12 +105,12 @@ if (isloggedin()) {
    <ul class="list-inline">
       <li><a href="<?php echo $systemrules; ?>" target="_blank"><span class="glyphicon glyphicon-question-sign"></span><?php echo _('Help'); ?></a></li>
 <?php
-if (isloggedin() and getprivileges($userid) > 0) {
+if ($auth->isLoggedIn() && $user->findPrivileges($userid) > 0) {
     echo '<li><a href="admin.php"><span class="glyphicon glyphicon-cog"></span> ', _('Admin'), '</a></li>';
 }
 
-if (isloggedin()) {
-    echo '<li><span class="glyphicon glyphicon-user"></span> <small>', getusername($userid), '</small>';
+if ($auth->isLoggedIn()) {
+    echo '<li><span class="glyphicon glyphicon-user"></span> <small>', $user->findUserName($userid), '</small>';
     if (iscreditenabled()) {
         echo ' (<span id="usercredit" title="', _('Remaining credit'), '">', getusercredit($userid), '</span> ', getcreditcurrency(), ' <button type="button" class="btn btn-success btn-xs" id="opencredit" title="', _('Add credit'), '"><span class="glyphicon glyphicon-plus"></span></button>)<span id="couponblock"><br /><span class="form-inline"><input type="text" class="form-control input-sm" id="coupon" placeholder="XXXXXX" /><button type="button" class="btn btn-primary btn-sm" id="validatecoupon" title="', _('Confirm coupon'), '"><span class="glyphicon glyphicon-plus"></span></button></span></span></li>';
     }
@@ -141,7 +142,7 @@ Zahlasuj za podporu Bielych bicyklov z participatívneho rozpočtu BSK!</a>
    </div>
 </div>
 <?php } ?>
-<?php if (isloggedin()): ?>
+<?php if ($auth->isLoggedIn()): ?>
 <div class="row">
    <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
    <h1 class="pull-left"><?php echo $systemname; ?></h1>
@@ -150,7 +151,7 @@ Zahlasuj za podporu Bielych bicyklov z participatívneho rozpočtu BSK!</a>
    </div>
 </div>
 <?php endif;?>
-<?php if (!isloggedin()): ?>
+<?php if (!$auth->isLoggedIn()): ?>
 <div id="loginform">
 <h3>Log in</h3>
 <?php

@@ -24,6 +24,7 @@ $args=preg_split("/\s+/",$sms->getProcessedMessage());//preg_split must be used 
 
 if(!validateNumber($sms->getNumber()))
    {
+       trigger_error("Invalid number: ".$sms->getNumber(), E_USER_WARNING);
    ####
    #$smsSender->send($sms->getNumber(),_('Your number is not registered.'));
    }

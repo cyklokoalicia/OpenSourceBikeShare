@@ -3,7 +3,7 @@ require("common.php");
 
 function response($message, $error = 0, $additional = '', $log = 1)
 {
-    global $db;
+    global $db, $user;
     $json = array('error' => $error, 'content' => $message);
     if (is_array($additional)) {
         foreach ($additional as $key => $value) {
@@ -18,7 +18,7 @@ function response($message, $error = 0, $additional = '', $log = 1)
             $userid = 0;
         }
 
-        $number = getphonenumber($userid);
+        $number = $user->findPhoneNumber($userid);
         logresult($number, $message);
     }
     $db->commit();
@@ -28,7 +28,7 @@ function response($message, $error = 0, $additional = '', $log = 1)
 
 function rent($userId, $bike, $force = false)
 {
-    global $db, $forcestack, $watches, $credit;
+    global $db, $forcestack, $watches, $credit, $user;
     $stacktopbike = false;
     $bikeNum = $bike;
     $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
@@ -76,8 +76,8 @@ function rent($userId, $bike, $force = false)
                 $result = $db->query("SELECT standName FROM stands WHERE standId='$standid'");
                 $row = $result->fetch_assoc();
                 $stand = $row['standName'];
-                $user = getusername($userId);
-                notifyAdmins(_('Bike') . ' ' . $bike . ' ' . _('rented out of stack by') . ' ' . $user . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', 1);
+                $userName = $user->findUserName($userId);
+                notifyAdmins(_('Bike') . ' ' . $bike . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', 1);
             }
             if ($forcestack and $stacktopbike != $bike) {
                 response(_('Bike') . ' ' . $bike . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', ERROR);
@@ -364,8 +364,8 @@ function last($userId, $bike = 0)
 
 function userbikes($userId)
 {
-    global $db;
-    if (!isloggedin()) {
+    global $db, $auth;
+    if (!$auth->isLoggedIn()) {
         response('');
     }
 
@@ -399,7 +399,7 @@ function userbikes($userId)
 
 function revert($userId, $bikeNum)
 {
-    global $db, $smsSender;
+    global $db, $smsSender, $user;
 
     $standId = 0;
     $result = $db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser IS NOT NULL");
@@ -408,7 +408,7 @@ function revert($userId, $bikeNum)
         return;
     } else {
         $row = $result->fetch_assoc();
-        $revertusernumber = getphonenumber($row['currentUser']);
+        $revertusernumber = $user->findPhoneNumber($row['currentUser']);
     }
     $result = $db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=$bikeNum AND action IN ('RETURN','FORCERETURN') ORDER BY time DESC LIMIT 1");
     if ($result->num_rows == 1) {
@@ -435,7 +435,7 @@ function revert($userId, $bikeNum)
 
 function register($number, $code, $checkcode, $fullname, $email, $password, $password2, $existing)
 {
-    global $db, $dbpassword, $countrycode, $systemURL;
+    global $db, $dbpassword, $countrycode, $systemURL, $user;
 
     $number = $db->escape(trim($number));
     $code = $db->escape(trim($code));
@@ -458,9 +458,7 @@ function register($number, $code, $checkcode, $fullname, $email, $password, $pas
                 sendConfirmationEmail($email);
                 response(_('You have been successfully registered. Please, check your email and read the instructions to finish your registration.'));
             } else { // existing user, password change
-                $result = $db->query("SELECT userId FROM users WHERE number='$number'");
-                $row = $result->fetch_assoc();
-                $userId = $row['userId'];
+                $userId = $user->findUserIdByNumber($number);
                 $result = $db->query("UPDATE users SET password=SHA2('$password',512) WHERE userId='$userId'");
                 response(_('Password successfully changed. Your username is your phone number. Continue to') . ' <a href="' . $systemURL . '">' . _('login') . '</a>.');
             }
@@ -476,61 +474,10 @@ function register($number, $code, $checkcode, $fullname, $email, $password, $pas
     }
 }
 
-function login($number, $password)
-{
-    global $db, $systemURL, $countrycode;
-
-    $number = $db->escape(trim($number));
-    $password = $db->escape(trim($password));
-    $number = str_replace(' ', '', $number);
-    $number = str_replace('-', '', $number);
-    $number = str_replace('/', '', $number);
-    if ($number[0] == '0') {
-        $number = $countrycode . substr($number, 1, strlen($number));
-    }
-
-    $result = $db->query("SELECT userId FROM users WHERE number='$number' AND password=SHA2('$password',512)");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        $userId = $row['userId'];
-        $sessionId = hash('sha256', $userId . $number . time());
-        $timeStamp = time() + 86400 * 14; // 14 days to keep user logged in
-        $result = $db->query("DELETE FROM sessions WHERE userId='$userId'");
-        $result = $db->query("INSERT INTO sessions SET userId='$userId',sessionId='$sessionId',timeStamp='$timeStamp'");
-        $db->commit();
-        setcookie('loguserid', $userId, time() + 86400 * 14);
-        setcookie('logsession', $sessionId, time() + 86400 * 14);
-        header('HTTP/1.1 302 Found');
-        header('Location: ' . $systemURL);
-        header('Connection: close');
-        exit;
-    } else {
-        header('HTTP/1.1 302 Found');
-        header('Location: ' . $systemURL . '?error=1');
-        header('Connection: close');
-        exit;
-    }
-}
-
-function logout()
-{
-    global $db, $systemURL;
-    if (isset($_COOKIE['loguserid']) and isset($_COOKIE['logsession'])) {
-        $userid = $db->escape(trim($_COOKIE['loguserid']));
-        $session = $db->escape(trim($_COOKIE['logsession']));
-        $result = $db->query("DELETE FROM sessions WHERE userId='$userid'");
-        $db->commit();
-    }
-    header('HTTP/1.1 302 Found');
-    header('Location: ' . $systemURL);
-    header('Connection: close');
-    exit;
-}
-
 function checkprivileges($userid)
 {
-    global $db;
-    $privileges = getprivileges($userid);
+    global $db, $user;
+    $privileges = $user->findPrivileges($userid);
     if ($privileges < 1) {
         response(_('Sorry, this command is only available for the privileged users.'), ERROR);
         exit;
@@ -539,14 +486,13 @@ function checkprivileges($userid)
 
 function smscode($number)
 {
-    global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $connectors, $smsSender;
+    global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $connectors, $smsSender, $user, $phonePurifier;
     srand();
 
-    $number = normalizephonenumber($number);
+    $number = $phonePurifier->purify($number);
     $number = $db->escape($number);
     $userexists = 0;
-    $result = $db->query("SELECT userId FROM users WHERE number='$number'");
-    if ($result->num_rows) {
+    if ($user->findUserIdByNumber($number)) {
         $userexists = 1;
     }
 
@@ -656,14 +602,14 @@ function saveuser($userid, $username, $email, $phone, $privileges, $limit)
 
 function addcredit($userid, $creditmultiplier)
 {
-    global $db, $credit;
+    global $db, $credit, $user;
     $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
     $addcreditamount = $requiredcredit * $creditmultiplier;
     $result = $db->query('UPDATE credit SET credit=credit+' . $addcreditamount . ' WHERE userId=' . $userid);
     $result = $db->query("INSERT INTO history SET userId=$userid,action='CREDITCHANGE',parameter='" . $addcreditamount . '|add+' . $addcreditamount . "'");
-    $result = $db->query('SELECT userName FROM users WHERE users.userId=' . $userid);
-    $row = $result->fetch_assoc();
-    response(_('Added') . ' ' . $addcreditamount . $credit['currency'] . ' ' . _('credit for') . ' ' . $row['userName'] . '.');
+    $userName = $user->findUserName($userid);
+
+    response(_('Added') . ' ' . $addcreditamount . $credit['currency'] . ' ' . _('credit for') . ' ' . $userName . '.');
 }
 
 function getcouponlist()
@@ -772,13 +718,13 @@ function resetpassword($number)
 
 function mapgetmarkers($userId)
 {
-    global $db, $cities;
+    global $db, $cities, $user;
 	$filtercity = '';
 	if($cities){
 
                 if($userId!=0)
                 {
-                        $filtercity = ' AND city = "'.getusercity($userId).'" ';
+                        $filtercity = ' AND city = "'.$user->findCity($userId).'" ';
                 }
                 else $filtercity = "";
 	}
@@ -792,9 +738,9 @@ function mapgetmarkers($userId)
 
 function mapgetlimit($userId)
 {
-    global $db;
+    global $db, $auth;
 
-    if (!isloggedin()) {
+    if (!$auth->isLoggedIn()) {
         response('');
     }
 

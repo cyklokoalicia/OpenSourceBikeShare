@@ -3,17 +3,12 @@ require("common.php");
 
 function response($message,$error=0,$log=1)
 {
-   global $db,$systemname,$systemURL;
-   if ($log==1 AND $message)
-      {
-      if (isset($_COOKIE["loguserid"]))
-         {
-         $userid=$db->escape(trim($_COOKIE["loguserid"]));
-         }
-      else $userid=0;
-      $number=getphonenumber($userid);
-      logresult($number,$message);
-      }
+    global $db, $systemname, $systemURL, $user, $auth;
+    if ($log == 1 and $message) {
+        $userid = $auth->getUserId();
+        $number = $user->findPhoneNumber($userid);
+        logresult($number, $message);
+    }
    $db->commit();
    echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$systemname,'</title>';
    echo '<base href="',$systemURL,'" />';
@@ -43,7 +38,7 @@ function response($message,$error=0,$log=1)
 function rent($userId,$bike,$force=FALSE)
 {
 
-   global $db,$forcestack,$watches,$credit;
+   global $db,$forcestack,$watches,$credit, $user;
    $stacktopbike=FALSE;
    $bikeNum = $bike;
    $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
@@ -90,8 +85,8 @@ function rent($userId,$bike,$force=FALSE)
          $result=$db->query("SELECT standName FROM stands WHERE standId='$standid'");
          $row=$result->fetch_assoc();
          $stand=$row["standName"];
-         $user=getusername($userId);
-         notifyAdmins(_('Bike')." ".$bike." "._('rented out of stack by')." ".$user.". ".$stacktopbike." "._('was on the top of the stack at')." ".$stand.".",ERROR);
+         $userName = $user->findUserName($userId);
+         notifyAdmins(_('Bike')." ".$bike." "._('rented out of stack by')." ".$userName.". ".$stacktopbike." "._('was on the top of the stack at')." ".$stand.".",ERROR);
          }
       if ($forcestack AND $stacktopbike<>$bike)
          {
