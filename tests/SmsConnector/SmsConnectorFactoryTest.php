@@ -5,12 +5,13 @@ namespace Test\BikeShare\SmsConnector;
 use BikeShare\SmsConnector\DisabledConnector;
 use BikeShare\SmsConnector\EuroSmsConnector;
 use BikeShare\SmsConnector\LoopbackConnector;
-use BikeShare\SmsConnector\SmsConnectorFactory as SmsConnectorFactoryAlias;
+use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\SmsConnector\SmsGatewayConnector;
 use BikeShare\SmsConnector\TextmagicSmsConnector;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
-class SmsConnectorFactory extends TestCase
+class SmsConnectorFactoryTest extends TestCase
 {
     /**
      * @param string $connector
@@ -27,13 +28,24 @@ class SmsConnectorFactory extends TestCase
         $expectedInstance,
         $expectedExceptionMessage = null
     ) {
-        $smsConnectorFactory = new SmsConnectorFactoryAlias();
-        try {
-            $result = $smsConnectorFactory->getConnector($connector, $config, $debugMode);
-            $this->assertInstanceOf($expectedInstance, $result);
-        } catch (\PHPUnit_Framework_Error_Warning $e) {
-            $this->assertEquals($expectedExceptionMessage, $e->getMessage());
+        $logger = $this->createMock(LoggerInterface::class);
+        $smsConnectorFactory = new SmsConnectorFactory($logger);
+
+        if ($expectedExceptionMessage) {
+            $logger
+                ->expects($this->once())
+                ->method('error')
+                ->with(
+                    'Error creating SMS connector',
+                    $this->callback(function ($context) use ($connector, $expectedExceptionMessage) {
+                        return $context['connector'] === $connector
+                            && $context['exception'] instanceof \Exception
+                            && $context['exception']->getMessage() === $expectedExceptionMessage;
+                    })
+                );
         }
+        $result = $smsConnectorFactory->getConnector($connector, $config, $debugMode);
+        $this->assertInstanceOf($expectedInstance, $result);
     }
 
     public function getConnectorDataProvider()
@@ -70,7 +82,6 @@ class SmsConnectorFactory extends TestCase
             'expectedInstance' => DisabledConnector::class,
         ];
 
-        //PHPUNIT configured to convert warnings to exceptions so we test for exception message
         yield 'throwException' => [
             'connector' => 'eurosms',
             'config' => [],

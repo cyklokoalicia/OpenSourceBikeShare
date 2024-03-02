@@ -1,29 +1,25 @@
 <?php
 
+use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
+use BikeShare\User\User;
+use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
 require("config.php");
 require('actions-qrcode.php');
 
 /**
- * @var DbInterface
+ * @var DbInterface $db
+ * @var LoggerInterface $logger
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
+$user = new User($db);
+$auth = new Auth($db);
 
-if (isset($_COOKIE["loguserid"])) {
-    $userid = $db->escape(trim($_COOKIE["loguserid"]));
-} else {
-    $userid = 0;
-}
+$auth->refreshSession();
+$userid = $auth->getUserId();
+$session = $auth->getSessionId();
 
-if (isset($_COOKIE["logsession"])) {
-    $session = $db->escape(trim($_COOKIE["logsession"]));
-} else {
-    $session = '';
-}
 $request=substr($_SERVER["REQUEST_URI"],strpos($_SERVER["REQUEST_URI"],".php")+5);
 $request=explode("/",$request);
 $action=$request[0];
@@ -34,14 +30,12 @@ switch($action)
    {
    case "rent":
       logrequest($userid,$action);
-      checksession();
       $bikeno=$parameter;
       checkbikeno($bikeno);
       rent($userid,$bikeno);
       break;
    case "return":
       logrequest($userid,$action);
-      checksession();
       $stand=$parameter;
       checkstandname($stand);
       returnbike($userid,$stand);
@@ -49,5 +43,3 @@ switch($action)
    default:
       unrecognizedqrcode($userid);
    }
-
-?>

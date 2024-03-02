@@ -1,0 +1,13 @@
+php_flag auto_globals_jit off
+RewriteEngine on
+RewriteRule ^sms/(.*)$ $1
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*?)/?$ $1.php [L]
+
+RewriteCond %{HTTP_HOST} ^www.whitebikes.info [NC]
+RewriteRule ^(.*)$ https://whitebikes.info/$1 [R=301,L]
+
+RewriteCond %{SERVER_PORT} ^80$
+RewriteRule ^(.*)$ https://whitebikes.info/$1 [R=301,L]
+RewriteRule ^register[/]*$ /register.php

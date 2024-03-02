@@ -1,5 +1,7 @@
 .idea
 docker-data
+db-data
 vendor
 config.php
 composer.lock
+var

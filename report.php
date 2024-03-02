@@ -28,7 +28,7 @@ function report()
 	        bikes.currentUser=users.userId left join (select * from notes
 	        where deleted is null ) as notes on notes.bikeNum=bikes.BikeNum left
 	        join stands on bikes.currentStand=stands.standId
-	                order by standName,bikeNum LIMIT 100"))
+	                order by standName,bikeNum LIMIT 500"))
         {
 		while($row=$result->fetch_assoc())
 		{
@@ -52,7 +52,7 @@ function reportStands()
 	if ($result = $mysqli->query("
 SELECT stands.standName,note FROM stands join (select * from notes
 	        where deleted is null ) as notes on notes.standId=stands.standId
-	                order by standName,note LIMIT 100	")) 
+	                order by standName,note LIMIT 500	")) 
         {
 		$data = $result->fetch_all(MYSQLI_ASSOC);
 	} 

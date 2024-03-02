@@ -3,6 +3,9 @@
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
+use Monolog\ErrorHandler;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
 
 if (file_exists("../config.php")) {
     exit("Project already installed. If you want to reinstall, please remove config.php file.");
@@ -11,6 +14,10 @@ if (file_exists("../config.php")) {
 require_once '../vendor/autoload.php';
 $configfilename = "../config.php.example";
 require $configfilename;
+
+$logger = new Logger('BikeShare');
+$logger->pushHandler(new RotatingFileHandler( __DIR__ . '/../var/log/log.log', 30, Logger::WARNING));
+ErrorHandler::register($logger);
 
 function changeconfigvalue($configvar,$postvar)
 {
@@ -208,9 +215,9 @@ else changeconfigvalue('countrycode',"");
 $newconfig=implode($configfile);
 file_put_contents($configfilename,$newconfig);
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
-$db=new MysqliDb($_POST["dbserver"],$_POST["dbuser"],$_POST["dbpassword"],$_POST["dbname"]);
+$db = new MysqliDb($_POST["dbserver"], $_POST["dbuser"], $_POST["dbpassword"], $_POST["dbname"], $logger);
 $db->connect();
 $sql=file_get_contents("../docker-data/mysql/create-database.sql");
 $sql=explode(";",$sql);
@@ -239,9 +246,9 @@ require($configfilename);
 <?php endif; ?>
 <?php if ($step==3):
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
+$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 $db->connect();
 $result=$db->query("REPLACE INTO users SET userName='".$_POST["username"]."',password=SHA2('".$_POST["password"]."',512),mail='".$_POST["email"]."',number='".$_POST["phone"]."',privileges=7");
 $userid=$db->getLastInsertId();
@@ -263,9 +270,9 @@ $db->commit();
 <?php endif; ?>
 <?php if ($step==4):
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
+$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 $db->connect();
 $stands=explode(",",$_POST["stands"]);
 foreach ($stands as $stand)
@@ -329,9 +336,9 @@ if ($connectors["sms"]):
 <?php endif; ?>
 <?php if ($step==5):
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
+$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 $db->connect();
 ?>
       <h2>Set system options</h2>
@@ -401,9 +408,9 @@ foreach ($configfile as $line)
 <?php endif; ?>
 <?php if ($step==6):
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
+$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 $db->connect();
 $configfile=file($configfilename);
 foreach ($_POST as $variable=>$value)

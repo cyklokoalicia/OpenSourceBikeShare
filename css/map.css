@@ -37,6 +37,12 @@ html, body {
       background-size: 60px 60px;
       background-repeat: none;
    }
+   .special {
+      background: url(../img/icon-repair.png);
+      background-position: 0 0;
+      background-size: 60px 60px;
+      background-repeat: none;
+   }
 
    .bikecount {
       position: absolute;
@@ -60,3 +66,32 @@ html, body {
 input:focus::-webkit-input-placeholder { color:transparent; }
 input:focus:-moz-placeholder { color:transparent; } /* FF 4-18 */
 input:focus::-moz-placeholder { color:transparent; } /* FF 19+ */
+
+button.btn.bikeid, #rent {
+    font-size: 2em;
+}
+
+#standbikes {
+	margin: 10px 0;
+}
+
+#stands {
+	max-width:100%;
+}
+#standphoto {
+	padding-top: 10px;
+}
+
+#sidebar {
+    padding: 8px 24px;
+	max-width: 1024px;
+	margin: auto;
+}
+
+#citychange {
+	/*display:none;*/
+}
+
+.form-control {
+  font-size: 16px;
+}

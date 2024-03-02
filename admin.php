@@ -1,27 +1,29 @@
 <?php
 
+use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
+use BikeShare\User\User;
+use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
 require("config.php");
 require('actions-web.php');
 
 /**
- * @var DbInterface
+ * @var DbInterface $db
+ * @var LoggerInterface $logger
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
+$user = new User($db);
+$auth = new Auth($db);
 
-checksession();
+$auth->refreshSession();
 
-if (isset($_COOKIE["loguserid"])) {
-    $userid = $db->escape(trim($_COOKIE["loguserid"]));
-} else {
-    $userid = 0;
+$userid = $auth->getUserId();
+
+if ($user->findPrivileges($userid)<=0) {
+    $logger->error('User has no privileges to access this page', ['userid' => $userid]);
+    exit(_('You need admin privileges to access this page.'));
 }
-
-if (getprivileges($userid)<=0) exit(_('You need admin privileges to access this page.'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -75,7 +77,7 @@ else
           <ul class="nav navbar-nav">
             <li><a href="<?php echo $systemURL; ?>"><?php echo _('Map'); ?></a></li>
             <li class="active"><a href="<?php echo $systemURL; ?>admin.php"><?php echo _('Admin'); ?></a></li>
-<?php if (isloggedin()): ?>
+<?php if ($auth->isLoggedIn()): ?>
             <li><a href="command.php?action=logout" id="logout"><?php echo _('Log out'); ?></a></li>
 <?php endif; ?>
           </ul>
@@ -90,7 +92,7 @@ else
             </div>
 
 <?php
-if (isloggedin()):
+if ($auth->isLoggedIn()):
 ?>
             <div role="tabpanel">
 

@@ -1,7 +1,3 @@
-<?php
-require("../config.php");
-require("../common.php");
-?>
 _select_stand = "<?php echo _('Select stand'); ?>";
 _bicycle = "<?php echo _('bicycle'); ?>";
 _bicycles = "<?php echo _('bicycles'); ?>";
@@ -33,3 +29,9 @@ _coupon = "<?php echo _('Coupon'); ?>";
 _value = "<?php echo _('Value'); ?>";
 _status = "<?php echo _('Status'); ?>";
 _set_sold = "<?php echo _('Mark as sold'); ?>";
+
+_secs = "<?php echo _('sec.'); ?>";
+_mins = "<?php echo _('min.'); ?>";
+_hour_s = "<?php echo _('hour/s'); ?>";
+_left = "<?php echo _('left'); ?>";
+_over = "<?php echo _('over'); ?>";

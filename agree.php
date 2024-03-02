@@ -8,10 +8,8 @@ require("config.php");
 require('actions-web.php');
 
 /**
- * @var DbInterface
+ * @var DbInterface $db
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
 ?>
 <!DOCTYPE html>
 <html lang="en">
