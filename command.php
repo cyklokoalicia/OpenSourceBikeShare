@@ -1,7 +1,11 @@
 <?php
 
+use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
+use BikeShare\Purifier\PhonePurifier;
+use BikeShare\Purifier\PhonePurifierInterface;
+use BikeShare\User\User;
 
 require_once 'vendor/autoload.php';
 require("config.php");
@@ -12,18 +16,15 @@ require('actions-web.php');
  */
 $db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
 $db->connect();
+$auth = new Auth($db);
+$user = new User($db);
+/**
+ * @var PhonePurifierInterface $phonePurifier
+ */
+$phonePurifier = new PhonePurifier($countrycode);
 
-if (isset($_COOKIE["loguserid"])) {
-    $userid = $db->escape(trim($_COOKIE["loguserid"]));
-} else {
-    $userid = 0;
-}
-
-if (isset($_COOKIE["logsession"])) {
-    $session = $db->escape(trim($_COOKIE["logsession"]));
-} else {
-    $session = '';
-}
+$userid = $auth->getUserId();
+$session = $auth->getSessionId();
 
 $action="";
 if (isset($_GET["action"])) $action=trim($_GET["action"]);
@@ -47,11 +48,12 @@ switch($action)
       break;
    case "login":
       $number=trim($_POST["number"]);
+      $number = $phonePurifier->purify($number);
       $password=trim($_POST["password"]);
-      login($number,$password);
+      $auth->login($number,$password);
       break;
    case "logout":
-      logout();
+      $auth->logout();
       break;
    case "resetpassword":
       resetpassword($_GET["number"]);
@@ -62,14 +64,14 @@ switch($action)
       break;
    case "rent":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       $bikeno=trim($_GET["bikeno"]);
       checkbikeno($bikeno);
       rent($userid,$bikeno);
       break;
    case "return":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       $bikeno=trim($_GET["bikeno"]);
       $stand=trim($_GET["stand"]);
       $note="";
@@ -79,19 +81,19 @@ switch($action)
       break;
    case "validatecoupon":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       $coupon=trim($_GET["coupon"]);
       validatecoupon($userid,$coupon);
       break;
 	case "changecity":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       $city=trim($_GET["city"]);
       changecity($userid,$city);
       break;
    case "forcerent":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       $bikeno=trim($_GET["bikeno"]);
       checkbikeno($bikeno);
@@ -99,7 +101,7 @@ switch($action)
       break;
    case "forcereturn":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       $bikeno=trim($_GET["bikeno"]);
       $stand=trim($_GET["stand"]);
@@ -110,21 +112,21 @@ switch($action)
       break;
    case "where":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       $bikeno=trim($_GET["bikeno"]);
       checkbikeno($bikeno);
       where($userid,$bikeno);
       break;
    case "removenote":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       checkbikeno($bikeno);
       removenote($userid,$bikeno);
       break;
    case "revert":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       $bikeno=trim($_GET["bikeno"]);
       checkprivileges($userid);
       checkbikeno($bikeno);
@@ -132,7 +134,7 @@ switch($action)
       break;
    case "last":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       if ($_GET["bikeno"])
          {
@@ -144,49 +146,49 @@ switch($action)
       break;
    case "stands": #"operationId": "stand.get",
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       liststands();
       break;
    case "userlist":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       getuserlist();
       break;
    case "userstats":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       getuserstats();
       break;
    case "usagestats":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       getusagestats();
       break;
    case "edituser":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       edituser($_GET["edituserid"]);
       break;
    case "saveuser":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       saveuser($_GET["edituserid"],$_GET["username"],$_GET["email"],$_GET["phone"],$_GET["privileges"],$_GET["limit"]);
       break;
    case "addcredit":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       addcredit($_GET["edituserid"],$_GET["creditmultiplier"]);
       break;
    case "trips":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       checkprivileges($userid);
       if ($_GET["bikeno"])
          {
@@ -201,17 +203,17 @@ switch($action)
       break;
    case "couponlist":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       getcouponlist();
       break;
    case "generatecoupons":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       generatecoupons($_GET["multiplier"]);
       break;
    case "sellcoupon":
       logrequest($userid,$action);
-      checksession();
+      $auth->refreshSession();
       sellcoupon($_GET["coupon"]);
       break;
    case "map:markers":
@@ -226,5 +228,3 @@ switch($action)
       mapgeolocation($userid,$lat,$long);
       break;
    }
-
-?>

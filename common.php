@@ -7,10 +7,13 @@ use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Mail\PHPMailerMailSender;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
+use BikeShare\Purifier\PhonePurifier;
+use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Sms\SmsSender;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsConnector\DebugConnector;
 use BikeShare\SmsConnector\SmsConnectorFactory;
+use BikeShare\User\User;
 
 require_once 'vendor/autoload.php';
 
@@ -59,6 +62,12 @@ $smsSender = new SmsSender(
  */
 $codeGenerator = new CodeGenerator();
 
+$user = new User($db);
+
+/**
+ * @var PhonePurifierInterface $phonePurifier
+ */
+$phonePurifier = new PhonePurifier($countrycode);
 
 function error($message)
 {
@@ -67,121 +76,9 @@ function error($message)
    exit($message);
 }
 
-
-function getprivileges($userid)
-{
-   global $db;
-
-   $result = $db->query("SELECT privileges FROM users WHERE userId=$userid");
-   if ($result->num_rows==1)
-      {
-      $row = $result->fetch_assoc();
-      return $row["privileges"];
-      }
-   return FALSE;
-}
-
-function getusername($userid)
-{
-   global $db;
-
-   $result = $db->query("SELECT userName FROM users WHERE userId=$userid");
-   if ($result->num_rows==1)
-      {
-      $row = $result->fetch_assoc();
-      return $row["userName"];
-      }
-   return FALSE;
-}
-
-function getusercity($userid)
-{
-    global $db;
-
-    $result = $db->query("SELECT city FROM users WHERE userId=$userid");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        return $row['city'];
-    }
-    return false;
-}
-
-function getphonenumber($userid)
-{
-   global $db;
-
-   $result = $db->query("SELECT number FROM users WHERE userId=$userid");
-   if ($result->num_rows==1)
-      {
-      $row = $result->fetch_assoc();
-      return $row["number"];
-      }
-   return FALSE;
-}
-
-function getuserid($number)
-{
-   global $db;
-
-   $result = $db->query("SELECT userId FROM users WHERE number='$number'");
-   if ($result->num_rows==1)
-      {
-      $row = $result->fetch_assoc();
-      return $row["userId"];
-      }
-   return FALSE;
-}
-
-function isloggedin()
-{
-    global $db;
-    if (isset($_COOKIE['loguserid']) and isset($_COOKIE['logsession'])) {
-        $userid = $db->escape(trim($_COOKIE['loguserid']));
-        $session = $db->escape(trim($_COOKIE['logsession']));
-        $result = $db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'" . time() . "'");
-        if ($result->num_rows == 1) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-    return 0;
-}
-
-function checksession()
-{
-    global $db, $systemURL;
-
-    $result = $db->query("DELETE FROM sessions WHERE timeStamp<='" . time() . "'");
-    if (isset($_COOKIE['loguserid']) and isset($_COOKIE['logsession'])) {
-        $userid = $db->escape(trim($_COOKIE['loguserid']));
-        $session = $db->escape(trim($_COOKIE['logsession']));
-        $result = $db->query("SELECT sessionId FROM sessions WHERE userId='$userid' AND sessionId='$session' AND timeStamp>'" . time() . "'");
-        if ($result->num_rows == 1) {
-            $timestamp = time() + 86400 * 14;
-            $result = $db->query("UPDATE sessions SET timeStamp='$timestamp' WHERE userId='$userid' AND sessionId='$session'");
-            $db->commit();
-        } else {
-            $result = $db->query("DELETE FROM sessions WHERE userId='$userid' OR sessionId='$session'");
-            $db->commit();
-            setcookie('loguserid', '', time() - 86400);
-            setcookie('logsession', '', time() - 86400);
-            header('HTTP/1.1 302 Found');
-            header('Location: ' . $systemURL . '?error=2');
-            header('Connection: close');
-            exit;
-        }
-    } else {
-        header('HTTP/1.1 302 Found');
-        header('Location: ' . $systemURL . '?error=2');
-        header('Connection: close');
-        exit;
-    }
-}
-
 function logrequest($userid)
 {
-   global $dbserver,$dbuser,$dbpassword,$dbname;
+   global $dbserver,$dbuser,$dbpassword,$dbname, $user;
     /**
      * @var DbInterface
      */
@@ -191,7 +88,7 @@ function logrequest($userid)
     #TODO does it needed???
     $localdb->setAutocommit(true);
 
-    $number = getphonenumber($userid);
+    $number = $user->findPhoneNumber($userid);
 
     $result = $localdb->query("INSERT INTO received SET sender='$number',receive_time='" . date('Y-m-d H:i:s') . "',sms_text='" . $_SERVER['REQUEST_URI'] . "',ip='" . $_SERVER['REMOTE_ADDR'] . "'");
 }
@@ -551,23 +448,4 @@ function issmssystemenabled()
     }
 
     return true;
-}
-
-function normalizephonenumber($number)
-{
-    global $countrycode;
-    $number = str_replace('+', '', $number);
-    $number = str_replace(' ', '', $number);
-    $number = str_replace('-', '', $number);
-    $number = str_replace('/', '', $number);
-    $number = str_replace('.', '', $number);
-    if (substr($number, 0, 1) == '0') {
-        $number = substr($number, 1);
-    }
-
-    if (substr($number, 0, 3) != $countrycode) {
-        $number = $countrycode . $number;
-    }
-
-    return $number;
 }

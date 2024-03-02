@@ -8,9 +8,9 @@ require("common.php");
 
 function help($number)
 {
-   global $db, $smsSender;
-   $userid=getUser($number);
-   $privileges=getprivileges($userid);
+    global $db, $smsSender, $user;
+    $userid = $user->findUserIdByNumber($number);
+    $privileges = $user->findPrivileges($userid);
    if ($privileges>0)
       {
       $message="Commands:\nHELP\n";
@@ -33,20 +33,11 @@ function unknownCommand($number,$command)
    $smsSender->send($number,_('Error. The command')." ".$command." "._('does not exist. If you need help, send:')." HELP");
 }
 
-/**
- * @deprecated, call getuserid() directly
- */
-function getUser($number)
-{
-   return getuserid($number);
-}
-
 function validateNumber($number)
 {
-    if (getUser($number))
-   return true;
-    else
-   return false;
+    global $user;
+
+    return !empty($user->findUserIdByNumber($number));
 }
 
 function info($number,$stand)
@@ -101,8 +92,8 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
 
 function credit($number)
 {
-   global $db, $smsSender;
-   $userid=getUser($number);
+   global $db, $smsSender, $user;
+   $userid=$user->findUserIdByNumber($number);
    $usercredit=getusercredit($userid).getcreditcurrency();
    $smsSender->send($number,_('Your remaining credit:')." ".$usercredit);
 }
@@ -110,9 +101,9 @@ function credit($number)
 function rent($number,$bike,$force=FALSE)
 {
 
-        global $db,$forcestack,$watches,$credit, $smsSender;
+    global $db,$forcestack,$watches,$credit, $smsSender, $user;
         $stacktopbike=FALSE;
-   $userId = getUser($number);
+    $userId = $user->findUserIdByNumber($number);
    $bikeNum = intval($bike);
    $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
 
@@ -178,8 +169,8 @@ function rent($number,$bike,$force=FALSE)
                $result=$db->query("SELECT standName FROM stands WHERE standId='$standid'");
                $row=$result->fetch_assoc();
                $stand=$row["standName"];
-               $user=getusername($userId);
-               notifyAdmins(_('Bike')." ".$bike." "._('rented out of stack by')." ".$user.". ".$stacktopbike." "._('was on the top of the stack at')." ".$stand.".",ERROR);
+               $userName=$user->findUserName($userId);
+               notifyAdmins(_('Bike')." ".$bike." "._('rented out of stack by')." ".$userName.". ".$stacktopbike." "._('was on the top of the stack at')." ".$stand.".",ERROR);
                }
             if ($forcestack AND $stacktopbike<>$bikeNum)
                {
@@ -202,12 +193,9 @@ function rent($number,$bike,$force=FALSE)
    $row=$result->fetch_assoc();
    $note=$row["note"];
    $currentUserNumber = false;
-   if ($currentUser)
-      {
-      $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
-      $row =$result->fetch_assoc();
-      $currentUserNumber =$row["number"];
-      }
+    if ($currentUser) {
+        $currentUserNumber = $user->findPhoneNumber($currentUser);
+    }
 
    $newCode = sprintf("%04d",rand(100,9900));//do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
 
@@ -250,8 +238,8 @@ function rent($number,$bike,$force=FALSE)
 function returnBike($number,$bike,$stand,$message="",$force=FALSE)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
    $bikeNum = intval($bike);
    $stand = strtoupper($stand);
 
@@ -313,12 +301,9 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
       $row=$result->fetch_assoc();
       $note=$row["note"];
-        if($currentUser)
-        {
-    	    $result=$db->query("SELECT number FROM users WHERE userId=$currentUser");
-    	    $row =$result->fetch_assoc();
-    	    $currentUserNumber =$row["number"];
-        }
+          if ($currentUser) {
+              $currentUserNumber = $user->findPhoneNumber($currentUser);
+          }
       }
 
    if (!preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i",$message ,$matches))
@@ -331,10 +316,8 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
    if ($userNote)
       {
       $db->query("INSERT INTO notes SET bikeNum=$bikeNum,userId=$userId,note='$userNote'");
-      $result=$db->query("SELECT userName,number FROM users WHERE userId='$userId'");
-      $row=$result->fetch_assoc();
-      $userName=$row["userName"];
-      $phone=$row["number"];
+      $userName = $user->findUserName($userId);
+      $phone = $user->findPhoneNumber($userId);
       $result=$db->query("SELECT stands.standName FROM bikes LEFT JOIN users ON bikes.currentUser=users.userID LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
       $row=$result->fetch_assoc();
       $standName=$row["standName"];
@@ -387,8 +370,8 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
 function where($number,$bike)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
    $bikeNum = intval($bike);
 
    $result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
@@ -424,9 +407,9 @@ function where($number,$bike)
 function listBikes($number,$stand)
 {
 
-   global $db,$forcestack, $smsSender;
+   global $db,$forcestack, $smsSender, $user;
    $stacktopbike=FALSE;
-   $userId = getUser($number);
+   $userId = $user->findUserIdByNumber($number);
    $stand = strtoupper($stand);
 
    if (!preg_match("/^[A-Z]+[0-9]*$/",$stand))
@@ -474,8 +457,8 @@ function listBikes($number,$stand)
 function freeBikes($number)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
 
    $result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount>0 order by placeName");
    $rentedBikes=$result->num_rows;
@@ -545,8 +528,8 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 function delnote($number,$bikeNum,$message)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
    
     $bikeNum=trim($bikeNum);
 	if(preg_match("/^[0-9]*$/",$bikeNum))
@@ -634,8 +617,8 @@ function delnote($number,$bikeNum,$message)
 function untag($number,$standName,$message)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
 
 	checkUserPrivileges($number);
 	$result=$db->query("SELECT standId FROM stands where standName='$standName'");
@@ -693,8 +676,8 @@ function untag($number,$standName,$message)
 function delstandnote($number,$standName,$message)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
 
 	checkUserPrivileges($number);
 	$result=$db->query("SELECT standId FROM stands where standName='$standName'");
@@ -752,8 +735,8 @@ function delstandnote($number,$standName,$message)
 function standNote($number,$standName,$message)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
 
 
 	$result=$db->query("SELECT standId FROM stands where standName='$standName'");
@@ -800,9 +783,8 @@ function standNote($number,$standName,$message)
 function tag($number,$standName,$message)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
-
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
 
 	$result=$db->query("SELECT standId FROM stands where standName='$standName'");
    if ($result->num_rows!=1)
@@ -846,8 +828,8 @@ function tag($number,$standName,$message)
 function note($number,$bikeNum,$message)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
    
     $bikeNum=trim($bikeNum);
 	if(preg_match("/^[0-9]*$/",$bikeNum))
@@ -928,8 +910,8 @@ function note($number,$bikeNum,$message)
 function last($number,$bike)
 {
 
-   global $db, $smsSender;
-   $userId = getUser($number);
+   global $db, $smsSender, $user;
+   $userId = $user->findUserIdByNumber($number);
    $bikeNum = intval($bike);
 
    $result=$db->query("SELECT bikeNum FROM bikes where bikeNum=$bikeNum");
@@ -965,8 +947,8 @@ function last($number,$bike)
 function revert($number,$bikeNum)
 {
 
-        global $db, $smsSender;
-        $userId = getUser($number);
+        global $db, $smsSender, $user;
+        $userId = $user->findUserIdByNumber($number);
 
         $result=$db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser<>'NULL'");
         if (!$result->num_rows)
@@ -977,7 +959,7 @@ function revert($number,$bikeNum)
         else
            {
            $row=$result->fetch_assoc();
-           $revertusernumber=getphonenumber($row["currentUser"]);
+           $revertusernumber=$user->findPhoneNumber($row["currentUser"]);
            }
 
         $result=$db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=$bikeNum AND action IN ('RETURN','FORCERETURN') ORDER BY time DESC LIMIT 1");
@@ -1012,10 +994,9 @@ function revert($number,$bikeNum)
 function add($number,$email,$phone,$message)
 {
 
-        global $db, $countrycode, $smsSender;
-   $userId = getUser($number);
-
-   $phone=normalizephonenumber($phone);
+    global $db, $countrycode, $smsSender, $user, $phonePurifier;
+    $userId = $user->findUserIdByNumber($number); #maybe we should check if the user exist???
+    $phone = $phonePurifier->purify($phone);
 
    $result=$db->query("SELECT number,mail,userName FROM users where number=$phone OR mail='$email'");
           if ($result->num_rows!=0)
@@ -1049,8 +1030,8 @@ function add($number,$email,$phone,$message)
 
 function checkUserPrivileges($number)
 {
-   global $db, $sms, $smsSender;
-   $userId=getUser($number);
+   global $db, $sms, $smsSender, $user;
+   $userId=$user->findUserIdByNumber($number);
    $privileges=getPrivileges($userId);
    if ($privileges==0)
       {
@@ -1059,5 +1040,3 @@ function checkUserPrivileges($number)
       exit;
       }
 }
-
-?>
