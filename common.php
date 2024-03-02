@@ -14,8 +14,15 @@ use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsConnector\DebugConnector;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\User\User;
+use Monolog\ErrorHandler;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
 
 require_once 'vendor/autoload.php';
+
+$logger = new Logger('BikeShare');
+$logger->pushHandler(new RotatingFileHandler( __DIR__ . '/var/log/log.log', 30, Logger::WARNING));
+ErrorHandler::register($logger);
 
 $locale = $systemlang . ".utf8";
 setlocale(LC_ALL, $locale);
@@ -23,7 +30,7 @@ putenv("LANG=" . $locale);
 bindtextdomain("messages", dirname(__FILE__) . '/languages');
 textdomain("messages");
 
-$sms = (new SmsConnectorFactory())->getConnector(
+$sms = (new SmsConnectorFactory($logger))->getConnector(
     !empty($connectors["sms"]) ? $connectors["sms"] : 'disabled',
     !empty($connectors["config"][$connectors["sms"]]) ? json_decode($connectors["config"][$connectors["sms"]], true) : array(),
     DEBUG
@@ -32,7 +39,7 @@ $sms = (new SmsConnectorFactory())->getConnector(
 /**
  * @var DbInterface $db
  */
-$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 $db->connect();
 
 /**
@@ -78,11 +85,11 @@ function error($message)
 
 function logrequest($userid)
 {
-   global $dbserver,$dbuser,$dbpassword,$dbname, $user;
+   global $dbserver,$dbuser,$dbpassword,$dbname, $user, $logger;
     /**
      * @var DbInterface
      */
-    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
     $localdb->connect();
 
     #TODO does it needed???
@@ -95,12 +102,12 @@ function logrequest($userid)
 
 function logresult($userid, $text)
 {
-    global $dbserver, $dbuser, $dbpassword, $dbname;
+    global $dbserver, $dbuser, $dbpassword, $dbname, $logger;
 
     /**
      * @var DbInterface
      */
-    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
     $localdb->connect();
 
     #TODO does it needed???

@@ -2,8 +2,21 @@
 
 namespace BikeShare\SmsConnector;
 
+use Psr\Log\LoggerInterface;
+
 class SmsConnectorFactory
 {
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    public function __construct(
+        LoggerInterface $logger
+    ) {
+        $this->logger = $logger;
+    }
+
     /**
      * @param string $connector
      * @param array $config
@@ -24,9 +37,9 @@ class SmsConnectorFactory
                 default:
                     return new DisabledConnector();
             }
-        } catch (\Exception $e) {
-            // TODO add logging instead of triggering error
-            trigger_error($e->getMessage(), E_USER_WARNING);
+        } catch (\Exception $exception) {
+            $this->logger->error('Error creating SMS connector', compact('connector', 'exception'));
+
             return new DisabledConnector();
         }
     }

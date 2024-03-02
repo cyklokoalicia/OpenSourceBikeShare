@@ -2,8 +2,8 @@
 
 use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
 use BikeShare\User\User;
+use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
 require("config.php");
@@ -11,9 +11,8 @@ require('actions-qrcode.php');
 
 /**
  * @var DbInterface $db
+ * @var LoggerInterface $logger
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
 $user = new User($db);
 $auth = new Auth($db);
 

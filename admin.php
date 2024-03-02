@@ -2,8 +2,8 @@
 
 use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
 use BikeShare\User\User;
+use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
 require("config.php");
@@ -11,9 +11,8 @@ require('actions-web.php');
 
 /**
  * @var DbInterface $db
+ * @var LoggerInterface $logger
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
 $user = new User($db);
 $auth = new Auth($db);
 
@@ -21,7 +20,10 @@ $auth->refreshSession();
 
 $userid = $auth->getUserId();
 
-if ($user->findPrivileges($userid)<=0) exit(_('You need admin privileges to access this page.'));
+if ($user->findPrivileges($userid)<=0) {
+    $logger->error('User has no privileges to access this page', ['userid' => $userid]);
+    exit(_('You need admin privileges to access this page.'));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

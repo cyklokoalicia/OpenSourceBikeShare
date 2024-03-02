@@ -26,7 +26,8 @@
     "ext-json": "*",
     "ext-mysqli": "*",
     "ext-gettext": "*",
-    "ext-curl": "*"
+    "ext-curl": "*",
+    "monolog/monolog": "^1.27"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.0",
