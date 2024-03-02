@@ -2,6 +2,8 @@
 
 namespace BikeShare\Db;
 
+use Psr\Log\LoggerInterface;
+
 class MysqliDb implements DbInterface
 {
     /**
@@ -25,30 +27,49 @@ class MysqliDb implements DbInterface
      */
     private $dbname;
     /**
+     * @var LoggerInterface|null
+     */
+    private $logger;
+    /**
      * @var false
      */
     private $throwException;
 
-    public function __construct($dbserver, $dbuser, $dbpassword, $dbname, $throwException = false)
-    {
+    public function __construct(
+        $dbserver,
+        $dbuser,
+        $dbpassword,
+        $dbname,
+        LoggerInterface $logger,
+        $throwException = false
+    ) {
         $this->dbserver = $dbserver;
         $this->dbuser = $dbuser;
         $this->dbpassword = $dbpassword;
         $this->dbname = $dbname;
+        $this->logger = $logger;
         $this->throwException = $throwException;
     }
 
     public function connect()
     {
+        //in future exception should be thrown
+        //mysqli_report(MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT);
         $this->conn = new \mysqli($this->dbserver, $this->dbuser, $this->dbpassword, $this->dbname);
         if (!$this->conn || $this->conn->connect_errno) {
+            $this->logger->error(
+                'DB connection error!',
+                [
+                    'error' => $this->conn->connect_error,
+                    'errno' => $this->conn->connect_errno,
+                ]
+            );
             if ($this->throwException) {
                 throw new \RuntimeException(
                     'DB connection error!',
                     !empty($this->conn->connect_errno) ? $this->conn->connect_errno : 0
                 );
             } else {
-                trigger_error('DB connection error!', E_USER_ERROR);
                 die(_('DB connection error!'));
             }
         }
@@ -60,11 +81,20 @@ class MysqliDb implements DbInterface
     {
         $result = $this->conn->query($query);
         if (!$result) {
+            $this->logger->error(
+                'DB query error',
+                [
+                    'query' => $query,
+                    'params' => $params,
+                    'error' => $this->conn->get_connection_stats() ? $this->conn->error : 'unknown',
+                    'errno' => $this->conn->get_connection_stats() ? $this->conn->errno : 'unknown',
+                ]
+            );
             $this->conn->rollback();
+
             if ($this->throwException) {
                 throw new \RuntimeException('DB error in : ' . $query);
             } else {
-                trigger_error('DB error' . ' ' . $this->conn->error . ' ' . _('in') . ': ' . $query, E_USER_ERROR);
                 die(_('DB error') . ' ' . $this->conn->error . ' ' . _('in') . ': ' . $query);
             }
         }

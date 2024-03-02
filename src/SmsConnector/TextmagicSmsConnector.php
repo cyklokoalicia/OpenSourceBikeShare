@@ -55,7 +55,7 @@ class TextmagicSmsConnector extends AbstractConnector
             || empty($config['gatewayPassword'])
             || empty($config['gatewaySenderNumber'])
         ) {
-            exit('Please, configure SMS API gateway access in ' . __FILE__ . '!');
+            throw new \RuntimeException('Invalid Textmagic configuration');
         }
         $this->gatewayUser = $config['gatewayUser'];
         $this->gatewayPassword = $config['gatewayPassword'];

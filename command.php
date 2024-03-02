@@ -2,10 +2,10 @@
 
 use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
 use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\User\User;
+use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
 require("config.php");
@@ -13,9 +13,8 @@ require('actions-web.php');
 
 /**
  * @var DbInterface $db
+ * @var LoggerInterface $logger
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
 $auth = new Auth($db);
 $user = new User($db);
 /**

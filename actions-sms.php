@@ -497,11 +497,11 @@ function freeBikes($number)
 
 function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 {
-    global $dbserver, $dbuser, $dbpassword, $dbname;
+    global $dbserver, $dbuser, $dbpassword, $dbname, $logger;
     /**
      * @var DbInterface
      */
-    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname);
+    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
     $localdb->connect();
 
     #TODO does it needed???

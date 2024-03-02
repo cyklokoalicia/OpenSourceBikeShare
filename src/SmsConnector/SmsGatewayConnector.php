@@ -61,7 +61,7 @@ class SmsGatewayConnector extends AbstractConnector
             return;
         }
         if (empty($config['gatewayEmail']) || empty($config['gatewayPassword']) || empty($config['gatewaySecret'])) {
-            exit('Please, configure SMS API gateway access in config.php!');
+            throw new \RuntimeException('Invalid SmsGateway configuration');
         }
         $this->gatewayEmail = $config['gatewayEmail'];
         $this->gatewayPassword = $config['gatewayPassword'];

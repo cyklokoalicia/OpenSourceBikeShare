@@ -2,6 +2,10 @@
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
+use Monolog\ErrorHandler;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 require_once '../vendor/autoload.php';
 if (file_exists("../config.php")) {
@@ -12,8 +16,12 @@ if (file_exists("../config.php")) {
 
 /**
  * @var DbInterface $db
+ * @var LoggerInterface $logger
  */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
+$logger = new Logger('BikeShare');
+$logger->pushHandler(new RotatingFileHandler(__DIR__ . '/../var/log/log.log', 30, Logger::WARNING));
+ErrorHandler::register($logger);
+$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 $db->connect();
 
 // create new PDF document
@@ -78,5 +86,3 @@ while ($row=$result->fetch_assoc())
 
 //Close and output PDF document
 $pdf->Output('qrcodes.pdf', 'D');
-
-?>

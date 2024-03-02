@@ -1,22 +1,17 @@
 <?php
 
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
 use BikeShare\SmsConnector\SmsConnectorInterface;
+use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
 require("config.php");
-
-/**
- * @var DbInterface $db
- */
-$db=new MysqliDb($dbserver,$dbuser,$dbpassword,$dbname);
-$db->connect();
-
 require("actions-sms.php");
 
 /**
  * @var SmsConnectorInterface $sms
+ * @var LoggerInterface $logger
+ * @var DbInterface $db
  */
 log_sms($sms->getUUID(),$sms->getNumber(),$sms->getTime(),$sms->getMessage(),$sms->getIPAddress());
 
@@ -24,7 +19,7 @@ $args=preg_split("/\s+/",$sms->getProcessedMessage());//preg_split must be used 
 
 if(!validateNumber($sms->getNumber()))
    {
-       trigger_error("Invalid number: ".$sms->getNumber(), E_USER_WARNING);
+       $logger->error("Invalid number", ["number" => $sms->getNumber(), 'sms' => $sms]);
    ####
    #$smsSender->send($sms->getNumber(),_('Your number is not registered.'));
    }
@@ -121,5 +116,3 @@ else
 
 $db->commit();
 $sms->respond();
-
-?>
