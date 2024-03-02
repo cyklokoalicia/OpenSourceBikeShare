@@ -1,6 +1,5 @@
 <?php
 require("config.php");
-require("db.class.php");
 require("common.php");
 ?>
 <!DOCTYPE html>
