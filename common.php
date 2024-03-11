@@ -162,13 +162,13 @@ function notifyAdmins($message, $notificationtype = 0)
     while ($row = $result->fetch_assoc()) {
         if ($notificationtype == 0) {
             $smsSender->send($row['number'], $message);
-            $mailer->send($watches['email'], $systemname . ' ' . _('notification'), $message);
+            $mailer->sendMail($watches['email'], $systemname . ' ' . _('notification'), $message);
         } else {
-            $mailer->send($row['mail'], $systemname . ' ' . _('notification'), $message);
+            $mailer->sendMail($row['mail'], $systemname . ' ' . _('notification'), $message);
         }
     }//copy to Trello board -- might be added as a person instead
     if ($notificationtype == 0) {
-        $mailer->send('cyklokoalicia1+q31wfjphbgkuelf19hlb@boards.trello.com', $message, $message);
+        $mailer->sendMail('cyklokoalicia1+q31wfjphbgkuelf19hlb@boards.trello.com', $message, $message);
     }
 }
 
@@ -195,7 +195,7 @@ function sendConfirmationEmail($emailto)
         _('you have been registered into community bike share system') . ' ' . $systemname . ".\n\n" .
         _('System rules are available here:') . "\n" . $systemrules . "\n\n" .
         _('By clicking the following link you agree to the System rules:') . "\n" . $systemURL . 'agree.php?key=' . $userKey;
-    $mailer->send($emailto, $subject, $message);
+    $mailer->sendMail($emailto, $subject, $message);
 }
 
 function confirmUser($userKey)

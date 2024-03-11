@@ -1032,7 +1032,7 @@ function checkUserPrivileges($number)
 {
    global $db, $sms, $smsSender, $user;
    $userId=$user->findUserIdByNumber($number);
-   $privileges=getPrivileges($userId);
+   $privileges=$user->findPrivileges($userId);
    if ($privileges==0)
       {
       $smsSender->send($number,_('Sorry, this command is only available for the privileged users.'));
