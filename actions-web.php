@@ -712,7 +712,7 @@ function resetpassword($number)
     _('Your password has been reset successfully.') . "\n\n" .
     _('Your new password is:') . "\n" . $password;
 
-    $mailer->send($email, $subject, $message);
+    $mailer->sendMail($email, $subject, $message);
     response(_('Your password has been reset successfully.') . ' ' . _('Check your email.'));
 }
 
