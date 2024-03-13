@@ -3,10 +3,13 @@
 namespace Test\BikeShare\SmsConnector;
 
 use BikeShare\SmsConnector\EuroSmsConnector;
+use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
 
 class EuroSmsConnectorTest extends TestCase
 {
+    use PHPMock;
+
     /**
      * @var EuroSmsConnector
      */
@@ -107,43 +110,30 @@ class EuroSmsConnectorTest extends TestCase
 
     public function testSend()
     {
-        $this->smsConnector->send('number', 'text');
+        $this->getFunctionMock('BikeShare\SmsConnector', 'md5')
+            ->expects($this->once())
+            ->with('Key' . 'number')
+            ->willReturn('123456789011223344556677889900aa');
+        $this->getFunctionMock('BikeShare\SmsConnector', 'substr')
+            ->expects($this->once())
+            ->with('123456789011223344556677889900aa', 10, 11)
+            ->willReturn('1122334455');
+        $this->getFunctionMock('BikeShare\SmsConnector', 'urlencode')
+            ->expects($this->once())
+            ->with('text!@-_ +')
+            ->willReturn(urlencode('text!@-_ +'));
+
+        $expectedUrl = 'http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=Id&'
+            . 's=1122334455&d=1&sender=SenderNumber&number=number&msg=text%21%40-_+%2B';
+
+        $this->getFunctionMock('BikeShare\SmsConnector', 'fopen')
+            ->expects($this->once())
+            ->with(
+                $expectedUrl,
+                'r'
+            )->willReturn(true);
+
+        $this->smsConnector->send('number', 'text!@-_ +');
         $this->expectOutputString('');
     }
-}
-
-/**
- * @phpcs:disable PSR1.Files.SideEffects
- */
-namespace BikeShare\SmsConnector;
-{
-
-/**
- * no need to send real request to as.eurosms.com
- * TODO should be refactored to use Guzzle or similar
- */
-function fopen($filename, $mode, $use_include_path = null, $context = null)
-{
-    $gatewayId = 'Id';
-    $gatewayKey = 'Key';
-    $gatewaySenderNumber = 'SenderNumber';
-    $message = 'text';
-    $number = 'number';
-    $s = substr(md5($gatewayKey . $number), 10, 11);
-    $um = urlencode($message);
-
-    $url = sprintf(
-        'http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=%s&s=%s&d=1&sender=%s&number=%s&msg=%s',
-        $gatewayId,
-        $s,
-        $gatewaySenderNumber,
-        $number,
-        $um
-    );
-
-    if ($filename !== $url) {
-        throw new \RuntimeException('Invalid URL generated');
-    }
-}
-
 }

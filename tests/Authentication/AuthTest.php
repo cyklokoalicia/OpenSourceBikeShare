@@ -4,10 +4,13 @@ namespace Test\BikeShare\Authentication;
 
 use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
+use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
 
 class AuthTest extends TestCase
 {
+    use PHPMock;
+
     /**
      * @phpcs:disable PSR12.Properties.ConstantVisibility
      */
@@ -128,6 +131,11 @@ class AuthTest extends TestCase
         $number = 'number';
         $password = 'password';
         $userId = '123';
+
+        $this->getFunctionMock('BikeShare\Authentication', 'time')
+            ->expects($this->exactly(2))
+            ->willReturn(9999);
+
         $this->db->expects($this->exactly(2))
             ->method('escape')
             ->withConsecutive(
@@ -150,6 +158,21 @@ class AuthTest extends TestCase
                 null
             );
 
+        $this->getFunctionMock('BikeShare\Authentication', 'setcookie')
+            ->expects($this->exactly(2))
+            ->withConsecutive(
+                ['loguserid', $userId, 1219599],
+                ['logsession', $sessionId, 1219599]
+            )
+            ->willReturn(true);
+
+        $this->getFunctionMock('BikeShare\Authentication', 'header')
+            ->expects($this->exactly(3))
+            ->withConsecutive(
+                ['HTTP/1.1 302 Found'],
+                ['Location: /'],
+                ['Connection: close']
+            );
 
         $this->auth->login($number, $password);
     }
@@ -170,12 +193,19 @@ class AuthTest extends TestCase
         if ($sessionId) {
             $_COOKIE["logsession"] = $sessionId;
         }
-        $this->db->expects($this->exactly(count($escapeCallParams)))
+
+        $this->getFunctionMock('BikeShare\Authentication', 'time')
+            ->expects(count($escapeCallParams) > 0 ? $this->once() : $this->never())
+            ->willReturn(9999);
+
+        $this->db
+            ->expects($this->exactly(count($escapeCallParams)))
             ->method('escape')
             ->withConsecutive(...$escapeCallParams)
             ->willReturnOnConsecutiveCalls(...$escapeCallResults);
 
-        $this->db->expects(count($escapeCallParams) > 0 ? $this->exactly(1) : $this->never())
+        $this->db
+            ->expects(count($escapeCallParams) > 0 ? $this->once() : $this->never())
             ->method('query')
             ->withConsecutive(
                 ["SELECT sessionId FROM sessions WHERE
@@ -240,6 +270,26 @@ class AuthTest extends TestCase
                 $sessionId
             );
 
+        $this->getFunctionMock('BikeShare\Authentication', 'time')
+            ->expects($this->exactly(3))
+            ->willReturn(9999);
+
+        $this->getFunctionMock('BikeShare\Authentication', 'setcookie')
+            ->expects($this->exactly(2))
+            ->withConsecutive(
+                ['loguserid', '0', 6399, '/'],
+                ['logsession', '', 6399, '/']
+            )
+            ->willReturn(true);
+
+        $this->getFunctionMock('BikeShare\Authentication', 'header')
+            ->expects($this->exactly(3))
+            ->withConsecutive(
+                ['HTTP/1.1 302 Found'],
+                ['Location: /'],
+                ['Connection: close']
+            );
+
         $this->db->expects($this->exactly(2))
             ->method('query')
             ->withConsecutive(
@@ -276,6 +326,10 @@ class AuthTest extends TestCase
                 $sessionId
             );
 
+        $this->getFunctionMock('BikeShare\Authentication', 'time')
+            ->expects($this->exactly(4))
+            ->willReturn(9999);
+
         $this->db->expects($this->exactly(4))
             ->method('query')
             ->withConsecutive(
@@ -295,24 +349,4 @@ class AuthTest extends TestCase
 
         $this->auth->refreshSession();
     }
-}
-
-/**
- * @phpcs:disable PSR1.Files.SideEffects
- */
-namespace BikeShare\Authentication;
-{
-function header($header, $replace = true, $response_code = 0)
-{
-}
-
-function setcookie($name, $value = '', $options = 0)
-{
-    return true;
-}
-
-function time()
-{
-    return 9999;
-}
 }
