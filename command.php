@@ -6,6 +6,8 @@ use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
+use BikeShare\Controller\ControllerFactory;
+use Symfony\Component\HttpFoundation\Request;
 
 require_once 'vendor/autoload.php';
 require("config.php");
@@ -25,8 +27,22 @@ $phonePurifier = new PhonePurifier($countrycode);
 $userid = $auth->getUserId();
 $session = $auth->getSessionId();
 
-$action="";
-if (isset($_GET["action"])) $action=trim($_GET["action"]);
+$request = Request::createFromGlobals();
+
+$action = $request->query->get('action', '');
+
+try {
+    $controllerFactory = new ControllerFactory($request, $db, $auth, $user, $logger);
+    $controller = $controllerFactory->getController($action);
+    if (!is_null($controller) && $controller->checkAccess()) {
+        echo json_encode($controller->run());
+        exit(0);
+    } elseif (!is_null($controller)) {
+        throw new \Exception('Access denied', 403);
+    }
+} catch (Exception $exception) {
+    $logger->error('Failed to run controller', ['exception' => $exception, 'action' => $action]);
+}
 
 switch($action)
    {
