@@ -83,7 +83,7 @@ class CreditSystemTest extends TestCase
         $db = $this->createMock(DbInterface::class);
         $db->expects($this->once())
             ->method('query')
-            ->with("SELECT credit FROM users WHERE id = '$userId'")
+            ->with("SELECT credit FROM credit WHERE id = '$userId'")
             ->willReturn($dbResult);
 
         $creditSystem = new CreditSystem(['isEnabled' => true], $db);
@@ -102,7 +102,7 @@ class CreditSystemTest extends TestCase
         $db = $this->createMock(DbInterface::class);
         $db->expects($this->once())
             ->method('query')
-            ->with("SELECT credit FROM users WHERE id = '$userId'")
+            ->with("SELECT credit FROM credit WHERE id = '$userId'")
             ->willReturn($dbResult);
 
         $creditSystem = new CreditSystem(['isEnabled' => true], $db);
