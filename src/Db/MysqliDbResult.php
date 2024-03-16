@@ -44,6 +44,21 @@ class MysqliDbResult implements DbResultInterface
         return $this->result ? (int)$this->result->num_rows : 0;
     }
 
+    /**
+     * @TODO temporary solution, should be removed
+     */
+    public function __call($name, $arguments)
+    {
+        if (method_exists($this->result, $name)) {
+            return call_user_func_array([$this->result, $name], $arguments);
+        } else {
+            throw new \Exception("Method $name not found");
+        }
+    }
+
+    /**
+     * @TODO temporary solution, should be removed
+     */
     public function __get($name)
     {
         if ($name === 'num_rows') {
