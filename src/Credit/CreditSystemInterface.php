@@ -17,6 +17,11 @@ interface CreditSystemInterface
     /**
      * @return bool
      */
+    public function isEnoughCreditForRent($userid);
+
+    /**
+     * @return bool
+     */
     public function isEnabled();
 
     /**

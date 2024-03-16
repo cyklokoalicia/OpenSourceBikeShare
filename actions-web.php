@@ -32,13 +32,15 @@ function rent($userId, $bike, $force = false)
 
     $stacktopbike = false;
     $bikeNum = $bike;
-    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
 
     if ($force == false) {
-        $creditcheck = checkrequiredcredit($userId);
-        if ($creditcheck === false) {
+        if (!$creditSystem->isEnoughCreditForRent($userId)) {
+            $minRequiredCredit = $creditSystem->getMinRequiredCredit();
             response(_('You are below required credit') . ' ' . $minRequiredCredit . $creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), ERROR);
+
+            return;
         }
+
         checktoomany(0, $userId);
 
         $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");

@@ -52,6 +52,11 @@ class CreditSystem implements CreditSystemInterface
         return $this->minBalanceCredit + $this->rentalFee + $this->longRentalFee;
     }
 
+    public function isEnoughCreditForRent($userid)
+    {
+        return $this->getUserCredit($userid) >= $this->getMinRequiredCredit();
+    }
+
     /**
      * @return bool
      */

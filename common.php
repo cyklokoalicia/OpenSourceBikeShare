@@ -317,26 +317,6 @@ function checktoomany($cron = 1, $userid = 0)
     }
 }
 
-// check if user has credit >= minimum credit+rent fee+long rental fee
-function checkrequiredcredit($userid)
-{
-    global $creditSystem;
-
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-
-    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
-
-    $userRemainingCredit = $creditSystem->getUserCredit($userid);
-    if ($userRemainingCredit >= $minRequiredCredit) {
-        return true;
-    }
-
-    return false;
-}
-
 // subtract credit for rental
 function changecreditendrental($bike, $userid)
 {

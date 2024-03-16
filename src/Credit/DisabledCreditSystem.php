@@ -14,6 +14,11 @@ class DisabledCreditSystem implements CreditSystemInterface
         return PHP_INT_MAX;
     }
 
+    public function isEnoughCreditForRent($userid)
+    {
+        return true;
+    }
+
     public function isEnabled()
     {
         return false;

@@ -111,16 +111,17 @@ function rent($number,$bike,$force=FALSE)
     $stacktopbike = FALSE;
     $userId = $user->findUserIdByNumber($number);
     $bikeNum = intval($bike);
-    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
 
-   if ($force==FALSE)
-           {
-           $creditcheck=checkrequiredcredit($userId);
-           if ($creditcheck === false) {
-               $userRemainingCredit = $creditSystem->getUserCredit($userId);
-               $smsSender->send($number, _('Please, recharge your credit:') . " " . $userRemainingCredit . $creditSystem->getCreditCurrency() . ". " . _('Credit required:') . " " . $minRequiredCredit . $creditSystem->getCreditCurrency() . ".");
-               return;
-           }
+    if ($force == FALSE) {
+        if (!$creditSystem->isEnoughCreditForRent($userId)) {
+            $minRequiredCredit = $creditSystem->getMinRequiredCredit();
+            $userRemainingCredit = $creditSystem->getUserCredit($userId);
+            $smsSender->send(
+                $number,
+                _('Please, recharge your credit:') . " " . $userRemainingCredit . $creditSystem->getCreditCurrency() . ". " . _('Credit required:') . " " . $minRequiredCredit . $creditSystem->getCreditCurrency() . "."
+            );
+            return;
+        }
 
          checktoomany(0,$userId);
 
