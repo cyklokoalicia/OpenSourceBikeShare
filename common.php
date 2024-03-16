@@ -317,25 +317,6 @@ function checktoomany($cron = 1, $userid = 0)
     }
 }
 
-// check if user has credit >= minimum credit+rent fee+long rental fee
-function checkrequiredcredit($userid)
-{
-    global $db, $credit, $creditSystem;
-
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-
-    $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
-    $result = $db->query("SELECT credit FROM credit WHERE userId=$userid AND credit>=$requiredcredit");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        return true;
-    }
-    return false;
-}
-
 // subtract credit for rental
 function changecreditendrental($bike, $userid)
 {
@@ -346,7 +327,7 @@ function changecreditendrental($bike, $userid)
     }
     // if credit system disabled, exit
 
-    $usercredit = getusercredit($userid);
+    $userCredit = $creditSystem->getUserCredit($userid);
 
     $result = $db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RENT' OR action='FORCERENT') ORDER BY time DESC LIMIT 1");
     if ($result->num_rows == 1) {
@@ -359,34 +340,33 @@ function changecreditendrental($bike, $userid)
 
         //ak vrati a znova pozica bike do 10 min tak free time nebude mať.
 		  $oldRetrun = $db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RETURN' OR action='FORCERETURN') ORDER BY time DESC LIMIT 1");
-		  if ($oldRetrun->num_rows==1)
-		  {
-			  $oldRow=$oldRetrun->fetch_assoc();
-			  $returntime=strtotime($oldRow["time"]);
-			  if(($starttime-$returntime) < 10*60 && $timediff > 5*60) {
-				  $creditchange = $creditchange + $credit['rent'];
-				  $changelog .= 'rerent-' . $credit['rent'] . ';';
-			  }
+		  if ($oldRetrun->num_rows==1) {
+              $oldRow = $oldRetrun->fetch_assoc();
+              $returntime = strtotime($oldRow["time"]);
+              if (($starttime - $returntime) < 10 * 60 && $timediff > 5 * 60) {
+                  $creditchange = $creditchange + $creditSystem->getRentalFee();
+                  $changelog .= 'rerent-' . $creditSystem->getRentalFee() . ';';
+              }
 		  }
         //end
 
         if ($timediff > $watches['freetime'] * 60) {
-            $creditchange = $creditchange + $credit['rent'];
-            $changelog .= 'overfree-' . $credit['rent'] . ';';
+            $creditchange = $creditchange + $creditSystem->getRentalFee();
+            $changelog .= 'overfree-' . $creditSystem->getRentalFee() . ';';
         }
         if ($watches['freetime'] == 0) {
             $watches['freetime'] = 1;
         }
         // for further calculations
-        if ($credit['pricecycle'] and $timediff > $watches['freetime'] * 60 * 2) { // after first paid period, i.e. freetime*2; if pricecycle enabled
+        if ($creditSystem->getPriceCycle() && $timediff > $watches['freetime'] * 60 * 2) { // after first paid period, i.e. freetime*2; if pricecycle enabled
             $temptimediff = $timediff - ($watches['freetime'] * 60 * 2);
-            if ($credit['pricecycle'] == 1) { // flat price per cycle
+            if ($creditSystem->getPriceCycle() == 1) { // flat price per cycle
                 $cycles = ceil($temptimediff / ($watches['flatpricecycle'] * 60));
-                $creditchange = $creditchange + ($credit['rent'] * $cycles);
-                $changelog .= 'flat-' . $credit['rent'] * $cycles . ';';
-            } elseif ($credit['pricecycle'] == 2) { // double price per cycle
+                $creditchange = $creditchange + ($creditSystem->getRentalFee() * $cycles);
+                $changelog .= 'flat-' . $creditSystem->getRentalFee() * $cycles . ';';
+            } elseif ($creditSystem->getPriceCycle() == 2) { // double price per cycle
                 $cycles = ceil($temptimediff / ($watches['doublepricecycle'] * 60));
-                $tempcreditrent = $credit['rent'];
+                $tempcreditrent = $creditSystem->getRentalFee();
                 for ($i = 1; $i <= $cycles; $i++) {
                     $multiplier = $i;
                     if ($multiplier > $watches['doublepricecyclecap']) {
@@ -403,43 +383,16 @@ function changecreditendrental($bike, $userid)
             }
         }
         if ($timediff > $watches['longrental'] * 3600) {
-            $creditchange = $creditchange + $credit['longrental'];
-            $changelog .= 'longrent-' . $credit['longrental'] . ';';
+            $creditchange = $creditchange + $creditSystem->getLongRentalFee();
+            $changelog .= 'longrent-' . $creditSystem->getLongRentalFee() . ';';
         }
-        $usercredit = $usercredit - $creditchange;
-        $result = $db->query("UPDATE credit SET credit=$usercredit WHERE userId=$userid");
-        $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDITCHANGE',parameter='" . $creditchange . '|' . $changelog . "'");
-        $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$usercredit");
+        $userCredit = $userCredit - $creditchange;
+        $db->query("UPDATE credit SET credit=$userCredit WHERE userId=$userid");
+        $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDITCHANGE',parameter='" . $creditchange . '|' . $changelog . "'");
+        $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$userCredit");
+
         return $creditchange;
     }
-}
-
-function getusercredit($userid)
-{
-    global $db, $credit, $creditSystem;
-
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-
-    $result = $db->query("SELECT credit FROM credit WHERE userId=$userid");
-    $row = $result->fetch_assoc();
-    $usercredit = $row['credit'];
-
-    return $usercredit;
-}
-
-function getcreditcurrency()
-{
-    global $credit, $creditSystem;
-
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-
-    return $credit['currency'];
 }
 
 function issmssystemenabled()

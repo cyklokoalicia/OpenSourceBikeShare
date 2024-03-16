@@ -111,7 +111,8 @@ if ($auth->isLoggedIn() && $user->findPrivileges($userid) > 0) {
 if ($auth->isLoggedIn()) {
     echo '<li><span class="glyphicon glyphicon-user"></span> <small>', $user->findUserName($userid), '</small>';
     if ($creditSystem->isEnabled()) {
-        echo ' (<span id="usercredit" title="', _('Remaining credit'), '">', getusercredit($userid), '</span> ', getcreditcurrency(), ' <button type="button" class="btn btn-success btn-xs" id="opencredit" title="', _('Add credit'), '"><span class="glyphicon glyphicon-plus"></span></button>)<span id="couponblock"><br /><span class="form-inline"><input type="text" class="form-control input-sm" id="coupon" placeholder="XXXXXX" /><button type="button" class="btn btn-primary btn-sm" id="validatecoupon" title="', _('Confirm coupon'), '"><span class="glyphicon glyphicon-plus"></span></button></span></span></li>';
+        $userRemainingCredit = $creditSystem->getUserCredit($userid);
+        echo ' (<span id="usercredit" title="', _('Remaining credit'), '">' . $userRemainingCredit . '</span> ' . $creditSystem->getCreditCurrency() . ' <button type="button" class="btn btn-success btn-xs" id="opencredit" title="', _('Add credit'), '"><span class="glyphicon glyphicon-plus"></span></button>)<span id="couponblock"><br /><span class="form-inline"><input type="text" class="form-control input-sm" id="coupon" placeholder="XXXXXX" /><button type="button" class="btn btn-primary btn-sm" id="validatecoupon" title="', _('Confirm coupon'), '"><span class="glyphicon glyphicon-plus"></span></button></span></span></li>';
     }
 	if ($cities) {
 		echo '<li>','<select class="form-control input-sm" id="citychange" title="', _('My City'), '">';
@@ -131,16 +132,6 @@ if ($auth->isLoggedIn()) {
    <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
    </div>
 </div>
-<?php if (time() < 1561420000 ) { ?>
-<div class="row bg-info">
-   <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11 text-center" style="padding: 0.5em;">
-   <a href="https://www.rozhodni-bsk.sk/bratislava-2-2019/" target="_blank">
-Zahlasuj za podporu Bielych bicyklov z participatívneho rozpočtu BSK!</a>
-   </div>
-   <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
-   </div>
-</div>
-<?php } ?>
 <?php if ($auth->isLoggedIn()): ?>
 <div class="row">
    <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">

@@ -37,17 +37,17 @@ function response($message,$error=0,$log=1)
 
 function rent($userId,$bike,$force=FALSE)
 {
+    global $db, $forcestack, $watches, $user, $creditSystem;
 
-   global $db,$forcestack,$watches,$credit, $user;
-   $stacktopbike=FALSE;
-   $bikeNum = $bike;
-   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
+    $stacktopbike=FALSE;
+    $bikeNum = $bike;
+    if (!$creditSystem->isEnoughCreditForRent($userId)) {
+        $minRequiredCredit = $creditSystem->getMinRequiredCredit();
+        response(_('You are below required credit') . " " . $minRequiredCredit . $creditSystem->getCreditCurrency() . ". " . _('Please, recharge your credit.'), ERROR);
 
-   $creditcheck=checkrequiredcredit($userId);
-   if ($creditcheck===FALSE)
-      {
-      response(_('You are below required credit')." ".$requiredcredit.$credit["currency"].". "._('Please, recharge your credit.'),ERROR);
-      }
+        return;
+    }
+
    checktoomany(0,$userId);
 
    $result=$db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
@@ -169,8 +169,8 @@ function returnbike($userId,$stand)
       $message.= '<br />'._('Please').', <strong>'._('rotate the lockpad to').' <span class="label label-default">0000</span></strong> '._('when leaving').'.';
 
       $creditchange=changecreditendrental($bikeNum,$userId);
-      if ($creditSystem->isEnabled() AND $creditchange) {
-          $message.='<br />'._('Credit change').': -'.$creditchange.getcreditcurrency().'.';
+      if ($creditSystem->isEnabled() && $creditchange) {
+          $message .= '<br />' . _('Credit change') . ': -' . $creditchange . $creditSystem->getCreditCurrency() . '.';
       }
       $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
 

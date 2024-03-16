@@ -1,6 +1,8 @@
 <?php
 //@TODO ANaLYTICS!!!
 
+use BikeShare\Credit\CreditSystemFactory;
+use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
 use Monolog\ErrorHandler;
@@ -412,6 +414,11 @@ foreach ($configfile as $line)
  */
 $db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 $db->connect();
+/**
+ * @var CreditSystemInterface $creditSystem
+ */
+$creditSystem = (new CreditSystemFactory())->getCreditSystem($credit, $db);
+
 $configfile=file($configfilename);
 foreach ($_POST as $variable=>$value)
    {
@@ -430,13 +437,12 @@ foreach ($_POST as $variable=>$value)
 $newconfig=implode($configfile);
 file_put_contents($configfilename,$newconfig);
 $configfile=file($configfilename);
-if ($credit["enabled"]==1)
-   {
-   $newcredit=($credit["min"]+$credit["rent"]+$credit["longrental"])*10;
-   $result=$db->query("SELECT userId FROM users WHERE privileges='7'");
-   $row=$result->fetch_assoc();
-   $result=$db->query("REPLACE INTO credit SET userId='".$row["userId"]."',credit='$newcredit'");
-   }
+if ($creditSystem->isEnabled()) {
+    $newcredit = $creditSystem->getMinRequiredCredit() * 10;
+    $result = $db->query("SELECT userId FROM users WHERE privileges='7'");
+    $row = $result->fetch_assoc();
+    $result = $db->query("REPLACE INTO credit SET userId='" . $row["userId"] . "',credit='$newcredit'");
+}
 $db->commit();
 ?>
       <h2>Installation finished</h2>
