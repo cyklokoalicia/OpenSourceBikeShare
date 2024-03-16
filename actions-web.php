@@ -28,7 +28,8 @@ function response($message, $error = 0, $additional = '', $log = 1)
 
 function rent($userId, $bike, $force = false)
 {
-    global $db, $forcestack, $watches, $credit, $user;
+    global $db, $forcestack, $watches, $credit, $user, $creditSystem;
+
     $stacktopbike = false;
     $bikeNum = $bike;
     $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
@@ -36,7 +37,7 @@ function rent($userId, $bike, $force = false)
     if ($force == false) {
         $creditcheck = checkrequiredcredit($userId);
         if ($creditcheck === false) {
-            response(_('You are below required credit') . ' ' . $requiredcredit . $credit['currency'] . '. ' . _('Please, recharge your credit.'), ERROR);
+            response(_('You are below required credit') . ' ' . $requiredcredit . $creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), ERROR);
         }
         checktoomany(0, $userId);
 
@@ -164,7 +165,7 @@ function returnBike($userId, $bike, $stand, $note = '', $force = false)
     if ($force == false) {
         $creditchange = changecreditendrental($bikeNum, $userId);
         if ($creditSystem->isEnabled() and $creditchange) {
-            $message .= '<br />' . _('Credit change') . ': -' . $creditchange . getcreditcurrency() . '.';
+            $message .= '<br />' . _('Credit change') . ': -' . $creditchange . $creditSystem->getCreditCurrency() . '.';
         }
 
         $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
@@ -602,14 +603,15 @@ function saveuser($userid, $username, $email, $phone, $privileges, $limit)
 
 function addcredit($userid, $creditmultiplier)
 {
-    global $db, $credit, $user;
+    global $db, $credit, $user, $creditSystem;
+
     $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
     $addcreditamount = $requiredcredit * $creditmultiplier;
     $result = $db->query('UPDATE credit SET credit=credit+' . $addcreditamount . ' WHERE userId=' . $userid);
     $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=0,action='CREDITCHANGE',parameter='" . $addcreditamount . '|add+' . $addcreditamount . "'");
     $userName = $user->findUserName($userid);
 
-    response(_('Added') . ' ' . $addcreditamount . $credit['currency'] . ' ' . _('credit for') . ' ' . $userName . '.');
+    response(_('Added') . ' ' . $addcreditamount . $creditSystem->getCreditCurrency() . ' ' . _('credit for') . ' ' . $userName . '.');
 }
 
 function getcouponlist()
@@ -629,6 +631,7 @@ function getcouponlist()
 function generatecoupons($multiplier)
 {
     global $db, $credit, $codeGenerator, $creditSystem;
+
     if ($creditSystem->isEnabled() == false) {
         return;
     }
@@ -639,7 +642,7 @@ function generatecoupons($multiplier)
     foreach ($codes as $code) {
         $result = $db->query("INSERT IGNORE INTO coupons SET coupon='" . $code . "',value='" . $value . "',status='0'");
     }
-    response(_('Generated 10 new') . ' ' . $value . ' ' . $credit['currency'] . ' ' . _('coupons') . '.', 0, array('coupons' => $codes));
+    response(_('Generated 10 new') . ' ' . $value . ' ' . $creditSystem->getCreditCurrency() . ' ' . _('coupons') . '.', 0, array('coupons' => $codes));
 }
 
 function sellcoupon($coupon)
@@ -667,7 +670,7 @@ function validatecoupon($userid, $coupon)
         $result = $db->query("UPDATE credit SET credit=credit+'" . $value . "' WHERE userId='" . $userid . "'");
         $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=0,action='CREDITCHANGE',parameter='" . $value . '|add+' . $value . '|' . $coupon . "'");
         $result = $db->query("UPDATE coupons SET status='2' WHERE coupon='" . $coupon . "'");
-        response('+' . $value . ' ' . $credit['currency'] . '. ' . _('Coupon') . ' ' . $coupon . ' ' . _('has been redeemed') . '.');
+        response('+' . $value . ' ' . $creditSystem->getCreditCurrency() . '. ' . _('Coupon') . ' ' . $coupon . ' ' . _('has been redeemed') . '.');
     }
     response(_('Invalid coupon, try again.'), 1);
 }
@@ -738,7 +741,7 @@ function mapgetmarkers($userId)
 
 function mapgetlimit($userId)
 {
-    global $db, $auth;
+    global $db, $auth, $creditSystem;
 
     if (!$auth->isLoggedIn()) {
         response('');
@@ -754,10 +757,9 @@ function mapgetlimit($userId)
 
     $currentlimit = $limit - $rented;
 
-    $usercredit = 0;
-    $usercredit = getusercredit($userId);
+    $userCredit = $creditSystem->getUserCredit($userId);
 
-    echo json_encode(array('limit' => $currentlimit, 'rented' => $rented, 'usercredit' => $usercredit));
+    echo json_encode(array('limit' => $currentlimit, 'rented' => $rented, 'usercredit' => $userCredit));
 }
 
 function mapgeolocation($userid, $lat, $long)

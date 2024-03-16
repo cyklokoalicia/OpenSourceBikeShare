@@ -320,19 +320,20 @@ function checktoomany($cron = 1, $userid = 0)
 // check if user has credit >= minimum credit+rent fee+long rental fee
 function checkrequiredcredit($userid)
 {
-    global $db, $credit, $creditSystem;
+    global $credit, $creditSystem;
 
     if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit
 
-    $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
-    $result = $db->query("SELECT credit FROM credit WHERE userId=$userid AND credit>=$requiredcredit");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
+    $requiredCredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
+
+    $userRemainingCredit = $creditSystem->getUserCredit($userid);
+    if ($userRemainingCredit >= $requiredCredit) {
         return true;
     }
+
     return false;
 }
 
@@ -346,7 +347,7 @@ function changecreditendrental($bike, $userid)
     }
     // if credit system disabled, exit
 
-    $usercredit = getusercredit($userid);
+    $userCredit = $creditSystem->getUserCredit($userid);
 
     $result = $db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RENT' OR action='FORCERENT') ORDER BY time DESC LIMIT 1");
     if ($result->num_rows == 1) {
@@ -406,40 +407,13 @@ function changecreditendrental($bike, $userid)
             $creditchange = $creditchange + $credit['longrental'];
             $changelog .= 'longrent-' . $credit['longrental'] . ';';
         }
-        $usercredit = $usercredit - $creditchange;
-        $result = $db->query("UPDATE credit SET credit=$usercredit WHERE userId=$userid");
-        $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDITCHANGE',parameter='" . $creditchange . '|' . $changelog . "'");
-        $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$usercredit");
+        $userCredit = $userCredit - $creditchange;
+        $db->query("UPDATE credit SET credit=$userCredit WHERE userId=$userid");
+        $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDITCHANGE',parameter='" . $creditchange . '|' . $changelog . "'");
+        $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$userCredit");
+
         return $creditchange;
     }
-}
-
-function getusercredit($userid)
-{
-    global $db, $credit, $creditSystem;
-
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-
-    $result = $db->query("SELECT credit FROM credit WHERE userId=$userid");
-    $row = $result->fetch_assoc();
-    $usercredit = $row['credit'];
-
-    return $usercredit;
-}
-
-function getcreditcurrency()
-{
-    global $credit, $creditSystem;
-
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-
-    return $credit['currency'];
 }
 
 function issmssystemenabled()

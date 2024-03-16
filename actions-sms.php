@@ -96,16 +96,18 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
 
 function credit($number)
 {
-   global $db, $smsSender, $user;
-   $userid=$user->findUserIdByNumber($number);
-   $usercredit=getusercredit($userid).getcreditcurrency();
-   $smsSender->send($number,_('Your remaining credit:')." ".$usercredit);
+    global $smsSender, $user, $creditSystem;
+
+    $userId = $user->findUserIdByNumber($number);
+    $userRemainingCredit = $creditSystem->getUserCredit($userId) . $creditSystem->getCreditCurrency();
+
+    $smsSender->send($number, _('Your remaining credit:') . " " . $userRemainingCredit);
 }
 
 function rent($number,$bike,$force=FALSE)
 {
+    global $db,$forcestack,$watches,$credit, $smsSender, $user, $creditSystem;
 
-    global $db,$forcestack,$watches,$credit, $smsSender, $user;
         $stacktopbike=FALSE;
     $userId = $user->findUserIdByNumber($number);
    $bikeNum = intval($bike);
@@ -114,13 +116,11 @@ function rent($number,$bike,$force=FALSE)
    if ($force==FALSE)
            {
            $creditcheck=checkrequiredcredit($userId);
-            if ($creditcheck===FALSE)
-               {
-               $result=$db->query("SELECT credit FROM credit WHERE userId=$userId");
-               $row=$result->fetch_assoc();
-               $smsSender->send($number,_('Please, recharge your credit:')." ".$row["credit"].$credit["currency"].". "._('Credit required:')." ".$requiredcredit.$credit["currency"].".");
+           if ($creditcheck === false) {
+               $userRemainingCredit = $creditSystem->getUserCredit($userId);
+               $smsSender->send($number, _('Please, recharge your credit:') . " " . $userRemainingCredit . $creditSystem->getCreditCurrency() . ". " . _('Credit required:') . " " . $requiredcredit . $creditSystem->getCreditCurrency() . ".");
                return;
-               }
+           }
 
          checktoomany(0,$userId);
 
@@ -361,12 +361,14 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
       }
 
     if ($creditSystem->isEnabled()) {
-        $message.=_('Credit').": ".getusercredit($userId).getcreditcurrency();
-        if ($creditchange) $message.=" (-".$creditchange.")";
-        $message.=".";
+        $userRemainingCredit = $creditSystem->getUserCredit($userId) . $creditSystem->getCreditCurrency();
+        $message .= _('Credit') . ": " . $userRemainingCredit;
+        if ($creditchange) {
+            $message .= " (-" . $creditchange . ")";
+        }
+        $message .= ".";
     }
     $smsSender->send($number,$message);
-
 }
 
 
