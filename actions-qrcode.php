@@ -41,11 +41,11 @@ function rent($userId,$bike,$force=FALSE)
 
    $stacktopbike=FALSE;
    $bikeNum = $bike;
-   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
+   $minRequiredCredit = $creditSystem->getMinRequiredCredit();
 
    $creditcheck=checkrequiredcredit($userId);
     if ($creditcheck === false) {
-        response(_('You are below required credit') . " " . $requiredcredit . $creditSystem->getCreditCurrency() . ". " . _('Please, recharge your credit.'), ERROR);
+        response(_('You are below required credit') . " " . $minRequiredCredit . $creditSystem->getCreditCurrency() . ". " . _('Please, recharge your credit.'), ERROR);
     }
    checktoomany(0,$userId);
 

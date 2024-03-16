@@ -106,19 +106,19 @@ function credit($number)
 
 function rent($number,$bike,$force=FALSE)
 {
-    global $db,$forcestack,$watches,$credit, $smsSender, $user, $creditSystem;
+    global $db, $forcestack, $watches, $credit, $smsSender, $user, $creditSystem;
 
-        $stacktopbike=FALSE;
+    $stacktopbike = FALSE;
     $userId = $user->findUserIdByNumber($number);
-   $bikeNum = intval($bike);
-   $requiredcredit=$credit["min"]+$credit["rent"]+$credit["longrental"];
+    $bikeNum = intval($bike);
+    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
 
    if ($force==FALSE)
            {
            $creditcheck=checkrequiredcredit($userId);
            if ($creditcheck === false) {
                $userRemainingCredit = $creditSystem->getUserCredit($userId);
-               $smsSender->send($number, _('Please, recharge your credit:') . " " . $userRemainingCredit . $creditSystem->getCreditCurrency() . ". " . _('Credit required:') . " " . $requiredcredit . $creditSystem->getCreditCurrency() . ".");
+               $smsSender->send($number, _('Please, recharge your credit:') . " " . $userRemainingCredit . $creditSystem->getCreditCurrency() . ". " . _('Credit required:') . " " . $minRequiredCredit . $creditSystem->getCreditCurrency() . ".");
                return;
            }
 

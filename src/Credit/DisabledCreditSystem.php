@@ -9,17 +9,17 @@ class DisabledCreditSystem implements CreditSystemInterface
         return 0;
     }
 
+    public function getMinRequiredCredit()
+    {
+        return PHP_INT_MAX;
+    }
+
     public function isEnabled()
     {
         return false;
     }
 
     public function getCreditCurrency()
-    {
-        return 0;
-    }
-
-    public function getMinBikeCredit()
     {
         return 0;
     }

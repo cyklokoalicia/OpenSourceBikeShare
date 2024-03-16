@@ -32,12 +32,12 @@ function rent($userId, $bike, $force = false)
 
     $stacktopbike = false;
     $bikeNum = $bike;
-    $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
+    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
 
     if ($force == false) {
         $creditcheck = checkrequiredcredit($userId);
         if ($creditcheck === false) {
-            response(_('You are below required credit') . ' ' . $requiredcredit . $creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), ERROR);
+            response(_('You are below required credit') . ' ' . $minRequiredCredit . $creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), ERROR);
         }
         checktoomany(0, $userId);
 
@@ -605,8 +605,8 @@ function addcredit($userid, $creditmultiplier)
 {
     global $db, $credit, $user, $creditSystem;
 
-    $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
-    $addcreditamount = $requiredcredit * $creditmultiplier;
+    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
+    $addcreditamount = $minRequiredCredit * $creditmultiplier;
     $result = $db->query('UPDATE credit SET credit=credit+' . $addcreditamount . ' WHERE userId=' . $userid);
     $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=0,action='CREDITCHANGE',parameter='" . $addcreditamount . '|add+' . $addcreditamount . "'");
     $userName = $user->findUserName($userid);
@@ -636,8 +636,8 @@ function generatecoupons($multiplier)
         return;
     }
     // if credit system disabled, exit
-    $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
-    $value = $requiredcredit * $multiplier;
+    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
+    $value = $minRequiredCredit * $multiplier;
     $codes = $codeGenerator->generate(10, 6);
     foreach ($codes as $code) {
         $result = $db->query("INSERT IGNORE INTO coupons SET coupon='" . $code . "',value='" . $value . "',status='0'");

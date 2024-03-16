@@ -10,6 +10,11 @@ interface CreditSystemInterface
     public function getUserCredit($userid);
 
     /**
+     * @return int
+     */
+    public function getMinRequiredCredit();
+
+    /**
      * @return bool
      */
     public function isEnabled();
@@ -18,11 +23,6 @@ interface CreditSystemInterface
      * @return string
      */
     public function getCreditCurrency();
-
-    /**
-     * @return int
-     */
-    public function getMinBikeCredit();
 
     /**
      * @return int

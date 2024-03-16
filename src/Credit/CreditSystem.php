@@ -11,7 +11,7 @@ class CreditSystem implements CreditSystemInterface
     // currency used for credit system
     private $creditCurrency = "€";
     // minimum credit required to allow any bike operations
-    private $minBikeCredit = 2;
+    private $minBalanceCredit = 2;
     // rental fee (after $watches["freetime"])
     private $rentalFee = 2;
     // 0 = disabled, 1 = charge flat price $credit["rent"] every $watches["flatpricecycle"] minutes,
@@ -47,6 +47,11 @@ class CreditSystem implements CreditSystemInterface
         return $result->fetchAssoc()['credit'];
     }
 
+    public function getMinRequiredCredit()
+    {
+        return $this->minBalanceCredit + $this->rentalFee + $this->longRentalFee;
+    }
+
     /**
      * @return bool
      */
@@ -60,14 +65,6 @@ class CreditSystem implements CreditSystemInterface
     public function getCreditCurrency()
     {
         return $this->creditCurrency;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMinBikeCredit()
-    {
-        return $this->minBikeCredit;
     }
 
     /**
@@ -123,7 +120,7 @@ class CreditSystem implements CreditSystemInterface
             $this->creditCurrency = (string)$creditConfiguration['currency'];
         }
         if (isset($creditConfiguration['min'])) {
-            $this->minBikeCredit = (int)$creditConfiguration['min'];
+            $this->minBalanceCredit = (int)$creditConfiguration['min'];
         }
         if (isset($creditConfiguration['rent'])) {
             $this->rentalFee = (int)$creditConfiguration['rent'];

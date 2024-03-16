@@ -53,7 +53,7 @@ if ($user->findPrivileges($userid)<=0) {
 if ($creditSystem->isEnabled()) {
     echo 'var creditenabled=1;' . PHP_EOL;
     echo 'var creditcurrency="' . $creditSystem->getCreditCurrency() . '"' . PHP_EOL;
-    $requiredcredit = $credit["min"] + $credit["rent"] + $credit["longrental"];
+    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
 } else {
     echo 'var creditenabled=0;', "\n";
 }
@@ -135,9 +135,9 @@ if ($creditSystem->isEnabled()):
       <div class="row">
          <div class="col-lg-12">
          <button type="button" id="listcoupons" class="btn btn-default" title="<?php echo _('Display existing coupons.'); ?>"><span class="glyphicon glyphicon-list-alt"></span> <?php echo _('List coupons'); ?></button>
-         <button type="button" id="generatecoupons1" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$requiredcredit,$creditSystem->getCreditCurrency(),' '; echo _('coupons'); ?></button>
-         <button type="button" id="generatecoupons2" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$requiredcredit*5,$creditSystem->getCreditCurrency(),' '; echo _('coupons'); ?></button>
-         <button type="button" id="generatecoupons3" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$requiredcredit*10,$creditSystem->getCreditCurrency(),' '; echo _('coupons'); ?></button>
+         <button type="button" id="generatecoupons1" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$minRequiredCredit,$creditSystem->getCreditCurrency(),' '; echo _('coupons'); ?></button>
+         <button type="button" id="generatecoupons2" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$minRequiredCredit*5,$creditSystem->getCreditCurrency(),' '; echo _('coupons'); ?></button>
+         <button type="button" id="generatecoupons3" class="btn btn-success" title="<?php echo _('Generate new coupons.'); ?>"><span class="glyphicon glyphicon-plus"></span> <?php echo _('Generate'); echo ' ',$minRequiredCredit*10,$creditSystem->getCreditCurrency(),' '; echo _('coupons'); ?></button>
          <div id="creditconsole"></div>
          </div>
       </div>
@@ -159,9 +159,9 @@ if ($creditSystem->isEnabled()):
          <div class="form-group"><label for="limit"><?php echo _('Bike limit:'); ?></label> <input type="text" name="limit" id="limit" class="form-control" /></div>
          <input type="hidden" name="userid" id="userid" value="" />
          <button type="button" id="saveuser" class="btn btn-primary"><?php echo _('Save'); ?></button>
-         or <button type="button" id="addcredit" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit,$creditSystem->getCreditCurrency(); ?></button>
-         <button type="button" id="addcredit2" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit*5,$creditSystem->getCreditCurrency(); ?></button>
-         <button type="button" id="addcredit3" class="btn btn-success"><?php echo _('Add'); echo ' ',$requiredcredit*10,$creditSystem->getCreditCurrency(); ?></button>
+         or <button type="button" id="addcredit" class="btn btn-success"><?php echo _('Add'); echo ' ',$minRequiredCredit,$creditSystem->getCreditCurrency(); ?></button>
+         <button type="button" id="addcredit2" class="btn btn-success"><?php echo _('Add'); echo ' ',$minRequiredCredit*5,$creditSystem->getCreditCurrency(); ?></button>
+         <button type="button" id="addcredit3" class="btn btn-success"><?php echo _('Add'); echo ' ',$minRequiredCredit*10,$creditSystem->getCreditCurrency(); ?></button>
       </form>
       <div id="userconsole"></div>
     </div>

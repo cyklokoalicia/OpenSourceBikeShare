@@ -320,17 +320,17 @@ function checktoomany($cron = 1, $userid = 0)
 // check if user has credit >= minimum credit+rent fee+long rental fee
 function checkrequiredcredit($userid)
 {
-    global $credit, $creditSystem;
+    global $creditSystem;
 
     if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit
 
-    $requiredCredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
+    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
 
     $userRemainingCredit = $creditSystem->getUserCredit($userid);
-    if ($userRemainingCredit >= $requiredCredit) {
+    if ($userRemainingCredit >= $minRequiredCredit) {
         return true;
     }
 

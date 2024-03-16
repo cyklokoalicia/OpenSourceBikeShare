@@ -16,7 +16,7 @@ class CreditSystemTest extends TestCase
         $configuration,
         $expectedIsEnabled,
         $expectedCreditCurrency,
-        $expectedMinBikeCredit,
+        $expectedMinRequiredCredit,
         $expectedRentalFee,
         $expectedPriceCycle,
         $expectedLongRentalFee,
@@ -26,7 +26,7 @@ class CreditSystemTest extends TestCase
         $creditSystem = new CreditSystem($configuration, $this->createMock(DbInterface::class));
         $this->assertEquals($expectedIsEnabled, $creditSystem->isEnabled());
         $this->assertEquals($expectedCreditCurrency, $creditSystem->getCreditCurrency());
-        $this->assertEquals($expectedMinBikeCredit, $creditSystem->getMinBikeCredit());
+        $this->assertEquals($expectedMinRequiredCredit, $creditSystem->getMinRequiredCredit());
         $this->assertEquals($expectedRentalFee, $creditSystem->getRentalFee());
         $this->assertEquals($expectedPriceCycle, $creditSystem->getPriceCycle());
         $this->assertEquals($expectedLongRentalFee, $creditSystem->getLongRentalFee());
@@ -40,7 +40,7 @@ class CreditSystemTest extends TestCase
             'configuration' => [],
             'expectedIsEnabled' => false,
             'expectedCreditCurrency' => '€',
-            'expectedMinBikeCredit' => 2,
+            'expectedMinRequiredCredit' => 9,
             'expectedRentalFee' => 2,
             'expectedPriceCycle' => 0,
             'expectedLongRentalFee' => 5,
@@ -60,7 +60,7 @@ class CreditSystemTest extends TestCase
             ],
             'expectedIsEnabled' => true,
             'expectedCreditCurrency' => '$',
-            'expectedMinBikeCredit' => 3,
+            'expectedMinRequiredCredit' => 12,
             'expectedRentalFee' => 3,
             'expectedPriceCycle' => 1,
             'expectedLongRentalFee' => 6,
