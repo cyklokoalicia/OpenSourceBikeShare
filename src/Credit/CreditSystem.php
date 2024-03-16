@@ -39,7 +39,7 @@ class CreditSystem implements CreditSystemInterface
 
     public function getUserCredit($userid)
     {
-        $result = $this->db->query("SELECT credit FROM users WHERE id = '$userid'");
+        $result = $this->db->query("SELECT credit FROM credit WHERE id = '$userid'");
         if ($result->rowCount() == 0) {
             return 0;
         }
