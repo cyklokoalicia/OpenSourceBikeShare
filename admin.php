@@ -50,7 +50,7 @@ if ($user->findPrivileges($userid)<=0) {
 <?php if (file_exists("analytics.php")) require("analytics.php"); ?>
 <script>
 <?php
-if (iscreditenabled())
+if ($creditSystem->isEnabled())
    {
    echo 'var creditenabled=1;',"\n";
    echo 'var creditcurrency="',$credit["currency"],'"',";\n";
@@ -102,7 +102,7 @@ if ($auth->isLoggedIn()):
     <li role="presentation"><a href="#stands" aria-controls="stands" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> <?php echo _('Stands'); ?></a></li>
     <li role="presentation"><a href="#users" aria-controls="users" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> <?php echo _('Users'); ?></a></li>
 <?php
-if (iscreditenabled()):
+if ($creditSystem->isEnabled()):
 ?>
     <li role="presentation"><a href="#credit" aria-controls="credit" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-euro" aria-hidden="true"></span> <?php echo _('Credit system'); ?></a></li>
 <?php endif; ?>
@@ -132,7 +132,7 @@ if (iscreditenabled()):
       </div>
     </div>
 <?php
-if (iscreditenabled()):
+if ($creditSystem->isEnabled()):
 ?>
     <div role="tabpanel" class="tab-pane" id="credit">
       <div class="row">
@@ -157,7 +157,7 @@ if (iscreditenabled()):
          <div class="form-group"><label for="email"><?php echo _('Email:'); ?></label> <input type="text" name="email" id="email" class="form-control" /></div>
 <?php if ($connectors["sms"]): ?>
          <div class="form-group"><label for="phone"><?php echo _('Phone number:'); ?></label> <input type="text" name="phone" id="phone" class="form-control" /></div>
-<? endif; ?>
+<?php endif; ?>
          <div class="form-group"><label for="privileges"><?php echo _('Privileges:'); ?></label> <input type="text" name="privileges" id="privileges" class="form-control" /></div>
          <div class="form-group"><label for="limit"><?php echo _('Bike limit:'); ?></label> <input type="text" name="limit" id="limit" class="form-control" /></div>
          <input type="hidden" name="userid" id="userid" value="" />

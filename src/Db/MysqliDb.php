@@ -99,7 +99,7 @@ class MysqliDb implements DbInterface
             }
         }
 
-        return $result;
+        return new MysqliDbResult($result);
     }
 
     /**

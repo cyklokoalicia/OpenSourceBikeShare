@@ -48,8 +48,8 @@ class Auth
         $result = $this->db->query(
             "SELECT userId FROM users WHERE number='$number' AND password=SHA2('$password',512)"
         );
-        if ($result && $result->num_rows == 1) {
-            $row = $result->fetch_assoc();
+        if ($result && $result->rowCount() == 1) {
+            $row = $result->fetchAssoc();
             $userId = $row['userId'];
             $sessionId = hash('sha256', $userId . $number . time());
             $timeStamp = time() + self::SESSION_EXPIRATION;
@@ -98,7 +98,7 @@ class Auth
             "SELECT sessionId FROM sessions WHERE userId='$userid' 
                                  AND sessionId='$sessionId' AND timeStamp>'" . time() . "'"
         );
-        if ($result->num_rows == 1) {
+        if ($result->rowCount() == 1) {
             $timestamp = time() + self::SESSION_EXPIRATION;
             $this->db->query(
                 "UPDATE sessions SET timeStamp='$timestamp' WHERE userId='$userid' AND sessionId='$sessionId'"
@@ -115,9 +115,11 @@ class Auth
 
         if (!empty($session)) {
             $userid = $this->getUserId();
-            $result = $this->db->query("SELECT sessionId FROM sessions WHERE
-                                   userId='$userid' AND sessionId='$session' AND timeStamp>'" . time() . "'");
-            if ($result && $result->num_rows == 1) {
+            $result = $this->db->query(
+                "SELECT sessionId FROM sessions WHERE 
+                           userId='$userid' AND sessionId='$session' AND timeStamp>'" . time() . "'"
+            );
+            if ($result && $result->rowCount() == 1) {
                 return true;
             }
         }

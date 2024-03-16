@@ -9,13 +9,18 @@
          stopOnWarning="true"
          stopOnFailure="true"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+    <filter>
+        <whitelist>
+            <directory suffix=".php">./src</directory>
+        </whitelist>
+    </filter>
     <coverage includeUncoveredFiles="true">
         <include>
             <directory suffix=".php">./src</directory>
         </include>
     </coverage>
     <testsuites>
-        <testsuite name="Opensource Bikesharing Test Suite">
+        <testsuite name="BikeShare Test Suite">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>

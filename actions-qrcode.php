@@ -135,7 +135,7 @@ function rent($userId,$bike,$force=FALSE)
 function returnbike($userId,$stand)
 {
 
-   global $db,$connectors;
+   global $db,$connectors, $creditSystem;
    $stand=strtoupper($stand);
 
    $result=$db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
@@ -169,7 +169,9 @@ function returnbike($userId,$stand)
       $message.= '<br />'._('Please').', <strong>'._('rotate the lockpad to').' <span class="label label-default">0000</span></strong> '._('when leaving').'.';
 
       $creditchange=changecreditendrental($bikeNum,$userId);
-      if (iscreditenabled() AND $creditchange) $message.='<br />'._('Credit change').': -'.$creditchange.getcreditcurrency().'.';
+      if ($creditSystem->isEnabled() AND $creditchange) {
+          $message.='<br />'._('Credit change').': -'.$creditchange.getcreditcurrency().'.';
+      }
       $result=$db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
 
       response($message);

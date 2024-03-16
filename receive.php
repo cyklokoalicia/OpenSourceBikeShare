@@ -31,12 +31,11 @@ else
          help($sms->getNumber());
          break;
       case "CREDIT":
-         if (iscreditenabled()==FALSE)
-            {
-            unknownCommand($sms->getNumber(),$args[0]);
-            break;
-            }
-         credit($sms->getNumber());
+          if ($creditSystem->isEnabled() == FALSE) {
+              unknownCommand($sms->getNumber(), $args[0]);
+              break;
+          }
+          credit($sms->getNumber());
          break;
       case "FREE":
          freeBikes($sms->getNumber());

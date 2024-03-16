@@ -9,7 +9,7 @@ interface DbInterface
     /**
      * @param string $query
      * @param array $params
-     * @return mixed
+     * @return DbResultInterface
      */
     public function query($query, $params = array());
 

@@ -4,6 +4,7 @@ namespace Test\BikeShare\Authentication;
 
 use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
+use BikeShare\Db\DbResultInterface;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
 
@@ -145,6 +146,14 @@ class AuthTest extends TestCase
 
         $sessionId = hash('sha256', $userId . $number . '9999');
 
+        $foundUser = $this->createMock(DbResultInterface::class);
+        $foundUser->expects($this->once())
+            ->method('fetchAssoc')
+            ->willReturn(['userId' => $userId]);
+        $foundUser->expects($this->once())
+            ->method('rowCount')
+            ->willReturn(1);
+
         $this->db->expects($this->exactly(3))
             ->method('query')
             ->withConsecutive(
@@ -153,7 +162,7 @@ class AuthTest extends TestCase
                 ["INSERT INTO sessions SET userId='{$userId}',sessionId='{$sessionId}',timeStamp='1219599'"]
             )
             ->willReturnOnConsecutiveCalls(
-                new \Test\BikeShare\MysqliResult(1, [['userId' => '123']]),
+                $foundUser,
                 null,
                 null
             );
@@ -181,10 +190,11 @@ class AuthTest extends TestCase
      * @dataProvider testisLoggedInDataProvider
      */
     public function testisLoggedIn(
-        $userId = 0,
-        $sessionId = '',
-        $escapeCallParams = [],
-        $escapeCallResults = [],
+        $userId,
+        $sessionId,
+        $escapeCallParams,
+        $escapeCallResults,
+        $sessionFindResult,
         $expectedResult = false
     ) {
         if ($userId) {
@@ -207,13 +217,11 @@ class AuthTest extends TestCase
         $this->db
             ->expects(count($escapeCallParams) > 0 ? $this->once() : $this->never())
             ->method('query')
-            ->withConsecutive(
-                ["SELECT sessionId FROM sessions WHERE
-                                   userId='$userId' AND sessionId='$sessionId' AND timeStamp>'9999'"]
+            ->with(
+                "SELECT sessionId FROM sessions WHERE 
+                           userId='$userId' AND sessionId='$sessionId' AND timeStamp>'9999'"
             )
-            ->willReturnOnConsecutiveCalls(
-                new \Test\BikeShare\MysqliResult(1, [['sessionId' => '123']])
-            );
+            ->willReturn($sessionFindResult);
 
         $this->assertEquals($expectedResult, $this->auth->isLoggedIn());
     }
@@ -225,6 +233,7 @@ class AuthTest extends TestCase
             'sessionId' => '',
             'escapeCallParams' => [],
             'escapeCallResults' => [],
+            'sessionFindResult' => $this->createMock(DbResultInterface::class),
             'expectedResult' => false,
         ];
         yield 'no session id' => [
@@ -232,8 +241,13 @@ class AuthTest extends TestCase
             'sessionId' => '',
             'escapeCallParams' => [],
             'escapeCallResults' => [],
+            'sessionFindResult' => $this->createMock(DbResultInterface::class),
             'expectedResult' => false,
         ];
+        $sessionFindResult = $this->createMock(DbResultInterface::class);
+        $sessionFindResult->expects($this->once())
+            ->method('rowCount')
+            ->willReturn(1);
         yield 'user id and session id' => [
             'userId' => 1,
             'sessionId' => '123',
@@ -245,6 +259,7 @@ class AuthTest extends TestCase
                 '123',
                 1,
             ],
+            'sessionFindResult' => $sessionFindResult,
             'expectedResult' => true,
         ];
     }
@@ -290,15 +305,20 @@ class AuthTest extends TestCase
                 ['Connection: close']
             );
 
+        $sessionFindResult = $this->createMock(DbResultInterface::class);
+        $sessionFindResult->expects($this->once())
+            ->method('rowCount')
+            ->willReturn(1);
+
         $this->db->expects($this->exactly(2))
             ->method('query')
             ->withConsecutive(
-                ["SELECT sessionId FROM sessions WHERE
-                                   userId='1' AND sessionId='123' AND timeStamp>'9999'"],
+                ["SELECT sessionId FROM sessions WHERE 
+                           userId='1' AND sessionId='123' AND timeStamp>'9999'"],
                 ["DELETE FROM sessions WHERE userId='$userId' OR sessionId='$sessionId'"]
             )
             ->willReturnOnConsecutiveCalls(
-                new \Test\BikeShare\MysqliResult(1, [['sessionId' => '123']]),
+                $sessionFindResult,
                 null
             );
 
@@ -330,20 +350,25 @@ class AuthTest extends TestCase
             ->expects($this->exactly(4))
             ->willReturn(9999);
 
+        $sessionFindResult = $this->createMock(DbResultInterface::class);
+        $sessionFindResult->expects($this->exactly(2))
+            ->method('rowCount')
+            ->willReturn(1);
+
         $this->db->expects($this->exactly(4))
             ->method('query')
             ->withConsecutive(
-                ["SELECT sessionId FROM sessions WHERE
-                                   userId='1' AND sessionId='123' AND timeStamp>'9999'"],
+                ["SELECT sessionId FROM sessions WHERE 
+                           userId='1' AND sessionId='123' AND timeStamp>'9999'"],
                 ["DELETE FROM sessions WHERE timeStamp<='9999'"],
                 ["SELECT sessionId FROM sessions WHERE userId='1' 
                                  AND sessionId='123' AND timeStamp>'9999'"],
                 ["UPDATE sessions SET timeStamp='1219599' WHERE userId='1' AND sessionId='123'"]
             )
             ->willReturnOnConsecutiveCalls(
-                new \Test\BikeShare\MysqliResult(1, [['sessionId' => '123']]),
+                $sessionFindResult,
                 null,
-                new \Test\BikeShare\MysqliResult(1, [['sessionId' => '123']]),
+                $sessionFindResult,
                 null
             );
 

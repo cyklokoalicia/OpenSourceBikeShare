@@ -2,6 +2,7 @@
 
 namespace Test\BikeShare\Db;
 
+use BikeShare\Db\DbResultInterface;
 use BikeShare\Db\MysqliDb;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -37,7 +38,7 @@ class MysqliDbTest extends TestCase
             ->with($query)
             ->willReturn($result);
 
-        $this->assertSame($result, $this->db->query($query));
+        $this->assertTrue(is_a($this->db->query($query), DbResultInterface::class));
     }
     public function testQueryError()
     {
