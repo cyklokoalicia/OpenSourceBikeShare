@@ -70,7 +70,7 @@ if ($auth->isLoggedIn()) {
     echo 'var loggedin=0;', "\n";
     echo 'var priv=0;', "\n";
 }
-if (iscreditenabled()) {
+if ($creditSystem->isEnabled()) {
     echo 'var creditsystem=1;', "\n";
 } else {
     echo 'var creditsystem=0;', "\n";
@@ -110,7 +110,7 @@ if ($auth->isLoggedIn() && $user->findPrivileges($userid) > 0) {
 
 if ($auth->isLoggedIn()) {
     echo '<li><span class="glyphicon glyphicon-user"></span> <small>', $user->findUserName($userid), '</small>';
-    if (iscreditenabled()) {
+    if ($creditSystem->isEnabled()) {
         echo ' (<span id="usercredit" title="', _('Remaining credit'), '">', getusercredit($userid), '</span> ', getcreditcurrency(), ' <button type="button" class="btn btn-success btn-xs" id="opencredit" title="', _('Add credit'), '"><span class="glyphicon glyphicon-plus"></span></button>)<span id="couponblock"><br /><span class="form-inline"><input type="text" class="form-control input-sm" id="coupon" placeholder="XXXXXX" /><button type="button" class="btn btn-primary btn-sm" id="validatecoupon" title="', _('Confirm coupon'), '"><span class="glyphicon glyphicon-plus"></span></button></span></span></li>';
     }
 	if ($cities) {

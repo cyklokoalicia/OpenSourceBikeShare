@@ -125,7 +125,7 @@ function rent($userId, $bike, $force = false)
 
 function returnBike($userId, $bike, $stand, $note = '', $force = false)
 {
-    global $db;
+    global $db, $creditSystem;
     $bikeNum = intval($bike);
     $stand = strtoupper($stand);
 
@@ -163,7 +163,7 @@ function returnBike($userId, $bike, $stand, $note = '', $force = false)
 
     if ($force == false) {
         $creditchange = changecreditendrental($bikeNum, $userId);
-        if (iscreditenabled() and $creditchange) {
+        if ($creditSystem->isEnabled() and $creditchange) {
             $message .= '<br />' . _('Credit change') . ': -' . $creditchange . getcreditcurrency() . '.';
         }
 
@@ -606,7 +606,7 @@ function addcredit($userid, $creditmultiplier)
     $requiredcredit = $credit['min'] + $credit['rent'] + $credit['longrental'];
     $addcreditamount = $requiredcredit * $creditmultiplier;
     $result = $db->query('UPDATE credit SET credit=credit+' . $addcreditamount . ' WHERE userId=' . $userid);
-    $result = $db->query("INSERT INTO history SET userId=$userid,action='CREDITCHANGE',parameter='" . $addcreditamount . '|add+' . $addcreditamount . "'");
+    $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=0,action='CREDITCHANGE',parameter='" . $addcreditamount . '|add+' . $addcreditamount . "'");
     $userName = $user->findUserName($userid);
 
     response(_('Added') . ' ' . $addcreditamount . $credit['currency'] . ' ' . _('credit for') . ' ' . $userName . '.');
@@ -614,8 +614,8 @@ function addcredit($userid, $creditmultiplier)
 
 function getcouponlist()
 {
-    global $db, $credit;
-    if (iscreditenabled() == false) {
+    global $db, $credit, $creditSystem;
+    if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit
@@ -628,8 +628,8 @@ function getcouponlist()
 
 function generatecoupons($multiplier)
 {
-    global $db, $credit, $codeGenerator;
-    if (iscreditenabled() == false) {
+    global $db, $credit, $codeGenerator, $creditSystem;
+    if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit
@@ -644,8 +644,8 @@ function generatecoupons($multiplier)
 
 function sellcoupon($coupon)
 {
-    global $db, $credit;
-    if (iscreditenabled() == false) {
+    global $db, $credit, $creditSystem;
+    if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit
@@ -655,8 +655,8 @@ function sellcoupon($coupon)
 
 function validatecoupon($userid, $coupon)
 {
-    global $db, $credit;
-    if (iscreditenabled() == false) {
+    global $db, $credit, $creditSystem;
+    if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit
@@ -665,7 +665,7 @@ function validatecoupon($userid, $coupon)
         $row = $result->fetch_assoc();
         $value = $row['value'];
         $result = $db->query("UPDATE credit SET credit=credit+'" . $value . "' WHERE userId='" . $userid . "'");
-        $result = $db->query("INSERT INTO history SET userId=$userid,action='CREDITCHANGE',parameter='" . $value . '|add+' . $value . '|' . $coupon . "'");
+        $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=0,action='CREDITCHANGE',parameter='" . $value . '|add+' . $value . '|' . $coupon . "'");
         $result = $db->query("UPDATE coupons SET status='2' WHERE coupon='" . $coupon . "'");
         response('+' . $value . ' ' . $credit['currency'] . '. ' . _('Coupon') . ' ' . $coupon . ' ' . _('has been redeemed') . '.');
     }

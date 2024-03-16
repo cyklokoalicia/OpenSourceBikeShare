@@ -2,6 +2,8 @@
 
 use BikeShare\Credit\CodeGenerator\CodeGenerator;
 use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
+use BikeShare\Credit\CreditSystemFactory;
+use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Mail\DebugMailSender;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Mail\PHPMailerMailSender;
@@ -76,6 +78,11 @@ $user = new User($db);
  */
 $phonePurifier = new PhonePurifier($countrycode);
 
+/**
+ * @var CreditSystemInterface $creditSystem
+ */
+$creditSystem = (new CreditSystemFactory())->getCreditSystem($credit, $db);
+
 function error($message)
 {
    global $db;
@@ -97,7 +104,7 @@ function logrequest($userid)
 
     $number = $user->findPhoneNumber($userid);
 
-    $result = $localdb->query("INSERT INTO received SET sender='$number',receive_time='" . date('Y-m-d H:i:s') . "',sms_text='" . $_SERVER['REQUEST_URI'] . "',ip='" . $_SERVER['REMOTE_ADDR'] . "'");
+    $localdb->query("INSERT INTO received SET sms_uuid='', sender='$number',receive_time='" . date('Y-m-d H:i:s') . "',sms_text='" . $_SERVER['REQUEST_URI'] . "',ip='" . $_SERVER['REMOTE_ADDR'] . "'");
 }
 
 function logresult($userid, $text)
@@ -313,9 +320,9 @@ function checktoomany($cron = 1, $userid = 0)
 // check if user has credit >= minimum credit+rent fee+long rental fee
 function checkrequiredcredit($userid)
 {
-    global $db, $credit;
+    global $db, $credit, $creditSystem;
 
-    if (iscreditenabled() == false) {
+    if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit
@@ -332,9 +339,9 @@ function checkrequiredcredit($userid)
 // subtract credit for rental
 function changecreditendrental($bike, $userid)
 {
-    global $db, $watches, $credit;
+    global $db, $watches, $credit, $creditSystem;
 
-    if (iscreditenabled() == false) {
+    if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit
@@ -407,22 +414,11 @@ function changecreditendrental($bike, $userid)
     }
 }
 
-function iscreditenabled()
-{
-    global $credit;
-
-    if ($credit['enabled']) {
-        return true;
-    }
-
-    return false;
-}
-
 function getusercredit($userid)
 {
-    global $db, $credit;
+    global $db, $credit, $creditSystem;
 
-    if (iscreditenabled() == false) {
+    if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit
@@ -436,9 +432,9 @@ function getusercredit($userid)
 
 function getcreditcurrency()
 {
-    global $credit;
+    global $credit, $creditSystem;
 
-    if (iscreditenabled() == false) {
+    if ($creditSystem->isEnabled() == false) {
         return;
     }
     // if credit system disabled, exit

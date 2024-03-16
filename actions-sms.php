@@ -8,20 +8,24 @@ require("common.php");
 
 function help($number)
 {
-    global $db, $smsSender, $user;
+    global $db, $smsSender, $user, $creditSystem;
     $userid = $user->findUserIdByNumber($number);
     $privileges = $user->findPrivileges($userid);
    if ($privileges>0)
       {
       $message="Commands:\nHELP\n";
-      if (iscreditenabled()) $message.="CREDIT\n";
+      if ($creditSystem->isEnabled()) {
+          $message.="CREDIT\n";
+      }
       $message.="FREE\nRENT bikenumber\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem\n---\nFORCERENT bikenumber\nFORCERETURN bikeno stand\nLIST stand\nLAST bikeno\nREVERT bikeno\nADD email phone fullname\nDELNOTE bikeno [pattern]\nTAG stand note for all bikes\nUNTAG stand [pattern]";
       $smsSender->send($number,$message);
       }
    else
       {
       $message="Commands:\nHELP\n";
-      if (iscreditenabled()) $message.="CREDIT\n";
+      if ($creditSystem->isEnabled()) {
+          $message.="CREDIT\n";
+      }
       $message.="FREE\nRENT bikeno\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem description\nNOTE stand problem description";
       $smsSender->send($number,$message);
       }
@@ -238,7 +242,7 @@ function rent($number,$bike,$force=FALSE)
 function returnBike($number,$bike,$stand,$message="",$force=FALSE)
 {
 
-   global $db, $smsSender, $user;
+   global $db, $smsSender, $user, $creditSystem;
    $userId = $user->findUserIdByNumber($number);
    $bikeNum = intval($bike);
    $stand = strtoupper($stand);
@@ -356,13 +360,12 @@ function returnBike($number,$bike,$stand,$message="",$force=FALSE)
         }*/
       }
 
-   if (iscreditenabled())
-      {
-      $message.=_('Credit').": ".getusercredit($userId).getcreditcurrency();
-      if ($creditchange) $message.=" (-".$creditchange.")";
-      $message.=".";
-      }
-   $smsSender->send($number,$message);
+    if ($creditSystem->isEnabled()) {
+        $message.=_('Credit').": ".getusercredit($userId).getcreditcurrency();
+        if ($creditchange) $message.=" (-".$creditchange.")";
+        $message.=".";
+    }
+    $smsSender->send($number,$message);
 
 }
 

@@ -20,8 +20,8 @@ class User
     public function findUserIdByNumber($number)
     {
         $result = $this->db->query("SELECT userId FROM users WHERE number='$number'");
-        if ($result->num_rows == 1) {
-            return $result->fetch_assoc()["userId"];
+        if ($result->rowCount() == 1) {
+            return $result->fetchAssoc()["userId"];
         }
 
         return null;
@@ -30,8 +30,8 @@ class User
     public function findPhoneNumber($userId)
     {
         $result = $this->db->query("SELECT number FROM users WHERE userId='$userId'");
-        if ($result->num_rows == 1) {
-            return $result->fetch_assoc()["number"];
+        if ($result->rowCount() == 1) {
+            return $result->fetchAssoc()["number"];
         }
 
         return null;
@@ -40,8 +40,8 @@ class User
     public function findCity($userId)
     {
         $result = $this->db->query("SELECT city FROM users WHERE userId='$userId'");
-        if ($result->num_rows == 1) {
-            return $result->fetch_assoc()["city"];
+        if ($result->rowCount() == 1) {
+            return $result->fetchAssoc()["city"];
         }
 
         return null;
@@ -50,8 +50,8 @@ class User
     public function findUserName($userId)
     {
         $result = $this->db->query("SELECT userName FROM users WHERE userId='$userId'");
-        if ($result->num_rows == 1) {
-            return $result->fetch_assoc()["userName"];
+        if ($result->rowCount() == 1) {
+            return $result->fetchAssoc()["userName"];
         }
 
         return null;
@@ -60,8 +60,8 @@ class User
     public function findPrivileges($userId)
     {
         $result = $this->db->query("SELECT privileges FROM users WHERE userId='$userId'");
-        if ($result->num_rows == 1) {
-            return $result->fetch_assoc()["privileges"];
+        if ($result->rowCount() == 1) {
+            return $result->fetchAssoc()["privileges"];
         }
 
         return null;
