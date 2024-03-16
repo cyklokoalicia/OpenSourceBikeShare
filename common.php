@@ -340,34 +340,33 @@ function changecreditendrental($bike, $userid)
 
         //ak vrati a znova pozica bike do 10 min tak free time nebude mať.
 		  $oldRetrun = $db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RETURN' OR action='FORCERETURN') ORDER BY time DESC LIMIT 1");
-		  if ($oldRetrun->num_rows==1)
-		  {
-			  $oldRow=$oldRetrun->fetch_assoc();
-			  $returntime=strtotime($oldRow["time"]);
-			  if(($starttime-$returntime) < 10*60 && $timediff > 5*60) {
-				  $creditchange = $creditchange + $credit['rent'];
-				  $changelog .= 'rerent-' . $credit['rent'] . ';';
-			  }
+		  if ($oldRetrun->num_rows==1) {
+              $oldRow = $oldRetrun->fetch_assoc();
+              $returntime = strtotime($oldRow["time"]);
+              if (($starttime - $returntime) < 10 * 60 && $timediff > 5 * 60) {
+                  $creditchange = $creditchange + $creditSystem->getRentalFee();
+                  $changelog .= 'rerent-' . $creditSystem->getRentalFee() . ';';
+              }
 		  }
         //end
 
         if ($timediff > $watches['freetime'] * 60) {
-            $creditchange = $creditchange + $credit['rent'];
-            $changelog .= 'overfree-' . $credit['rent'] . ';';
+            $creditchange = $creditchange + $creditSystem->getRentalFee();
+            $changelog .= 'overfree-' . $creditSystem->getRentalFee() . ';';
         }
         if ($watches['freetime'] == 0) {
             $watches['freetime'] = 1;
         }
         // for further calculations
-        if ($credit['pricecycle'] and $timediff > $watches['freetime'] * 60 * 2) { // after first paid period, i.e. freetime*2; if pricecycle enabled
+        if ($creditSystem->getPriceCycle() && $timediff > $watches['freetime'] * 60 * 2) { // after first paid period, i.e. freetime*2; if pricecycle enabled
             $temptimediff = $timediff - ($watches['freetime'] * 60 * 2);
-            if ($credit['pricecycle'] == 1) { // flat price per cycle
+            if ($creditSystem->getPriceCycle() == 1) { // flat price per cycle
                 $cycles = ceil($temptimediff / ($watches['flatpricecycle'] * 60));
-                $creditchange = $creditchange + ($credit['rent'] * $cycles);
-                $changelog .= 'flat-' . $credit['rent'] * $cycles . ';';
-            } elseif ($credit['pricecycle'] == 2) { // double price per cycle
+                $creditchange = $creditchange + ($creditSystem->getRentalFee() * $cycles);
+                $changelog .= 'flat-' . $creditSystem->getRentalFee() * $cycles . ';';
+            } elseif ($creditSystem->getPriceCycle() == 2) { // double price per cycle
                 $cycles = ceil($temptimediff / ($watches['doublepricecycle'] * 60));
-                $tempcreditrent = $credit['rent'];
+                $tempcreditrent = $creditSystem->getRentalFee();
                 for ($i = 1; $i <= $cycles; $i++) {
                     $multiplier = $i;
                     if ($multiplier > $watches['doublepricecyclecap']) {
@@ -384,8 +383,8 @@ function changecreditendrental($bike, $userid)
             }
         }
         if ($timediff > $watches['longrental'] * 3600) {
-            $creditchange = $creditchange + $credit['longrental'];
-            $changelog .= 'longrent-' . $credit['longrental'] . ';';
+            $creditchange = $creditchange + $creditSystem->getLongRentalFee();
+            $changelog .= 'longrent-' . $creditSystem->getLongRentalFee() . ';';
         }
         $userCredit = $userCredit - $creditchange;
         $db->query("UPDATE credit SET credit=$userCredit WHERE userId=$userid");
