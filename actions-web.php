@@ -375,13 +375,13 @@ function userbikes($userId)
         $bicycles[] = $bikenum;
         $codes[] = str_pad($row['currentCode'], 4, '0', STR_PAD_LEFT);
         // get rented seconds and the old code
-        $result2 = $db->query("SELECT TIMESTAMPDIFF(SECOND, time, NOW()), parameter FROM history WHERE bikeNum=$bikenum AND action IN ('RENT','FORCERENT') ORDER BY time DESC LIMIT 2");
+        $result2 = $db->query("SELECT TIMESTAMPDIFF(SECOND, time, NOW()) as rentedSeconds, parameter FROM history WHERE bikeNum=$bikenum AND action IN ('RENT','FORCERENT') ORDER BY time DESC LIMIT 2");
 
-        $row2 = $result2->fetch_row();
-        $rentedseconds[] = $row2[0];
+        $row2 = $result2->fetchAssoc();
+        $rentedseconds[] = $row2['rentedSeconds'];
 
-        $row2 = $result2->fetch_row();
-        $oldcodes[] = str_pad($row2[1], 4, '0', STR_PAD_LEFT);
+        $row2 = $result2->fetchAssoc();
+        $oldcodes[] = str_pad($row2['parameter'], 4, '0', STR_PAD_LEFT);
     }
 
     if (!$result->num_rows) {
