@@ -2,7 +2,7 @@
 
 namespace BikeShare\Rent;
 
-class RentSystemWeb implements RentSystemInterface
+class RentSystemWeb extends AbstractRentSystem implements RentSystemInterface
 {
     public function rentBike($userId, $bike, $force = false)
     {
@@ -13,16 +13,13 @@ class RentSystemWeb implements RentSystemInterface
 
         $result = $db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
         if ($result->num_rows != 1) {
-            response(_('Bike') . ' ' . $bikeNum . ' ' . _('does not exist.'), ERROR);
-            return;
+            return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('does not exist.'), ERROR);
         }
 
         if ($force == false) {
             if (!$creditSystem->isEnoughCreditForRent($userId)) {
                 $minRequiredCredit = $creditSystem->getMinRequiredCredit();
-                response(_('You are below required credit') . ' ' . $minRequiredCredit . $creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), ERROR);
-
-                return;
+                return $this->response(_('You are below required credit') . ' ' . $minRequiredCredit . $creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), ERROR);
             }
 
             checktoomany(0, $userId);
@@ -37,11 +34,11 @@ class RentSystemWeb implements RentSystemInterface
 
             if ($countRented >= $limit) {
                 if ($limit == 0) {
-                    response(_('You can not rent any bikes. Contact the admins to lift the ban.'), ERROR);
+                    return $this->response(_('You can not rent any bikes. Contact the admins to lift the ban.'), ERROR);
                 } elseif ($limit == 1) {
-                    response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . '.', ERROR);
+                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . '.', ERROR);
                 } else {
-                    response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . ' ' . _('and you have already rented') . ' ' . $limit . '.', ERROR);
+                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . ' ' . _('and you have already rented') . ' ' . $limit . '.', ERROR);
                 }
             }
 
@@ -56,7 +53,7 @@ class RentSystemWeb implements RentSystemInterface
                 $serviceTag = $row['serviceTag'];
 
                 if ($serviceTag != 0) {
-                    response(_('Renting from service stands is not allowed: The bike probably waits for a repair.'), ERROR);
+                    return $this->response(_('Renting from service stands is not allowed: The bike probably waits for a repair.'), ERROR);
                 }
 
                 if ($watches['stack'] and $stacktopbike != $bike) {
@@ -67,7 +64,7 @@ class RentSystemWeb implements RentSystemInterface
                     notifyAdmins(_('Bike') . ' ' . $bike . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', ERROR);
                 }
                 if ($forcestack and $stacktopbike != $bike) {
-                    response(_('Bike') . ' ' . $bike . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', ERROR);
+                    return $this->response(_('Bike') . ' ' . $bike . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', ERROR);
                 }
             }
         }
@@ -87,12 +84,10 @@ class RentSystemWeb implements RentSystemInterface
 
         if ($force == false) {
             if ($currentUser == $userId) {
-                response(_('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '.', ERROR);
-                return;
+                return $this->response(_('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '.', ERROR);
             }
             if ($currentUser != 0) {
-                response(_('Bike') . ' ' . $bikeNum . ' ' . _('is already rented') . '.', ERROR);
-                return;
+                return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('is already rented') . '.', ERROR);
             }
         }
 
@@ -107,7 +102,7 @@ class RentSystemWeb implements RentSystemInterface
         } else {
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
         }
-        response($message);
+        return $this->response($message);
     }
 
     public function returnBike($userId, $bike, $stand, $note = '', $force = false)
@@ -118,7 +113,7 @@ class RentSystemWeb implements RentSystemInterface
 
         $result = $db->query("SELECT standId FROM stands WHERE standName='$stand'");
         if (!$result->num_rows) {
-            response(_('Stand name') . " '" . $stand . "' " . _('does not exist. Stands are marked by CAPITALLETTERS.'), ERROR);
+            return $this->response(_('Stand name') . " '" . $stand . "' " . _('does not exist. Stands are marked by CAPITALLETTERS.'), ERROR);
         }
         $row = $result->fetch_assoc();
         $standId = $row["standId"];
@@ -128,7 +123,7 @@ class RentSystemWeb implements RentSystemInterface
             $bikenumber = $result->num_rows;
 
             if ($bikenumber == 0) {
-                response(_('You currently have no rented bikes.'), ERROR);
+                return $this->response(_('You currently have no rented bikes.'), ERROR);
             }
         }
 
@@ -162,6 +157,28 @@ class RentSystemWeb implements RentSystemInterface
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId");
         }
 
-        response($message);
+        return $this->response($message);
+    }
+
+    protected function response($message, $error = 0, $additional = '', $log = 1)
+    {
+        global $db, $user, $auth;
+
+        $json = array('error' => $error, 'content' => $message);
+        if (is_array($additional)) {
+            foreach ($additional as $key => $value) {
+                $json[$key] = $value;
+            }
+        }
+        $json = json_encode($json);
+        if ($log == 1 && $message) {
+            $userid = $auth->getUserId();
+
+            $number = $user->findPhoneNumber($userid);
+            logresult($number, $message);
+        }
+        $db->commit();
+        echo $json;
+        exit;
     }
 }

@@ -2,12 +2,16 @@
 
 namespace BikeShare\Rent;
 
-class RentSystemSms implements RentSystemInterface
+class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
 {
+    private $number;
+
     public function rentBike($number, $bike, $force = false)
     {
         global $db, $forcestack, $watches, $smsSender, $user, $creditSystem;
 
+        $this->number = $number;
+        
         $stacktopbike = false;
         $userId = $user->findUserIdByNumber($number);
 
@@ -15,19 +19,16 @@ class RentSystemSms implements RentSystemInterface
 
         $result = $db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
         if ($result->num_rows != 1) {
-            $smsSender->send($number, "Bike $bikeNum does not exist.");
-            return;
+            return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('does not exist.'), ERROR);
         }
 
         if ($force == false) {
             if (!$creditSystem->isEnoughCreditForRent($userId)) {
                 $minRequiredCredit = $creditSystem->getMinRequiredCredit();
                 $userRemainingCredit = $creditSystem->getUserCredit($userId);
-                $smsSender->send(
-                    $number,
+                return $this->response(
                     _('Please, recharge your credit:') . " " . $userRemainingCredit . $creditSystem->getCreditCurrency() . ". " . _('Credit required:') . " " . $minRequiredCredit . $creditSystem->getCreditCurrency() . "."
                 );
-                return;
             }
 
             checktoomany(0, $userId);
@@ -42,13 +43,12 @@ class RentSystemSms implements RentSystemInterface
 
             if ($countRented >= $limit) {
                 if ($limit == 0) {
-                    $smsSender->send($number, _('You can not rent any bikes. Contact the admins to lift the ban.'));
+                    return $this->response(_('You can not rent any bikes. Contact the admins to lift the ban.'), ERROR);
                 } elseif ($limit == 1) {
-                    $smsSender->send($number, _('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . '.');
+                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . '.', ERROR);
                 } else {
-                    $smsSender->send($number, _('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . ' ' . _('and you have already rented') . ' ' . $limit . '.');
+                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . ' ' . _('and you have already rented') . ' ' . $limit . '.', ERROR);
                 }
-                return;
             }
 
             if ($forcestack or $watches['stack']) {
@@ -62,8 +62,7 @@ class RentSystemSms implements RentSystemInterface
                 $serviceTag = $row['serviceTag'];
 
                 if ($serviceTag != 0) {
-                    $smsSender->send($number, "Renting from service stands is not allowed: The bike probably waits for a repair.");
-                    return;
+                    return $this->response(_('Renting from service stands is not allowed: The bike probably waits for a repair.'), ERROR);
                 }
 
                 if ($watches['stack'] and $stacktopbike != $bike) {
@@ -74,8 +73,7 @@ class RentSystemSms implements RentSystemInterface
                     notifyAdmins(_('Bike') . ' ' . $bike . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', ERROR);
                 }
                 if ($forcestack and $stacktopbike != $bike) {
-                    $smsSender->send($number, _('Bike') . ' ' . $bike . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.');
-                    return;
+                    return $this->response(_('Bike') . ' ' . $bike . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', ERROR);
                 }
             }
         }
@@ -95,12 +93,10 @@ class RentSystemSms implements RentSystemInterface
 
         if ($force == false) {
             if ($currentUser == $userId) {
-                $smsSender->send($number, _('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '. ' . _('Return bike with command:') . ' RETURN ' . _('bikenumber') . ' ' . _('standname') . '.');
-                return;
+                return $this->response(_('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '. ' . _('Return bike with command:') . ' RETURN ' . _('bikenumber') . ' ' . _('standname') . '.');
             }
             if ($currentUser != 0) {
-                $smsSender->send($number, _('Bike') . ' ' . $bikeNum . ' ' . _('is already rented') . '.');
-                return;
+                return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('is already rented') . '.', ERROR);
             }
         }
 
@@ -114,22 +110,24 @@ class RentSystemSms implements RentSystemInterface
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode");
         } else {
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
-            $smsSender->send($number, _('System override') . ": " . _('Your rented bike') . " " . $bikeNum . " " . _('has been rented by admin') . ".");
+            $this->response(_('System override') . ": " . _('Your rented bike') . " " . $bikeNum . " " . _('has been rented by admin') . ".");
         }
-        $smsSender->send($number, $message);
+        return $this->response($message);
     }
 
     public function returnBike($number, $bike, $stand, $message = '', $force = false)
     {
         global $db, $smsSender, $user, $creditSystem;
+
+        $this->number = $number;
+        
         $userId = $user->findUserIdByNumber($number);
         $bikeNum = intval($bike);
         $stand = strtoupper($stand);
 
         $result = $db->query("SELECT standId FROM stands WHERE standName='$stand'");
         if (!$result->num_rows) {
-            $smsSender->send($number, _('Stand name') . " '" . $stand . "' " . _('does not exist. Stands are marked by CAPITALLETTERS.'));
-            return;
+            return $this->response(_('Stand name') . " '" . $stand . "' " . _('does not exist. Stands are marked by CAPITALLETTERS.'), ERROR);
         }
         $row = $result->fetch_assoc();
         $standId = $row["standId"];
@@ -139,8 +137,7 @@ class RentSystemSms implements RentSystemInterface
             $bikenumber = $result->num_rows;
 
             if ($bikenumber == 0) {
-                $smsSender->send($number, _('You currently have no rented bikes.'));
-                return;
+                return $this->response(_('You currently have no rented bikes.'), ERROR);
             }
 
             $listBikes = [];
@@ -155,14 +152,12 @@ class RentSystemSms implements RentSystemInterface
         if ($force == false) {
             $result = $db->query("SELECT currentCode FROM bikes WHERE currentUser=$userId AND bikeNum=$bikeNum");
             if ($result->num_rows != 1) {
-                $smsSender->send($number, _('You does not have bike') . " " . $bikeNum . " rented. " . _('You have rented the following') . " " . sprintf(ngettext('%d bike', '%d bikes', $bikenumber), $bikenumber) . ": $listBikes");
-                return;
+                return $this->response(_('You does not have bike') . " " . $bikeNum . " rented. " . _('You have rented the following') . " " . sprintf(ngettext('%d bike', '%d bikes', $bikenumber), $bikenumber) . ": $listBikes");
             }
         } else {
             $result = $db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
             if ($result->num_rows != 1) {
-                $smsSender->send($number, _('Bike') . " " . $bikeNum . " " . _('is not rented. Saint Thomas, the patronus of all unrented bikes, prohibited returning unrented bikes.'));
-                return;
+                return $this->response(_('Bike') . " " . $bikeNum . " " . _('is not rented. Saint Thomas, the patronus of all unrented bikes, prohibited returning unrented bikes.'));
             }
         }
         $row = $result->fetch_assoc();
@@ -201,6 +196,13 @@ class RentSystemSms implements RentSystemInterface
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId");
         }
 
-        $smsSender->send($number, $message);
+        return $this->response($message);
+    }
+
+    protected function response($message, $error = 0, $additional = '', $log = 1)
+    {
+        global $smsSender;
+        
+        $smsSender->send($this->number, $message);
     }
 }
