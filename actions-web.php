@@ -206,13 +206,11 @@ function where($userId, $bike)
 
 function addnote($userId, $bikeNum, $message)
 {
-    global $db;
+    global $db, $user;
     $userNote = $db->escape(trim($message));
 
-    $result = $db->query("SELECT userName,number from users where userId='$userId'");
-    $row = $result->fetch_assoc();
-    $userName = $row['userName'];
-    $phone = $row['number'];
+    $userName = $user->findUserName($userId);
+    $phone = $user->findPhoneNumber($userId);
     $result = $db->query("SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
     $row = $result->fetch_assoc();
     $standName = $row['standName'];
