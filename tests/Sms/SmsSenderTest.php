@@ -25,52 +25,108 @@ class SmsSenderTest extends TestCase
         );
     }
 
-    public function testSendShort()
-    {
-        $number = '123456789';
-        $message = 'Hello, World!';
+    /**
+     * @dataProvider sendDataProvider
+     */
+    public function testSend(
+        $number,
+        $message,
+        $smsConnectorCallParams,
+        $dbEscapeCallParams,
+        $dbEscapeCallResult,
+        $dbCallParams
+    ) {
         $this->smsConnector
-            ->expects($this->once())
+            ->expects($this->exactly(count($smsConnectorCallParams)))
             ->method('send')
-            ->with($number, $message);
+            ->withConsecutive(...$smsConnectorCallParams);
         $this->db
-            ->expects($this->once())
+            ->expects($this->exactly(count($dbEscapeCallParams)))
+            ->method('escape')
+            ->withConsecutive(...$dbEscapeCallParams)
+            ->willReturnOnConsecutiveCalls(...$dbEscapeCallResult);
+        $this->db
+            ->expects($this->exactly(count($dbCallParams)))
             ->method('query')
-            ->with("INSERT INTO sent SET number='$number', text='$message'");
+            ->withConsecutive(...$dbCallParams);
         $this->db
-            ->expects($this->once())
+            ->expects($this->exactly(count($dbCallParams)))
             ->method('commit');
+
         $this->smsSender->send($number, $message);
     }
 
-
-    public function testSendBig()
+    public function sendDataProvider()
     {
-        $number = '123456789';
-        // @codingStandardsIgnoreStart
-        $message = 'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod       ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris tincidunt tincidunt. ';
-        // @codingStandardsIgnoreEnd
-        $this->smsConnector
-            ->expects($this->exactly(2))
-            ->method('send')
-            ->withConsecutive(
-                // @codingStandardsIgnoreStart
-                [$number, 'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod'],
-                [$number, 'ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris tincidunt tincidunt.']
-                // @codingStandardsIgnoreEnd
-            );
-        $this->db
-            ->expects($this->exactly(2))
-            ->method('query')
-            ->withConsecutive(
-                // @codingStandardsIgnoreStart
-                ["INSERT INTO sent SET number='$number', text='Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod'"],
-                ["INSERT INTO sent SET number='$number', text='ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris tincidunt tincidunt.'"]
-                // @codingStandardsIgnoreEnd
-            );
-        $this->db
-            ->expects($this->exactly(2))
-            ->method('commit');
-        $this->smsSender->send($number, $message);
+        yield 'short message' => [
+            'number' => '123456789',
+            'message' => 'Hello, World!',
+            'smsConnectorCallParams' => [
+                ['123456789', 'Hello, World!']
+            ],
+            'dbEscapeCallParams' => [['Hello, World!']],
+            'dbEscapeCallResult' => ['Hello, World!'],
+            'dbCallParams' => [
+                ["INSERT INTO sent SET number='123456789', text='Hello, World!'"]
+            ]
+        ];
+        yield 'encoded message' => [
+            'number' => '123456789',
+            'message' => 'Hello, "World"!',
+            'smsConnectorCallParams' => [
+                ['123456789', 'Hello, "World"!']
+            ],
+            'dbEscapeCallParams' => [['Hello, "World"!']],
+            'dbEscapeCallResult' => ['Hello, \"World\"!'],
+            'dbCallParams' => [
+                ["INSERT INTO sent SET number='123456789', text='Hello, \\\"World\\\"!'"]
+            ]
+        ];
+        yield 'long message' => [
+            'number' => '123456789',
+            'message' => 'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus '
+                . 'euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod       ultricies, justo risus '
+                . 'luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut '
+                . 'mauris tincidunt tincidunt. ',
+            'smsConnectorCallParams' => [
+                [
+                    '123456789',
+                    'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus '
+                    . 'euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod'
+                ],
+                [
+                    '123456789',
+                    'ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. '
+                    . 'Nullam id orci ut mauris tincidunt tincidunt.'
+                ]
+            ],
+            'dbEscapeCallParams' => [
+                [
+                    'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus '
+                    . 'euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod'
+                ],
+                [
+                    'ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. '
+                    . 'Nullam id orci ut mauris tincidunt tincidunt.'
+                ]
+            ],
+            'dbEscapeCallResult' => [
+                'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus '
+                . 'euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod',
+                'ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. '
+                . 'Nullam id orci ut mauris tincidunt tincidunt.'
+            ],
+            'dbCallParams' => [
+                [
+                    "INSERT INTO sent SET number='123456789', text='Hello, World! Lorem ipsum dolor sit amet, "
+                    . "consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. "
+                    . "Vivamus euismod, tellus ac euismod'"],
+                [
+                    "INSERT INTO sent SET number='123456789', text='ultricies, justo risus luctus ipsum, quis "
+                    . "condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris "
+                    . "tincidunt tincidunt.'"
+                ]
+            ]
+        ];
     }
 }
