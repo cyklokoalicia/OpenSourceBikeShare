@@ -83,11 +83,7 @@ function mapinit() {
         maxZoom: 19,
         attribution: osmAttrib
     });
-    var today = new Date();
-    if (today.getMonth() + '.' + today.getDate() == '3.1' || today.getMonth() + '.' + today.getDate() == '3.2') // april fools
-    {
-        var osm = new L.StamenTileLayer("toner");
-    }
+
     map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
     map.addLayer(osm);
     sidebar = L.control.sidebar('sidebar', {
