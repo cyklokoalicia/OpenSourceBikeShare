@@ -98,7 +98,7 @@ function rent($userId,$bike,$force=FALSE)
    $row=$result->fetch_assoc();
    $currentCode=sprintf("%04d",$row["currentCode"]);
    $currentUser=$row["currentUser"];
-   $result=$db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' ORDER BY time DESC");
+   $result=$db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC");
    $note="";
    while ($row=$result->fetch_assoc())
       {
@@ -119,7 +119,7 @@ function rent($userId,$bike,$force=FALSE)
       return;
       }
 
-   $message='<h3>'._('Bike').' '.$bikeNum.': <span class="label label-primary">'._('Open with code').' '.$currentCode.'.</span></h3>'._('Change code immediately to').' <span class="label label-default">'.$newCode.'</span><br />'._('(open, rotate metal part, set new code, rotate metal part back)').'.';
+   $message='<h3>'._('Bike').' '.$bikeNum.': <span class="label label-primary">'._('Open with code').' '.$currentCode.'.</span></h3><h3>'._('Change code immediately to').' <span class="label label-default">'.$newCode.'</span></h3>'._('(open, rotate metal part, set new code, rotate metal part back)').'.';
    if ($note)
       {
       $message.="<br />"._('Reported issue:')." <em>".$note."</em>";

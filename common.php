@@ -173,9 +173,6 @@ function notifyAdmins($message, $notificationtype = 0)
         } else {
             $mailer->sendMail($row['mail'], $systemname . ' ' . _('notification'), $message);
         }
-    }//copy to Trello board -- might be added as a person instead
-    if ($notificationtype == 0) {
-        $mailer->sendMail('cyklokoalicia1+q31wfjphbgkuelf19hlb@boards.trello.com', $message, $message);
     }
 }
 
