@@ -154,6 +154,10 @@ msgstr ""
 msgid "with email, phone, fullname:"
 msgstr "mit Email, Telefon, Name:"
 
+#: /www/OpenSourceBikeShare/scan.php:24
+msgid "You are not logged in."
+msgstr "Du bist nicht eingeloggt."
+
 #: actions-qrcode.php:47 actions-web.php:44
 msgid "You are below required credit"
 msgstr "Du bist unterm erforderlichen Guthaben"

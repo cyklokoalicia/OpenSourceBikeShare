@@ -20,11 +20,19 @@ $auth->refreshSession();
 $userid = $auth->getUserId();
 $session = $auth->getSessionId();
 
+if (!$auth->isLoggedIn()) {
+    response("<h3>" . _('You are not logged in.') . "</h3>", ERROR);
+}
+
 $request=substr($_SERVER["REQUEST_URI"],strpos($_SERVER["REQUEST_URI"],".php")+5);
 $request=explode("/",$request);
 $action=$request[0];
-if (isset($request[1])) $parameter=$request[1];
-else $action=""; // mangled QR code, clear action
+if (isset($request[1])) {
+    $parameter = $request[1];
+} else {
+    // mangled QR code, clear action
+    $action = "";
+}
 
 switch($action)
    {
