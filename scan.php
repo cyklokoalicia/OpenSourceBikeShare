@@ -24,9 +24,9 @@ if (!$auth->isLoggedIn()) {
     response("<h3>" . _('You are not logged in.') . "</h3>", ERROR);
 }
 
-$request=substr($_SERVER["REQUEST_URI"],strpos($_SERVER["REQUEST_URI"],".php")+5);
-$request=explode("/",$request);
-$action=$request[0];
+$request = substr($_SERVER["REQUEST_URI"], strpos($_SERVER["REQUEST_URI"], ".php") + 5);
+$request = explode("/", $request);
+$action = $request[0];
 if (isset($request[1])) {
     $parameter = $request[1];
 } else {
@@ -34,20 +34,24 @@ if (isset($request[1])) {
     $action = "";
 }
 
-switch($action)
-   {
-   case "rent":
-      logrequest($userid,$action);
-      $bikeno=$parameter;
-      checkbikeno($bikeno);
-      rent($userid,$bikeno);
-      break;
-   case "return":
-      logrequest($userid,$action);
-      $stand=$parameter;
-      checkstandname($stand);
-      returnbike($userid,$stand);
-      break;
-   default:
-      unrecognizedqrcode($userid);
-   }
+switch ($action) {
+    case "rent":
+        logrequest($userid, $action);
+        $bikeno = $parameter;
+        checkbikeno($bikeno);
+        if (!empty($_POST['rent']) && $_POST['rent'] == "yes") {
+            rent($userid, $bikeno);
+        } else {
+            showrentform($userid, $bikeno);
+        }
+        rent($userid, $bikeno);
+        break;
+    case "return":
+        logrequest($userid, $action);
+        $stand = $parameter;
+        checkstandname($stand);
+        returnbike($userid, $stand);
+        break;
+    default:
+        unrecognizedqrcode($userid);
+}

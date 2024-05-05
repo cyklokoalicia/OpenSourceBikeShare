@@ -26,6 +26,7 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       - ./docker-data/mysql:/docker-entrypoint-initdb.d
+      - ./docker-data/mysql/conf/my.cnf:/etc/mysql/my.cnf
       - ./db-data:/var/lib/mysql
   web:
     build: .
