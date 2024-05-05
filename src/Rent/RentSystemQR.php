@@ -102,6 +102,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode");
         } else {
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
+            //$this->response(_('System override') . ": " . _('Your rented bike') . " " . $bikeNum . " " . _('has been rented by admin') . ".");
         }
         return $this->response($message);
     }
@@ -128,7 +129,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 
             if ($bikenumber == 0) {
                 return $this->response(_('You currently have no rented bikes.'), ERROR);
-            } elseif ($bikenumber > 1) {
+            } elseif ($this->getRentSystemType() === 'qr' && $bikenumber > 1) {
                 $message = _('You have') . ' ' . $bikenumber . ' ' . _('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
                 if ($connectors["sms"]) {
                     $message .= _(' or SMS');
@@ -149,9 +150,13 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
         if ($note) {
             addNote($userId, $bikeNum, $note);
+        } else {
+            $result = $db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
+            $row = $result->fetch_assoc();
+            $note = $row["note"];
         }
 
-        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ': <span class="label label-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>';
+        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand . ' : <span class="label label-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>';
         $message .= '<br />' . _('Please') . ', <strong>' . _('rotate the lockpad to') . ' <span class="label label-default">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
         if ($note) {
             $message .= '<br />' . _('You have also reported this problem:') . ' ' . $note . '.';
@@ -169,6 +174,10 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         }
 
         return $this->response($message);
+    }
+
+    protected function getRentSystemType() {
+        return 'qr';
     }
 
     protected function response($message, $error = 0, $additional = '', $log = 1)

@@ -8,13 +8,12 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
 
     public function rentBike($number, $bike, $force = false)
     {
-        global $db, $forcestack, $watches, $smsSender, $user, $creditSystem;
+        global $db, $forcestack, $watches, $user, $creditSystem;
 
         $this->number = $number;
-        
-        $stacktopbike = false;
         $userId = $user->findUserIdByNumber($number);
 
+        $stacktopbike = false;
         $bikeNum = intval($bike);
 
         $result = $db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
@@ -25,10 +24,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         if ($force == false) {
             if (!$creditSystem->isEnoughCreditForRent($userId)) {
                 $minRequiredCredit = $creditSystem->getMinRequiredCredit();
-                $userRemainingCredit = $creditSystem->getUserCredit($userId);
-                return $this->response(
-                    _('Please, recharge your credit:') . " " . $userRemainingCredit . $creditSystem->getCreditCurrency() . ". " . _('Credit required:') . " " . $minRequiredCredit . $creditSystem->getCreditCurrency() . "."
-                );
+                return $this->response(_('You are below required credit') . ' ' . $minRequiredCredit . $creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), ERROR);
             }
 
             checktoomany(0, $userId);
@@ -82,7 +78,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         $row = $result->fetch_assoc();
         $currentCode = sprintf('%04d', $row['currentCode']);
         $currentUser = $row['currentUser'];
-        $result = $db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC LIMIT 1");
+        $result = $db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC");
         $note = '';
         while ($row = $result->fetch_assoc()) {
             $note .= $row['note'] . '; ';
@@ -93,16 +89,16 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
 
         if ($force == false) {
             if ($currentUser == $userId) {
-                return $this->response(_('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '. ' . _('Return bike with command:') . ' RETURN ' . _('bikenumber') . ' ' . _('standname') . '.');
+                return $this->response(_('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '.', ERROR);
             }
             if ($currentUser != 0) {
                 return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('is already rented') . '.', ERROR);
             }
         }
 
-        $message = _('Bike') . ' ' . $bikeNum . ': ' . _('Open with code') . ' ' . $currentCode . '. ' . _('Change code immediately to') . ' ' . $newCode . ' ' . _('(open,rotate metal part,set new code,rotate metal part back)') . '.';
+        $message = _('Bike') . ' ' . $bikeNum . ': ' . _('Open with code') . ' ' . $currentCode . '. ' . _('Change code immediately to') . ' ' . $newCode . ' ' . _('(open, rotate metal part, set new code, rotate metal part back)') . '.';
         if ($note) {
-            $message .= '(' . _('bike note') . ':' . $note . ')';
+            $message .= '(' . _('Reported issue') . ':' . $note . ')';
         }
 
         $result = $db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
@@ -110,18 +106,18 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RENT',parameter=$newCode");
         } else {
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
-            $this->response(_('System override') . ": " . _('Your rented bike') . " " . $bikeNum . " " . _('has been rented by admin') . ".");
+            //$this->response(_('System override') . ": " . _('Your rented bike') . " " . $bikeNum . " " . _('has been rented by admin') . ".");
         }
         return $this->response($message);
     }
 
-    public function returnBike($number, $bike, $stand, $message = '', $force = false)
+    public function returnBike($number, $bike, $stand, $note = '', $force = false)
     {
-        global $db, $smsSender, $user, $creditSystem;
+        global $db, $connectors, $user, $creditSystem;
 
         $this->number = $number;
-        
         $userId = $user->findUserIdByNumber($number);
+
         $bikeNum = intval($bike);
         $stand = strtoupper($stand);
 
@@ -138,35 +134,28 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
 
             if ($bikenumber == 0) {
                 return $this->response(_('You currently have no rented bikes.'), ERROR);
-            }
-
-            $listBikes = [];
-            while ($row = $result->fetch_assoc()) {
-                $listBikes[] = $row["bikeNum"];
-            }
-            if ($bikenumber > 1)  {
-                $listBikes = implode(',', $listBikes);
+            } elseif ($this->getRentSystemType() === 'qr' && $bikenumber > 1) {
+                $message = _('You have') . ' ' . $bikenumber . ' ' . _('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
+                if ($connectors["sms"]) {
+                    $message .= _(' or SMS');
+                }
+                $message .= _(' to return the bikes.');
+                return $this->response($message, ERROR);
             }
         }
 
         if ($force == false) {
             $result = $db->query("SELECT currentCode FROM bikes WHERE currentUser=$userId AND bikeNum=$bikeNum");
-            if ($result->num_rows != 1) {
-                return $this->response(_('You does not have bike') . " " . $bikeNum . " rented. " . _('You have rented the following') . " " . sprintf(ngettext('%d bike', '%d bikes', $bikenumber), $bikenumber) . ": $listBikes");
-            }
         } else {
             $result = $db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
-            if ($result->num_rows != 1) {
-                return $this->response(_('Bike') . " " . $bikeNum . " " . _('is not rented. Saint Thomas, the patronus of all unrented bikes, prohibited returning unrented bikes.'));
-            }
         }
         $row = $result->fetch_assoc();
         $currentCode = sprintf('%04d', $row['currentCode']);
 
-        $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum");
-
-        if ($message) {
-            if (preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $message, $matches)) {
+        $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
+        if ($note) {
+            if (preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $note, $matches)) {
+                //this should be checked before calling return bike
                 $note = $db->escape(trim($matches[1]));
             }
 
@@ -177,18 +166,16 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
             $note = $row["note"];
         }
 
-        $message = _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand . '. ' . _('Make sure you set code to') . ' ' . $currentCode . '.';
+        $message = _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand . ' ' . _('Lock with code') . ' ' . $currentCode . '.';
+        $message .= _('Please') . ', ' . _('rotate the lockpad to') . ' 0000 ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
         if ($note) {
-            $message .= "(note:" . $note . ")";
+            $message .= _('You have also reported this problem:'). ' ' . $note . '.';
         }
-        $message .= " " . _('Rotate lockpad to 0000.');
 
         if ($force == false) {
             $creditchange = changecreditendrental($bikeNum, $userId);
             if ($creditSystem->isEnabled() && $creditchange) {
-                $userRemainingCredit = $creditSystem->getUserCredit($userId) . $creditSystem->getCreditCurrency();
-                $message .= _('Credit') . ": " . $userRemainingCredit;
-                $message .= " (-" . $creditchange . ")" . ".";
+                $message .= '<br />' . _('Credit change') . ': -' . $creditchange . $creditSystem->getCreditCurrency() . '.';
             }
 
             $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
@@ -197,6 +184,10 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         }
 
         return $this->response($message);
+    }
+
+    protected function getRentSystemType() {
+        return 'sms';
     }
 
     protected function response($message, $error = 0, $additional = '', $log = 1)
