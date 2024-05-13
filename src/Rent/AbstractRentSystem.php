@@ -12,7 +12,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $bikeNum = intval($bikeId);
 
         $result = $db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
-        if ($result->num_rows != 1) {
+        if ($result->rowCount() != 1) {
             return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('does not exist.'), ERROR);
         }
 
@@ -25,11 +25,11 @@ abstract class AbstractRentSystem implements RentSystemInterface
             checktoomany(0, $userId);
 
             $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
-            $row = $result->fetch_assoc();
+            $row = $result->fetchAssoc();
             $countRented = $row['countRented'];
 
             $result = $db->query("SELECT userLimit FROM limits where userId=$userId");
-            $row = $result->fetch_assoc();
+            $row = $result->fetchAssoc();
             $limit = $row['userLimit'];
 
             if ($countRented >= $limit) {
@@ -44,12 +44,12 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             if ($forcestack or $watches['stack']) {
                 $result = $db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bikeId'");
-                $row = $result->fetch_assoc();
+                $row = $result->fetchAssoc();
                 $standid = $row['currentStand'];
                 $stacktopbike = checktopofstack($standid);
 
                 $result = $db->query("SELECT serviceTag FROM stands WHERE standId='$standid'");
-                $row = $result->fetch_assoc();
+                $row = $result->fetchAssoc();
                 $serviceTag = $row['serviceTag'];
 
                 if ($serviceTag != 0) {
@@ -58,7 +58,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
                 if ($watches['stack'] and $stacktopbike != $bikeId) {
                     $result = $db->query("SELECT standName FROM stands WHERE standId='$standid'");
-                    $row = $result->fetch_assoc();
+                    $row = $result->fetchAssoc();
                     $stand = $row['standName'];
                     $userName = $user->findUserName($userId);
                     notifyAdmins(_('Bike') . ' ' . $bikeId . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', ERROR);
@@ -70,12 +70,12 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         $result = $db->query("SELECT currentUser,currentCode FROM bikes WHERE bikeNum=$bikeNum");
-        $row = $result->fetch_assoc();
+        $row = $result->fetchAssoc();
         $currentCode = sprintf('%04d', $row['currentCode']);
         $currentUser = $row['currentUser'];
         $result = $db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC");
         $note = '';
-        while ($row = $result->fetch_assoc()) {
+        while ($row = $result->fetchAssoc()) {
             $note .= $row['note'] . '; ';
         }
         $note = substr($note, 0, strlen($note) - 2); // remove last two chars - comma and space
@@ -120,15 +120,15 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $stand = strtoupper($standName);
 
         $result = $db->query("SELECT standId FROM stands WHERE standName='$stand'");
-        if (!$result->num_rows) {
+        if (!$result->rowCount()) {
             return $this->response(_('Stand name') . " '" . $stand . "' " . _('does not exist. Stands are marked by CAPITALLETTERS.'), ERROR);
         }
-        $row = $result->fetch_assoc();
+        $row = $result->fetchAssoc();
         $standId = $row["standId"];
 
         if ($force == false) {
             $result = $db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
-            $bikenumber = $result->num_rows;
+            $bikenumber = $result->rowCount();
 
             if ($bikenumber == 0) {
                 return $this->response(_('You currently have no rented bikes.'), ERROR);
@@ -147,7 +147,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         } else {
             $result = $db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
         }
-        $row = $result->fetch_assoc();
+        $row = $result->fetchAssoc();
         $currentCode = sprintf('%04d', $row['currentCode']);
 
         $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
@@ -155,7 +155,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             addNote($userId, $bikeNum, $note);
         } else {
             $result = $db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
-            $row = $result->fetch_assoc();
+            $row = $result->fetchAssoc();
             $note = $row["note"];
         }
 

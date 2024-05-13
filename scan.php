@@ -2,6 +2,7 @@
 
 use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
+use BikeShare\Rent\RentSystemQR;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
 
@@ -24,6 +25,8 @@ if (!$auth->isLoggedIn()) {
     response("<h3>" . _('You are not logged in.') . "</h3>", ERROR);
 }
 
+$rentSystem = new RentSystemQR();
+
 $request = substr($_SERVER["REQUEST_URI"], strpos($_SERVER["REQUEST_URI"], ".php") + 5);
 $request = explode("/", $request);
 $action = $request[0];
@@ -40,18 +43,17 @@ switch ($action) {
         $bikeno = $parameter;
         checkbikeno($bikeno);
         if (!empty($_POST['rent']) && $_POST['rent'] == "yes") {
-            rent($userid, $bikeno);
+            $rentSystem->rentBike($userid, $bikeno);
         } else {
             showrentform($userid, $bikeno);
         }
-        rent($userid, $bikeno);
         break;
     case "return":
         logrequest($userid, $action);
         $stand = $parameter;
         checkstandname($stand);
-        returnbike($userid, $stand);
+        $rentSystem->returnBike($userid, 0, $stand);
         break;
     default:
-        unrecognizedqrcode($userid);
+        unrecognizedqrcode();
 }
