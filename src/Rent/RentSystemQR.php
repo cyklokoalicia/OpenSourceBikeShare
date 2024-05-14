@@ -13,8 +13,27 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 
     public function returnBike($userId, $bikeId, $standName, $note = '', $force = false)
     {
+        global $logger, $db, $connectors;
+
         $force = false; #return by qr code can not be forced
         $note = ''; #note can not be provided via qr code
+
+        if ($bikeId !== 0) {
+            $logger->error("Bike number could not be provided via QR code", ["userId" => $userId]);
+            return $this->response(_('Invalid bike number'), ERROR);
+        }
+
+        $result = $db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
+        $bikeNumber = $result->rowCount();
+
+        if ($bikeNumber > 1) {
+            $message = _('You have') . ' ' . $bikeNumber . ' ' . _('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
+            if ($connectors["sms"]) {
+                $message .= _(' or SMS');
+            }
+            $message .= _(' to return the bikes.');
+            return $this->response($message, ERROR);
+        }
 
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
     }

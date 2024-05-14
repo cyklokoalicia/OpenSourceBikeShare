@@ -91,16 +91,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
             }
         }
 
-        if ($this->getRentSystemType() === 'sms') {
-            $message = _('Bike') . ' ' . $bikeNum . ': ' . _('Open with code') . ' ' . $currentCode . '. ' . _('Change code immediately to') . ' ' . $newCode . ' ' . _('(open, rotate metal part, set new code, rotate metal part back)') . '.';
-            if ($note) {
-                $message .= '(' . _('Reported issue') . ':' . $note . ')';
-            }
-        } else {
-            $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ': <span class="label label-primary">' . _('Open with code') . ' ' . $currentCode . '.</span></h3><h3>' . _('Change code immediately to') . ' <span class="label label-default" style="font-size: 16px;">' . $newCode . '</span></h3>' . _('(open, rotate metal part, set new code, rotate metal part back)') . '.';
-            if ($note) {
-                $message .= '<br />' . _('Reported issue') . ': <em>' . $note . '</em>';
-            }
+        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ': <span class="label label-primary">' . _('Open with code') . ' ' . $currentCode . '.</span></h3><h3>' . _('Change code immediately to') . ' <span class="label label-default" style="font-size: 16px;">' . $newCode . '</span></h3>' . _('(open, rotate metal part, set new code, rotate metal part back)') . '.';
+        if ($note) {
+            $message .= '<br />' . _('Reported issue') . ': <em>' . $note . '</em>';
         }
 
         $result = $db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
@@ -132,13 +125,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             if ($bikenumber == 0) {
                 return $this->response(_('You currently have no rented bikes.'), ERROR);
-            } elseif ($this->getRentSystemType() === 'qr' && $bikenumber > 1) {
-                $message = _('You have') . ' ' . $bikenumber . ' ' . _('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
-                if ($connectors["sms"]) {
-                    $message .= _(' or SMS');
-                }
-                $message .= _(' to return the bikes.');
-                return $this->response($message, ERROR);
             }
         }
 
@@ -159,18 +145,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $note = $row["note"];
         }
 
-        if ($this->getRentSystemType() === 'sms') {
-            $message = _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand . ' ' . _('Lock with code') . ' ' . $currentCode . '.';
-            $message .= _('Please') . ', ' . _('rotate the lockpad to') . ' 0000 ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
-            if ($note) {
-                $message .= _('You have also reported this problem:'). ' ' . $note . '.';
-            }
-        } else {
-            $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand . ' : <span class="label label-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>';
-            $message .= '<br />' . _('Please') . ', <strong>' . _('rotate the lockpad to') . ' <span class="label label-default">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
-            if ($note) {
-                $message .= '<br />' . _('You have also reported this problem:') . ' ' . $note . '.';
-            }
+        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand . ' : <span class="label label-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>';
+        $message .= '<br />' . _('Please') . ', <strong>' . _('rotate the lockpad to') . ' <span class="label label-default">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
+        if ($note) {
+            $message .= '<br />' . _('You have also reported this problem:') . ' ' . $note . '.';
         }
 
         if ($force == false) {
