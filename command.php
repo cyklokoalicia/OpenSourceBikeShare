@@ -4,6 +4,8 @@ use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
 use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Purifier\PhonePurifierInterface;
+use BikeShare\Rent\RentSystemFactory;
+use BikeShare\Rent\RentSystemInterface;
 use BikeShare\Rent\RentSystemWeb;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
@@ -26,7 +28,10 @@ $phonePurifier = new PhonePurifier($countrycode);
 $userid = $auth->getUserId();
 $session = $auth->getSessionId();
 
-$rentSystem = new RentSystemWeb();
+/**
+ * @var RentSystemInterface $rentSystem
+ */
+$rentSystem = RentSystemFactory::create('web');
 
 $action="";
 if (isset($_GET["action"])) $action=trim($_GET["action"]);

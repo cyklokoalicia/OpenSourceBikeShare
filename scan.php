@@ -2,6 +2,8 @@
 
 use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
+use BikeShare\Rent\RentSystemFactory;
+use BikeShare\Rent\RentSystemInterface;
 use BikeShare\Rent\RentSystemQR;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
@@ -25,7 +27,10 @@ if (!$auth->isLoggedIn()) {
     response("<h3>" . _('You are not logged in.') . "</h3>", ERROR);
 }
 
-$rentSystem = new RentSystemQR();
+/**
+ * @var RentSystemInterface $rentSystem
+ */
+$rentSystem = RentSystemFactory::create('qr');
 
 $request = substr($_SERVER["REQUEST_URI"], strpos($_SERVER["REQUEST_URI"], ".php") + 5);
 $request = explode("/", $request);

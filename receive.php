@@ -1,6 +1,8 @@
 <?php
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Rent\RentSystemFactory;
+use BikeShare\Rent\RentSystemInterface;
 use BikeShare\Rent\RentSystemSms;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
@@ -16,7 +18,10 @@ require("actions-sms.php");
  */
 log_sms($sms->getUUID(),$sms->getNumber(),$sms->getTime(),$sms->getMessage(),$sms->getIPAddress());
 
-$rentSystem = new RentSystemSms();
+/**
+ * @var RentSystemInterface $rentSystem
+ */
+$rentSystem = RentSystemFactory::create('sms');
 
 $args=preg_split("/\s+/",$sms->getProcessedMessage());//preg_split must be used instead of explode because of multiple spaces
 

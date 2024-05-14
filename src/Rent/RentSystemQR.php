@@ -13,25 +13,24 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 
     public function returnBike($userId, $bikeId, $standName, $note = '', $force = false)
     {
-        global $logger, $db, $connectors;
-
         $force = false; #return by qr code can not be forced
         $note = ''; #note can not be provided via qr code
 
         if ($bikeId !== 0) {
-            $logger->error("Bike number could not be provided via QR code", ["userId" => $userId]);
+            $this->logger->error("Bike number could not be provided via QR code", ["userId" => $userId]);
             return $this->response(_('Invalid bike number'), ERROR);
         }
 
-        $result = $db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
+        $result = $this->db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
         $bikeNumber = $result->rowCount();
 
         if ($bikeNumber > 1) {
             $message = _('You have') . ' ' . $bikeNumber . ' ' . _('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
-            if ($connectors["sms"]) {
+            if ($this->connectorsConfig["sms"]) {
                 $message .= _(' or SMS');
             }
             $message .= _(' to return the bikes.');
+
             return $this->response($message, ERROR);
         }
 
@@ -44,13 +43,14 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 
     protected function response($message, $error = 0, $additional = '', $log = 1)
     {
-        global $db, $systemname, $systemURL, $user, $auth;
+        global $systemname, $systemURL;
+
         if ($log == 1 and $message) {
-            $userid = $auth->getUserId();
-            $number = $user->findPhoneNumber($userid);
+            $userid = $this->auth->getUserId();
+            $number = $this->user->findPhoneNumber($userid);
             logresult($number, $message);
         }
-        $db->commit();
+        $this->db->commit();
         echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$systemname,'</title>';
         echo '<base href="',$systemURL,'" />';
         echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';

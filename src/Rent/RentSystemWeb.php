@@ -10,8 +10,6 @@ class RentSystemWeb extends AbstractRentSystem implements RentSystemInterface
 
     protected function response($message, $error = 0, $additional = '', $log = 1)
     {
-        global $db, $user, $auth;
-
         $json = array('error' => $error, 'content' => $message);
         if (is_array($additional)) {
             foreach ($additional as $key => $value) {
@@ -20,12 +18,12 @@ class RentSystemWeb extends AbstractRentSystem implements RentSystemInterface
         }
         $json = json_encode($json);
         if ($log == 1 && $message) {
-            $userid = $auth->getUserId();
+            $userid = $this->auth->getUserId();
 
-            $number = $user->findPhoneNumber($userid);
+            $number = $this->user->findPhoneNumber($userid);
             logresult($number, $message);
         }
-        $db->commit();
+        $this->db->commit();
         echo $json;
         exit;
     }
