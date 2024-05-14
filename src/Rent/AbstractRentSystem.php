@@ -22,7 +22,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 return $this->response(_('You are below required credit') . ' ' . $minRequiredCredit . $creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), ERROR);
             }
 
-            checktoomany(0, $userId);
+            $this->checktoomany($userId);
 
             $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
             $row = $result->fetchAssoc();
@@ -46,7 +46,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $result = $db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bikeId'");
                 $row = $result->fetchAssoc();
                 $standid = $row['currentStand'];
-                $stacktopbike = checktopofstack($standid);
+                $stacktopbike = $this->checktopofstack($standid);
 
                 $result = $db->query("SELECT serviceTag FROM stands WHERE standId='$standid'");
                 $row = $result->fetchAssoc();
@@ -61,7 +61,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     $row = $result->fetchAssoc();
                     $stand = $row['standName'];
                     $userName = $user->findUserName($userId);
-                    notifyAdmins(_('Bike') . ' ' . $bikeId . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', ERROR);
+                    $this->notifyAdmins(_('Bike') . ' ' . $bikeId . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', ERROR);
                 }
                 if ($forcestack and $stacktopbike != $bikeId) {
                     return $this->response(_('Bike') . ' ' . $bikeId . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', ERROR);
@@ -138,7 +138,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
         if ($note) {
-            addNote($userId, $bikeNum, $note);
+            $this->addNote($userId, $bikeNum, $note);
         } else {
             $result = $db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
             $row = $result->fetchAssoc();
@@ -152,7 +152,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         if ($force == false) {
-            $creditchange = changecreditendrental($bikeNum, $userId);
+            $creditchange = $this->changecreditendrental($bikeNum, $userId);
             if ($creditSystem->isEnabled() && $creditchange) {
                 $message .= '<br />' . _('Credit change') . ': -' . $creditchange . $creditSystem->getCreditCurrency() . '.';
             }
@@ -167,4 +167,117 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
     abstract protected function getRentSystemType();
     abstract protected function response($message, $error = 0, $additional = '', $log = 1);
+
+    private function checktoomany($userId)
+    {
+        checktoomany(0, $userId);
+    }
+
+    private function checktopofstack($standid)
+    {
+        return checktopofstack($standid);
+    }
+
+    private function notifyAdmins($message, $notificationtype = 0)
+    {
+        notifyAdmins($message, $notificationtype);
+    }
+
+    private function addnote($userId, $bikeNum, $message)
+    {
+        global $db, $user;
+        $userNote = $db->escape(trim($message));
+
+        $userName = $user->findUserName($userId);
+        $phone = $user->findPhoneNumber($userId);
+        $result = $db->query("SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
+        $row = $result->fetchAssoc();
+        $standName = $row['standName'];
+        if ($standName != null) {
+            $bikeStatus = _('at') . ' ' . $standName;
+        } else {
+            $bikeStatus = _('used by') . ' ' . $userName . ' +' . $phone;
+        }
+        $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
+        $noteid = $db->getLastInsertId();
+        $this->notifyAdmins(_('Note #') . $noteid . ': b.' . $bikeNum . ' (' . $bikeStatus . ') ' . _('by') . ' ' . $userName . '/' . $phone . ':' . $userNote);
+    }
+
+    // subtract credit for rental
+    private function changecreditendrental($bike, $userid)
+    {
+        global $db, $watches, $credit, $creditSystem;
+
+        if ($creditSystem->isEnabled() == false) {
+            return;
+        }
+        // if credit system disabled, exit
+
+        $userCredit = $creditSystem->getUserCredit($userid);
+
+        $result = $db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RENT' OR action='FORCERENT') ORDER BY time DESC LIMIT 1");
+        if ($result->rowCount() == 1) {
+            $row = $result->fetchAssoc();
+            $starttime = strtotime($row['time']);
+            $endtime = time();
+            $timediff = $endtime - $starttime;
+            $creditchange = 0;
+            $changelog = '';
+
+            //ak vrati a znova pozica bike do 10 min tak free time nebude mať.
+            $oldRetrun = $db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RETURN' OR action='FORCERETURN') ORDER BY time DESC LIMIT 1");
+            if ($oldRetrun->rowCount()==1) {
+                $oldRow = $oldRetrun->fetchAssoc();
+                $returntime = strtotime($oldRow["time"]);
+                if (($starttime - $returntime) < 10 * 60 && $timediff > 5 * 60) {
+                    $creditchange = $creditchange + $creditSystem->getRentalFee();
+                    $changelog .= 'rerent-' . $creditSystem->getRentalFee() . ';';
+                }
+            }
+            //end
+
+            if ($timediff > $watches['freetime'] * 60) {
+                $creditchange = $creditchange + $creditSystem->getRentalFee();
+                $changelog .= 'overfree-' . $creditSystem->getRentalFee() . ';';
+            }
+            if ($watches['freetime'] == 0) {
+                $watches['freetime'] = 1;
+            }
+            // for further calculations
+            if ($creditSystem->getPriceCycle() && $timediff > $watches['freetime'] * 60 * 2) { // after first paid period, i.e. freetime*2; if pricecycle enabled
+                $temptimediff = $timediff - ($watches['freetime'] * 60 * 2);
+                if ($creditSystem->getPriceCycle() == 1) { // flat price per cycle
+                    $cycles = ceil($temptimediff / ($watches['flatpricecycle'] * 60));
+                    $creditchange = $creditchange + ($creditSystem->getRentalFee() * $cycles);
+                    $changelog .= 'flat-' . $creditSystem->getRentalFee() * $cycles . ';';
+                } elseif ($creditSystem->getPriceCycle() == 2) { // double price per cycle
+                    $cycles = ceil($temptimediff / ($watches['doublepricecycle'] * 60));
+                    $tempcreditrent = $creditSystem->getRentalFee();
+                    for ($i = 1; $i <= $cycles; $i++) {
+                        $multiplier = $i;
+                        if ($multiplier > $watches['doublepricecyclecap']) {
+                            $multiplier = $watches['doublepricecyclecap'];
+                        }
+                        // exception for rent=1, otherwise square won't work:
+                        if ($tempcreditrent == 1) {
+                            $tempcreditrent = 2;
+                        }
+
+                        $creditchange = $creditchange + pow($tempcreditrent, $multiplier);
+                        $changelog .= 'double-' . pow($tempcreditrent, $multiplier) . ';';
+                    }
+                }
+            }
+            if ($timediff > $watches['longrental'] * 3600) {
+                $creditchange = $creditchange + $creditSystem->getLongRentalFee();
+                $changelog .= 'longrent-' . $creditSystem->getLongRentalFee() . ';';
+            }
+            $userCredit = $userCredit - $creditchange;
+            $db->query("UPDATE credit SET credit=$userCredit WHERE userId=$userid");
+            $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDITCHANGE',parameter='" . $creditchange . '|' . $changelog . "'");
+            $db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$userCredit");
+
+            return $creditchange;
+        }
+    }
 }

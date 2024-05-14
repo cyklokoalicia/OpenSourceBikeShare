@@ -53,26 +53,6 @@ function where($userId, $bike)
     }
 }
 
-function addnote($userId, $bikeNum, $message)
-{
-    global $db, $user;
-    $userNote = $db->escape(trim($message));
-
-    $userName = $user->findUserName($userId);
-    $phone = $user->findPhoneNumber($userId);
-    $result = $db->query("SELECT stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId WHERE bikeNum=$bikeNum");
-    $row = $result->fetch_assoc();
-    $standName = $row['standName'];
-    if ($standName != null) {
-        $bikeStatus = _('at') . ' ' . $standName;
-    } else {
-        $bikeStatus = _('used by') . ' ' . $userName . ' +' . $phone;
-    }
-    $db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
-    $noteid = $db->getLastInsertId();
-    notifyAdmins(_('Note #') . $noteid . ': b.' . $bikeNum . ' (' . $bikeStatus . ') ' . _('by') . ' ' . $userName . '/' . $phone . ':' . $userNote);
-}
-
 function listbikes($stand)
 {
     global $db, $forcestack;
