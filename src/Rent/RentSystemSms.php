@@ -81,7 +81,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         return 'sms';
     }
 
-    protected function response($message, $error = 0, $additional = '', $log = 1)
+    protected function response($message, $error = 0)
     {
         $this->smsSender->send($this->number, strip_tags($message));
     }

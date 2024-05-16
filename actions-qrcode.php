@@ -8,8 +8,8 @@ function response($message,$error=0,$log=1)
         $userid = $auth->getUserId();
         $number = $user->findPhoneNumber($userid);
         logresult($number, $message);
+        $db->commit();
     }
-   $db->commit();
    echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$systemname,'</title>';
    echo '<base href="',$systemURL,'" />';
    echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';

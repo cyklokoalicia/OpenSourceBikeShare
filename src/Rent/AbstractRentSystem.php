@@ -164,6 +164,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $result = $this->db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERENT',parameter=$newCode");
             //$this->response(_('System override') . ": " . _('Your rented bike') . " " . $bikeNum . " " . _('has been rented by admin') . ".");
         }
+
         return $this->response($message);
     }
 
@@ -226,7 +227,19 @@ abstract class AbstractRentSystem implements RentSystemInterface
     }
 
     abstract protected function getRentSystemType();
-    abstract protected function response($message, $error = 0, $additional = '', $log = 1);
+
+    protected function response($message, $error = 0)
+    {
+        $userid = $this->auth->getUserId();
+        $number = $this->user->findPhoneNumber($userid);
+        $this->logResult($number, $message);
+        $this->db->commit();
+
+        return [
+            'error' => $error,
+            'content' => $message,
+        ];
+    }
 
     private function checktoomany($userId)
     {
@@ -336,5 +349,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             return $creditchange;
         }
+    }
+
+    private function logResult($number, $message)
+    {
+        logresult($number, $message);
     }
 }

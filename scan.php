@@ -48,7 +48,8 @@ switch ($action) {
         $bikeno = $parameter;
         checkbikeno($bikeno);
         if (!empty($_POST['rent']) && $_POST['rent'] == "yes") {
-            $rentSystem->rentBike($userid, $bikeno);
+            $result = $rentSystem->rentBike($userid, $bikeno);
+            response($result['message'], $result['error'], 0);
         } else {
             showrentform($userid, $bikeno);
         }
@@ -57,7 +58,8 @@ switch ($action) {
         logrequest($userid, $action);
         $stand = $parameter;
         checkstandname($stand);
-        $rentSystem->returnBike($userid, 0, $stand);
+        $result = $rentSystem->returnBike($userid, 0, $stand);
+        response($result['message'], $result['error'], 0);
         break;
     default:
         unrecognizedqrcode();
