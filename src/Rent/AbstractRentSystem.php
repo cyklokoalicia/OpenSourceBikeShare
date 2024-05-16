@@ -11,6 +11,10 @@ use Psr\Log\LoggerInterface;
 abstract class AbstractRentSystem implements RentSystemInterface
 {
     /**
+     * @private
+     */
+    const ERROR = 1;
+    /**
      * @var DbInterface
      */
     protected $db;
@@ -70,13 +74,13 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $result = $this->db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
         if ($result->rowCount() != 1) {
-            return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('does not exist.'), ERROR);
+            return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('does not exist.'), self::ERROR);
         }
 
         if ($force == false) {
             if (!$this->creditSystem->isEnoughCreditForRent($userId)) {
                 $minRequiredCredit = $this->creditSystem->getMinRequiredCredit();
-                return $this->response(_('You are below required credit') . ' ' . $minRequiredCredit . $this->creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), ERROR);
+                return $this->response(_('You are below required credit') . ' ' . $minRequiredCredit . $this->creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), self::ERROR);
             }
 
             $this->checktoomany($userId);
@@ -91,11 +95,11 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             if ($countRented >= $limit) {
                 if ($limit == 0) {
-                    return $this->response(_('You can not rent any bikes. Contact the admins to lift the ban.'), ERROR);
+                    return $this->response(_('You can not rent any bikes. Contact the admins to lift the ban.'), self::ERROR);
                 } elseif ($limit == 1) {
-                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . '.', ERROR);
+                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . '.', self::ERROR);
                 } else {
-                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . ' ' . _('and you have already rented') . ' ' . $limit . '.', ERROR);
+                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . ' ' . _('and you have already rented') . ' ' . $limit . '.', self::ERROR);
                 }
             }
 
@@ -110,7 +114,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $serviceTag = $row['serviceTag'];
 
                 if ($serviceTag != 0) {
-                    return $this->response(_('Renting from service stands is not allowed: The bike probably waits for a repair.'), ERROR);
+                    return $this->response(_('Renting from service stands is not allowed: The bike probably waits for a repair.'), self::ERROR);
                 }
 
                 if ($this->watchesConfig['stack'] and $stacktopbike != $bikeId) {
@@ -118,10 +122,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     $row = $result->fetchAssoc();
                     $stand = $row['standName'];
                     $userName = $this->user->findUserName($userId);
-                    $this->notifyAdmins(_('Bike') . ' ' . $bikeId . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', ERROR);
+                    $this->notifyAdmins(_('Bike') . ' ' . $bikeId . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', self::ERROR);
                 }
                 if ($this->forceStack and $stacktopbike != $bikeId) {
-                    return $this->response(_('Bike') . ' ' . $bikeId . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', ERROR);
+                    return $this->response(_('Bike') . ' ' . $bikeId . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', self::ERROR);
                 }
             }
         }
@@ -141,10 +145,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         if ($force == false) {
             if ($currentUser == $userId) {
-                return $this->response(_('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '.', ERROR);
+                return $this->response(_('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '.', self::ERROR);
             }
             if ($currentUser != 0) {
-                return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('is already rented') . '.', ERROR);
+                return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('is already rented') . '.', self::ERROR);
             }
         }
 
@@ -170,7 +174,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $result = $this->db->query("SELECT standId FROM stands WHERE standName='$stand'");
         if (!$result->rowCount()) {
-            return $this->response(_('Stand name') . " '" . $stand . "' " . _('does not exist. Stands are marked by CAPITALLETTERS.'), ERROR);
+            return $this->response(_('Stand name') . " '" . $stand . "' " . _('does not exist. Stands are marked by CAPITALLETTERS.'), self::ERROR);
         }
         $row = $result->fetchAssoc();
         $standId = $row["standId"];
@@ -180,7 +184,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $bikenumber = $result->rowCount();
 
             if ($bikenumber == 0) {
-                return $this->response(_('You currently have no rented bikes.'), ERROR);
+                return $this->response(_('You currently have no rented bikes.'), self::ERROR);
             }
         }
 
