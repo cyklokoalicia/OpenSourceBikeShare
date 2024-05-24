@@ -77,7 +77,8 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
     }
 
-    protected function getRentSystemType() {
+    protected function getRentSystemType()
+    {
         return 'sms';
     }
 

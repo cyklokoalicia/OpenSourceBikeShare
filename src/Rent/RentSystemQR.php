@@ -25,7 +25,8 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         $bikeNumber = $result->rowCount();
 
         if ($bikeNumber > 1) {
-            $message = _('You have') . ' ' . $bikeNumber . ' ' . _('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
+            $message = _('You have') . ' ' . $bikeNumber . ' '
+                . _('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
             if ($this->connectorsConfig["sms"]) {
                 $message .= _(' or SMS');
             }
@@ -37,7 +38,8 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
     }
 
-    protected function getRentSystemType() {
+    protected function getRentSystemType()
+    {
         return 'qr';
     }
 }

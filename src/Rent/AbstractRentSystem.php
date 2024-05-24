@@ -8,9 +8,14 @@ use BikeShare\Db\DbInterface;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
 
+/**
+ * @phpcs:disable PSR12.Classes.PropertyDeclaration
+ * @phpcs:disable Generic.Files.LineLength
+ */
 abstract class AbstractRentSystem implements RentSystemInterface
 {
     /**
+     * @phpcs:disable PSR12.Properties.ConstantVisibility
      * @private
      */
     const ERROR = 1;
@@ -23,7 +28,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
      */
     protected $creditSystem;
     /**
-     * @var User 
+     * @var User
      */
     protected $user;
     /**
@@ -296,7 +301,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             //ak vrati a znova pozica bike do 10 min tak free time nebude mať.
             $oldRetrun = $this->db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RETURN' OR action='FORCERETURN') ORDER BY time DESC LIMIT 1");
-            if ($oldRetrun->rowCount()==1) {
+            if ($oldRetrun->rowCount() == 1) {
                 $oldRow = $oldRetrun->fetchAssoc();
                 $returntime = strtotime($oldRow["time"]);
                 if (($starttime - $returntime) < 10 * 60 && $timediff > 5 * 60) {
