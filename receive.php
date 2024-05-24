@@ -1,6 +1,9 @@
 <?php
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Rent\RentSystemFactory;
+use BikeShare\Rent\RentSystemInterface;
+use BikeShare\Rent\RentSystemSms;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 
@@ -14,6 +17,11 @@ require("actions-sms.php");
  * @var DbInterface $db
  */
 log_sms($sms->getUUID(),$sms->getNumber(),$sms->getTime(),$sms->getMessage(),$sms->getIPAddress());
+
+/**
+ * @var RentSystemInterface $rentSystem
+ */
+$rentSystem = RentSystemFactory::create('sms');
 
 $args=preg_split("/\s+/",$sms->getProcessedMessage());//preg_split must be used instead of explode because of multiple spaces
 
@@ -42,21 +50,21 @@ else
          break;
       case "RENT":
          validateReceivedSMS($sms->getNumber(),count($args),2,_('with bike number:')." RENT 47");
-         rent($sms->getNumber(),$args[1]);//intval
+         $rentSystem->rentBike($sms->getNumber(), $args[1]);//intval
          break;
       case "RETURN":
          validateReceivedSMS($sms->getNumber(),count($args),3,_('with bike number and stand name:')." RETURN 47 RACKO");
-         returnBike($sms->getNumber(),$args[1],$args[2],trim(urldecode($sms->getMessage())));
+         $rentSystem->returnBike($sms->getNumber(), $args[1], $args[2], trim(urldecode($sms->getMessage())));
          break;
       case "FORCERENT":
          checkUserPrivileges($sms->getNumber());
          validateReceivedSMS($sms->getNumber(),count($args),2,_('with bike number:')." FORCERENT 47");
-         rent($sms->getNumber(),$args[1],TRUE);
+         $rentSystem->rentBike($sms->getNumber(), $args[1], true);
          break;
       case "FORCERETURN":
          checkUserPrivileges($sms->getNumber());
          validateReceivedSMS($sms->getNumber(),count($args),3,_('with bike number and stand name:')." FORCERETURN 47 RACKO");
-         returnBike($sms->getNumber(),$args[1],$args[2],trim(urldecode($sms->getMessage())),TRUE);
+         $rentSystem->returnBike($sms->getNumber(), $args[1], $args[2], trim(urldecode($sms->getMessage())), TRUE);
          break;
       case "WHERE":
       case "WHO":

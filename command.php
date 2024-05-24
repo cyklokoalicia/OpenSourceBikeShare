@@ -4,6 +4,9 @@ use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
 use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Purifier\PhonePurifierInterface;
+use BikeShare\Rent\RentSystemFactory;
+use BikeShare\Rent\RentSystemInterface;
+use BikeShare\Rent\RentSystemWeb;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
 
@@ -24,6 +27,11 @@ $phonePurifier = new PhonePurifier($countrycode);
 
 $userid = $auth->getUserId();
 $session = $auth->getSessionId();
+
+/**
+ * @var RentSystemInterface $rentSystem
+ */
+$rentSystem = RentSystemFactory::create('web');
 
 $action="";
 if (isset($_GET["action"])) $action=trim($_GET["action"]);
@@ -66,7 +74,7 @@ switch($action)
       $auth->refreshSession();
       $bikeno=trim($_GET["bikeno"]);
       checkbikeno($bikeno);
-      rent($userid,$bikeno);
+       $rentSystem->rentBike($userid,$bikeno);
       break;
    case "return":
       logrequest($userid,$action);
@@ -76,7 +84,7 @@ switch($action)
       $note="";
       if (isset($_GET["note"])) $note=trim($_GET["note"]);
       checkbikeno($bikeno); checkstandname($stand);
-      returnBike($userid,$bikeno,$stand,$note);
+       $rentSystem->returnBike($userid,$bikeno,$stand,$note);
       break;
    case "validatecoupon":
       logrequest($userid,$action);
@@ -96,7 +104,7 @@ switch($action)
       checkprivileges($userid);
       $bikeno=trim($_GET["bikeno"]);
       checkbikeno($bikeno);
-      rent($userid,$bikeno,TRUE);
+      $rentSystem->rentBike($userid,$bikeno,true);
       break;
    case "forcereturn":
       logrequest($userid,$action);
@@ -107,7 +115,7 @@ switch($action)
       $note="";
       if (isset($_GET["note"])) $note=trim($_GET["note"]);
       checkbikeno($bikeno); checkstandname($stand);
-      returnBike($userid,$bikeno,$stand,$note,TRUE);
+      $rentSystem->returnBike($userid, $bikeno, $stand, $note, TRUE);
       break;
    case "where":
       logrequest($userid,$action);
@@ -120,6 +128,7 @@ switch($action)
       logrequest($userid,$action);
       $auth->refreshSession();
       checkprivileges($userid);
+      $bikeno = trim($_GET["bikeno"]);
       checkbikeno($bikeno);
       removenote($userid,$bikeno);
       break;
