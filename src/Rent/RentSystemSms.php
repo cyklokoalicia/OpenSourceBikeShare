@@ -47,7 +47,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         $this->number = $number;
         $userId = $this->user->findUserIdByNumber($number);
         if (is_null($userId)) {
-            $this->logger->error("Invalid number", ["number" => $number, 'sms' => $note]);
+            $this->logger->error("Invalid number", ["number" => $number]);
             //currently do nothing
             //return $this->response(_('Your number is not registered.'), ERROR);
 
