@@ -77,7 +77,7 @@ class MysqliDb implements DbInterface
         $this->conn->autocommit(false);
     }
 
-    public function query($query, $params = array())
+    public function query($query, $params = [])
     {
         $result = $this->conn->query($query);
         if (!$result) {

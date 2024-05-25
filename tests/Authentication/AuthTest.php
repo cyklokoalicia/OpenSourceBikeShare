@@ -294,8 +294,8 @@ class AuthTest extends TestCase
         $this->getFunctionMock('BikeShare\Authentication', 'setcookie')
             ->expects($this->exactly(2))
             ->withConsecutive(
-                ['loguserid', '0', 6399, '/'],
-                ['logsession', '', 6399, '/']
+                ['loguserid', '0', ['expires' => 6399, 'path' => '/']],
+                ['logsession', '', ['expires' => 6399, 'path' => '/']]
             )
             ->willReturn(true);
 

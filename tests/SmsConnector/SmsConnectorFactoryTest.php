@@ -37,11 +37,9 @@ class SmsConnectorFactoryTest extends TestCase
                 ->method('error')
                 ->with(
                     'Error creating SMS connector',
-                    $this->callback(function ($context) use ($connector, $expectedExceptionMessage) {
-                        return $context['connector'] === $connector
-                            && $context['exception'] instanceof \Exception
-                            && $context['exception']->getMessage() === $expectedExceptionMessage;
-                    })
+                    $this->callback(fn($context) => $context['connector'] === $connector
+                        && $context['exception'] instanceof \Exception
+                        && $context['exception']->getMessage() === $expectedExceptionMessage)
                 );
         }
         $result = $smsConnectorFactory->getConnector($connector, $config, $debugMode);

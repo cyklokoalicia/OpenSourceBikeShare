@@ -75,8 +75,8 @@ class Auth
             $this->db->query("DELETE FROM sessions WHERE userId='$userid' OR sessionId='$sessionId'");
             $this->db->commit();
         }
-        setcookie("loguserid", "0", time() - 3600, "/");
-        setcookie("logsession", "", time() - 3600, "/");
+        setcookie("loguserid", "0", ['expires' => time() - 3600, 'path' => "/"]);
+        setcookie("logsession", "", ['expires' => time() - 3600, 'path' => "/"]);
         header('HTTP/1.1 302 Found');
         header('Location: /');
         header('Connection: close');

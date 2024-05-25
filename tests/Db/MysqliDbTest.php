@@ -54,9 +54,7 @@ class MysqliDbTest extends TestCase
 
         $this->logger->expects($this->once())
             ->method('error')
-            ->with('DB query error', $this->callback(function () {
-                return true;
-            }));
+            ->with('DB query error', $this->callback(fn() => true));
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('DB error in : ' . $query);
