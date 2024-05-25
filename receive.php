@@ -1,9 +1,9 @@
 <?php
 
+use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Rent\RentSystemInterface;
-use BikeShare\Rent\RentSystemSms;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 
@@ -15,7 +15,9 @@ require("actions-sms.php");
  * @var SmsConnectorInterface $sms
  * @var LoggerInterface $logger
  * @var DbInterface $db
+ * @var Auth $auth
  */
+$auth = new Auth($db);
 log_sms($sms->getUUID(),$sms->getNumber(),$sms->getTime(),$sms->getMessage(),$sms->getIPAddress());
 
 /**

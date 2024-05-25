@@ -72,6 +72,8 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
 
         if (preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $note, $matches)) {
             $note = $this->db->escape(trim($matches[1]));
+        } else {
+            $note = '';
         }
 
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
