@@ -2,6 +2,8 @@
 
 namespace BikeShare\Mail;
 
+use PHPMailer\PHPMailer\PHPMailer;
+
 class PHPMailerMailSender implements MailSenderInterface
 {
     /**
@@ -17,7 +19,7 @@ class PHPMailerMailSender implements MailSenderInterface
      */
     private $emailConfig;
     /**
-     * @var \PHPMailer
+     * @var PHPMailer
      */
     private $mailer;
 
@@ -25,13 +27,13 @@ class PHPMailerMailSender implements MailSenderInterface
      * @param string $fromEmail
      * @param string $fromName
      * @param array $emailConfig
-     * @param \PHPMailer $mailer
+     * @param PHPMailer $mailer
      */
     public function __construct(
         $fromEmail,
         $fromName,
         array $emailConfig,
-        \PHPMailer $mailer
+        PHPMailer $mailer
     ) {
         #todo add validation of incoming params and throw exception if not valid
         $this->fromEmail = $fromEmail;
