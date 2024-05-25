@@ -15,7 +15,7 @@ class EuroSmsConnectorTest extends TestCase
      */
     private $smsConnector;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->smsConnector = new EuroSmsConnector(
             [
@@ -27,7 +27,7 @@ class EuroSmsConnectorTest extends TestCase
         );
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($this->smsConnector);
     }

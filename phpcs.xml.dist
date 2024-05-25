@@ -2,7 +2,7 @@
 <ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PHP_CodeSniffer" xsi:noNamespaceSchemaLocation="phpcs.xsd">
     <description>The coding standard for Open Source Bike Sharing.</description>
 
-    <config name="php_version" value="506000"/>
+    <config name="php_version" value="704000"/>
     <file>src</file>
     <file>tests</file>
 

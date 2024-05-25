@@ -6,10 +6,7 @@ use BikeShare\Db\DbInterface;
 
 class Auth
 {
-    /**
-     * @phpcs:disable PSR12.Properties.ConstantVisibility
-     */
-    const SESSION_EXPIRATION = 86400 * 14; // 14 days to keep user logged in
+    private const SESSION_EXPIRATION = 86400 * 14; // 14 days to keep user logged in
 
     /**
      * @var DbInterface

@@ -4,17 +4,18 @@ namespace Test\BikeShare\Db;
 
 use BikeShare\Db\DbResultInterface;
 use BikeShare\Db\MysqliDb;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class MysqliDbTest extends TestCase
 {
     /**
-     * @var LoggerInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var LoggerInterface|MockObject
      */
     private $logger;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->logger = $this->createMock(LoggerInterface::class);
         $db = new MysqliDb('server', 'user', 'password', 'dbname', $this->logger, true);

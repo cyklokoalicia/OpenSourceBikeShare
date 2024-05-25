@@ -9,14 +9,14 @@ use PHPUnit\Framework\TestCase;
 
 class SmsSenderTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->smsConnector = $this->createMock(SmsConnectorInterface::class);
         $this->db = $this->createMock(DbInterface::class);
         $this->smsSender = new SmsSender($this->smsConnector, $this->db);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset(
             $this->smsConnector,
