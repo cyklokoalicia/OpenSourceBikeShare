@@ -202,7 +202,12 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $row = $result->fetchAssoc();
         $currentCode = sprintf('%04d', $row['currentCode']);
 
-        $result = $this->db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
+        if ($force == false) {
+            $result = $this->db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum and currentUser=$userId");
+        } else {
+            $result = $this->db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId WHERE bikeNum=$bikeNum");
+        }
+
         if ($note) {
             $this->addNote($userId, $bikeNum, $note);
         } else {
