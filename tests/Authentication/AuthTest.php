@@ -6,18 +6,16 @@ use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\DbResultInterface;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class AuthTest extends TestCase
 {
     use PHPMock;
 
+    private const SESSION_EXPIRATION = 86400 * 14;
     /**
-     * @phpcs:disable PSR12.Properties.ConstantVisibility
-     */
-    const SESSION_EXPIRATION = 86400 * 14;
-    /**
-     * @var DbInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var DbInterface|MockObject
      */
     private $db;
     /**
@@ -25,7 +23,7 @@ class AuthTest extends TestCase
      */
     private $auth;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->db = $this->createMock(DbInterface::class);
         $this->auth = new Auth(
@@ -33,7 +31,7 @@ class AuthTest extends TestCase
         );
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset(
             $this->db,
@@ -43,7 +41,7 @@ class AuthTest extends TestCase
 
 
     /**
-     * @dataProvider testGetUserIdDataProvider
+     * @dataProvider getUserIdDataProvider
      */
     public function testGetUserId(
         $cookieValue = null,
@@ -59,7 +57,7 @@ class AuthTest extends TestCase
         $this->assertEquals($expectedUserId, $this->auth->getUserId());
     }
 
-    public function testGetUserIdDataProvider()
+    public function getUserIdDataProvider()
     {
 
         yield 'no cookie' => [
@@ -85,7 +83,7 @@ class AuthTest extends TestCase
     }
 
     /**
-     * @dataProvider testGetSessionIdDataProvider
+     * @dataProvider getSessionIdDataProvider
      */
     public function testGetSessionId(
         $cookieValue = null,
@@ -101,7 +99,7 @@ class AuthTest extends TestCase
         $this->assertEquals($expectedSessionId, $this->auth->getSessionId());
     }
 
-    public function testGetSessionIdDataProvider()
+    public function getSessionIdDataProvider()
     {
 
         yield 'no cookie' => [
@@ -187,9 +185,9 @@ class AuthTest extends TestCase
     }
 
     /**
-     * @dataProvider testisLoggedInDataProvider
+     * @dataProvider isLoggedInDataProvider
      */
-    public function testisLoggedIn(
+    public function testIsLoggedIn(
         $userId,
         $sessionId,
         $escapeCallParams,
@@ -199,9 +197,13 @@ class AuthTest extends TestCase
     ) {
         if ($userId) {
             $_COOKIE["loguserid"] = $userId;
+        } else {
+            $_COOKIE["loguserid"] = null;
         }
         if ($sessionId) {
             $_COOKIE["logsession"] = $sessionId;
+        } else {
+            $_COOKIE["logsession"] = null;
         }
 
         $this->getFunctionMock('BikeShare\Authentication', 'time')
@@ -226,7 +228,7 @@ class AuthTest extends TestCase
         $this->assertEquals($expectedResult, $this->auth->isLoggedIn());
     }
 
-    public function testisLoggedInDataProvider()
+    public function isLoggedInDataProvider()
     {
         yield 'no user id' => [
             'userId' => 0,
@@ -292,8 +294,8 @@ class AuthTest extends TestCase
         $this->getFunctionMock('BikeShare\Authentication', 'setcookie')
             ->expects($this->exactly(2))
             ->withConsecutive(
-                ['loguserid', '0', 6399, '/'],
-                ['logsession', '', 6399, '/']
+                ['loguserid', '0', ['expires' => 6399, 'path' => '/']],
+                ['logsession', '', ['expires' => 6399, 'path' => '/']]
             )
             ->willReturn(true);
 

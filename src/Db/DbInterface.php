@@ -11,7 +11,7 @@ interface DbInterface
      * @param array $params
      * @return DbResultInterface
      */
-    public function query($query, $params = array());
+    public function query($query, $params = []);
 
     /**
      * @param $string

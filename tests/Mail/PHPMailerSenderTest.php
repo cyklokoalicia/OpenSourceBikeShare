@@ -3,12 +3,13 @@
 namespace Test\BikeShare\Mail;
 
 use BikeShare\Mail\PHPMailerMailSender;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class PHPMailerSenderTest extends TestCase
 {
     /**
-     * @var \PHPMailer|\PHPUnit_Framework_MockObject_MockObject
+     * @var \PHPMailer|MockObject
      */
     private $mailer;
     /**
@@ -16,7 +17,7 @@ class PHPMailerSenderTest extends TestCase
      */
     private $mailSender;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $email = [
             'smtp' => 'smtp',

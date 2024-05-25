@@ -20,7 +20,7 @@ class CodeGeneratorTest extends TestCase
         $this->assertCount($count, $codes);
         foreach ($codes as $code) {
             $this->assertEquals($length, strlen($code));
-            $this->assertRegExp('/^[' . $this->acceptableChars . ']{' . $length . '}$/', $code);
+            $this->assertMatchesRegularExpression('/^[' . $this->acceptableChars . ']{' . $length . '}$/', $code);
         }
     }
 }

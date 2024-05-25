@@ -14,11 +14,7 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractRentSystem implements RentSystemInterface
 {
-    /**
-     * @phpcs:disable PSR12.Properties.ConstantVisibility
-     * @private
-     */
-    const ERROR = 1;
+    private const ERROR = 1;
     /**
      * @var DbInterface
      */

@@ -6,10 +6,7 @@ use BikeShare\Db\DbInterface;
 
 class Auth
 {
-    /**
-     * @phpcs:disable PSR12.Properties.ConstantVisibility
-     */
-    const SESSION_EXPIRATION = 86400 * 14; // 14 days to keep user logged in
+    private const SESSION_EXPIRATION = 86400 * 14; // 14 days to keep user logged in
 
     /**
      * @var DbInterface
@@ -78,8 +75,8 @@ class Auth
             $this->db->query("DELETE FROM sessions WHERE userId='$userid' OR sessionId='$sessionId'");
             $this->db->commit();
         }
-        setcookie("loguserid", "0", time() - 3600, "/");
-        setcookie("logsession", "", time() - 3600, "/");
+        setcookie("loguserid", "0", ['expires' => time() - 3600, 'path' => "/"]);
+        setcookie("logsession", "", ['expires' => time() - 3600, 'path' => "/"]);
         header('HTTP/1.1 302 Found');
         header('Location: /');
         header('Connection: close');

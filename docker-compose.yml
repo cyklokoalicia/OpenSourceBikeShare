@@ -16,7 +16,7 @@ services:
     links:
       - web
   db:
-    image: mysql:5
+    image: mariadb:10.3
     ports:
       - 3306:3306
     environment:

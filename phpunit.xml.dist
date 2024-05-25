@@ -9,11 +9,6 @@
          stopOnWarning="true"
          stopOnFailure="true"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-    <filter>
-        <whitelist>
-            <directory suffix=".php">./src</directory>
-        </whitelist>
-    </filter>
     <coverage includeUncoveredFiles="true">
         <include>
             <directory suffix=".php">./src</directory>

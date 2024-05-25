@@ -4,17 +4,18 @@ namespace Test\BikeShare\Db;
 
 use BikeShare\Db\DbResultInterface;
 use BikeShare\Db\MysqliDb;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class MysqliDbTest extends TestCase
 {
     /**
-     * @var LoggerInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var LoggerInterface|MockObject
      */
     private $logger;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->logger = $this->createMock(LoggerInterface::class);
         $db = new MysqliDb('server', 'user', 'password', 'dbname', $this->logger, true);
@@ -53,9 +54,7 @@ class MysqliDbTest extends TestCase
 
         $this->logger->expects($this->once())
             ->method('error')
-            ->with('DB query error', $this->callback(function () {
-                return true;
-            }));
+            ->with('DB query error', $this->callback(fn() => true));
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('DB error in : ' . $query);
