@@ -3,13 +3,14 @@
 namespace Test\BikeShare\Mail;
 
 use BikeShare\Mail\PHPMailerMailSender;
+use PHPMailer\PHPMailer\PHPMailer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class PHPMailerSenderTest extends TestCase
 {
     /**
-     * @var \PHPMailer|MockObject
+     * @var PHPMailer|MockObject
      */
     private $mailer;
     /**
@@ -25,7 +26,7 @@ class PHPMailerSenderTest extends TestCase
             'pass' => 'pass',
         ];
 
-        $this->mailer = $this->createMock(\PHPMailer::class);
+        $this->mailer = $this->createMock(PHPMailer::class);
         $this->mailSender = new PHPMailerMailSender(
             'fromEmail',
             'fromName',
