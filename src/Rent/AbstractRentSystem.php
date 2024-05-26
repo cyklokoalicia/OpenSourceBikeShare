@@ -209,7 +209,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         } else {
             $result = $this->db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
             $row = $result->fetchAssoc();
-            $note = $row["note"];
+            $note = $row["note"] ?? '';
         }
 
         $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand . ' : <span class="label label-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>';
