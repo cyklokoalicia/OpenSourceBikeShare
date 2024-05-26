@@ -8,7 +8,6 @@ use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
-require("config.php");
 require("actions-sms.php");
 
 /**

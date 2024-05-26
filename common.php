@@ -1,5 +1,6 @@
 <?php
 
+use BikeShare\App\Configuration;
 use BikeShare\Credit\CodeGenerator\CodeGenerator;
 use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
 use BikeShare\Credit\CreditSystemFactory;
@@ -22,16 +23,19 @@ use Monolog\Logger;
 
 require_once 'vendor/autoload.php';
 
+$configuration = new Configuration();
+
 $logger = new Logger('BikeShare');
 $logger->pushHandler(new RotatingFileHandler( __DIR__ . '/var/log/log.log', 30, Logger::WARNING));
 ErrorHandler::register($logger);
 
-$locale = $systemlang . ".utf8";
+$locale = $configuration->get('systemlang') . ".utf8";
 setlocale(LC_ALL, $locale);
 putenv("LANG=" . $locale);
 bindtextdomain("messages", dirname(__FILE__) . '/languages');
 textdomain("messages");
 
+$connectors = $configuration->get('connectors');
 $sms = (new SmsConnectorFactory($logger))->getConnector(
     !empty($connectors["sms"]) ? $connectors["sms"] : 'disabled',
     !empty($connectors["config"][$connectors["sms"]]) ? json_decode($connectors["config"][$connectors["sms"]], true) : array(),
@@ -41,7 +45,13 @@ $sms = (new SmsConnectorFactory($logger))->getConnector(
 /**
  * @var DbInterface $db
  */
-$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
+$db = new MysqliDb(
+    $configuration->get('dbserver'),
+    $configuration->get('dbuser'),
+    $configuration->get('dbpassword'),
+    $configuration->get('dbname'),
+    $logger
+);
 $db->connect();
 
 /**
@@ -51,9 +61,9 @@ if (DEBUG === TRUE) {
     $mailer = new DebugMailSender();
 } else {
     $mailer = new PHPMailerMailSender(
-        $systemname,
-        $systememail,
-        $email,
+        $configuration->get('systemname'),
+        $configuration->get('systememail'),
+        $configuration->get('email'),
         new \PHPMailer\PHPMailer\PHPMailer(false)
     );
 }
@@ -76,12 +86,12 @@ $user = new User($db);
 /**
  * @var PhonePurifierInterface $phonePurifier
  */
-$phonePurifier = new PhonePurifier($countrycode);
+$phonePurifier = new PhonePurifier($configuration->get('countrycode'));
 
 /**
  * @var CreditSystemInterface $creditSystem
  */
-$creditSystem = (new CreditSystemFactory())->getCreditSystem($credit, $db);
+$creditSystem = (new CreditSystemFactory())->getCreditSystem($configuration->get('credit'), $db);
 
 function error($message)
 {
@@ -92,11 +102,17 @@ function error($message)
 
 function logrequest($userid)
 {
-   global $dbserver,$dbuser,$dbpassword,$dbname, $user, $logger;
+   global $configuration, $user, $logger;
     /**
      * @var DbInterface
      */
-    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
+    $localdb = new MysqliDb(
+        $configuration->get('dbserver'),
+        $configuration->get('dbuser'),
+        $configuration->get('dbpassword'),
+        $configuration->get('dbname'),
+        $logger
+    );
     $localdb->connect();
 
     #TODO does it needed???
@@ -109,12 +125,18 @@ function logrequest($userid)
 
 function logresult($userid, $text)
 {
-    global $dbserver, $dbuser, $dbpassword, $dbname, $logger;
+    global $configuration, $logger;
 
     /**
      * @var DbInterface
      */
-    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
+    $localdb = new MysqliDb(
+        $configuration->get('dbserver'),
+        $configuration->get('dbuser'),
+        $configuration->get('dbpassword'),
+        $configuration->get('dbname'),
+        $logger
+    );
     $localdb->connect();
 
     #TODO does it needed???
@@ -163,15 +185,15 @@ function checkstandname($stand)
  **/
 function notifyAdmins($message, $notificationtype = 0)
 {
-    global $db, $systemname, $watches, $mailer, $smsSender;
+    global $db, $configuration, $mailer, $smsSender;
 
     $result = $db->query('SELECT number,mail FROM users where privileges & 2 != 0');
     while ($row = $result->fetch_assoc()) {
         if ($notificationtype == 0) {
             $smsSender->send($row['number'], $message);
-            $mailer->sendMail($watches['email'], $systemname . ' ' . _('notification'), $message);
+            $mailer->sendMail($configuration->get('watches')['email'], $configuration->get('systemname') . ' ' . _('notification'), $message);
         } else {
-            $mailer->sendMail($row['mail'], $systemname . ' ' . _('notification'), $message);
+            $mailer->sendMail($row['mail'], $configuration->get('systemname') . ' ' . _('notification'), $message);
         }
     }
 }
@@ -179,7 +201,7 @@ function notifyAdmins($message, $notificationtype = 0)
 function sendConfirmationEmail($emailto)
 {
 
-    global $db, $dbpassword, $systemname, $systemrules, $systemURL, $mailer;
+    global $db, $configuration, $mailer;
 
     $subject = _('Registration');
 
@@ -187,7 +209,7 @@ function sendConfirmationEmail($emailto)
     $row = $result->fetch_assoc();
 
     $userId = $row['userId'];
-    $userKey = hash('sha256', $emailto . $dbpassword . rand(0, 1000000));
+    $userKey = hash('sha256', $emailto . $configuration->get('dbpassword') . rand(0, 1000000));
 
     $db->query("INSERT INTO registration SET userKey='$userKey',userId='$userId'");
     $db->query("INSERT INTO limits SET userId='$userId',userLimit=0");
@@ -196,15 +218,15 @@ function sendConfirmationEmail($emailto)
     $names = preg_split("/[\s,]+/", $row['userName']);
     $firstname = $names[0];
     $message = _('Hello') . ' ' . $firstname . ",\n\n" .
-        _('you have been registered into community bike share system') . ' ' . $systemname . ".\n\n" .
-        _('System rules are available here:') . "\n" . $systemrules . "\n\n" .
-        _('By clicking the following link you agree to the System rules:') . "\n" . $systemURL . 'agree.php?key=' . $userKey;
+        _('you have been registered into community bike share system') . ' ' . $configuration->get('systemname') . ".\n\n" .
+        _('System rules are available here:') . "\n" . $configuration->get('systemrules') . "\n\n" .
+        _('By clicking the following link you agree to the System rules:') . "\n" . $configuration->get('systemURL') . 'agree.php?key=' . $userKey;
     $mailer->sendMail($emailto, $subject, $message);
 }
 
 function confirmUser($userKey)
 {
-    global $db, $limits;
+    global $db, $configuration;
     $userKey = $db->escape($userKey);
 
     $result = $db->query("SELECT userId FROM registration WHERE userKey='$userKey'");
@@ -216,7 +238,7 @@ function confirmUser($userKey)
         return false;
     }
 
-    $db->query("UPDATE limits SET userLimit='" . $limits['registration'] . "' WHERE userId=$userId");
+    $db->query("UPDATE limits SET userLimit='" . $configuration->get('limits')['registration'] . "' WHERE userId=$userId");
 
     $db->query("DELETE FROM registration WHERE userId='$userId'");
 
@@ -245,7 +267,7 @@ function checktopofstack($standid)
 
 function checklongrental()
 {
-    global $db, $smsSender, $watches, $notifyuser;
+    global $db, $smsSender, $configuration;
 
     $abusers = '';
     $found = 0;
@@ -260,10 +282,10 @@ function checklongrental()
             $row2 = $result2->fetch_assoc();
             $time = $row2['time'];
             $time = strtotime($time);
-            if ($time + ($watches['longrental'] * 3600) <= time()) {
+            if ($time + ($configuration->get('watches')['longrental'] * 3600) <= time()) {
                 $abusers .= ' b' . $bikenum . ' ' . _('by') . ' ' . $username . ',';
                 $found = 1;
-                if ($notifyuser) {
+                if ($configuration->get('notifyuser')) {
                     $smsSender->send($userphone, _('Please, return your bike ') . $bikenum . _(' immediately to the closest stand! Ignoring this warning can get you banned from the system.'));
                 }
             }
@@ -271,14 +293,14 @@ function checklongrental()
     }
     if ($found) {
         $abusers = substr($abusers, 0, strlen($abusers) - 1);
-        notifyAdmins($watches['longrental'] . '+ ' . _('hour rental') . ':' . $abusers);
+        notifyAdmins($configuration->get('watches')['longrental'] . '+ ' . _('hour rental') . ':' . $abusers);
     }
 }
 
 // cron - called from cron by default, set to 0 if from rent function, userid needs to be passed if cron=0
 function checktoomany($cron = 1, $userid = 0)
 {
-    global $db, $watches;
+    global $db, $configuration;
 
     $abusers = '';
     $found = 0;
@@ -289,9 +311,9 @@ function checktoomany($cron = 1, $userid = 0)
             $userid = $row['userId'];
             $username = $row['userName'];
             $userlimit = $row['userLimit'];
-            $currenttime = date('Y-m-d H:i:s', time() - $watches['timetoomany'] * 3600);
+            $currenttime = date('Y-m-d H:i:s', time() - $configuration->get('watches')['timetoomany'] * 3600);
             $result2 = $db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
-            if ($result2->num_rows >= ($userlimit + $watches['numbertoomany'])) {
+            if ($result2->num_rows >= ($userlimit + $configuration->get('watches')['numbertoomany'])) {
                 $abusers .= ' ' . $result2->num_rows . ' (' . _('limit') . ' ' . $userlimit . ') ' . _('by') . ' ' . $username . ',';
                 $found = 1;
             }
@@ -301,24 +323,24 @@ function checktoomany($cron = 1, $userid = 0)
         $row = $result->fetch_assoc();
         $username = $row['userName'];
         $userlimit = $row['userLimit'];
-        $currenttime = date('Y-m-d H:i:s', time() - $watches['timetoomany'] * 3600);
+        $currenttime = date('Y-m-d H:i:s', time() - $configuration->get('watches')['timetoomany'] * 3600);
         $result = $db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
-        if ($result->num_rows >= ($userlimit + $watches['numbertoomany'])) {
+        if ($result->num_rows >= ($userlimit + $configuration->get('watches')['numbertoomany'])) {
             $abusers .= ' ' . $result->num_rows . ' (' . _('limit') . ' ' . $userlimit . ') ' . _('by') . ' ' . $username . ',';
             $found = 1;
         }
     }
     if ($found) {
         $abusers = substr($abusers, 0, strlen($abusers) - 1);
-        notifyAdmins(_('Over limit in') . ' ' . $watches['timetoomany'] . ' ' . _('hs') . ':' . $abusers);
+        notifyAdmins(_('Over limit in') . ' ' . $configuration->get('watches')['timetoomany'] . ' ' . _('hs') . ':' . $abusers);
     }
 }
 
 function issmssystemenabled()
 {
-    global $connectors;
+    global $configuration;
 
-    if ($connectors['sms'] == '') {
+    if ($configuration->get('connectors')['sms'] == '') {
         return false;
     }
 

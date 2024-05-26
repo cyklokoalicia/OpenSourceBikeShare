@@ -3,15 +3,15 @@ require("common.php");
 
 function response($message,$error=0,$log=1)
 {
-    global $db, $systemname, $systemURL, $user, $auth;
+    global $configuration, $db, $user, $auth;
     if ($log == 1 and $message) {
         $userid = $auth->getUserId();
         $number = $user->findPhoneNumber($userid);
         logresult($number, $message);
         $db->commit();
     }
-   echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$systemname,'</title>';
-   echo '<base href="',$systemURL,'" />';
+   echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$configuration->get('systemname'),'</title>';
+   echo '<base href="' . $configuration->get('systemURL') . '" />';
    echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';
    echo '<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />';
    echo '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">';
@@ -37,12 +37,12 @@ function response($message,$error=0,$log=1)
 
 function showrentform($userId,$bike)
 {
-    global $db, $systemname, $systemURL, $user, $auth;
+    global $db, $configuration;
 
     $stand = $db->query("SELECT s.* FROM bikes b JOIN stands s ON b.currentStand=s.standId WHERE bikeNum=$bike")->fetchAssoc();
 
-    echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$systemname,'</title>';
-    echo '<base href="',$systemURL,'" />';
+    echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$configuration->get('systemname'),'</title>';
+    echo '<base href="' . $configuration->get('systemURL') . '" />';
     echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';
     echo '<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />';
     echo '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">';

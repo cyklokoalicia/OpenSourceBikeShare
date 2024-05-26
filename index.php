@@ -6,7 +6,6 @@ use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
-require "config.php";
 require "actions-web.php";
 
 /**
@@ -21,7 +20,7 @@ $auth = new Auth($db);
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title><?php echo $systemname; ?></title>
+<title><?= $configuration->get('systemname'); ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -43,18 +42,18 @@ $auth = new Auth($db);
 <meta name="msapplication-TileColor" content="#da532c">
 <meta name="theme-color" content="#ffffff">
 <script>
-var maplat=<?php echo $systemlat; ?>;
-var maplon=<?php echo $systemlong; ?>;
-var mapzoom=<?php echo $systemzoom; ?>;
+var maplat=<?= $configuration->get('systemlat'); ?>;
+var maplon=<?= $configuration->get('systemlong'); ?>;
+var mapzoom=<?= $configuration->get('systemzoom'); ?>;
 <?php
 $userid = $auth->getUserId();
 
-if ($cities && $auth->isLoggedIn()) {
+if ($configuration->get('cities') && $auth->isLoggedIn()) {
 	$usercity = $user->findCity($userid);
 }
-if ($citiesGPS && $auth->isLoggedIn()) {
-	echo 'maplat=',$citiesGPS[$usercity][0],";\n";
-	echo 'maplon=',$citiesGPS[$usercity][1],";\n";
+if ($configuration->get('citiesGPS') && $auth->isLoggedIn()) {
+    echo 'maplat=' . $configuration->get('citiesGPS')[$usercity][0] . ";\n";
+    echo 'maplon=' . $configuration->get('citiesGPS')[$usercity][1] . ";\n";
 }
 ?>
 var standselected=0;
@@ -77,8 +76,8 @@ if (issmssystemenabled() == true) {
     echo 'var sms=0;', "\n";
 }
 ?>
-var freeTimeSeconds=<?php echo $watches['freetime'] * 60; ?>; // and convert to seconds
-var serverTimeSeconds=<?php echo time(); ?>; // using the server timestamp for time difference calculation
+var freeTimeSeconds=<?= $configuration->get('watches')['freetime'] * 60; ?>; // and convert to seconds
+var serverTimeSeconds=<?= time(); ?>; // using the server timestamp for time difference calculation
 </script>
 <?php if (file_exists('analytics.php')) {
     require 'analytics.php';
@@ -98,7 +97,7 @@ if ($auth->isLoggedIn()) {
 <div class="row text-center" style="margin-top: 0.5em;">
    <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
    <ul class="list-inline">
-      <li><a href="<?php echo $systemrules; ?>" target="_blank"><span class="glyphicon glyphicon-question-sign"></span><?php echo _('Help'); ?></a></li>
+      <li><a href="<?= $configuration->get('systemrules'); ?>" target="_blank"><span class="glyphicon glyphicon-question-sign"></span><?= _('Help'); ?></a></li>
 <?php
 if ($auth->isLoggedIn() && $user->findPrivileges($userid) > 0) {
     echo '<li><a href="admin.php"><span class="glyphicon glyphicon-cog"></span> ', _('Admin'), '</a></li>';
@@ -110,9 +109,9 @@ if ($auth->isLoggedIn()) {
         $userRemainingCredit = $creditSystem->getUserCredit($userid);
         echo ' (<span id="usercredit" title="', _('Remaining credit'), '">' . $userRemainingCredit . '</span> ' . $creditSystem->getCreditCurrency() . ' <button type="button" class="btn btn-success btn-xs" id="opencredit" title="', _('Add credit'), '"><span class="glyphicon glyphicon-plus"></span></button>)<span id="couponblock"><br /><span class="form-inline"><input type="text" class="form-control input-sm" id="coupon" placeholder="XXXXXX" /><button type="button" class="btn btn-primary btn-sm" id="validatecoupon" title="', _('Confirm coupon'), '"><span class="glyphicon glyphicon-plus"></span></button></span></span></li>';
     }
-	if ($cities) {
+	if ($configuration->get('cities')) {
 		echo '<li>','<select class="form-control input-sm" id="citychange" title="', _('My City'), '">';
-		foreach ($cities as $city) {
+		foreach ($configuration->get('cities') as $city) {
 			if ($usercity == $city) echo '<option value="',$city,'" selected>';
 			else echo '<option  value="',$city,'">';
 			echo $city,'</option>';
@@ -131,7 +130,7 @@ if ($auth->isLoggedIn()) {
 <?php if ($auth->isLoggedIn()): ?>
 <div class="row">
    <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
-   <h1 class="pull-left"><?php echo $systemname; ?></h1>
+   <h1 class="pull-left"><?= $configuration->get('systemname'); ?></h1>
    </div>
    <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
    </div>
@@ -153,10 +152,10 @@ if (isset($_GET['error']) and $_GET['error'] == 1) {
             <label for="number" class="control-label"><?php if (issmssystemenabled()==TRUE) echo _('Phone number:'); else echo _('User number:'); ?></label> <input type="text" name="number" id="number" class="form-control" />
        </div></div>
        <div class="row"><div class="col-lg-12">
-            <label for="password"><?php echo _('Password:'); ?> <small id="passwordresetblock">(<a id="resetpassword"><?php echo _('Forgotten? Reset password'); ?></a>)</small></label> <input type="password" name="password" id="password" class="form-control" />
+            <label for="password"><?= _('Password:'); ?> <small id="passwordresetblock">(<a id="resetpassword"><?= _('Forgotten? Reset password'); ?></a>)</small></label> <input type="password" name="password" id="password" class="form-control" />
        </div></div><br />
        <div class="row"><div class="col-lg-12">
-         <button type="submit" id="register" class="btn btn-lg btn-block btn-primary"><?php echo _('Log in'); ?></button>
+         <button type="submit" id="register" class="btn btn-lg btn-block btn-primary"><?= _('Log in'); ?></button>
        </div></div>
          </form>
 </div>
@@ -184,7 +183,7 @@ if (isset($_GET['error']) and $_GET['error'] == 1) {
 <div class="row">
 <div id="standactions" class="btn-group">
   <div class="col-lg-12">
-         <button class="btn btn-primary" type="button" id="rent" title="<?php echo _('Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'); ?>"><span class="glyphicon glyphicon-log-out"></span> <?php echo _('Rent'); ?> <span class="bikenumber"></span></button>
+         <button class="btn btn-primary" type="button" id="rent" title="<?= _('Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'); ?>"><span class="glyphicon glyphicon-log-out"></span> <?= _('Rent'); ?> <span class="bikenumber"></span></button>
   </div>
 </div>
 </div>
@@ -194,14 +193,14 @@ if (isset($_GET['error']) and $_GET['error'] == 1) {
 <div class="row">
    <div class="input-group">
    <div class="col-lg-12">
-   <input type="text" name="notetext" id="notetext" class="form-control" placeholder="<?php echo _('Describe problem'); ?>">
+   <input type="text" name="notetext" id="notetext" class="form-control" placeholder="<?= _('Describe problem'); ?>">
    </div>
    </div>
 </div>
 <div class="row">
    <div class="btn-group bicycleactions">
    <div class="col-lg-12">
-   <button type="button" class="btn btn-primary" id="return" title="<?php echo _('Return this bicycle to the selected stand.'); ?>"><span class="glyphicon glyphicon-log-in"></span> <?php echo _('Return bicycle'); ?> <span class="bikenumber"></span></button> (and <a href="#" id="note" title="<?php echo _('Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).'); ?>"><?php echo _('report problem'); ?> <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
+   <button type="button" class="btn btn-primary" id="return" title="<?= _('Return this bicycle to the selected stand.'); ?>"><span class="glyphicon glyphicon-log-in"></span> <?= _('Return bicycle'); ?> <span class="bikenumber"></span></button> (and <a href="#" id="note" title="<?= _('Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).'); ?>"><?= _('report problem'); ?> <span class="glyphicon glyphicon-exclamation-sign"></span></a>)
    </div></div>
 </div>
 

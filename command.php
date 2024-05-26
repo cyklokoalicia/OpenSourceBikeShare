@@ -6,12 +6,10 @@ use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Rent\RentSystemInterface;
-use BikeShare\Rent\RentSystemWeb;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
-require("config.php");
 require('actions-web.php');
 
 /**
@@ -23,7 +21,7 @@ $user = new User($db);
 /**
  * @var PhonePurifierInterface $phonePurifier
  */
-$phonePurifier = new PhonePurifier($countrycode);
+$phonePurifier = new PhonePurifier($configuration->get('countrycode'));
 
 $userid = $auth->getUserId();
 $session = $auth->getSessionId();

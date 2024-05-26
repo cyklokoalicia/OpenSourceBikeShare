@@ -55,11 +55,11 @@ function where($userId, $bike)
 
 function listbikes($stand)
 {
-    global $db, $forcestack;
+    global $db, $configuration;
 
     $stacktopbike = false;
     $stand = $db->escape($stand);
-    if ($forcestack) {
+    if ($configuration->get('forcestack')) {
         $result = $db->query("SELECT standId FROM stands WHERE standName='$stand'");
         $row = $result->fetch_assoc();
         $stacktopbike = checktopofstack($row['standId']);
@@ -265,7 +265,7 @@ function revert($userId, $bikeNum)
 
 function register($number, $code, $checkcode, $fullname, $email, $password, $password2, $existing)
 {
-    global $db, $dbpassword, $countrycode, $systemURL, $user;
+    global $db, $configuration, $user;
 
     $number = $db->escape(trim($number));
     $code = $db->escape(trim($code));
@@ -290,7 +290,7 @@ function register($number, $code, $checkcode, $fullname, $email, $password, $pas
             } else { // existing user, password change
                 $userId = $user->findUserIdByNumber($number);
                 $result = $db->query("UPDATE users SET password=SHA2('$password',512) WHERE userId='$userId'");
-                response(_('Password successfully changed. Your username is your phone number. Continue to') . ' <a href="' . $systemURL . '">' . _('login') . '</a>.');
+                response(_('Password successfully changed. Your username is your phone number. Continue to') . ' <a href="' . $configuration->get('systemURL') . '">' . _('login') . '</a>.');
             }
         } else {
             response(_('Problem with the SMS code entered. Please check and try again.'), ERROR);
@@ -316,7 +316,7 @@ function checkprivileges($userid)
 
 function smscode($number)
 {
-    global $db, $gatewayId, $gatewayKey, $gatewaySenderNumber, $connectors, $smsSender, $user, $phonePurifier;
+    global $db, $smsSender, $user, $phonePurifier;
     srand();
 
     $number = $phonePurifier->purify($number);
@@ -432,7 +432,7 @@ function saveuser($userid, $username, $email, $phone, $privileges, $limit)
 
 function addcredit($userid, $creditmultiplier)
 {
-    global $db, $credit, $user, $creditSystem;
+    global $db, $user, $creditSystem;
 
     $minRequiredCredit = $creditSystem->getMinRequiredCredit();
     $addcreditamount = $minRequiredCredit * $creditmultiplier;
@@ -445,7 +445,7 @@ function addcredit($userid, $creditmultiplier)
 
 function getcouponlist()
 {
-    global $db, $credit, $creditSystem;
+    global $db, $creditSystem;
     if ($creditSystem->isEnabled() == false) {
         return;
     }
@@ -459,7 +459,7 @@ function getcouponlist()
 
 function generatecoupons($multiplier)
 {
-    global $db, $credit, $codeGenerator, $creditSystem;
+    global $db, $codeGenerator, $creditSystem;
 
     if ($creditSystem->isEnabled() == false) {
         return;
@@ -476,7 +476,7 @@ function generatecoupons($multiplier)
 
 function sellcoupon($coupon)
 {
-    global $db, $credit, $creditSystem;
+    global $db, $creditSystem;
     if ($creditSystem->isEnabled() == false) {
         return;
     }
@@ -487,7 +487,7 @@ function sellcoupon($coupon)
 
 function validatecoupon($userid, $coupon)
 {
-    global $db, $credit, $creditSystem;
+    global $db, $creditSystem;
     if ($creditSystem->isEnabled() == false) {
         return;
     }
@@ -506,9 +506,9 @@ function validatecoupon($userid, $coupon)
 
 function changecity($userid, $city)
 {
-    global $db, $cities;
+    global $db, $configuration;
 
-    if (in_array($city, $cities)) {
+    if (in_array($city, $configuration->get('cities'))) {
         $result = $db->query("UPDATE users SET city='$city' WHERE userId=" . $userid);
         response('City changed');
     }
@@ -518,7 +518,7 @@ function changecity($userid, $city)
 
 function resetpassword($number)
 {
-    global $db, $mailer, $systemname, $systemrules, $systemURL;
+    global $db, $mailer;
 
     $number = $db->escape(trim($number));
 
@@ -550,16 +550,15 @@ function resetpassword($number)
 
 function mapgetmarkers($userId)
 {
-    global $db, $cities, $user;
+    global $db, $configuration, $user;
 	$filtercity = '';
-	if($cities){
-
-                if($userId!=0)
-                {
-                        $filtercity = ' AND city = "'.$user->findCity($userId).'" ';
-                }
-                else $filtercity = "";
-	}
+    if ($configuration->get('cities')) {
+        if ($userId != 0) {
+            $filtercity = ' AND city = "' . $user->findCity($userId) . '" ';
+        } else {
+            $filtercity = "";
+        }
+    }
     $jsoncontent = array();
     $result = $db->query('SELECT standId,count(bikeNum) AS bikecount,standDescription,standName,standPhoto,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.standId WHERE stands.serviceTag=0 '.$filtercity.' GROUP BY standName ORDER BY standName');
     while ($row = $result->fetch_assoc()) {
