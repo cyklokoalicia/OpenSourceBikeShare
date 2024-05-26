@@ -4,12 +4,10 @@ use BikeShare\Authentication\Auth;
 use BikeShare\Db\DbInterface;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Rent\RentSystemInterface;
-use BikeShare\Rent\RentSystemQR;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
-require("config.php");
 require('actions-qrcode.php');
 
 /**

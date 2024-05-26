@@ -16,51 +16,48 @@
 
 error_reporting(-1);
 
-require("config.php");
+require_once 'vendor/autoload.php';
+require_once "common.php";
 
 function report()
 {
-	global $dbserver, $dbuser, $dbpassword, $dbname;
+    global $db;
 
-	$mysqli = new mysqli($dbserver, $dbuser, $dbpassword, $dbname);
-
-	if ($result = $mysqli->query("SELECT bikes.bikeNum,userName,standName,note FROM bikes left join users on
-	        bikes.currentUser=users.userId left join (select * from notes
-	        where deleted is null ) as notes on notes.bikeNum=bikes.BikeNum left
-	        join stands on bikes.currentStand=stands.standId
-	                order by standName,bikeNum LIMIT 500"))
-        {
-		while($row=$result->fetch_assoc())
-		{
-                echo $row["bikeNum"],"&nbsp;",$row["userName"],$row["standName"],"&nbsp;",$row["note"],"<br/>";
-                }
-	}
-	else
-	{
-	    echo "problem s sql dotazom";
-	    error("rented bikes not fetched");
-	}
+    if (
+            $result = $db->query(
+                    "SELECT bikes.bikeNum,userName,standName,note FROM bikes left join users on
+                     bikes.currentUser=users.userId left join (select * from notes
+                     where deleted is null ) as notes on notes.bikeNum=bikes.BikeNum left
+                     join stands on bikes.currentStand=stands.standId
+                     order by standName,bikeNum LIMIT 500"
+            )
+    ) {
+        while ($row = $result->fetchAssoc()) {
+            echo $row["bikeNum"], "&nbsp;", $row["userName"], $row["standName"], "&nbsp;", $row["note"], "<br/>";
+        }
+    } else {
+        echo "problem s sql dotazom";
+        die("rented bikes not fetched");
+    }
 
 }
 
 function reportStands()
 {
-	global $dbServer, $dbUser, $dbPassword, $dbName;
-	
-	$mysqli = new mysqli($dbServer, $dbUser, $dbPassword, $dbName);
+	global $db;
 
-	if ($result = $mysqli->query("
-SELECT stands.standName,note FROM stands join (select * from notes
-	        where deleted is null ) as notes on notes.standId=stands.standId
-	                order by standName,note LIMIT 500	")) 
-        {
-		$data = $result->fetch_all(MYSQLI_ASSOC);
-	} 
-	else 
-	{
-	    echo "problem s sql dotazom";
-	    error("users bikes not fetched");
-	}
+    if (
+            $result = $db->query("
+                SELECT stands.standName,note FROM stands join (select * from notes
+	            where deleted is null ) as notes on notes.standId=stands.standId
+	            order by standName,note LIMIT 500"
+            )
+    ) {
+        $data = $result->fetchAllAssoc();
+    } else {
+        echo "problem s sql dotazom";
+        die("users bikes not fetched");
+    }
 	
 	echo '<table style="width:50%">';
 #	echo '<caption>last usage</caption>';
@@ -90,10 +87,6 @@ SELECT stands.standName,note FROM stands join (select * from notes
 report();
 
 reportStands();
-
-
-
-
 ?>
 </body></html>
 

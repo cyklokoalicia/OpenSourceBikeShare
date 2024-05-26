@@ -144,7 +144,7 @@ function where($number,$bike)
 function listBikes($number,$stand)
 {
 
-   global $db,$forcestack, $smsSender, $user;
+   global $db, $configuration, $smsSender, $user;
    $stacktopbike=FALSE;
    $userId = $user->findUserIdByNumber($number);
    $stand = strtoupper($stand);
@@ -164,10 +164,9 @@ function listBikes($number,$stand)
     $row=$result->fetch_assoc();
     $standId=$row["standId"];
 
-   if ($forcestack)
-            {
-            $stacktopbike=checktopofstack($standId);
-            }
+    if ($configuration->get('forcestack')) {
+        $stacktopbike = checktopofstack($standId);
+    }
 
    $result=$db->query("SELECT bikeNum FROM bikes where currentStand=$standId ORDER BY bikeNum");
    $rentedBikes=$result->num_rows;
@@ -234,11 +233,17 @@ function freeBikes($number)
 
 function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
 {
-    global $dbserver, $dbuser, $dbpassword, $dbname, $logger;
+    global $configuration, $logger;
     /**
      * @var DbInterface
      */
-    $localdb = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
+    $localdb = new MysqliDb(
+        $configuration->get('dbserver'),
+        $configuration->get('dbuser'),
+        $configuration->get('dbpassword'),
+        $configuration->get('dbname'),
+        $logger
+    );
     $localdb->connect();
 
     #TODO does it needed???
@@ -731,7 +736,7 @@ function revert($number,$bikeNum)
 function add($number,$email,$phone,$message)
 {
 
-    global $db, $countrycode, $smsSender, $user, $phonePurifier;
+    global $db, $smsSender, $user, $phonePurifier, $configuration;
     $userId = $user->findUserIdByNumber($number); #maybe we should check if the user exist???
     $phone = $phonePurifier->purify($phone);
 
@@ -748,11 +753,14 @@ function add($number,$email,$phone,$message)
          return;
       }
 
-   if ($phone < $countrycode."000000000" || $phone > ($countrycode+1)."000000000" || !preg_match("/add\s+([a-z0-9._%+-]+@[a-z0-9.-]+)\s+\+?[0-9]+\s+(.{2,}\s.{2,})/i",$message ,$matches))
-   {
-      $smsSender->send($number,_('Contact information is in incorrect format. Use:')." ADD king@earth.com 0901456789 Martin Luther King Jr.");
-      return;
-   }
+    if (
+        $phone < $configuration->get('countrycode') . "000000000"
+        || $phone > ($configuration->get('countrycode') + 1) . "000000000"
+        || !preg_match("/add\s+([a-z0-9._%+-]+@[a-z0-9.-]+)\s+\+?[0-9]+\s+(.{2,}\s.{2,})/i", $message, $matches)
+    ) {
+        $smsSender->send($number, _('Contact information is in incorrect format. Use:') . " ADD king@earth.com 0901456789 Martin Luther King Jr.");
+        return;
+    }
    $userName=$db->escape(trim($matches[2]));
    $email=$db->escape(trim($matches[1]));
 

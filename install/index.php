@@ -13,6 +13,8 @@ if (file_exists("../config.php")) {
     exit("Project already installed. If you want to reinstall, please remove config.php file.");
 }
 
+die('Under construction. Contact us for support.');
+
 require_once '../vendor/autoload.php';
 $configfilename = "../config.php.example";
 require $configfilename;

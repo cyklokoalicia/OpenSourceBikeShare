@@ -10,7 +10,7 @@ class RentSystemFactory
      */
     public static function create($type)
     {
-        global $db, $creditSystem, $user, $auth, $logger, $forcestack, $watches, $connectors, $smsSender;
+        global $db, $creditSystem, $user, $auth, $logger, $configuration, $smsSender;
 
         switch ($type) {
             case 'web':
@@ -20,9 +20,9 @@ class RentSystemFactory
                     $user,
                     $auth,
                     $logger,
-                    $watches,
-                    $connectors,
-                    (bool)$forcestack
+                    $configuration->get('watches'),
+                    $configuration->get('connectors'),
+                    (bool)$configuration->get('forcestack')
                 );
             case 'sms':
                 return new RentSystemSms(
@@ -32,9 +32,9 @@ class RentSystemFactory
                     $user,
                     $auth,
                     $logger,
-                    $watches,
-                    $connectors,
-                    (bool)$forcestack
+                    $configuration->get('watches'),
+                    $configuration->get('connectors'),
+                    (bool)$configuration->get('forcestack')
                 );
             case 'qr':
                 return new RentSystemQR(
@@ -43,9 +43,9 @@ class RentSystemFactory
                     $user,
                     $auth,
                     $logger,
-                    $watches,
-                    $connectors,
-                    (bool)$forcestack
+                    $configuration->get('watches'),
+                    $configuration->get('connectors'),
+                    (bool)$configuration->get('forcestack')
                 );
             default:
                 throw new \InvalidArgumentException('Invalid rent system type');
