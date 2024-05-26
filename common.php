@@ -54,7 +54,7 @@ if (DEBUG === TRUE) {
         $systemname,
         $systememail,
         $email,
-        new PHPMailer(false)
+        new \PHPMailer\PHPMailer\PHPMailer(false)
     );
 }
 
