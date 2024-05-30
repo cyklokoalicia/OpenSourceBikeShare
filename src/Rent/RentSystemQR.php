@@ -23,6 +23,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 
         $result = $this->db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
         $bikeNumber = $result->rowCount();
+        $bikeId = $result->fetchAssoc()['bikeNum'];
 
         if ($bikeNumber > 1) {
             $message = _('You have') . ' ' . $bikeNumber . ' '
