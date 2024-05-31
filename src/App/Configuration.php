@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\App;
 
 class Configuration
 {
     private array $params = [];
 
-    public function __construct()
+    public function __construct(string $filePath)
     {
-        require __DIR__ . '/../../config.php';
+        require $filePath;
 
         foreach (get_defined_vars() as $configKey => $configValue) {
             $this->params[$configKey] = $configValue;

@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+require_once(__DIR__ . '/../vendor/autoload.php');
+require_once(__DIR__ . '/../common.php');
+
+use \Symfony\Bundle\FrameworkBundle\Console\Application;
+
+$kernel = new \BikeShare\App\Kernel('dev', true);
+$kernel->boot();
+
+/** @var \Symfony\Component\Console\CommandLoader\CommandLoaderInterface $commandLoader */
+$commandLoader = $kernel->getContainer()->get('console.command_loader');
+
+$application = new Application($kernel);
+$application->setCommandLoader($commandLoader);
+$application->run();

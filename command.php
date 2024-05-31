@@ -1,27 +1,9 @@
 <?php
 
-use BikeShare\Authentication\Auth;
-use BikeShare\Db\DbInterface;
-use BikeShare\Purifier\PhonePurifier;
-use BikeShare\Purifier\PhonePurifierInterface;
-use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Rent\RentSystemInterface;
-use BikeShare\User\User;
-use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
-require('actions-web.php');
-
-/**
- * @var DbInterface $db
- * @var LoggerInterface $logger
- */
-$auth = new Auth($db);
-$user = new User($db);
-/**
- * @var PhonePurifierInterface $phonePurifier
- */
-$phonePurifier = new PhonePurifier($configuration->get('countrycode'));
+require_once 'actions-web.php';
 
 $userid = $auth->getUserId();
 $session = $auth->getSessionId();
@@ -29,7 +11,7 @@ $session = $auth->getSessionId();
 /**
  * @var RentSystemInterface $rentSystem
  */
-$rentSystem = RentSystemFactory::create('web');
+$rentSystem = $rentSystemFactory->getRentSystem('web');
 
 $action="";
 if (isset($_GET["action"])) $action=trim($_GET["action"]);

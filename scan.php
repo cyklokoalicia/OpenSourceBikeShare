@@ -1,21 +1,9 @@
 <?php
 
-use BikeShare\Authentication\Auth;
-use BikeShare\Db\DbInterface;
-use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Rent\RentSystemInterface;
-use BikeShare\User\User;
-use Psr\Log\LoggerInterface;
 
 require_once 'vendor/autoload.php';
-require('actions-qrcode.php');
-
-/**
- * @var DbInterface $db
- * @var LoggerInterface $logger
- */
-$user = new User($db);
-$auth = new Auth($db);
+require_once 'actions-qrcode.php';
 
 $auth->refreshSession();
 $userid = $auth->getUserId();
@@ -28,7 +16,7 @@ if (!$auth->isLoggedIn()) {
 /**
  * @var RentSystemInterface $rentSystem
  */
-$rentSystem = RentSystemFactory::create('qr');
+$rentSystem = $rentSystemFactory->getRentSystem('qr');
 
 $request = substr($_SERVER["REQUEST_URI"], strpos($_SERVER["REQUEST_URI"], ".php") + 5);
 $request = explode("/", $request);

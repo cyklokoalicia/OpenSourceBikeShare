@@ -1,13 +1,8 @@
 <?php
 
-use BikeShare\Db\DbInterface;
-
 require_once 'vendor/autoload.php';
-require('actions-web.php');
+require_once 'actions-web.php';
 
-/**
- * @var DbInterface $db
- */
 ?>
 <!DOCTYPE html>
 <html lang="en">

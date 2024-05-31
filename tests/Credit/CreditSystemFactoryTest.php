@@ -5,8 +5,8 @@ namespace Credit;
 use BikeShare\Credit\CreditSystem;
 use BikeShare\Credit\CreditSystemFactory;
 use BikeShare\Credit\DisabledCreditSystem;
-use BikeShare\Db\DbInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 class CreditSystemFactoryTest extends TestCase
 {
@@ -17,10 +17,17 @@ class CreditSystemFactoryTest extends TestCase
         $configuration,
         $expectedSystemClass
     ) {
-        $factory = new CreditSystemFactory();
+        $serviceLocatorMock = $this->createMock(ServiceLocator::class);
+        $factory = new CreditSystemFactory($serviceLocatorMock);
+
+        $serviceLocatorMock->expects($this->once())
+            ->method('get')
+            ->with($expectedSystemClass)
+            ->willReturn($this->createMock($expectedSystemClass));
+
         $this->assertInstanceOf(
             $expectedSystemClass,
-            $factory->getCreditSystem($configuration, $this->createMock(DbInterface::class))
+            $factory->getCreditSystem($configuration)
         );
     }
 

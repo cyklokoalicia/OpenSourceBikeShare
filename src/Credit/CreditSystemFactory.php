@@ -1,25 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Credit;
 
-use BikeShare\Db\DbInterface;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 class CreditSystemFactory
 {
-    /**
-     * @param array $creditConfiguration
-     * @param DbInterface $db
-     * @return CreditSystemInterface
-     */
-    public function getCreditSystem(array $creditConfiguration, DbInterface $db)
+    private ServiceLocator $locator;
+
+    public function __construct(
+        ServiceLocator $locator
+    ) {
+        $this->locator = $locator;
+    }
+
+    public function getCreditSystem(array $creditConfiguration = []): CreditSystemInterface
     {
         if (!isset($creditConfiguration["enabled"])) {
             $creditConfiguration["enabled"] = false;
         }
         if (!$creditConfiguration["enabled"]) {
-            return new DisabledCreditSystem();
+            return $this->locator->get(DisabledCreditSystem::class);
         } else {
-            return new CreditSystem($creditConfiguration, $db);
+            return $this->locator->get(CreditSystem::class);
         }
     }
 }
