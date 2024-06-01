@@ -20,6 +20,9 @@ class SmsConnectorFactory
     ) {
         $this->logger = $logger;
         $this->locator = $locator;
+        if (empty($connectorConfig['sms'])) {
+            $connectorConfig['sms'] = DisabledConnector::class;
+        }
         $this->connectorConfig = $connectorConfig;
     }
 
@@ -28,7 +31,7 @@ class SmsConnectorFactory
         try {
             return $this->locator->get($this->connectorConfig['sms']);
         } catch (\Throwable $exception) {
-            $connector = $this->connectorConfig['sms'] ?? 'unknown';
+            $connector = $this->connectorConfig['sms'];
             $this->logger->error('Error creating SMS connector', compact('connector', 'exception'));
 
             return new DisabledConnector();

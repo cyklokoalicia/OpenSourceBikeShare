@@ -42,6 +42,7 @@ if ($creditSystem->isEnabled()) {
     echo 'var creditcurrency="' . $creditSystem->getCreditCurrency() . '"' . PHP_EOL;
     $minRequiredCredit = $creditSystem->getMinRequiredCredit();
 } else {
+    $minRequiredCredit = 0;
     echo 'var creditenabled=0;', "\n";
 }
 ?>

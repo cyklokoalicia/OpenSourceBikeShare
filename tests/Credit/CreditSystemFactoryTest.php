@@ -18,7 +18,10 @@ class CreditSystemFactoryTest extends TestCase
         $expectedSystemClass
     ) {
         $serviceLocatorMock = $this->createMock(ServiceLocator::class);
-        $factory = new CreditSystemFactory($serviceLocatorMock);
+        $factory = new CreditSystemFactory(
+            $serviceLocatorMock,
+            $configuration
+        );
 
         $serviceLocatorMock->expects($this->once())
             ->method('get')
@@ -27,7 +30,7 @@ class CreditSystemFactoryTest extends TestCase
 
         $this->assertInstanceOf(
             $expectedSystemClass,
-            $factory->getCreditSystem($configuration)
+            $factory->getCreditSystem()
         );
     }
 

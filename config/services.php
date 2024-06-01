@@ -8,6 +8,7 @@ use BikeShare\App\Configuration;
 use BikeShare\Credit\CodeGenerator\CodeGenerator;
 use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
 use BikeShare\Credit\CreditSystem;
+use BikeShare\Credit\CreditSystemFactory;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
@@ -68,6 +69,9 @@ return static function (ContainerConfigurator $container): void {
         ->args([
             expr("service('BikeShare\\\App\\\Configuration').get('countrycode')"),
         ]);
+
+    $services->get(CreditSystemFactory::class)
+        ->bind('$creditConfiguration', expr("service('BikeShare\\\App\\\Configuration').get('credit')"));
 
     $services->get(CreditSystem::class)
         ->bind('$creditConfiguration', expr("service('BikeShare\\\App\\\Configuration').get('credit')"));
