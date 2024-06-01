@@ -15,4 +15,9 @@ class DisabledConnector extends AbstractConnector
     public function send($number, $text)
     {
     }
+
+    public static function getType(): string
+    {
+        return 'disabled';
+    }
 }

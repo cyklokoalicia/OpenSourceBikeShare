@@ -21,7 +21,7 @@ class SmsConnectorCompilerPass implements CompilerPassInterface
 
         $smsConnectors = [];
         foreach ($smsConnectorServiceIds as $id => $tags) {
-            $smsConnectors[$id] = new Reference($id);
+            $smsConnectors[$id::getType()] = new Reference($id);
         }
 
         $factory->setArgument('$locator', ServiceLocatorTagPass::register($container, $smsConnectors, 'smsConnectors'));

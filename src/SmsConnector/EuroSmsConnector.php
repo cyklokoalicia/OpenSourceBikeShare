@@ -80,4 +80,9 @@ class EuroSmsConnector extends AbstractConnector
         );
         fopen($url, "r");
     }
+
+    public static function getType(): string
+    {
+        return 'eurosms';
+    }
 }

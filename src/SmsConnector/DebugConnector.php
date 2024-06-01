@@ -16,4 +16,9 @@ class DebugConnector extends AbstractConnector
     {
         echo $number . ' -&gt ' . $text . PHP_EOL;
     }
+
+    public static function getType(): string
+    {
+        return 'debug';
+    }
 }

@@ -68,4 +68,9 @@ class LoopbackConnector extends AbstractConnector
             file_put_contents(CURRENTDIR . "/connectors/loopback/loopback.log", $log, FILE_APPEND);
         }
     }
+
+    public static function getType(): string
+    {
+        return 'loopback';
+    }
 }

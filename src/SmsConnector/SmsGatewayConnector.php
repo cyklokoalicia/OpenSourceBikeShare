@@ -93,4 +93,9 @@ class SmsGatewayConnector extends AbstractConnector
         $deviceid = 1; // use first existing device
         $smsgateway->sendMessageToNumber("+" . $number, $text, $deviceid);
     }
+
+    public static function getType(): string
+    {
+        return 'smsgateway';
+    }
 }

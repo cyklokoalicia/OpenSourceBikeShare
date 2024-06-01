@@ -21,7 +21,7 @@ class SmsConnectorFactory
         $this->logger = $logger;
         $this->locator = $locator;
         if (empty($connectorConfig['sms'])) {
-            $connectorConfig['sms'] = DisabledConnector::class;
+            $connectorConfig['sms'] = 'disabled';
         }
         $this->connectorConfig = $connectorConfig;
     }

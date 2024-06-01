@@ -21,4 +21,6 @@ interface SmsConnectorInterface
     public function getTime();
 
     public function getIPAddress();
+
+    public static function getType(): string;
 }
