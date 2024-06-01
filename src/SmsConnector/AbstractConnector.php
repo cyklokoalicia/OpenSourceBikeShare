@@ -36,7 +36,7 @@ abstract class AbstractConnector implements SmsConnectorInterface
         $debugMode = false
     ) {
         $this->debugMode = $debugMode;
-        $connectorConfig = json_decode($configuration->get('connectors') ?? '[]', true)['config'][static::getType()] ?? [];
+        $connectorConfig = json_decode($configuration->get('connectors')['config'] ?? '[]', true)[static::getType()] ?? [];
         $this->checkConfig($connectorConfig);
     }
 
