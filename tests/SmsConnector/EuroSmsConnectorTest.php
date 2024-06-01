@@ -20,15 +20,15 @@ class EuroSmsConnectorTest extends TestCase
             ->with('connectors')
             ->willReturn(
                 [
-                    'config' => json_encode(
-                        [
-                            'eurosms' => [
+                    'config' => [
+                        'eurosms' => json_encode(
+                            [
                                 'gatewayId' => 'Id',
                                 'gatewayKey' => 'Key',
                                 'gatewaySenderNumber' => 'SenderNumber',
                             ]
-                        ]
-                    )
+                        )
+                    ]
                 ]
             );
         $smsConnector = new EuroSmsConnector(
@@ -69,15 +69,15 @@ class EuroSmsConnectorTest extends TestCase
             ->with('connectors')
             ->willReturn(
                 [
-                    'config' => json_encode(
-                        [
-                            'eurosms' => [
+                    'config' => [
+                        'eurosms' => json_encode(
+                            [
                                 'gatewayId' => $gatewayId,
                                 'gatewayKey' => $gatewayKey,
                                 'gatewaySenderNumber' => $gatewaySenderNumber,
                             ]
-                        ]
-                    )
+                        )
+                    ]
                 ]
             );
         $smsConnector = new EuroSmsConnector(
@@ -115,15 +115,15 @@ class EuroSmsConnectorTest extends TestCase
             ->with('connectors')
             ->willReturn(
                 [
-                    'config' => json_encode(
-                        [
-                            'eurosms' => [
+                    'config' => [
+                        'eurosms' => json_encode(
+                            [
                                 'gatewayId' => 'Id',
                                 'gatewayKey' => 'Key',
                                 'gatewaySenderNumber' => 'SenderNumber',
                             ]
-                        ]
-                    )
+                        )
+                    ]
                 ]
             );
         $smsConnector = new EuroSmsConnector(
@@ -149,15 +149,15 @@ class EuroSmsConnectorTest extends TestCase
             ->with('connectors')
             ->willReturn(
                 [
-                    'config' => json_encode(
-                        [
-                            'eurosms' => [
+                    'config' => [
+                        'eurosms' => json_encode(
+                            [
                                 'gatewayId' => 'Id',
                                 'gatewayKey' => 'Key',
                                 'gatewaySenderNumber' => 'SenderNumber',
                             ]
-                        ]
-                    )
+                        )
+                    ]
                 ]
             );
         $smsConnector = new EuroSmsConnector(
