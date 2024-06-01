@@ -22,6 +22,7 @@ use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use PHPMailer\PHPMailer\PHPMailer;
+use Symfony\Component\Dotenv\Command\DotenvDumpCommand;
 
 return static function (ContainerConfigurator $container): void {
     $services = $container->services();
@@ -32,7 +33,13 @@ return static function (ContainerConfigurator $container): void {
     $services->instanceof(MailSenderInterface::class)->tag('mailSender');
     $services->instanceof(SmsConnectorInterface::class)->tag('smsConnector');
 
-    $services->alias('logger','monolog.logger');
+    $services->alias('logger', 'monolog.logger');
+
+    $services->set(DotenvDumpCommand::class)
+        ->args([
+            param('kernel.project_dir') . '/.env',
+            param('kernel.environment'),
+        ]);
 
     $services->set(Configuration::class)
         ->args([__DIR__ . '/../config.php']);
