@@ -15,13 +15,17 @@ use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\User\User;
+use Symfony\Component\Dotenv\Dotenv;
 
-\Symfony\Component\ErrorHandler\Debug::enable();
+$dotenv = new Dotenv();
+$dotenv->loadEnv(__DIR__.'/.env', null, 'dev', ['test'], true);
 
-$kernel = new Kernel('dev', true);
+$kernel = new Kernel($_ENV['APP_ENV'], (bool) $_ENV['APP_DEBUG']);
 $kernel->boot();
 
 $logger = $kernel->getContainer()->get('logger');
+Monolog\ErrorHandler::register($logger);
+
 $configuration = $kernel->getContainer()->get(Configuration::class);
 $sms = $kernel->getContainer()->get(SmsConnectorInterface::class);
 $db = $kernel->getContainer()->get(DbInterface::class);
