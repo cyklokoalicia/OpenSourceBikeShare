@@ -36,7 +36,8 @@
     "symfony/expression-language": "^5.4",
     "symfony/monolog-bundle": "^3.10",
     "symfony/console": "^5.4",
-    "symfony/runtime": "^5.4"
+    "symfony/runtime": "^5.4",
+    "symfony/twig-bundle": "^5.4"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.10|^4.0",

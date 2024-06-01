@@ -41,6 +41,7 @@ return static function (ContainerConfigurator $container): void {
             '../src/Db/MysqliDbResult.php',
             '../src/SmsConnector/SmsGateway/SmsGateway.php',
             '../src/App/Configuration.php',
+            '../src/App/Kernel.php',
         ]);
 
     $services->get(MysqliDb::class)

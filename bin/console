@@ -1,17 +1,17 @@
 #!/usr/bin/env php
 <?php
 
-require_once(__DIR__ . '/../vendor/autoload.php');
-require_once(__DIR__ . '/../common.php');
+use BikeShare\App\Kernel;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 
-use \Symfony\Bundle\FrameworkBundle\Console\Application;
+if (!is_file(dirname(__DIR__).'/vendor/autoload_runtime.php')) {
+    throw new LogicException('Symfony Runtime is missing. Try running "composer require symfony/runtime".');
+}
 
-$kernel = new \BikeShare\App\Kernel('dev', true);
-$kernel->boot();
+require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
-/** @var \Symfony\Component\Console\CommandLoader\CommandLoaderInterface $commandLoader */
-$commandLoader = $kernel->getContainer()->get('console.command_loader');
+return function (array $context) {
+    $kernel = new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
 
-$application = new Application($kernel);
-$application->setCommandLoader($commandLoader);
-$application->run();
+    return new Application($kernel);
+};
