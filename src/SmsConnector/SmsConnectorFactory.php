@@ -1,43 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\SmsConnector;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 class SmsConnectorFactory
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
+    private ServiceLocator $locator;
+    private array $connectorConfig;
 
     public function __construct(
+        array $connectorConfig,
+        ServiceLocator $locator,
         LoggerInterface $logger
     ) {
         $this->logger = $logger;
+        $this->locator = $locator;
+        if (empty($connectorConfig['sms'])) {
+            $connectorConfig['sms'] = DisabledConnector::class;
+        }
+        $this->connectorConfig = $connectorConfig;
     }
 
-    /**
-     * @param string $connector
-     * @param array $config
-     * @return SmsConnectorInterface
-     */
-    public function getConnector($connector, array $config, $debugMode = false)
+    public function getConnector(): SmsConnectorInterface
     {
         try {
-            switch ($connector) {
-                case 'loopback':
-                    return new LoopbackConnector($config, $debugMode);
-                case 'eurosms':
-                    return new EuroSmsConnector($config, $debugMode);
-                case 'smsgateway.me':
-                    return new SmsGatewayConnector($config, $debugMode);
-                case 'textmagic.com':
-                    return new TextmagicSmsConnector($config, $debugMode);
-                default:
-                    return new DisabledConnector();
-            }
-        } catch (\Exception $exception) {
+            return $this->locator->get($this->connectorConfig['sms']);
+        } catch (\Throwable $exception) {
+            $connector = $this->connectorConfig['sms'];
             $this->logger->error('Error creating SMS connector', compact('connector', 'exception'));
 
             return new DisabledConnector();

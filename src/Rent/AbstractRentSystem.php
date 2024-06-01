@@ -232,7 +232,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         return $this->response($message);
     }
 
-    abstract protected function getRentSystemType();
+    abstract public static function getType(): string;
 
     protected function response($message, $error = 0)
     {

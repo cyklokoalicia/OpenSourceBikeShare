@@ -1,19 +1,7 @@
 <?php
 
-use BikeShare\Authentication\Auth;
-use BikeShare\Db\DbInterface;
-use BikeShare\User\User;
-use Psr\Log\LoggerInterface;
-
 require_once 'vendor/autoload.php';
-require('actions-web.php');
-
-/**
- * @var DbInterface $db
- * @var LoggerInterface $logger
- */
-$user = new User($db);
-$auth = new Auth($db);
+require_once 'actions-web.php';
 
 $auth->refreshSession();
 
@@ -54,6 +42,7 @@ if ($creditSystem->isEnabled()) {
     echo 'var creditcurrency="' . $creditSystem->getCreditCurrency() . '"' . PHP_EOL;
     $minRequiredCredit = $creditSystem->getMinRequiredCredit();
 } else {
+    $minRequiredCredit = 0;
     echo 'var creditenabled=0;', "\n";
 }
 ?>

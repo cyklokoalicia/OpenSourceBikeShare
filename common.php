@@ -1,97 +1,46 @@
 <?php
 
-use BikeShare\App\Configuration;
-use BikeShare\Credit\CodeGenerator\CodeGenerator;
-use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
-use BikeShare\Credit\CreditSystemFactory;
-use BikeShare\Credit\CreditSystemInterface;
-use BikeShare\Mail\DebugMailSender;
-use BikeShare\Mail\MailSenderInterface;
-use BikeShare\Mail\PHPMailerMailSender;
-use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
-use BikeShare\Purifier\PhonePurifier;
-use BikeShare\Purifier\PhonePurifierInterface;
-use BikeShare\Sms\SmsSender;
-use BikeShare\Sms\SmsSenderInterface;
-use BikeShare\SmsConnector\DebugConnector;
-use BikeShare\SmsConnector\SmsConnectorFactory;
-use BikeShare\User\User;
-use Monolog\ErrorHandler;
-use Monolog\Handler\RotatingFileHandler;
-use Monolog\Logger;
-
 require_once 'vendor/autoload.php';
 
-$configuration = new Configuration();
+use BikeShare\App\Configuration;
+use BikeShare\App\Kernel;
+use BikeShare\Authentication\Auth;
+use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
+use BikeShare\Credit\CreditSystemInterface;
+use BikeShare\Db\DbInterface;
+use BikeShare\Db\MysqliDb;
+use BikeShare\Mail\MailSenderInterface;
+use BikeShare\Purifier\PhonePurifierInterface;
+use BikeShare\Rent\RentSystemFactory;
+use BikeShare\Sms\SmsSenderInterface;
+use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\User\User;
 
-$logger = new Logger('BikeShare');
-$logger->pushHandler(new RotatingFileHandler( __DIR__ . '/var/log/log.log', 30, Logger::WARNING));
-ErrorHandler::register($logger);
+\Symfony\Component\ErrorHandler\Debug::enable();
+
+$kernel = new Kernel('dev', true);
+$kernel->boot();
+
+$logger = $kernel->getContainer()->get('logger');
+$configuration = $kernel->getContainer()->get(Configuration::class);
+$sms = $kernel->getContainer()->get(SmsConnectorInterface::class);
+$db = $kernel->getContainer()->get(DbInterface::class);
+$db = $kernel->getContainer()->get(DbInterface::class);
+$db->connect();
+$mailer = $kernel->getContainer()->get(MailSenderInterface::class);
+$smsSender = $kernel->getContainer()->get(SmsSenderInterface::class);
+$codeGenerator = $kernel->getContainer()->get(CodeGeneratorInterface::class);
+$phonePurifier = $kernel->getContainer()->get(PhonePurifierInterface::class);
+$creditSystem = $kernel->getContainer()->get(CreditSystemInterface::class);
+$user = $kernel->getContainer()->get(User::class);
+$auth = $kernel->getContainer()->get(Auth::class);
+$rentSystemFactory = $kernel->getContainer()->get(RentSystemFactory::class);
 
 $locale = $configuration->get('systemlang') . ".utf8";
 setlocale(LC_ALL, $locale);
 putenv("LANG=" . $locale);
 bindtextdomain("messages", dirname(__FILE__) . '/languages');
 textdomain("messages");
-
-$connectors = $configuration->get('connectors');
-$sms = (new SmsConnectorFactory($logger))->getConnector(
-    !empty($connectors["sms"]) ? $connectors["sms"] : 'disabled',
-    !empty($connectors["config"][$connectors["sms"]]) ? json_decode($connectors["config"][$connectors["sms"]], true) : array(),
-    DEBUG
-);
-
-/**
- * @var DbInterface $db
- */
-$db = new MysqliDb(
-    $configuration->get('dbserver'),
-    $configuration->get('dbuser'),
-    $configuration->get('dbpassword'),
-    $configuration->get('dbname'),
-    $logger
-);
-$db->connect();
-
-/**
- * @var MailSenderInterface $mailer
- */
-if (DEBUG === TRUE) {
-    $mailer = new DebugMailSender();
-} else {
-    $mailer = new PHPMailerMailSender(
-        $configuration->get('systemname'),
-        $configuration->get('systememail'),
-        $configuration->get('email'),
-        new \PHPMailer\PHPMailer\PHPMailer(false)
-    );
-}
-
-/**
- * @var SmsSenderInterface $smsSender
- */
-$smsSender = new SmsSender(
-    DEBUG === TRUE ? new DebugConnector() : $sms,
-    $db
-);
-
-/**
- * @var CodeGeneratorInterface $codeGenerator
- */
-$codeGenerator = new CodeGenerator();
-
-$user = new User($db);
-
-/**
- * @var PhonePurifierInterface $phonePurifier
- */
-$phonePurifier = new PhonePurifier($configuration->get('countrycode'));
-
-/**
- * @var CreditSystemInterface $creditSystem
- */
-$creditSystem = (new CreditSystemFactory())->getCreditSystem($configuration->get('credit'), $db);
 
 function error($message)
 {

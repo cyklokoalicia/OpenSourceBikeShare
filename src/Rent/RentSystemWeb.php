@@ -4,7 +4,7 @@ namespace BikeShare\Rent;
 
 class RentSystemWeb extends AbstractRentSystem implements RentSystemInterface
 {
-    protected function getRentSystemType()
+    public static function getType(): string
     {
         return 'web';
     }

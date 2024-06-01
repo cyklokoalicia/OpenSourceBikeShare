@@ -1,5 +1,6 @@
 <?php
-require("common.php");
+
+require_once "common.php";
 
 function response($message,$error=0,$log=1)
 {
