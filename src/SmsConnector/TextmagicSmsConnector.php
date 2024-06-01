@@ -2,6 +2,8 @@
 
 namespace BikeShare\SmsConnector;
 
+use BikeShare\App\Configuration;
+
 /**
  * http://textmagic.com
  * Create callback at: https://textmagic.com
@@ -23,11 +25,11 @@ class TextmagicSmsConnector extends AbstractConnector
     private $gatewaySenderNumber = '';
 
     public function __construct(
-        array $config,
+        Configuration $config,
         $debugMode = false
     ) {
-        $this->debugMode = $debugMode;
-        $this->checkConfig($config);
+        parent::__construct($config, $debugMode);
+
         if (isset($_POST["text"])) {
             $this->message = $_POST["text"];
         }

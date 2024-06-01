@@ -82,7 +82,6 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$forceStack', expr("service('BikeShare\\\App\\\Configuration').get('forceStack')"));
 
     $services->load('BikeShare\\SmsConnector\\', '../src/SmsConnector')
-        ->bind('$config', expr("service('BikeShare\\\App\\\Configuration').get('connectors')"))
         ->exclude([
             '../src/SmsConnector/SmsGateway/SmsGateway.php'
         ]);

@@ -2,6 +2,7 @@
 
 namespace Test\BikeShare\SmsConnector;
 
+use BikeShare\App\Configuration;
 use BikeShare\SmsConnector\DisabledConnector;
 use BikeShare\SmsConnector\EuroSmsConnector;
 use BikeShare\SmsConnector\LoopbackConnector;
@@ -28,6 +29,7 @@ class SmsConnectorFactoryTest extends TestCase
         $expectedExceptionMessage = null
     ) {
         $logger = $this->createMock(LoggerInterface::class);
+        $configuration = $this->createMock(Configuration::class);
         $serviceLocatorMock = $this->createMock(ServiceLocator::class);
 
         if ($expectedExceptionMessage) {
@@ -44,7 +46,7 @@ class SmsConnectorFactoryTest extends TestCase
                 ->willReturn($this->createMock($expectedInstance));
         }
 
-        $smsConnectorFactory = new SmsConnectorFactory($config, $serviceLocatorMock, $logger);
+        $smsConnectorFactory = new SmsConnectorFactory($config, $serviceLocatorMock, $configuration, $logger);
 
         if ($expectedExceptionMessage) {
             $logger

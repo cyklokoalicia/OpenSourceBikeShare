@@ -2,6 +2,8 @@
 
 namespace BikeShare\SmsConnector;
 
+use BikeShare\App\Configuration;
+
 abstract class AbstractConnector implements SmsConnectorInterface
 {
     /**
@@ -28,6 +30,16 @@ abstract class AbstractConnector implements SmsConnectorInterface
      * @var string
      */
     protected $ipaddress = '';
+
+    public function __construct(
+        Configuration $configuration,
+        $debugMode = false
+    ) {
+        $this->debugMode = $debugMode;
+        $connectorConfig = json_decode($configuration->get('connectors') ?? '[]', true)['config'][static::getType()] ?? [];
+        $this->checkConfig($connectorConfig);
+    }
+
 
     public function getMessage()
     {

@@ -11,6 +11,7 @@
 
 namespace BikeShare\SmsConnector;
 
+use BikeShare\App\Configuration;
 use BikeShare\SmsConnector\SmsGateway\SmsGateway;
 
 class SmsGatewayConnector extends AbstractConnector
@@ -29,11 +30,11 @@ class SmsGatewayConnector extends AbstractConnector
     private $gatewaySecret = '';
 
     public function __construct(
-        array $config,
+        Configuration $config,
         $debugMode = false
     ) {
-        $this->debugMode = $debugMode;
-        $this->checkConfig($config);
+        parent::__construct($config, $debugMode);
+
         if (isset($_POST["message"])) {
             $this->message = $_POST["message"];
         }

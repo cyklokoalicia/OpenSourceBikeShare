@@ -2,6 +2,8 @@
 
 namespace BikeShare\SmsConnector;
 
+use BikeShare\App\Configuration;
+
 class EuroSmsConnector extends AbstractConnector
 {
     /**
@@ -18,11 +20,11 @@ class EuroSmsConnector extends AbstractConnector
     private $gatewaySenderNumber = '';
 
     public function __construct(
-        array $config,
+        Configuration $config,
         $debugMode = false
     ) {
-        $this->debugMode = $debugMode;
-        $this->checkConfig($config);
+        parent::__construct($config, $debugMode);
+
         if (isset($_GET["sms_text"])) {
             $this->message = $_GET["sms_text"];
         }

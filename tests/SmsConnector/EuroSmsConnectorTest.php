@@ -2,6 +2,7 @@
 
 namespace Test\BikeShare\SmsConnector;
 
+use BikeShare\App\Configuration;
 use BikeShare\SmsConnector\EuroSmsConnector;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
@@ -10,39 +11,32 @@ class EuroSmsConnectorTest extends TestCase
 {
     use PHPMock;
 
-    /**
-     * @var EuroSmsConnector
-     */
-    private $smsConnector;
-
-    protected function setUp(): void
-    {
-        $this->smsConnector = new EuroSmsConnector(
-            [
-                'gatewayId' => 'Id',
-                'gatewayKey' => 'Key',
-                'gatewaySenderNumber' => 'SenderNumber',
-            ],
-            false
-        );
-    }
-
-    protected function tearDown(): void
-    {
-        unset($this->smsConnector);
-    }
-
     public function testCheckConfig()
     {
-        $this->smsConnector->checkConfig(
-            [
-                'gatewayId' => 'Id',
-                'gatewayKey' => 'Key',
-                'gatewaySenderNumber' => 'SenderNumber',
-            ]
+        $configuration = $this->createMock(Configuration::class);
+        $configuration
+            ->expects($this->once())
+            ->method('get')
+            ->with('connectors')
+            ->willReturn(
+                json_encode(
+                    [
+                        'config' => [
+                            'eurosms' => [
+                                'gatewayId' => 'Id',
+                                'gatewayKey' => 'Key',
+                                'gatewaySenderNumber' => 'SenderNumber',
+                            ]
+                        ]
+                    ]
+                )
+            );
+        $smsConnector = new EuroSmsConnector(
+            $configuration,
+            false
         );
 
-        $reflection = new \ReflectionClass($this->smsConnector);
+        $reflection = new \ReflectionClass($smsConnector);
         $gatewayId = $reflection->getProperty('gatewayId');
         $gatewayId->setAccessible(true);
         $gatewayKey = $reflection->getProperty('gatewayKey');
@@ -50,9 +44,9 @@ class EuroSmsConnectorTest extends TestCase
         $gatewaySenderNumber = $reflection->getProperty('gatewaySenderNumber');
         $gatewaySenderNumber->setAccessible(true);
 
-        $this->assertEquals('Id', $gatewayId->getValue($this->smsConnector));
-        $this->assertEquals('Key', $gatewayKey->getValue($this->smsConnector));
-        $this->assertEquals('SenderNumber', $gatewaySenderNumber->getValue($this->smsConnector));
+        $this->assertEquals('Id', $gatewayId->getValue($smsConnector));
+        $this->assertEquals('Key', $gatewayKey->getValue($smsConnector));
+        $this->assertEquals('SenderNumber', $gatewaySenderNumber->getValue($smsConnector));
     }
 
     /**
@@ -68,12 +62,27 @@ class EuroSmsConnectorTest extends TestCase
         $gatewaySenderNumber
     ) {
         $this->expectException(\RuntimeException::class);
-        $this->smsConnector->checkConfig(
-            [
-                'gatewayId' => $gatewayId,
-                'gatewayKey' => $gatewayKey,
-                'gatewaySenderNumber' => $gatewaySenderNumber,
-            ]
+        $configuration = $this->createMock(Configuration::class);
+        $configuration
+            ->expects($this->once())
+            ->method('get')
+            ->with('connectors')
+            ->willReturn(
+                json_encode(
+                    [
+                        'config' => [
+                            'eurosms' => [
+                                'gatewayId' => $gatewayId,
+                                'gatewayKey' => $gatewayKey,
+                                'gatewaySenderNumber' => $gatewaySenderNumber,
+                            ]
+                        ]
+                    ]
+                )
+            );
+        $smsConnector = new EuroSmsConnector(
+            $configuration,
+            false
         );
     }
 
@@ -99,17 +108,63 @@ class EuroSmsConnectorTest extends TestCase
 
     public function testRespond()
     {
-        $reflection = new \ReflectionClass($this->smsConnector);
+        $configuration = $this->createMock(Configuration::class);
+        $configuration
+            ->expects($this->once())
+            ->method('get')
+            ->with('connectors')
+            ->willReturn(
+                json_encode(
+                    [
+                        'config' => [
+                            'eurosms' => [
+                                'gatewayId' => 'Id',
+                                'gatewayKey' => 'Key',
+                                'gatewaySenderNumber' => 'SenderNumber',
+                            ]
+                        ]
+                    ]
+                )
+            );
+        $smsConnector = new EuroSmsConnector(
+            $configuration,
+            false
+        );
+
+        $reflection = new \ReflectionClass($smsConnector);
         $uuid = $reflection->getProperty('uuid');
         $uuid->setAccessible(true);
-        $uuid->setValue($this->smsConnector, 'uuid');
+        $uuid->setValue($smsConnector, 'uuid');
 
         $this->expectOutputString('ok:uuid' . "\n");
-        $this->smsConnector->respond();
+        $smsConnector->respond();
     }
 
     public function testSend()
     {
+        $configuration = $this->createMock(Configuration::class);
+        $configuration
+            ->expects($this->once())
+            ->method('get')
+            ->with('connectors')
+            ->willReturn(
+                json_encode(
+                    [
+                        'config' => [
+                            'eurosms' => [
+                                'gatewayId' => 'Id',
+                                'gatewayKey' => 'Key',
+                                'gatewaySenderNumber' => 'SenderNumber',
+                            ]
+                        ]
+                    ]
+                )
+            );
+        $smsConnector = new EuroSmsConnector(
+            $configuration,
+            false
+        );
+
         $this->getFunctionMock('BikeShare\SmsConnector', 'md5')
             ->expects($this->once())
             ->with('Key' . 'number')
@@ -133,7 +188,7 @@ class EuroSmsConnectorTest extends TestCase
                 'r'
             )->willReturn(true);
 
-        $this->smsConnector->send('number', 'text!@-_ +');
+        $smsConnector->send('number', 'text!@-_ +');
         $this->expectOutputString('');
     }
 }
