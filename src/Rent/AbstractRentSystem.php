@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractRentSystem implements RentSystemInterface
 {
-    private const ERROR = 1;
+    protected const ERROR = 1;
     /**
      * @var DbInterface
      */

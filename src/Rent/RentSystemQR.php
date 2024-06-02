@@ -18,14 +18,15 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 
         if ($bikeId !== 0) {
             $this->logger->error("Bike number could not be provided via QR code", ["userId" => $userId]);
-            return $this->response(_('Invalid bike number'), ERROR);
+            return $this->response(_('Invalid bike number'), self::ERROR);
         }
 
         $result = $this->db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
         $bikeNumber = $result->rowCount();
-        $bikeId = $result->fetchAssoc()['bikeNum'];
 
-        if ($bikeNumber > 1) {
+        if ($bikeNumber === 0) {
+            return $this->response(_('You currently have no rented bikes.'), self::ERROR);
+        } elseif ($bikeNumber > 1) {
             $message = _('You have') . ' ' . $bikeNumber . ' '
                 . _('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
             if ($this->connectorsConfig["sms"]) {
@@ -33,8 +34,9 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
             }
             $message .= _(' to return the bikes.');
 
-            return $this->response($message, ERROR);
+            return $this->response($message, self::ERROR);
         }
+        $bikeId = $result->fetchAssoc()['bikeNum'];
 
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
     }
