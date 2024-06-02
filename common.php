@@ -25,6 +25,14 @@ $kernel->boot();
 
 $logger = $kernel->getContainer()->get('logger');
 Monolog\ErrorHandler::register($logger);
+#Should be removed in the future. Currently, we are using it to log errors in old code
+set_error_handler(
+    function ($severity, $message, $file, $line) use ($logger) {
+        $logger->error($message, ['severity' => $severity, 'file' => $file, 'line' => $line]);
+
+        return true;
+    }
+);
 
 $configuration = $kernel->getContainer()->get(Configuration::class);
 $sms = $kernel->getContainer()->get(SmsConnectorInterface::class);
