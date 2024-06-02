@@ -1,4 +1,7 @@
 .idea
+.env.local
+.env.local.php
+.env.*.local
 docker-data
 db-data
 vendor

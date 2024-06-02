@@ -18,7 +18,8 @@ use BikeShare\User\User;
 use Symfony\Component\Dotenv\Dotenv;
 
 $dotenv = new Dotenv();
-$dotenv->loadEnv(__DIR__.'/.env', null, 'dev', ['test'], true);
+$dotenv->setProdEnvs(['prod']);
+$dotenv->bootEnv(__DIR__.'/.env', 'dev', ['test'], true);
 
 $kernel = new Kernel($_ENV['APP_ENV'], (bool) $_ENV['APP_DEBUG']);
 $kernel->boot();
