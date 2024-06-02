@@ -319,7 +319,7 @@ function delnote($number,$bikeNum,$message)
    $reportedBy=$row["userName"];
 
       $matches=explode(" ",$message,3);
-      $userNote=$db->escape(trim($matches[2]));
+      $userNote=$db->escape(trim($matches[2] ?? ''));
 
 	if($userNote=='')
 	{
