@@ -42,6 +42,13 @@ function showrentform($userId,$bike)
 
     $stand = $db->query("SELECT s.* FROM bikes b JOIN stands s ON b.currentStand=s.standId WHERE bikeNum=$bike")->fetchAssoc();
 
+    $result = $db->query("SELECT note FROM notes WHERE bikeNum='$bike' AND deleted IS NULL ORDER BY time DESC");
+    $note = '';
+    while ($row = $result->fetchAssoc()) {
+        $note .= $row['note'] . '; ';
+    }
+    $note = substr($note, 0, strlen($note) - 2);
+
     echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$configuration->get('systemname'),'</title>';
     echo '<base href="' . $configuration->get('systemURL') . '" />';
     echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';
@@ -56,6 +63,9 @@ function showrentform($userId,$bike)
     if (file_exists("analytics.php")) require("analytics.php");
     echo '</head><body><div class="container">';
     echo '<h3>'. _('Rent bike'). ' ' .$bike. ' '. _('on stand'). ' ' .$stand['standName'].'</h3>';
+    if (!empty($note)) {
+        echo '<div class="alert alert-warning">' . $note . '</div>';
+    }
     echo '<form method="post" action="scan.php/rent/',$bike,'">';
     echo '<input type="hidden" name="rent" value="yes" />';
     echo '<div class="col-lg-12">
