@@ -48,12 +48,20 @@ $creditSystem = $kernel->getContainer()->get(CreditSystemInterface::class);
 $user = $kernel->getContainer()->get(User::class);
 $auth = $kernel->getContainer()->get(Auth::class);
 $rentSystemFactory = $kernel->getContainer()->get(RentSystemFactory::class);
+$translator = $kernel->getContainer()->get('translator');
 
 $locale = $configuration->get('systemlang') . ".utf8";
 setlocale(LC_ALL, $locale);
 putenv("LANG=" . $locale);
 bindtextdomain("messages", dirname(__FILE__) . '/languages');
 textdomain("messages");
+
+function t(?string $id, array $parameters = [], ?string $domain = null, ?string $locale = null): string
+{
+    global $translator;
+
+    return $translator->trans($id, $parameters, $domain, $locale);
+}
 
 function error($message)
 {
