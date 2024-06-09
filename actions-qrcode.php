@@ -62,15 +62,15 @@ function showrentform($userId,$bike)
     echo '<meta name="theme-color" content="#ffffff">';
     if (file_exists("analytics.php")) require("analytics.php");
     echo '</head><body><div class="container">';
-    echo '<h3>'. _('Rent bike'). ' ' .$bike. ' '. _('on stand'). ' ' .$stand['standName'].'</h3>';
+    echo '<h3>'. t('Rent bike {bikeNum} on stand {standName}', ['bikeNum' => $bike, 'standName' => $stand['standName']]).'</h3>';
     if (!empty($note)) {
         echo '<div class="alert alert-warning">' . $note . '</div>';
     }
     echo '<form method="post" action="scan.php/rent/',$bike,'">';
     echo '<input type="hidden" name="rent" value="yes" />';
     echo '<div class="col-lg-12">
-            <button class="btn btn-primary" type="submit" id="rent" title="'. _('Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'). '">'
-                .'<span class="glyphicon glyphicon-log-out"></span>' . _('Rent') .' <span class="bikenumber"> </span>
+            <button class="btn btn-primary" type="submit" id="rent" title="'. t('Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'). '">'
+                .'<span class="glyphicon glyphicon-log-out"></span>' . t('Rent') .' <span class="bikenumber"> </span>
             </button>
          </div>
     ';
@@ -81,5 +81,5 @@ function showrentform($userId,$bike)
 
 function unrecognizedqrcode()
 {
-   response("<h3>"._('Unrecognized QR code action. Try scanning the code again or report this to the system admins.')."</h3>",ERROR);
+   response("<h3>".t('Unrecognized QR code action. Try scanning the code again or report this to the system admins.')."</h3>",ERROR);
 }
