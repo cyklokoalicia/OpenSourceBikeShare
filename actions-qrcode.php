@@ -42,6 +42,10 @@ function showrentform($userId,$bike)
 
     $stand = $db->query("SELECT s.* FROM bikes b JOIN stands s ON b.currentStand=s.standId WHERE bikeNum=$bike")->fetchAssoc();
 
+    if (empty($stand)) {
+        response(_('Bike') . ' ' . $bike . ' ' . _('is already rented') . '.', 1);
+    }
+
     $result = $db->query("SELECT note FROM notes WHERE bikeNum='$bike' AND deleted IS NULL ORDER BY time DESC");
     $note = '';
     while ($row = $result->fetchAssoc()) {
