@@ -652,38 +652,45 @@ function note($number,$bikeNum,$message)
 function last($number,$bike)
 {
 
-   global $db, $smsSender, $user;
-   $userId = $user->findUserIdByNumber($number);
-   $bikeNum = intval($bike);
+    global $db, $smsSender, $user;
+    $userId = $user->findUserIdByNumber($number);
+    $bikeNum = intval($bike);
 
-   $result=$db->query("SELECT bikeNum FROM bikes where bikeNum=$bikeNum");
-          if ($result->num_rows!=1)
-      {
-         $smsSender->send($number,_('Bike')." ".$bikeNum." "._('does not exist').".");
-         return;
-      }
+    $result = $db->query("SELECT bikeNum FROM bikes where bikeNum=$bikeNum");
+    if ($result->rowCount() != 1) {
+        $smsSender->send($number, _('Bike') . " " . $bikeNum . " " . _('does not exist') . ".");
+        return;
+    }
 
-   $result=$db->query("SELECT userName,parameter,standName,action FROM `history` join users on history.userid=users.userid left join stands on stands.standid=history.parameter where bikenum=$bikeNum and action in ('RETURN','RENT','REVERT') order by time desc LIMIT 10");
+    $result = $db->query(
+        "SELECT userName,parameter,standName,action 
+               FROM `history`
+               JOIN users ON history.userid=users.userid
+               LEFT JOIN stands ON stands.standid=history.parameter 
+               WHERE bikenum=$bikeNum AND action in ('RETURN','RENT','REVERT')
+               ORDER BY time DESC
+               LIMIT 10"
+    );
 
-   $historyInfo="B.$bikeNum:";
-   while($row=$result->fetch_assoc())
-   {
-     if (($standName=$row["standName"])!=NULL)
-      {
-         if ($row["action"]=="REVERT") $historyInfo.="*";
-         $historyInfo.=$standName;
-      }
-      else
-      {
-         $historyInfo.=$row["userName"]."(".$row["parameter"].")";
-      }
-      if ($result->num_rows>1) $historyInfo.=",";
-   }
-   if ($rentedBikes>1) $historyInfo=substr($historyInfo,0,strlen($historyInfo)-1);
+    $historyInfo = "B.$bikeNum:";
+    while ($row = $result->fetchAssoc()) {
+        if (($standName = $row["standName"]) != NULL) {
+            if ($row["action"] == "REVERT")  {
+                $historyInfo .= "*";
+            }
+            $historyInfo .= $standName;
+        } else {
+            $historyInfo .= $row["userName"] . "(" . $row["parameter"] . ")";
+        }
+        if ($result->rowCount() > 1) {
+            $historyInfo .= ",";
+        }
+    }
+    if ($result->rowCount() > 1)  {
+        $historyInfo = substr($historyInfo, 0, strlen($historyInfo) - 1);
+    }
 
-   $smsSender->send($number,$historyInfo);
-
-
+    $smsSender->send($number, $historyInfo);
 }
 
 function revert($number,$bikeNum)
