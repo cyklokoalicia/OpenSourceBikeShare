@@ -12,7 +12,7 @@ return [
     'User number:' => '',
     'Password:' => '',
     'Forgotten? Reset password' => '',
-    'Log in' => '',
+    'Log in' => 'Log in',
     'Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.' => 'Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.',
     'Rent' => 'Rent',
     'Describe problem' => '',

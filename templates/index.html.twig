@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}{{ siteName }}{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}"/>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ asset('js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/viewportDetect.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/leaflet.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/L.Control.Sidebar.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/translations.php') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/functions.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/bootstrap.min.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/bootstrap-theme.min.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/leaflet.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/L.Control.Sidebar.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/map.css') }}"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}"/>
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}"/>
+    <link rel="mask-icon" href="{{ asset('safari-pinned-tab.svg') }}" color="#5bbad5"/>
+    <meta name="msapplication-TileColor" content="#da532c"/>
+    <meta name="theme-color" content="#ffffff"/>
+    <script>
+
+        var mapzoom = {{ configuration.systemzoom }};
+
+        {% if auth.isLoggedIn %}
+        var loggedin = 1;
+        var priv = {{ user.findPrivileges(auth.userId) }};
+        {% set usercity = user.findCity(auth.userId) %}
+        {% if configuration.cities and configuration.citiesGPS %}
+        var maplat = {{ configuration.citiesGPS[usercity][0] }};
+        var maplon = {{ configuration.citiesGPS[usercity][1] }};
+        {% endif %}
+        {% else %}
+        var loggedin = 0;
+        var priv = 0;
+        var maplat = {{ configuration.systemlat  }};
+        var maplon = {{ configuration.systemlong }};
+        {% endif %}
+
+        var standselected = 0;
+        var creditsystem = {{ creditSystem.isEnabled ? 1 : 0 }};
+        var sms = {{ isSmsSystemEnabled ? 1 : 0 }};
+        var freeTimeSeconds =  {{ configuration.watches.freetime * 60 }}; // and convert to seconds
+        var serverTimeSeconds = {{ date().timestamp }}; // using the server timestamp for time difference calculation
+    </script>
+    <!--
+    {#    <?php if (file_exists('analytics.php')) { #}
+    {#        require 'analytics.php'; #}
+    {#    } #}
+    {#    ?> #}
+    -->
+</head>
+<body>
+{% if auth.isLoggedIn %}
+    <div id="map"></div>
+{% else %}
+    <img src="{{ asset('img/wbsLogo.png') }}" alt="{{ siteName }}"
+         style="margin: auto; display: block; margin-top: 1em;">
+{% endif %}
+
+<div id="sidebar">
+    <div id="overlay"></div>
+    <div class="row text-center" style="margin-top: 0.5em;">
+        <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
+            <ul class="list-inline">
+                <li>
+                    <a href="{{ configuration.systemrules }}" target="_blank">
+                        <span class="glyphicon glyphicon-question-sign"></span>{{ 'Help'|trans }}
+                    </a>
+                </li>
+                {% if auth.isLoggedIn and user.findPrivileges(auth.userId) > 0 %}
+                    <li>
+                        <a href="admin.php">
+                            <span class="glyphicon glyphicon-cog"></span>{{ 'Admin'|trans }}
+                        </a>
+                    </li>
+                {% endif %}
+                {% if auth.isLoggedIn %}
+                    <li>
+                    <span class="glyphicon glyphicon-user"></span><small>{{ user.findUserName(auth.userId) }}</small>
+                    {% if creditSystem.isEnabled %}
+                        (
+                        <span id="usercredit"
+                              title="{{ 'Remaining credit'|trans }}">{{ creditSystem.getUserCredit(auth.userId) }} </span>
+                        {{ creditSystem.getCreditCurrency() }}
+                        <button type="button" class="btn btn-success btn-xs" id="opencredit"
+                                title="{{ 'Add credit'|trans }}">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                        )
+                        <span id="couponblock">
+                                <br/>
+                                <span class="form-inline"><input type="text" class="form-control input-sm" id="coupon"
+                                                                 placeholder="XXXXXX"/>
+                                    <button type="button" class="btn btn-primary btn-sm" id="validatecoupon"
+                                            title="{{ 'Confirm coupon'|trans }}">
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                    </button>
+                                </span>
+                            </span>
+                        </li>
+                    {% endif %}
+                    {% if configuration.cities %}
+                        <li>
+                            <select class="form-control input-sm" id="citychange" title="{{ 'My City'|trans }}">
+                                {% for city in configuration.cities %}
+                                <option value="{{ city }}" {% if usercity == city %}selected{% endif %}>
+                                    {% endfor %}
+                            </select>
+                        </li>
+                    {% endif %}
+                    <li>
+                        <a href="command.php?action=logout" id="logout">
+                            <span class="glyphicon glyphicon-log-out"></span>{{ 'Log out'|trans }}
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
+        </div>
+    </div>
+    {% if auth.isLoggedIn %}
+        <div class="row">
+            <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
+                <h1 class="pull-left">{{ siteName }}</h1>
+            </div>
+            <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
+            </div>
+        </div>
+
+        <h2 id="standname"><select id="stands"></select><span id="standcount"></span></h2>
+        <div id="standinfo"></div>
+        <div id="standbikes"></div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div id="console">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="standactions" class="btn-group">
+                <div class="col-lg-12">
+                    <button class="btn btn-primary" type="button" id="rent"
+                            title="{{ 'Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'|trans }}">
+                        <span class="glyphicon glyphicon-log-out"></span> {{ 'Rent'|trans }} <span
+                                class="bikenumber"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <br/>
+            </div>
+        </div>
+        <div id="rentedbikes"></div>
+        <div class="row">
+            <div class="input-group">
+                <div class="col-lg-12">
+                    <input type="text" name="notetext" id="notetext" class="form-control"
+                           placeholder="{{ 'Describe problem'|trans }}">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="btn-group bicycleactions">
+                <div class="col-lg-12">
+                    <button type="button" class="btn btn-primary" id="return"
+                            title="{{ 'Return this bicycle to the selected stand.'|trans }}">
+                        <span class="glyphicon glyphicon-log-in"></span>
+                        {{ 'Return bicycle'|trans }}
+                        <span class="bikenumber"></span>
+                    </button>
+                    (and <a href="#" id="note"
+                            title="{{ 'Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).'|trans }}">
+                        {{ 'report problem'|trans }}
+                        <span class=" glyphicon glyphicon-exclamation-sign"></span>
+                    </a>)
+                </div>
+            </div>
+        </div>
+
+        <div id="standphoto"></div>
+    {% else %}
+        <div id="loginform">
+            <h3>{{ 'Log in'|trans }}</h3>
+            {% if error and error == 1 %}
+                <div class="alert alert-danger" role="alert">
+                    <h3>{{ 'User / phone number or password incorrect! Please, try again.'|trans }}</h3>
+                </div>
+            {% elseif error and error == 2 %}
+                <div class="alert alert-danger" role="alert">
+                    <h3>{{ 'Session timed out! Please, log in again.'|trans }}</h3>
+                </div>
+            {% endif %}
+            <form method="POST" action="command.php?action=login">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <label for="number" class="control-label">
+                            {% if isSmsSystemEnabled %}{{ 'Phone number:'|trans }}{% else %}{{ 'User number:'|trans }}{% endif %}
+                        </label>
+                        <input type="text" name="number" id="number" class="form-control"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <label for="password">
+                            {{ 'Password:'|trans }}
+                            <small id="passwordresetblock">
+                                (<a id="resetpassword">{{ 'Forgotten? Reset password'|trans }}</a>)
+                            </small>
+                        </label>
+                        <input type="password" name="password" id="password" class="form-control"/>
+                    </div>
+                </div>
+                <br/>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <button type="submit" id="register" class="btn btn-lg btn-block btn-primary">
+                            {{ 'Log in'|trans }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row">
+            <div class="col-lg-12" style="font-size:1.5em;padding-top:30px">
+                <ul class="list-unstyled text-center">
+                    <li><a href="http://wiki.whitebikes.info/index.php/Ako_to_funguje%3F" target="_blank"
+                           class="btn btn-info">Ako
+                            to funguje?</a></li>
+                    <li><a href="http://wiki.whitebikes.info/index.php/Ako_sa_zapoj%C3%ADm%3F" target="_blank"
+                           class="btn btn-info" style="margin-top: 0.5em">Ako sa zapojím?</a></li>
+                    <li><a href="http://wiki.whitebikes.info/index.php/Nie%C4%8Do_mi_nejde" target="_blank"
+                           class="btn btn-info"
+                           style="margin-top: 0.5em">Niečo mi nejde</a></li>
+                    <li><a href="http://wiki.whitebikes.info/index.php/Podrobn%C3%BD_manu%C3%A1l" target="_blank"
+                           class="btn btn-info" style="margin-top: 0.5em">Podrobný manuál</a></li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+</div>
+</body>
+</html>

@@ -1,9 +1,9 @@
 <?php
 
-use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
-use Symfony\Bundle\MonologBundle\MonologBundle;
+declare(strict_types=1);
 
 return [
-    FrameworkBundle::class => ['all' => true],
-    MonologBundle::class => ['all' => true],
+    Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
+    Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
+    \Symfony\Bundle\TwigBundle\TwigBundle::class  => ['all' => true],
 ];

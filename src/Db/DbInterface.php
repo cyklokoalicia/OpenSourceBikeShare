@@ -4,8 +4,6 @@ namespace BikeShare\Db;
 
 interface DbInterface
 {
-    public function connect();
-
     /**
      * @param string $query
      * @param array $params
