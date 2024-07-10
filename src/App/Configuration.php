@@ -21,4 +21,12 @@ class Configuration
     {
         return $this->params[$key] ?? null;
     }
+
+    /**
+     * @deprecated Should migrate to env
+     */
+    public function __call($name, $arguments)
+    {
+        return $this->params[$name] ?? null;
+    }
 }

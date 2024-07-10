@@ -12,6 +12,8 @@ return static function (FrameworkConfig $framework): void {
         ->storageFactoryId('session.storage.factory.php_bridge')
         ->handlerId(null);
 
+    $framework->secret('%env(APP_SECRET)%');
+
     $cache = $framework->cache();
 
     $cache->pool('cache.static')

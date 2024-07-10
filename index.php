@@ -1,5 +1,7 @@
 <?php
 
+die('Deprectaed see HomeController');
+
 require_once 'vendor/autoload.php';
 require_once "actions-web.php";
 

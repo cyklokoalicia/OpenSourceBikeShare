@@ -17,29 +17,51 @@ use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\User\User;
 use Symfony\Component\Dotenv\Dotenv;
 
-$dotenv = new Dotenv();
-$dotenv->setProdEnvs(['prod']);
-$dotenv->bootEnv(__DIR__.'/.env', 'dev', ['test'], true);
+/**
+ * should be removed
+ */
+global $configuration,
+       $sms,
+       $db,
+       $db,
+       $mailer,
+       $smsSender,
+       $codeGenerator,
+       $phonePurifier,
+       $creditSystem,
+       $user,
+       $auth,
+       $rentSystemFactory,
+       $translator,
+       $logger;
 
-$kernel = new Kernel($_ENV['APP_ENV'], (bool) $_ENV['APP_DEBUG']);
-$kernel->boot();
+if (empty($kernel)) {
+    $dotenv = new Dotenv();
+    $dotenv->setProdEnvs(['prod']);
+    $dotenv->bootEnv(__DIR__.'/.env', 'dev', ['test'], true);
+
+    $kernel = new Kernel($_ENV['APP_ENV'], (bool) $_ENV['APP_DEBUG']);
+    $kernel->boot();
+    $container = $kernel->getContainer();
+
+
+    $logger = $kernel->getContainer()->get('logger');
+    Monolog\ErrorHandler::register($logger);
+    #Should be removed in the future. Currently, we are using it to log errors in old code
+    set_error_handler(
+        function ($severity, $message, $file, $line) use ($logger) {
+            $logger->error($message, ['severity' => $severity, 'file' => $file, 'line' => $line]);
+
+            return true;
+        }
+    );
+}
 
 $logger = $kernel->getContainer()->get('logger');
-Monolog\ErrorHandler::register($logger);
-#Should be removed in the future. Currently, we are using it to log errors in old code
-set_error_handler(
-    function ($severity, $message, $file, $line) use ($logger) {
-        $logger->error($message, ['severity' => $severity, 'file' => $file, 'line' => $line]);
-
-        return true;
-    }
-);
-
 $configuration = $kernel->getContainer()->get(Configuration::class);
 $sms = $kernel->getContainer()->get(SmsConnectorInterface::class);
 $db = $kernel->getContainer()->get(DbInterface::class);
 $db = $kernel->getContainer()->get(DbInterface::class);
-$db->connect();
 $mailer = $kernel->getContainer()->get(MailSenderInterface::class);
 $smsSender = $kernel->getContainer()->get(SmsSenderInterface::class);
 $codeGenerator = $kernel->getContainer()->get(CodeGeneratorInterface::class);
@@ -83,7 +105,6 @@ function logrequest($userid)
         $configuration->get('dbname'),
         $logger
     );
-    $localdb->connect();
 
     #TODO does it needed???
     $localdb->setAutocommit(true);
@@ -107,7 +128,6 @@ function logresult($userid, $text)
         $configuration->get('dbname'),
         $logger
     );
-    $localdb->connect();
 
     #TODO does it needed???
     $localdb->setAutocommit(true);
@@ -125,7 +145,7 @@ function logresult($userid, $text)
       $logtext=$text;
       }
 
-    $logtext = strip_tags($localdb->escape($logtext));
+    $logtext = substr(strip_tags($localdb->escape($logtext)), 0, 200);
 
     $result = $localdb->query("INSERT INTO sent SET number='$userid',text='$logtext'");
 }
