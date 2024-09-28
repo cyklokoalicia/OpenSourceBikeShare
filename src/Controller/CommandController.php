@@ -4,6 +4,7 @@ namespace BikeShare\Controller;
 
 use BikeShare\App\Kernel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -27,6 +28,14 @@ class CommandController extends AbstractController
         ob_start();
         require_once $this->getParameter('kernel.project_dir') . '/command.php';
         $content = ob_get_clean();
+
+        #temporary fix for headers
+        $headers = headers_list();
+        foreach ($headers as $key => $header) {
+            if (strpos($header, 'Location') !== false) {
+                return new RedirectResponse('/', 302, $headers);
+            }
+        }
 
         return new Response($content);
     }
