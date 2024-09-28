@@ -30,29 +30,20 @@ class MysqliDb implements DbInterface
      * @var LoggerInterface|null
      */
     private $logger;
-    /**
-     * @var false
-     */
-    private $throwException;
 
     public function __construct(
         $dbserver,
         $dbuser,
         $dbpassword,
         $dbname,
-        LoggerInterface $logger,
-        $throwException = false
+        LoggerInterface $logger
     ) {
         $this->dbserver = $dbserver;
         $this->dbuser = $dbuser;
         $this->dbpassword = $dbpassword;
         $this->dbname = $dbname;
         $this->logger = $logger;
-        $this->throwException = $throwException;
-    }
 
-    public function connect()
-    {
         //in future exception should be thrown
         //mysqli_report(MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT);
         $this->conn = new \mysqli($this->dbserver, $this->dbuser, $this->dbpassword, $this->dbname);
@@ -64,14 +55,10 @@ class MysqliDb implements DbInterface
                     'errno' => $this->conn->connect_errno,
                 ]
             );
-            if ($this->throwException) {
-                throw new \RuntimeException(
-                    'DB connection error!',
-                    !empty($this->conn->connect_errno) ? $this->conn->connect_errno : 0
-                );
-            } else {
-                die(_('DB connection error!'));
-            }
+            throw new \RuntimeException(
+                'DB connection error!',
+                !empty($this->conn->connect_errno) ? $this->conn->connect_errno : 0
+            );
         }
         $this->conn->set_charset("utf8");
         $this->conn->autocommit(false);
@@ -92,11 +79,7 @@ class MysqliDb implements DbInterface
             );
             $this->conn->rollback();
 
-            if ($this->throwException) {
-                throw new \RuntimeException('DB error in : ' . $query);
-            } else {
-                die(_('DB error') . ' ' . $this->conn->error . ' ' . _('in') . ': ' . $query);
-            }
+            throw new \RuntimeException('DB error in : ' . $query);
         }
 
         return new MysqliDbResult($result);

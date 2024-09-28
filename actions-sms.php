@@ -244,7 +244,6 @@ function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
         $configuration->get('dbname'),
         $logger
     );
-    $localdb->connect();
 
     #TODO does it needed???
     $localdb->setAutocommit(true);

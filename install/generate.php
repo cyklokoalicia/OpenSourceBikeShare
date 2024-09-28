@@ -22,7 +22,6 @@ $logger = new Logger('BikeShare');
 $logger->pushHandler(new RotatingFileHandler(__DIR__ . '/../var/log/log.log', 30, Logger::WARNING));
 ErrorHandler::register($logger);
 $db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
-$db->connect();
 
 // create new PDF document
 $pdf = new TCPDF('L', PDF_UNIT, 'A5', true, 'UTF-8', false);

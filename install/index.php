@@ -222,7 +222,6 @@ file_put_contents($configfilename,$newconfig);
  * @var DbInterface $db
  */
 $db = new MysqliDb($_POST["dbserver"], $_POST["dbuser"], $_POST["dbpassword"], $_POST["dbname"], $logger);
-$db->connect();
 $sql=file_get_contents("../docker-data/mysql/create-database.sql");
 $sql=explode(";",$sql);
 foreach ($sql as $value)
@@ -253,7 +252,6 @@ require($configfilename);
  * @var DbInterface $db
  */
 $db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
-$db->connect();
 $result=$db->query("REPLACE INTO users SET userName='".$_POST["username"]."',password=SHA2('".$_POST["password"]."',512),mail='".$_POST["email"]."',number='".$_POST["phone"]."',privileges=7");
 $userid=$db->getLastInsertId();
 if (!$connectors["sms"])
@@ -277,7 +275,6 @@ $db->commit();
  * @var DbInterface $db
  */
 $db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
-$db->connect();
 $stands=explode(",",$_POST["stands"]);
 foreach ($stands as $stand)
    {
@@ -343,7 +340,6 @@ if ($connectors["sms"]):
  * @var DbInterface $db
  */
 $db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
-$db->connect();
 ?>
       <h2>Set system options</h2>
 <?php
@@ -415,7 +411,6 @@ foreach ($configfile as $line)
  * @var DbInterface $db
  */
 $db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
-$db->connect();
 /**
  * @var CreditSystemInterface $creditSystem
  */
