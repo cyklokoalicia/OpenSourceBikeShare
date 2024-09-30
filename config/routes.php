@@ -13,6 +13,8 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\AdminController::class, 'index']);
     $routes->add('register', '/register.php')
         ->controller([\BikeShare\Controller\RegisterController::class, 'index']);
+    $routes->add('sms_request_old', '/sms/receive.php')
+        ->controller([\BikeShare\Controller\SmsRequestController::class, 'index']);
     $routes->add('sms_request', '/receive.php')
         ->controller([\BikeShare\Controller\SmsRequestController::class, 'index']);
     $routes->add('agree', '/agree.php')

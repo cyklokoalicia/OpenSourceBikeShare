@@ -14,7 +14,7 @@ return [
     'Forgotten? Reset password' => '',
     'Log in' => 'Prihlásiť',
     'Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.' => '',
-    'Rent' => '',
+    'Rent' => 'Prenajom',
     'Describe problem' => '',
     'Return this bicycle to the selected stand.' => '',
     'Return bicycle' => '',

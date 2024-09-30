@@ -106,7 +106,7 @@
                             </span>
                         </li>
                     {% endif %}
-                    {% if configuration.cities %}
+                    {% if configuration.cities and configuration.cities|length > 1 %}
                         <li>
                             <select class="form-control input-sm" id="citychange" title="{{ 'My City'|trans }}">
                                 {% for city in configuration.cities %}
