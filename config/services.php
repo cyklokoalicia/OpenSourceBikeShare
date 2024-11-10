@@ -50,6 +50,7 @@ return static function (ContainerConfigurator $container): void {
             '../src/SmsConnector/SmsGateway/SmsGateway.php',
             '../src/App/Configuration.php',
             '../src/App/Kernel.php',
+            '../src/App/Entity',
         ]);
 
     $services->get(MysqliDb::class)

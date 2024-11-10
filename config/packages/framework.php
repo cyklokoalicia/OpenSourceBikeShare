@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Config\FrameworkConfig;
 
 return static function (FrameworkConfig $framework): void {
@@ -9,8 +10,12 @@ return static function (FrameworkConfig $framework): void {
         ->throw(false);
 
     $framework->session()
-        ->storageFactoryId('session.storage.factory.php_bridge')
-        ->handlerId(null);
+        ->enabled(true)
+        ->handlerId(null)
+        ->cookieSecure('auto')
+        ->cookieSamesite(Cookie::SAMESITE_LAX)
+        ->storageFactoryId('session.storage.factory.native')
+    ;
 
     $framework->secret('%env(APP_SECRET)%');
 

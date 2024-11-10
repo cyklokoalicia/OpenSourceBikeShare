@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container mt-5">
+        {% if error %}
+            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        <form action="{{ path('login') }}" method="post" class="form-signin">
+            <div class="form-group">
+                <label for="username">
+                    {% if isSmsSystemEnabled %}{{ 'Phone number:'|trans }}{% else %}{{ 'User number:'|trans }}{% endif %}
+                </label>
+                <input type="text" id="username" name="_username" value="{{ last_username }}" class="form-control" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    {{ 'Password:'|trans }}
+                </label>
+                <input type="password" id="password" name="_password" class="form-control" required>
+            </div>
+
+            <div class="form-group form-check">
+                <input type="checkbox" id="remember_me" name="_remember_me" class="form-check-input" checked>
+                <label class="form-check-label" for="remember_me">
+                    {{ 'Keep me logged in:'|trans }}
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                {{ 'Login'|trans }}
+            </button>
+        </form>
+    </div>
+{% endblock %}

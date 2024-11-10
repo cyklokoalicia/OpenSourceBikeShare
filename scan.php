@@ -7,7 +7,6 @@ require_once 'actions-qrcode.php';
 
 $auth->refreshSession();
 $userid = $auth->getUserId();
-$session = $auth->getSessionId();
 
 if (!$auth->isLoggedIn()) {
     response("<h3>" . _('You are not logged in.') . "</h3>", ERROR);

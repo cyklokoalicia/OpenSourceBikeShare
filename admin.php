@@ -63,7 +63,7 @@ if ($creditSystem->isEnabled()) {
             <li><a href="<?= $configuration->get('systemURL'); ?>"><?= _('Map'); ?></a></li>
             <li class="active"><a href="<?= $configuration->get('systemURL'); ?>admin.php"><?= _('Admin'); ?></a></li>
 <?php if ($auth->isLoggedIn()): ?>
-            <li><a href="command.php?action=logout" id="logout"><?= _('Log out'); ?></a></li>
+            <li><a href="/logout" id="logout"><?= _('Log out'); ?></a></li>
 <?php endif; ?>
           </ul>
         </div><!--/.nav-collapse -->
