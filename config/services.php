@@ -37,7 +37,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set(DotenvDumpCommand::class)
         ->args([
-            param('kernel.project_dir') . '/.env',
+            param('kernel.project_dir'),
             param('kernel.environment'),
         ]);
 
