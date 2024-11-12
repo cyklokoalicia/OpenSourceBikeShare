@@ -59,6 +59,10 @@ return function (SecurityConfig $security) {
         ->accessControl()
         ->path('^/agree.php$')
         ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
+    $security
+        ->accessControl()
+        ->path('^/resetPassword$')
+        ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
 
     $security
         ->accessControl()

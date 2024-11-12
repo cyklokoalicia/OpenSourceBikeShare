@@ -47,7 +47,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     {
         $identifier = $this->phonePurifier->purify($identifier);
         $result = $this->db->query(
-            "SELECT userId, number, password, city, userName, privileges FROM users WHERE number='$identifier'"
+            "SELECT userId, number, mail, password, city, userName, privileges FROM users WHERE number='$identifier'"
         );
         if (!$result || $result->rowCount() == 0) {
             throw new UserNotFoundException(sprintf('Unknown user %s', $identifier));
@@ -58,6 +58,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
         return new User(
             (int)$row['userId'],
             $row['number'],
+            $row['mail'],
             $row['password'],
             $row['city'],
             $row['userName'],
@@ -102,8 +103,18 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
-        // TODO: when hashed passwords are in use, this method should:
-        // 1. persist the new password in the user storage
-        // 2. update the $user object with $user->setPassword($newHashedPassword);
+        $this->db->query(
+            "UPDATE users SET password='$newHashedPassword' WHERE number='" . $user->getNumber() . "'"
+        );
+
+        $user = new User(
+            $user->getUserId(),
+            $user->getNumber(),
+            $user->getEmail(),
+            $newHashedPassword,
+            $user->getCity(),
+            $user->getUsername(),
+            $user->getPrivileges()
+        );
     }
 }

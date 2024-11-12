@@ -23,5 +23,6 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\SecurityController::class, 'login']);
     $routes->add('logout', '/logout')
         ->controller([\BikeShare\Controller\SecurityController::class, 'logout']);
-
+    $routes->add('reset_password', '/resetPassword')
+        ->controller([\BikeShare\Controller\SecurityController::class, 'resetPassword']);
 };

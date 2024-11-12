@@ -17,6 +17,9 @@
             <div class="form-group">
                 <label for="password">
                     {{ 'Password:'|trans }}
+                    <small>
+                        (<a href="{{ path('reset_password') }}">{{ 'Forgotten? Reset password'|trans }}</a>)
+                    </small>
                 </label>
                 <input type="password" id="password" name="_password" class="form-control" required>
             </div>

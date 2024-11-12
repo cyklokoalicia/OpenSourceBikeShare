@@ -19,6 +19,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct(
         int $userId,
         string $number,
+        string $email,
         string $password,
         string $city,
         string $userName,
@@ -26,6 +27,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     ) {
         $this->userId = $userId;
         $this->number = $number;
+        $this->email = $email;
         $this->password = $password;
         $this->city = $city;
         $this->userName = $userName;
@@ -40,6 +42,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getNumber(): string
     {
         return $this->number;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
     }
 
     public function getPrivileges(): int

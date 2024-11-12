@@ -32,9 +32,6 @@ switch($action)
       $existing=trim($_GET["existing"]);
       register($number,$smscode,$checkcode,$fullname,$useremail,$password,$password2,$existing);
       break;
-   case "resetpassword":
-      resetpassword($_GET["number"]);
-      break;
    case "list":
       $stand=trim($_GET["stand"]);
       listbikes($stand);
