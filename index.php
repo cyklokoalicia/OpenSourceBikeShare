@@ -109,7 +109,7 @@ if ($auth->isLoggedIn()) {
 		echo '</select></li>';
 	}
 	
-	echo '<li><a href="command.php?action=logout" id="logout"><span class="glyphicon glyphicon-log-out"></span> ', _('Log out'), '</a></li>';
+	echo '<li><a href="/logout" id="logout"><span class="glyphicon glyphicon-log-out"></span> ', _('Log out'), '</a></li>';
 }
 ?>
    </ul>

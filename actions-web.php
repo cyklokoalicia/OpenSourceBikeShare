@@ -516,38 +516,6 @@ function changecity($userid, $city)
 }
 
 
-function resetpassword($number)
-{
-    global $db, $mailer;
-
-    $number = $db->escape(trim($number));
-
-   $result = $db->query("SELECT mail,userName FROM users WHERE number='$number'");
-    if (!$result->num_rows) {
-        response(_('No such user found.'), 1);
-    }
-
-    $row = $result->fetch_assoc();
-    $email = $row['mail'];
-    $username = $row['userName'];
-
-    $subject = _('Password reset');
-
-    mt_srand(crc32(microtime()));
-    $password = substr(md5(mt_rand() . microtime() . $email), 0, 8);
-
-    $result = $db->query("UPDATE users SET password=SHA2('$password',512) WHERE number='" . $number . "'");
-
-    $names = preg_split("/[\s,]+/", $username);
-    $firstname = $names[0];
-    $message = _('Hello') . ' ' . $firstname . ",\n\n" .
-    _('Your password has been reset successfully.') . "\n\n" .
-    _('Your new password is:') . "\n" . $password;
-
-    $mailer->sendMail($email, $subject, $message);
-    response(_('Your password has been reset successfully.') . ' ' . _('Check your email.'));
-}
-
 function mapgetmarkers($userId)
 {
     global $db, $configuration, $user;

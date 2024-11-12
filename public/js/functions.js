@@ -11,20 +11,12 @@ $(document).ready(function () {
     $('.bicycleactions').hide();
     $('#notetext').hide();
     $('#couponblock').hide();
-    $('#passwordresetblock').hide();
     $("#rent").hide();
     $(document).ajaxStart(function () {
         $('#overlay').show();
     });
     $(document).ajaxStop(function () {
         $('#overlay').hide();
-    });
-    $("#password").focus(function () {
-        $('#passwordresetblock').show();
-    });
-    $("#resetpassword").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'password-reset');
-        resetpassword();
     });
     $("#rent").click(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-rent');
@@ -502,20 +494,6 @@ function validatecoupon() {
             }, 2500);
         }
     });
-}
-
-function resetpassword() {
-    $('#passwordresetblock').hide();
-    if (sms == 0 && $('#number').val() > 0) {
-        $.ajax({
-            url: "command.php?action=resetpassword&number=" + $('#number').val()
-        }).done(function (jsonresponse) {
-            jsonobject = $.parseJSON(jsonresponse);
-            handleresponse(jsonobject);
-        });
-    } else if (sms == 1 && $('#number').val() > 0) {
-        window.location = "register.php#reset" + $('#number').val();
-    }
 }
 
 function attachbicycleinfo(element, attachto) {

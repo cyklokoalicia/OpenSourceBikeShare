@@ -6,7 +6,6 @@ require_once 'vendor/autoload.php';
 require_once 'actions-web.php';
 
 $userid = $auth->getUserId();
-$session = $auth->getSessionId();
 
 /**
  * @var RentSystemInterface $rentSystem
@@ -32,18 +31,6 @@ switch($action)
       $password2=trim($_GET["password2"]);
       $existing=trim($_GET["existing"]);
       register($number,$smscode,$checkcode,$fullname,$useremail,$password,$password2,$existing);
-      break;
-   case "login":
-      $number=trim($_POST["number"]);
-      $number = $phonePurifier->purify($number);
-      $password=trim($_POST["password"]);
-      $auth->login($number,$password);
-      break;
-   case "logout":
-      $auth->logout();
-      break;
-   case "resetpassword":
-      resetpassword($_GET["number"]);
       break;
    case "list":
       $stand=trim($_GET["stand"]);

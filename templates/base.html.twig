@@ -9,7 +9,7 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">
+    <a class="navbar-brand" href="/">
         <img src="{{ asset('images/logo_small.svg') }}" width="30" height="30" class="d-inline-block align-top" alt="Logo">
         {{ siteName }}
     </a>
@@ -19,22 +19,26 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-            <li class="nav-item active">
-                <a class="nav-link" href="https://whitebikes.info/">Home <span class="sr-only">(current)</span></a>
+            <li class="nav-item">
+                <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_to_funguje%3F">{{ 'How it works'|trans }}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="https://wiki.whitebikes.info/wiki/Ako_to_funguje%3F">How it works</a>
+                <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_sa_zapoj%C3%ADm%3F">{{ 'Get Involved'|trans }}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="https://wiki.whitebikes.info/wiki/Ako_sa_zapoj%C3%ADm%3F">Get Involved</a>
+                <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Nie%C4%8Do_mi_nejde">{{ 'Help'|trans }}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="https://wiki.whitebikes.info/wiki/Nie%C4%8Do_mi_nejde">Help</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="https://wiki.whitebikes.info/wiki/Podrobn%C3%BD_manu%C3%A1l">Manual</a>
+                <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Podrobn%C3%BD_manu%C3%A1l">{{ 'Manual'|trans }}</a>
             </li>
         </ul>
+        {% if app.user %}
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('logout') }}">{{ 'Logout'|trans }}</a>
+            </li>
+        </ul>
+        {% endif %}
     </div>
 </nav>
 
