@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\BikeShare\Mail;
 
 use BikeShare\Mail\DebugMailSender;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class DebugMailSenderTest extends TestCase
 {
@@ -12,8 +15,13 @@ class DebugMailSenderTest extends TestCase
         $recipient = 'recipient';
         $subject = 'subject';
         $message = 'message';
-        $mailer = new DebugMailSender();
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $mailer = new DebugMailSender($loggerMock);
+
+        $loggerMock->expects($this->once())
+            ->method('debug')
+            ->with('Sending email', compact('recipient', 'subject', 'message'));
+
         $mailer->sendMail($recipient, $subject, $message);
-        $this->expectOutputString($recipient . ' | ' . $subject . ' | ' . $message . PHP_EOL);
     }
 }

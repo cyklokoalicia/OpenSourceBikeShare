@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use BikeShare\App\Configuration;
+use BikeShare\App\EventListener\ErrorListener;
 use BikeShare\Credit\CodeGenerator\CodeGenerator;
 use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
 use BikeShare\Credit\CreditSystem;
@@ -41,6 +42,14 @@ return static function (ContainerConfigurator $container): void {
             param('kernel.environment'),
         ]);
 
+    $services->set('exception_listener', ErrorListener::class)
+        ->args([
+            param('kernel.error_controller'),
+            service('logger'),
+            param('kernel.debug'),
+        ])
+        ->tag('kernel.event_subscriber');
+
     $services->set(Configuration::class)
         ->args([__DIR__ . '/../config.php']);
 
@@ -49,6 +58,7 @@ return static function (ContainerConfigurator $container): void {
             '../src/Db/MysqliDbResult.php',
             '../src/SmsConnector/SmsGateway/SmsGateway.php',
             '../src/App/Configuration.php',
+            '../src/App/EventListener/ErrorListener.php',
             '../src/App/Kernel.php',
             '../src/App/Entity',
         ]);

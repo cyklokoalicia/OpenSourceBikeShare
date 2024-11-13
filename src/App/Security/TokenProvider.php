@@ -54,8 +54,7 @@ class TokenProvider implements TokenProviderInterface
 
         $token = new PersistentToken(
             $currentToken->getClass(),
-            method_exists($currentToken, 'getUserIdentifier') ?
-                $currentToken->getUserIdentifier() : $currentToken->getUsername(),
+            $currentToken->getUserIdentifier(),
             $series,
             $tokenValue,
             $lastUsed
@@ -83,7 +82,7 @@ class TokenProvider implements TokenProviderInterface
         $this->db->query(
             "INSERT INTO remember_me_tokens (class, username, series, value, lastUsed) 
             VALUES ('{$token->getClass()}',
-                    '{$token->getUsername()}',
+                    '{$token->getUserIdentifier()}',
                     '{$token->getSeries()}',
                     '{$token->getTokenValue()}',
                     '{$token->getLastUsed()->format('Y-m-d H:i:s')}')"
