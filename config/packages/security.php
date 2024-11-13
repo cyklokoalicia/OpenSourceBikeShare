@@ -27,6 +27,8 @@ return function (SecurityConfig $security) {
     $mainFirewall->anonymous();
     $mainFirewall
         ->formLogin()
+        ->usernameParameter('number')
+        ->passwordParameter('password')
         ->loginPath('login')
         ->checkPath('login');
     $mainFirewall

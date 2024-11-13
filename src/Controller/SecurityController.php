@@ -58,7 +58,7 @@ class SecurityController extends AbstractController
         TranslatorInterface $translator
     ) {
         if ($request->isMethod('POST')) {
-            $number = $request->request->get('_username');
+            $number = $request->request->get('number');
 
             try {
                 $user = $userProvider->loadUserByIdentifier($number);
