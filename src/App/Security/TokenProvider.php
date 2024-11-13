@@ -25,7 +25,7 @@ class TokenProvider implements TokenProviderInterface
     {
         if (!isset($this->tokens[$series])) {
             $result = $this->db->query(
-                "SELECT * FROM remember_me_tokens WHERE series='$series'"
+                "SELECT * FROM remember_me_tokens WHERE series='{$this->db->escape($series)}'"
             );
             if (!$result || $result->rowCount() == 0) {
                 throw new TokenNotFoundException('No token found.');
@@ -68,7 +68,7 @@ class TokenProvider implements TokenProviderInterface
     public function deleteTokenBySeries(string $series)
     {
         $this->db->query(
-            "DELETE FROM remember_me_tokens WHERE series='$series'"
+            "DELETE FROM remember_me_tokens WHERE series='{$this->db->escape($series)}'"
         );
 
         unset($this->tokens[$series]);
@@ -81,10 +81,10 @@ class TokenProvider implements TokenProviderInterface
     {
         $this->db->query(
             "INSERT INTO remember_me_tokens (class, username, series, value, lastUsed) 
-            VALUES ('{$token->getClass()}',
-                    '{$token->getUserIdentifier()}',
-                    '{$token->getSeries()}',
-                    '{$token->getTokenValue()}',
+            VALUES ('{$this->db->escape($token->getClass())}',
+                    '{$this->db->escape($token->getUserIdentifier())}',
+                    '{$this->db->escape($token->getSeries())}',
+                    '{$this->db->escape($token->getTokenValue())}',
                     '{$token->getLastUsed()->format('Y-m-d H:i:s')}')"
         );
 
