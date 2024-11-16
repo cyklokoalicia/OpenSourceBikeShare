@@ -6,8 +6,10 @@
     <title>{% block title %}{{ siteName }}{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    {% block css %}{% endblock %}
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="/">
         <img src="{{ asset('images/logo_small.svg') }}" width="30" height="30" class="d-inline-block align-top" alt="Logo">
@@ -19,18 +21,20 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_to_funguje%3F">{{ 'How it works'|trans }}</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_sa_zapoj%C3%ADm%3F">{{ 'Get Involved'|trans }}</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Nie%C4%8Do_mi_nejde">{{ 'Help'|trans }}</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Podrobn%C3%BD_manu%C3%A1l">{{ 'Manual'|trans }}</a>
-            </li>
+            {% block menuItems %}
+                <li class="nav-item">
+                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_to_funguje%3F">{{ 'How it works'|trans }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_sa_zapoj%C3%ADm%3F">{{ 'Get Involved'|trans }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Nie%C4%8Do_mi_nejde">{{ 'Help'|trans }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Podrobn%C3%BD_manu%C3%A1l">{{ 'Manual'|trans }}</a>
+                </li>
+            {% endblock %}
         </ul>
         {% if app.user %}
         <ul class="navbar-nav ml-auto">
@@ -42,12 +46,26 @@
     </div>
 </nav>
 
-<div class="container">
+<div class="container flex-grow-1">
     {% block body %}{% endblock %}
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<footer class="footer mt-auto">
+    <div class="card">
+        <div class="card-footer">
+            <div>
+                <i class="fas fa-copyright"></i> {{ "now"|date("Y") }} <a href="{{ path('home') }}">{{ siteName }}</a>
+            </div>
+            <div>
+                <strong>{{ 'Privacy policy:'|trans }}</strong> {{ 'We will use your details for'|trans }} {{ siteName }} - {{ 'related activities only'|trans }}.
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

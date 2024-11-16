@@ -102,13 +102,14 @@ CREATE TABLE `sent` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `sessions`;
-CREATE TABLE `sessions` (
-  `userId` int(10) unsigned NOT NULL,
-  `sessionId` varchar(256) CHARACTER SET latin1 NOT NULL,
-  `timeStamp` varchar(256) CHARACTER SET latin1 NOT NULL,
-  UNIQUE KEY `userId` (`userId`),
-  KEY `sessionId` (`sessionId`)
+DROP TABLE IF EXISTS `remember_me_token`;
+CREATE TABLE `remember_me_token` (
+  `series` varchar(88) NOT NULL,
+  `value` varchar(88) NOT NULL,
+  `class` varchar(255) NOT NULL,
+  `username` varchar(255) NOT NULL,
+  `lastUsed` TIMESTAMP NOT NULL,
+  PRIMARY KEY (`series`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

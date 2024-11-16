@@ -9,7 +9,9 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\CommandController::class, 'index']);
     $routes->add('scan', '/scan.php/{action}/{id}')
         ->controller([\BikeShare\Controller\ScanController::class, 'index']);
-    $routes->add('admin', '/admin.php')
+    $routes->add('admin_old', '/admin.php')
+        ->controller([\BikeShare\Controller\AdminController::class, 'index']);
+    $routes->add('admin', '/admin')
         ->controller([\BikeShare\Controller\AdminController::class, 'index']);
     $routes->add('register', '/register.php')
         ->controller([\BikeShare\Controller\RegisterController::class, 'index']);

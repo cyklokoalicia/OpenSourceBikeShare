@@ -71,7 +71,7 @@
                 </li>
                 {% if auth.isLoggedIn and user.findPrivileges(auth.userId) > 0 %}
                     <li>
-                        <a href="admin.php">
+                        <a href="/admin">
                             <span class="glyphicon glyphicon-cog"></span>{{ 'Admin'|trans }}
                         </a>
                     </li>

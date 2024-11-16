@@ -1,33 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Controller;
 
-use BikeShare\App\Kernel;
+use BikeShare\App\Configuration;
+use BikeShare\Credit\CreditSystemInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminController extends AbstractController
 {
-    private Kernel $kernel;
-
-    public function __construct(Kernel $kernel)
-    {
-        $this->kernel = $kernel;
-    }
-
     /**
-     * @Route("/admin.php", name="admin")
+     * @Route("/admin", name="admin")
+     * @Route("/admin.php", name="admin_old")
      */
     public function index(
-        Request $request
+        Request $request,
+        Configuration $configuration,
+        CreditSystemInterface $creditSystem,
+        LoggerInterface $logger
     ): Response {
-        $kernel = $this->kernel;
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $logger->info(
+                'User tried to access admin page without permission',
+                [
+                    'user' => $this->getUser()->getNumber(),
+                    'ip' => $request->getClientIp(),
+                ]
+            );
 
-        ob_start();
-        require_once $this->getParameter('kernel.project_dir') . '/admin.php';
-        $content = ob_get_clean();
+            return $this->redirectToRoute('login');
+        }
 
-        return new Response($content);
+        return $this->render(
+            'admin/index.html.twig',
+            [
+                'configuration' => $configuration,
+                'creditSystem' => $creditSystem,
+            ]
+        );
     }
 }
