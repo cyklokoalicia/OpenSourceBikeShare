@@ -90,7 +90,7 @@ if ($auth->isLoggedIn()) {
       <li><a href="<?= $configuration->get('systemrules'); ?>" target="_blank"><span class="glyphicon glyphicon-question-sign"></span><?= _('Help'); ?></a></li>
 <?php
 if ($auth->isLoggedIn() && $user->findPrivileges($userid) > 0) {
-    echo '<li><a href="admin.php"><span class="glyphicon glyphicon-cog"></span> ', _('Admin'), '</a></li>';
+    echo '<li><a href="/admin"><span class="glyphicon glyphicon-cog"></span> ', _('Admin'), '</a></li>';
 }
 
 if ($auth->isLoggedIn()) {

@@ -1,0 +1,177 @@
+{% extends 'base.html.twig' %}
+
+{% block menuItems %}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ path('home') }}">{{ 'Map'|trans }}</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ path('admin') }}">{{ 'Admin'|trans }}</a>
+    </li>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="//cdn.datatables.net/2.1.8/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block title %}{{ 'Administration'|trans }}{% endblock %}
+
+{% block scripts %}
+    <script src="{{ asset('js/admin.js') }}"></script>
+    <script src="{{ asset('js/translations.php') }}"></script>
+    <script src="//cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+    <script>
+        {% if creditSystem.isEnabled %}
+        var creditenabled = 1;
+        var creditcurrency = '{{ creditSystem.getCreditCurrency() }}';
+        {% else %}
+        var creditenabled = 0;
+        {% endif %}
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1 class="display-4">{{ 'Administration'|trans }}</h1>
+
+        <div role="tabpanel">
+
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="nav-item active">
+                    <a class="nav-link" href="#fleet" aria-controls="fleet" role="tab" data-toggle="tab">
+                        <span class="fas fa-lock" aria-hidden="true"></span> {{ 'Fleet'|trans }}
+                    </a>
+                </li>
+                <li role="presentation" class="nav-item">
+                    <a class="nav-link" href="#stands" aria-controls="stands" role="tab" data-toggle="tab">
+                        <span class="fas fa-map-marker" aria-hidden="true"></span> {{ 'Stands'|trans }}
+                    </a>
+                </li>
+                <li role="presentation" class="nav-item">
+                    <a class="nav-link" href="#users" aria-controls="users" role="tab" data-toggle="tab">
+                        <span class="fas fa-user" aria-hidden="true"></span> {{ 'Users'|trans }}
+                    </a>
+                </li>
+                {% if creditSystem.isEnabled %}
+                    <li role="presentation" class="nav-item">
+                        <a class="nav-link" href="#credit" aria-controls="credit" role="tab" data-toggle="tab">
+                            <span class="fas fa-euro-sign" aria-hidden="true"></span> {{ 'Credit system'|trans }}
+                        </a>
+                    </li>
+                {% endif %}
+                <li role="presentation" class="nav-item">
+                    <a class="nav-link" href="#reports" aria-controls="reports" role="tab" data-toggle="tab">
+                        <span class="fas fa-signal" aria-hidden="true"></span> {{ 'Reports'|trans }}
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="fleet">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <input type="text" name="adminparam" id="adminparam" class="form-control">
+                            <button class="btn btn-outline-primary" type="button" id="where" title="{{ 'Display the bike stand location or name of person using it.'|trans }}">
+                                <span class="fas fa-map-marker"></span> {{ 'Where is?'|trans }}
+                            </button>
+                            <button type="button" id="revert" class="btn btn-outline-primary" title="{{ 'Be careful! Revert accidentally rented bike in case of mistake or misread bike number.'|trans }}">
+                                <span class="fas fa-fast-backward"></span> {{ 'Revert'|trans }}
+                            </button>
+                            <button type="button" id="last" class="btn btn-outline-primary" title="{{ 'Display network usage (blank) or history of bike usage (number entered).'|trans }}">
+                                <span class="fas fa-signal"></span> {{ 'Last usage'|trans }}
+                            </button>
+                            <div id="fleetconsole">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="stands">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div id="standsconsole"></div>
+                        </div>
+                    </div>
+                </div>
+                {% if creditSystem.isEnabled %}
+                    <div role="tabpanel" class="tab-pane" id="credit">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <button type="button" id="listcoupons" class="btn btn-outline-primary" title="{{ 'Display existing coupons.'|trans }}">
+                                    <span class="fas fa-list-alt"></span> {{ 'List coupons'|trans }}
+                                </button>
+                                <button type="button" id="generatecoupons1" class="btn btn-success" title="{{ 'Generate new coupons.'|trans }}">
+                                    <span class="fas fa-plus"></span> {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
+                                </button>
+                                <button type="button" id="generatecoupons2" class="btn btn-success" title="{{ 'Generate new coupons.'|trans }}">
+                                    <span class="fas fa-plus"></span> {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() * 5 }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
+                                </button>
+                                <button type="button" id="generatecoupons3" class="btn btn-success" title="{{ 'Generate new coupons.'|trans }}">
+                                    <span class="fas fa-plus"></span> {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() * 10 }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
+                                </button>
+                                <div id="creditconsole"></div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <div role="tabpanel" class="tab-pane" id="users">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <button type="button" id="userlist" class="btn btn-outline-primary" title="{{ 'Show list of users.'|trans }}">
+                                <span class="fas fa-user"></span> {{ 'User list'|trans }}
+                            </button>
+                        </div>
+                    </div>
+                    <form class="container" id="edituser">
+                        <div class="form-group">
+                            <label for="username" class="control-label">{{ 'Fullname:'|trans }}</label>
+                            <input type="text" name="username" id="username" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">{{ 'Email:'|trans }}</label>
+                            <input type="text" name="email" id="email" class="form-control"/>
+                        </div>
+                        {% if configuration.get('connectors')['sms'] %}
+                            <div class="form-group">
+                                <label for="phone">{{ 'Phone number:'|trans }}</label>
+                                <input type="text" name="phone" id="phone" class="form-control"/>
+                            </div>
+                        {% endif %}
+                        <div class="form-group">
+                            <label for="privileges">{{ 'Privileges:'|trans }}</label>
+                            <input type="text" name="privileges" id="privileges" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="limit">{{ 'Bike limit:'|trans }}</label>
+                            <input type="text" name="limit" id="limit" class="form-control"/>
+                        </div>
+                        <input type="hidden" name="userid" id="userid" value=""/>
+                        <button type="button" id="saveuser" class="btn btn-primary">{{ 'Save'|trans }}</button>
+                        or
+                        <button type="button" id="addcredit" class="btn btn-success">{{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() }} {{ creditSystem.getCreditCurrency() }}</button>
+                        <button type="button" id="addcredit2" class="btn btn-success">{{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() * 5 }} {{ creditSystem.getCreditCurrency() }}</button>
+                        <button type="button" id="addcredit3" class="btn btn-success">{{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() * 10 }} {{ creditSystem.getCreditCurrency() }}</button>
+                    </form>
+                    <div id="userconsole"></div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="reports">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <button type="button" id="usagestats" class="btn btn-outline-primary" title="{{ 'Show usage stats by day.'|trans }}">
+                                <span class="fas fa-road"></span> {{ 'Daily stats'|trans }}
+                            </button>
+                            <button type="button" id="userstats" class="btn btn-outline-primary" title="{{ 'Show user stats.'|trans }}">
+                                <span class="fas fa-road"></span> {{ 'User stats'|trans }}
+                            </button>
+                            <div id="reportsconsole"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}

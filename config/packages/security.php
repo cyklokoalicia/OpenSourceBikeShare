@@ -45,6 +45,13 @@ return function (SecurityConfig $security) {
             ]
         );
 
+    $security->roleHierarchy('ROLE_ADMIN', ['ROLE_USER']);
+    $security->roleHierarchy('ROLE_SUPER_ADMIN', ['ROLE_ADMIN']);
+
+    $security->accessControl()
+        ->path('^/admin')
+        ->roles(['ROLE_ADMIN']);
+
     $security
         ->accessControl()
         ->path('^/login$')
