@@ -111,4 +111,7 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(CodeGeneratorInterface::class, CodeGenerator::class);
 
     $services->alias(PhonePurifierInterface::class, PhonePurifier::class);
+
+    $services->load('BikeShare\\EventListener\\', '../src/EventListener')
+        ->tag('kernel.event_listener');
 };

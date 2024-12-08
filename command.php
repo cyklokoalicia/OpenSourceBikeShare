@@ -84,13 +84,6 @@ switch($action)
       checkbikeno($bikeno); checkstandname($stand);
       $rentSystem->returnBike($userid, $bikeno, $stand, $note, TRUE);
       break;
-   case "where":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      $bikeno=trim($_GET["bikeno"]);
-      checkbikeno($bikeno);
-      where($userid,$bikeno);
-      break;
    case "removenote":
       logrequest($userid,$action);
       $auth->refreshSession();
@@ -106,18 +99,6 @@ switch($action)
       checkprivileges($userid);
       checkbikeno($bikeno);
       revert($userid,$bikeno);
-      break;
-   case "last":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      checkprivileges($userid);
-      if ($_GET["bikeno"])
-         {
-         $bikeno=trim($_GET["bikeno"]);
-         checkbikeno($bikeno);
-         last($userid,$bikeno);
-         }
-      else last($userid);
       break;
    case "stands": #"operationId": "stand.get",
       logrequest($userid,$action);
