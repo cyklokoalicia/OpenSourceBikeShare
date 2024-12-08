@@ -27,4 +27,15 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\SecurityController::class, 'logout']);
     $routes->add('reset_password', '/resetPassword')
         ->controller([\BikeShare\Controller\SecurityController::class, 'resetPassword']);
+
+    $routes->add('api_bike_index', '/api/bike')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'index']);
+    $routes->add('api_bike_item', '/api/bike/{bikeNumber}')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'item']);
+    $routes->add('api_bike_last_usage', '/api/bikeLastUsage/{bikeNumber}')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'lastUsage']);
+
 };

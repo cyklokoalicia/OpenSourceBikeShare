@@ -69,23 +69,7 @@
             <!-- Tab panes -->
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="fleet">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <input type="text" name="adminparam" id="adminparam" class="form-control">
-                            <button class="btn btn-outline-primary" type="button" id="where" title="{{ 'Display the bike stand location or name of person using it.'|trans }}">
-                                <span class="fas fa-map-marker"></span> {{ 'Where is?'|trans }}
-                            </button>
-                            <button type="button" id="revert" class="btn btn-outline-primary" title="{{ 'Be careful! Revert accidentally rented bike in case of mistake or misread bike number.'|trans }}">
-                                <span class="fas fa-fast-backward"></span> {{ 'Revert'|trans }}
-                            </button>
-                            <button type="button" id="last" class="btn btn-outline-primary" title="{{ 'Display network usage (blank) or history of bike usage (number entered).'|trans }}">
-                                <span class="fas fa-signal"></span> {{ 'Last usage'|trans }}
-                            </button>
-                            <div id="fleetconsole">
-
-                            </div>
-                        </div>
-                    </div>
+                    {% include ('admin/fleet.html.twig') %}
                 </div>
                 <div role="tabpanel" class="tab-pane" id="stands">
                     <div class="row">

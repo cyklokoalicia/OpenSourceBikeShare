@@ -4,15 +4,17 @@ $(document).ready(function () {
     $("#edituser").hide();
     $("#where").click(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-where');
-        where();
+        bikeInfo($('#bikeNumber').val());
     });
-    $("#revert").click(function () {
+    $("#fleetconsole").on('click', '.bike-revert', function (event) {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-revert');
-        revert();
+        revert($(this).data('bike-number'));
+        event.preventDefault();
     });
-    $("#last").click(function () {
+    $('#fleetconsole').on('click', '.bike-last-usage', function (event) {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-last');
-        last();
+        last($(this).data('bike-number'));
+        event.preventDefault();
     });
     $("#stands").click(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-stands');
@@ -66,7 +68,7 @@ $(document).ready(function () {
         addcredit(10);
         return false;
     });
-    last();
+    bikeInfo();
 });
 
 function handleresponse(elementid, jsonobject, display) {
@@ -76,24 +78,110 @@ function handleresponse(elementid, jsonobject, display) {
     }
 }
 
-function where() {
-    if (window.ga) ga('send', 'event', 'bikes', 'where', $('#adminparam').val());
-    $.ajax({
-        url: "command.php?action=where&bikeno=" + $('#adminparam').val()
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        handleresponse("fleetconsole", jsonobject);
+function generateBikeCards(data) {
+    const $container = $("#fleetconsole");
+    const $template = $("#bike-card-template");
+    $container.empty();
+
+    $.each(data, function (index, item) {
+        const $card = $template.clone().removeAttr("id").removeClass("d-none");
+
+        const $bikeCard = $card.find(".bike-card");
+        if (item.userName !== null) {
+            $bikeCard.addClass("bg-success text-white border-success");
+        } else if (item.notes !== null) {
+            $bikeCard.addClass("bg-warning text-dark border-warning");
+        } else {
+            $bikeCard.addClass("bg-light text-dark border-light");
+        }
+        $card.attr("data-bike-number", item.bikeNum);
+        $card.find(".bike-last-usage").attr("data-bike-number", item.bikeNum);
+        $card.find(".bike-revert").attr("data-bike-number", item.bikeNum);
+
+        $card.find(".bike-number").text(item.bikeNum);
+
+        const $standInfo = $card.find(".stand-info");
+        const $rentInfo = $card.find(".rent-info");
+        if (item.userName !== null) {
+            $standInfo.addClass("d-none");
+            $rentInfo.removeClass("d-none");
+            $rentInfo.find(".user-name").text(item.userName);
+            $rentInfo.find(".rent-time").text(item.rentTime || "Unknown time");
+        } else {
+            $standInfo.removeClass("d-none").find('.stand-name').text(item.standName);
+            $rentInfo.addClass("d-none");
+        }
+
+        if (item.isServiceStand == 1) {
+            $standInfo.find(".service-stand").removeClass("d-none");
+        }
+
+        const $noteInfo = $card.find(".note-info");
+        if (item.notes) {
+            $noteInfo.removeClass("d-none");
+            $noteInfo.find(".note-text").text(item.notes);
+        } else {
+            $noteInfo.addClass("d-none");
+        }
+
+        $container.append($card);
     });
 }
 
-function last() {
-    if (window.ga) ga('send', 'event', 'bikes', 'last', $('#adminparam').val());
+function bikeInfo(bikeNumber) {
+    if (window.ga) ga('send', 'event', 'bikes', 'where', bikeNumber);
+
     $.ajax({
-        url: "command.php?action=last&bikeno=" + $('#adminparam').val()
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        handleresponse("fleetconsole", jsonobject);
+        url: "/api/bike" + (bikeNumber ? "/" + bikeNumber : ""),
+        method: "GET",
+        dataType: "json",
+        success: function(response) {
+            generateBikeCards(response);
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching bike data:", error);
+        }
     });
+}
+
+function last(bikeNumber) {
+    if (window.ga) ga('send', 'event', 'bikes', 'last', bikeNumber);
+
+    $.ajax({
+        url: "/api/bikeLastUsage/" + bikeNumber,
+        method: "GET",
+        dataType: "json",
+        success: function(data) {
+            $container = $("#bikeLastUsage .modal-body");
+            $container.empty();
+
+            if (data.notes !== '') {
+                const $bikeUsageNotesTemplate = $("#bike-card-last_usage_notes_template");
+                const $notes = $bikeUsageNotesTemplate.clone().removeClass("d-none");
+                $notes.find("#note").text(data.notes);
+                $container.append($notes);
+            }
+
+            $.each(data.history, function (index, item) {
+                const $template = $("#bike-card-last_usage_template");
+                const $history = $template.clone().removeClass("d-none");
+                $history.find("#time").text(item.time);
+                $history.find("#standName").text(item.standName);
+                $history.find("#userName").text(item.userName);
+                $history.find("#parameter").text(item.parameter);
+                $history.find("#action i").addClass("d-none");
+                $history.find("#action ." + item.action).removeClass("d-none");
+
+                $container.append($history);
+            });
+
+            $('#bikeLastUsage').modal()
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching bike data:", error);
+        }
+    });
+
 }
 
 function stands() {
@@ -276,9 +364,9 @@ function sellcoupon(coupon) {
 }
 
 function trips() {
-    if (window.ga) ga('send', 'event', 'bikes', 'trips', $('#adminparam').val());
+    if (window.ga) ga('send', 'event', 'bikes', 'trips', $('#bikeNumber').val());
     $.ajax({
-        url: "command.php?action=trips&bikeno=" + $('#adminparam').val()
+        url: "command.php?action=trips&bikeno=" + $('#bikeNumber').val()
     }).done(function (jsonresponse) {
         jsonobject = $.parseJSON(jsonresponse);
         if (jsonobject.error == 1) {
@@ -311,10 +399,10 @@ function trips() {
     });
 }
 
-function revert() {
-    if (window.ga) ga('send', 'event', 'bikes', 'revert', $('#adminparam').val());
+function revert(bikeNumber) {
+    if (window.ga) ga('send', 'event', 'bikes', 'revert', bikeNumber);
     $.ajax({
-        url: "command.php?action=revert&bikeno=" + $('#adminparam').val()
+        url: "command.php?action=revert&bikeno=" + bikeNumber
     }).done(function (jsonresponse) {
         jsonobject = $.parseJSON(jsonresponse);
         handleresponse("fleetconsole", jsonobject);

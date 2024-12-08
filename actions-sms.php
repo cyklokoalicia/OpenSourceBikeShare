@@ -650,7 +650,7 @@ function note($number,$bikeNum,$message)
 
 function last($number,$bike)
 {
-
+    //@see \BikeShare\Repository\BikeRepository::findItemLastUsage
     global $db, $smsSender, $user;
     $userId = $user->findUserIdByNumber($number);
     $bikeNum = intval($bike);
