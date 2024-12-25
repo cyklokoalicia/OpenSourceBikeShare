@@ -4,139 +4,146 @@
 
 {% block body %}
     <h1 class="d-flex justify-content-center align-items-center">{{ 'Year statistic'|trans }}</h1>
+    <h1 class="d-flex justify-content-center align-items-center">{{ year }}</h1>
 
-    <div class="container mt-4">
-        <div class="row">
-            <!-- Total Rents -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Total Rents'|trans }}</h5>
-                        <p class="card-text">{{ stats.rental_count }}</p>
+    {% if stats.rental_count == 0 %}
+        <div class="alert alert-warning text-center" role="alert">
+            {{ 'No data available for this year'|trans }}
+        </div>
+    {% else %}
+        <div class="container mt-4">
+            <div class="row">
+                <!-- Total Rents -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Total Rents'|trans }}</h5>
+                            <p class="card-text">{{ stats.rental_count }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Longest Rental Duration -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Longest Rental Duration'|trans }}</h5>
-                        <p class="card-text">{{ stats.longest_rental_duration | format_duration }}</p>
+                <!-- Longest Rental Duration -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Longest Rental Duration'|trans }}</h5>
+                            <p class="card-text">{{ stats.longest_rental_duration | format_duration }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Shortest Rental Duration -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Shortest Rental Duration'|trans }}</h5>
-                        <p class="card-text">{{ stats.shortest_rental_duration | format_duration }}</p>
+                <!-- Shortest Rental Duration -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Shortest Rental Duration'|trans }}</h5>
+                            <p class="card-text">{{ stats.shortest_rental_duration | format_duration }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Total Rental Duration -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Total Rental Duration'|trans }}</h5>
-                        <p class="card-text">{{ stats.total_rental_duration | format_duration }}</p>
+                <!-- Total Rental Duration -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Total Rental Duration'|trans }}</h5>
+                            <p class="card-text">{{ stats.total_rental_duration | format_duration }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Average Rental Duration -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Average Rental Duration'|trans }}</h5>
-                        <p class="card-text">{{ stats.average_rental_duration | format_duration }}</p>
+                <!-- Average Rental Duration -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Average Rental Duration'|trans }}</h5>
+                            <p class="card-text">{{ stats.average_rental_duration | format_duration }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Unique Bikes Rented -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Unique Bikes Rented'|trans }}</h5>
-                        <p class="card-text">{{ stats.unique_bikes_rented }}</p>
+                <!-- Unique Bikes Rented -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Unique Bikes Rented'|trans }}</h5>
+                            <p class="card-text">{{ stats.unique_bikes_rented }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Most Popular Bike -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Most Popular Rented Bike'|trans }}</h5>
-                        <p class="card-text">{{ stats.most_popular_bike }}</p>
+                <!-- Most Popular Bike -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Most Popular Rented Bike'|trans }}</h5>
+                            <p class="card-text">{{ stats.most_popular_bike }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Most Popular Rent Station -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Most Popular Rent Station'|trans }}</h5>
-                        <p class="card-text">
-                            {{ stands[stats.most_popular_rent_station].standName }}<br>
-                            <img class="img-fluid" src="{{ stands[stats.most_popular_rent_station].standPhoto }}"
-                                alt="{{ stands[stats.most_popular_rent_station].standName }}"
-                            />
-                        </p>
+                <!-- Most Popular Rent Station -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Most Popular Rent Station'|trans }}</h5>
+                            <p class="card-text">
+                                {{ stands[stats.most_popular_rent_station].standName }}<br>
+                                <img class="img-fluid" src="{{ stands[stats.most_popular_rent_station].standPhoto }}"
+                                    alt="{{ stands[stats.most_popular_rent_station].standName }}"
+                                />
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Most Popular Return Station -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Most Popular Return Station'|trans }}</h5>
-                        <p class="card-text">
-                            {{ stands[stats.most_popular_return_station].standName }}<br>
-                            <img class="img-fluid" src="{{ stands[stats.most_popular_return_station].standPhoto }}"
-                                 alt="{{ stands[stats.most_popular_rent_station].standName }}"
-                            />
-                        </p>
+                <!-- Most Popular Return Station -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Most Popular Return Station'|trans }}</h5>
+                            <p class="card-text">
+                                {{ stands[stats.most_popular_return_station].standName }}<br>
+                                <img class="img-fluid" src="{{ stands[stats.most_popular_return_station].standPhoto }}"
+                                     alt="{{ stands[stats.most_popular_rent_station].standName }}"
+                                />
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Most Popular Part of Day -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Most Popular Part of Day for rent'|trans }}</h5>
-                        <p class="card-text">{{ stats.most_popular_part_of_day }}</p>
+                <!-- Most Popular Part of Day -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Most Popular Part of Day for rent'|trans }}</h5>
+                            <p class="card-text">{{ stats.most_popular_part_of_day }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Most Popular Day of Week -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Most Popular Day of Week for rent'|trans }}</h5>
-                        <p class="card-text">{{ stats.most_popular_day_of_week }}</p>
+                <!-- Most Popular Day of Week -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Most Popular Day of Week for rent'|trans }}</h5>
+                            <p class="card-text">{{ stats.most_popular_day_of_week }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Most Popular Month -->
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ 'Most rent was in month'|trans }}</h5>
-                        <p class="card-text">{{ stats.most_popular_month }}</p>
+                <!-- Most Popular Month -->
+                <div class="col-md-4 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ 'Most rent was in month'|trans }}</h5>
+                            <p class="card-text">{{ stats.most_popular_month }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% endif %}
 
 {% endblock %}

@@ -29,6 +29,7 @@ class PersonalStatsController extends AbstractController
         return $this->render('stats.html.twig', [
             'stats' => $stats,
             'stands' => $stands,
+            'year' => (int)$year,
         ]);
     }
 }

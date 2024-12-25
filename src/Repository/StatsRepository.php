@@ -108,17 +108,17 @@ class StatsRepository
         }
         $stats['unique_bikes_rented'] = count($stats['bikes_rented']);
         arsort($stats['bikes_rented']);
-        $stats['most_popular_bike'] = reset(array_keys($stats['bikes_rented']));
+        $stats['most_popular_bike'] = array_key_first($stats['bikes_rented']);
         arsort($stats['return_station']);
-        $stats['most_popular_return_station'] = reset(array_keys($stats['return_station']));
+        $stats['most_popular_return_station'] = array_key_first($stats['return_station']);
         arsort($stats['rent_station']);
-        $stats['most_popular_rent_station'] = reset(array_keys($stats['rent_station']));
+        $stats['most_popular_rent_station'] = array_key_first($stats['rent_station']);
         arsort($stats['rent_period']['part_of_day']);
-        $stats['most_popular_part_of_day'] = reset(array_keys($stats['rent_period']['part_of_day']));
+        $stats['most_popular_part_of_day'] = array_key_first($stats['rent_period']['part_of_day']);
         arsort($stats['rent_period']['day_of_week']);
-        $stats['most_popular_day_of_week'] = reset(array_keys($stats['rent_period']['day_of_week']));
+        $stats['most_popular_day_of_week'] = array_key_first($stats['rent_period']['day_of_week']);
         arsort($stats['rent_period']['month']);
-        $stats['most_popular_month'] = reset(array_keys($stats['rent_period']['month']));
+        $stats['most_popular_month'] = array_key_first($stats['rent_period']['month']);
 
         if ($stats['shortest_rental_duration'] === PHP_INT_MAX) {
             $stats['shortest_rental_duration'] = 0;
