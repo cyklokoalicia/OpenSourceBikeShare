@@ -348,4 +348,41 @@ return [
     'Rented by' => 'Rented by',
     'Return' => 'Return',
     'Force Return' => 'Force Return',
+
+    'Keep me logged in:'=> 'Keep me logged in:',
+    'Show usage stats by day.'=> 'Show usage stats by day.',
+    'Daily stats'=> 'Daily stats',
+    'Logout'=> 'Logout',
+    'How it works'=> 'How it works',
+    'Get Involved'=> 'Get Involved',
+    'Help'=> 'Help',
+    'Manual'=> 'Manual',
+    'My City'=> 'My City',
+
+    'Year statistic'=> 'Year statistic',
+    'Total Rents'=> 'Total Rents',
+    'Longest Rental Duration'=> 'Longest Rental Duration',
+    'Shortest Rental Duration'=> 'Shortest Rental Duration',
+    'Total Rental Duration'=> 'Total Rental Duration',
+    'Average Rental Duration'=> 'Average Rental Duration',
+    'Unique Bikes Rented'=> 'Unique Bikes Rented',
+    'Most Popular Rented Bike'=> 'Most Popular Rented Bike',
+    'Most Popular Rent Station'=> 'Most Popular Rent Station',
+    'Most Popular Return Station'=> 'Most Popular Return Station',
+    'Most Popular Part of Day for rent'=> 'Most Popular Part of Day for rent',
+    'Most Popular Day of Week for rent'=> 'Most Popular Day of Week for rent',
+    'Most rent was in month'=> 'Most rent was in month',
+    'Less than a minute' => 'Less than a minute',
+    '%d minutes' => '{$key, plural,
+        =0 { minute }
+        =1 { minutes }
+    }',
+    '%d hours' => '{$key, plural,
+        =0 { hour }
+        =1 { hours }
+    }',
+    '%d days' => '{$key, plural,
+        =0 { day }
+        =1 { days }
+    }',
 ];

@@ -38,4 +38,7 @@ return function (RoutingConfigurator $routes) {
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'lastUsage']);
 
+    $routes->add('personal_stats_year', '/personalStats/year/{year}')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\PersonalStatsController::class, 'yearStats']);
 };
