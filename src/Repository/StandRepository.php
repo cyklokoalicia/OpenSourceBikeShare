@@ -31,7 +31,7 @@ class StandRepository
                 FROM stands'
         )->fetchAllAssoc();
 
-        $stands= [];
+        $stands = [];
         foreach ($result as $stand) {
             $stands[$stand['standId']] = $stand;
         }
