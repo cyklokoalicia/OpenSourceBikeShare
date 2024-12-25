@@ -360,6 +360,7 @@ return [
     'My City'=> 'My City',
 
     'Year statistic'=> 'Year statistic',
+    'No data available for this year'=> 'No data available for this year',
     'Total Rents'=> 'Total Rents',
     'Longest Rental Duration'=> 'Longest Rental Duration',
     'Shortest Rental Duration'=> 'Shortest Rental Duration',
