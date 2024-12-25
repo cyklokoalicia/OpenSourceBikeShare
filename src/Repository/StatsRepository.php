@@ -18,7 +18,8 @@ class StatsRepository
         $this->logger = $logger;
     }
 
-    public function getUserStatsForYear(int $userId, int $year): array {
+    public function getUserStatsForYear(int $userId, int $year): array
+    {
         $currentYear = (int)date('Y');
         if ($year > $currentYear || $year < 2000) {
             throw new \InvalidArgumentException('Invalid year provided');
@@ -85,7 +86,8 @@ class StatsRepository
                             'rentDuration' => $rentDuration,
                             'rentHistory' => $rentHistory[$item['bikeNum']],
                             'returnHistory' => $item
-                        ]);
+                        ]
+                    );
                 }
                 $stats['total_rental_duration'] += $rentDuration;
                 $stats['longest_rental_duration'] = max($stats['longest_rental_duration'], $rentDuration);

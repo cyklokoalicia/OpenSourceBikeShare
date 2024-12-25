@@ -18,13 +18,15 @@ class TimeDurationFormatExtension extends AbstractExtension
         $this->translator = $translator;
     }
 
-    public function getFilters(): array {
+    public function getFilters(): array
+    {
         return [
             new TwigFilter('format_duration', [$this, 'formatDuration']),
         ];
     }
 
-    public function formatDuration(int $seconds): string {
+    public function formatDuration(int $seconds): string
+    {
         if ($seconds < 60) {
             return $this->translator->trans('Less than a minute');
         }
