@@ -59,7 +59,7 @@ class StatsRepository
         $returnHistory = [];
         foreach ($history as $item) {
             $date = new \DateTimeImmutable($item['time']);
-            if ($item['action'] === 'RENT') {
+            if ($item['action'] === 'RENT' || $item['action'] === 'FORCERENT') {
                 $rentHistory[$item['bikeNum']] = $item;
                 $stats['rental_count']++;
                 if (isset($returnHistory[$item['bikeNum']])) {
@@ -75,7 +75,7 @@ class StatsRepository
                     ($stats['rent_period']['day_of_week'][$date->format('l')] ?? 0) + 1;
                 $stats['rent_period']['month'][$date->format('F')] =
                     ($stats['rent_period']['month'][$date->format('F')] ?? 0) + 1;
-            } elseif ($item['action'] === 'RETURN' || $item['action'] === 'FORCE_RETURN') {
+            } elseif ($item['action'] === 'RETURN' || $item['action'] === 'FORCERETURN') {
                 $returnHistory[$item['bikeNum']] = $item;
                 $stats['return_station'][$item['parameter']] = ($stats['return_station'][$item['parameter']] ?? 0) + 1;
                 $rentDuration = strtotime($item['time']) - strtotime($rentHistory[$item['bikeNum']]['time']);
