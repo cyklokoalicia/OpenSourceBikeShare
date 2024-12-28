@@ -78,7 +78,8 @@ class StatsRepository
             } elseif ($item['action'] === 'RETURN' || $item['action'] === 'FORCERETURN') {
                 $returnHistory[$item['bikeNum']] = $item;
                 $stats['return_station'][$item['parameter']] = ($stats['return_station'][$item['parameter']] ?? 0) + 1;
-                $rentDuration = strtotime($item['time']) - strtotime($rentHistory[$item['bikeNum']]['time']);
+                $rentDuration = strtotime($item['time'])
+                    - strtotime($rentHistory[$item['bikeNum']]['time'] ?? $item['time']);
                 if ($rentDuration > 3600 * 24 * 7) {
                     $this->logger->warning(
                         'Too long rental duration',
@@ -92,8 +93,10 @@ class StatsRepository
                 $stats['total_rental_duration'] += $rentDuration;
                 $stats['longest_rental_duration'] = max($stats['longest_rental_duration'], $rentDuration);
                 $stats['shortest_rental_duration'] = min($stats['shortest_rental_duration'], $rentDuration);
-                $stats['return_station'][$rentHistory[$item['bikeNum']]['parameter']] =
-                    ($stats['return_station'][$rentHistory[$item['bikeNum']]['parameter']] ?? 0) + 1;
+                if (!empty($rentHistory[$item['bikeNum']])) {
+                    $stats['return_station'][$rentHistory[$item['bikeNum']]['parameter']] =
+                        ($stats['return_station'][$rentHistory[$item['bikeNum']]['parameter']] ?? 0) + 1;
+                }
                 unset($rentHistory[$item['bikeNum']]);
             } elseif ($item['action'] === 'REVERT') {
                 unset($rentHistory[$item['bikeNum']]);
