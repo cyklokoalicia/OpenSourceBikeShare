@@ -3,7 +3,7 @@ require("common.php");
 
 function response($message, $error = 0, $additional = '', $log = 1)
 {
-    global $db, $user;
+    global $db, $user, $auth;
     $json = array('error' => $error, 'content' => $message);
     if (is_array($additional)) {
         foreach ($additional as $key => $value) {
@@ -12,11 +12,7 @@ function response($message, $error = 0, $additional = '', $log = 1)
     }
     $json = json_encode($json);
     if ($log == 1 and $message) {
-        if (isset($_COOKIE['loguserid'])) {
-            $userid = $db->escape(trim($_COOKIE['loguserid']));
-        } else {
-            $userid = 0;
-        }
+        $userid = $auth->getUserId();
 
         $number = $user->findPhoneNumber($userid);
         logresult($number, $message);
@@ -371,48 +367,6 @@ function addcredit($userid, $creditmultiplier)
     $userName = $user->findUserName($userid);
 
     response(_('Added') . ' ' . $addcreditamount . $creditSystem->getCreditCurrency() . ' ' . _('credit for') . ' ' . $userName . '.');
-}
-
-function getcouponlist()
-{
-    global $db, $creditSystem;
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-    $result = $db->query("SELECT coupon,value FROM coupons WHERE status='0' ORDER BY status,value,coupon");
-    while ($row = $result->fetch_assoc()) {
-        $jsoncontent[] = array('coupon' => $row['coupon'], 'value' => $row['value']);
-    }
-    echo json_encode($jsoncontent); // TODO change to response function
-}
-
-function generatecoupons($multiplier)
-{
-    global $db, $codeGenerator, $creditSystem;
-
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
-    $value = $minRequiredCredit * $multiplier;
-    $codes = $codeGenerator->generate(10, 6);
-    foreach ($codes as $code) {
-        $result = $db->query("INSERT IGNORE INTO coupons SET coupon='" . $code . "',value='" . $value . "',status='0'");
-    }
-    response(_('Generated 10 new') . ' ' . $value . ' ' . $creditSystem->getCreditCurrency() . ' ' . _('coupons') . '.', 0, array('coupons' => $codes));
-}
-
-function sellcoupon($coupon)
-{
-    global $db, $creditSystem;
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-    $result = $db->query("UPDATE coupons SET status='1' WHERE coupon='" . $coupon . "'");
-    response(_('Coupon') . ' ' . $coupon . ' ' . _('sold') . '.');
 }
 
 function validatecoupon($userid, $coupon)

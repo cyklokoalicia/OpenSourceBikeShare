@@ -157,21 +157,6 @@ switch($action)
    case "userbikes":
       userbikes($userid);
       break;
-   case "couponlist":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      getcouponlist();
-      break;
-   case "generatecoupons":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      generatecoupons($_GET["multiplier"]);
-      break;
-   case "sellcoupon":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      sellcoupon($_GET["coupon"]);
-      break;
    case "map:markers":
       mapgetmarkers($userid);
       break;
