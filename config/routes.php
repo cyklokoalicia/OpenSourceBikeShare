@@ -37,6 +37,15 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_bike_last_usage', '/api/bikeLastUsage/{bikeNumber}')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'lastUsage']);
+    $routes->add('api_coupon_index', '/api/coupon')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\CouponController::class, 'index']);
+    $routes->add('api_coupon_sell', '/api/coupon/sell')
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\Api\CouponController::class, 'sell']);
+    $routes->add('api_coupon_generate', '/api/coupon/generate')
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\Api\CouponController::class, 'generate']);
 
     $routes->add('personal_stats_year', '/personalStats/year/{year}')
         ->methods(['GET'])

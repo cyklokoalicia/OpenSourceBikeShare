@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Db\DbInterface;
-use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\Security\Core\Security;
 
-class ControllerEventListener
+class ResponseEventListener
 {
     private const LOGGED_ROUTES = [
-        'api_bike_index',
-        'api_bike_item',
-        'api_bike_last_usage',
-        'api_coupon_index',
         'api_coupon_sell',
         'api_coupon_generate',
     ];
@@ -30,7 +26,7 @@ class ControllerEventListener
         $this->security = $security;
     }
 
-    public function __invoke(ControllerEvent $event): void
+    public function __invoke(ResponseEvent $event): void
     {
         if (!$event->isMainRequest()) {
             return;
@@ -42,13 +38,11 @@ class ControllerEventListener
         $number = $this->security->getUser()->getUserIdentifier();
 
         $this->db->query("
-            INSERT INTO received 
-                SET sms_uuid='', 
-                    sender='$number',
-                    receive_time='" . date('Y-m-d H:i:s') . "',
-                    sms_text='" . $event->getRequest()->getRequestUri() . "',
-                    ip='" . $event->getRequest()->getClientIp() . "'
+            INSERT INTO sent 
+                SET number='$number',
+                    text='" . $this->db->escape($event->getResponse()->getContent()) . "'
         ");
+
         $this->db->commit();
     }
 }

@@ -1,0 +1,42 @@
+{% block credit %}
+    <div class="row">
+        <div class="col-lg-12">
+            <button type="button" id="generatecoupons1" class="btn btn-success" title="{{ 'Generate new coupons.'|trans }}">
+                <span class="fas fa-plus"></span> {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
+            </button>
+            <button type="button" id="generatecoupons2" class="btn btn-success" title="{{ 'Generate new coupons.'|trans }}">
+                <span class="fas fa-plus"></span> {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() * 5 }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
+            </button>
+            <button type="button" id="generatecoupons3" class="btn btn-success" title="{{ 'Generate new coupons.'|trans }}">
+                <span class="fas fa-plus"></span> {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() * 10 }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
+            </button>
+            <div id="creditconsole">
+
+            </div>
+        </div>
+    </div>
+
+    {# coupon table list #}
+    <table id="coupon-table-template" class="table table-striped table-bordered d-none">
+        <thead class="">
+        <tr>
+            <th id="coupon-header">{{ 'Coupon'|trans }}</th>
+            <th id="value-header">{{ 'Value'|trans }}</th>
+            <th id="status-header">{{ 'Status'|trans }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Template row -->
+        <tr id="coupon-row-template" class="d-none">
+            <td class="coupon-placeholder"></td>
+            <td class="value-placeholder"></td>
+            <td>
+                <button type="button" class="btn btn-warning btn-sm sellcoupon">
+                    <span class="fas fa-share-alt"></span> <span>{{ 'Mark as sold'|trans }}</span>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+{% endblock %}

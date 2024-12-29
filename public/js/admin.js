@@ -32,9 +32,9 @@ $(document).ready(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-usagestats');
         usagestats();
     });
-    $("#listcoupons").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-couponlist');
-        couponlist();
+    $('#creditconsole').on('click', '.sellcoupon', function (event) {
+        sellcoupon($(this).data('coupon'));
+        event.preventDefault();
     });
     $("#generatecoupons1").click(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons');
@@ -68,7 +68,29 @@ $(document).ready(function () {
         addcredit(10);
         return false;
     });
-    bikeInfo();
+
+    $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+        const target = $(e.target).attr("href");
+        switch (target) {
+            case "#fleet":
+                bikeInfo();
+                break;
+            case "#users":
+                userlist();
+                break;
+            case "#stands":
+                stands();
+                break;
+            case "#reports":
+                userstats();
+                break;
+            case "#credit":
+                couponlist();
+                break;
+        }
+    });
+
+    $('#admin-tabs li:first-child a').tab('show')
 });
 
 function handleresponse(elementid, jsonobject, display) {
@@ -322,44 +344,61 @@ function addcredit(creditmultiplier) {
 }
 
 function couponlist() {
-    var code = "";
+    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-couponlist');
     $.ajax({
-        url: "command.php?action=couponlist"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        if (jsonobject.length > 0) code = '<table class="table table-striped"><tr><th>' + _coupon + '</th><th>' + _value + '</th><th>' + _status + '</th></tr>';
-        for (var i = 0, len = jsonobject.length; i < len; i++) {
-            code = code + '<tr><td>' + jsonobject[i]["coupon"] + '</td><td>' + jsonobject[i]["value"] + ' ' + creditcurrency + '</td><td><button type="button" class="btn btn-warning sellcoupon" data-coupon="' + jsonobject[i]["coupon"] + '"><span class="glyphicon glyphicon-share-alt"></span> ' + _set_sold + '</button></td></tr>';
-        }
-        if (jsonobject.length > 0) code = code + '</table>';
-        $('#creditconsole').html(code);
-        $('.sellcoupon').each(function () {
-            $(this).click(function () {
-                sellcoupon($(this).attr('data-coupon'));
+        url: "/api/coupon",
+        method: "GET",
+        dataType: "json",
+        success: function(data) {
+            const $container = $("#creditconsole");
+            const $table = $('#coupon-table-template').clone();
+            const $tableBody = $table.find('tbody');
+            const $rowTemplate = $('#coupon-row-template');
+            $container.empty();
+
+            $.each(data, function (index, item) {
+                const $newRow = $rowTemplate.clone();
+                $newRow.removeClass('d-none').removeAttr('id');
+                $newRow.find('.coupon-placeholder').text(item["coupon"]);
+                $newRow.find('.value-placeholder').text(`${item["value"]} ${creditcurrency}`);
+                $newRow.find('.sellcoupon').attr('data-coupon', item["coupon"]);
+                $tableBody.append($newRow);
             });
-        });
+
+            $table.removeClass('d-none').removeAttr('id');
+            $container.append($table);
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching coupon data:", error);
+        }
     });
 }
 
 function generatecoupons(multiplier) {
-    var code = "";
     $.ajax({
-        url: "command.php?action=generatecoupons&multiplier=" + multiplier
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        handleresponse("creditconsole", jsonobject);
-        couponlist();
+        url: "/api/coupon/generate",
+        method: "POST",
+        data: {multiplier: multiplier},
+        success: function() {
+            couponlist();
+        },
+        error: function(xhr, status, error) {
+            console.error("Error sell coupon:", error);
+        }
     });
 }
 
 function sellcoupon(coupon) {
-    var code = "";
     $.ajax({
-        url: "command.php?action=sellcoupon&coupon=" + coupon
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        handleresponse("creditconsole", jsonobject);
-        couponlist();
+        url: "/api/coupon/sell",
+        method: "POST",
+        data: {coupon: coupon},
+        success: function() {
+            couponlist();
+        },
+        error: function(xhr, status, error) {
+            console.error("Error sell coupon:", error);
+        }
     });
 }
 

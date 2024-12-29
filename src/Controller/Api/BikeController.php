@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class BikeController extends AbstractController
 {
     /**
-     * @Route("/bike", name="api_bike_index", methods={"GET"})
+     * @Route("/api/bike", name="api_bike_index", methods={"GET"})
      */
     public function index(
         BikeRepository $bikeRepository,
