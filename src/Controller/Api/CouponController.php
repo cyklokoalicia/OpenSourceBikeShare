@@ -32,7 +32,8 @@ class CouponController extends AbstractController
     /**
      * @Route("/api/coupon", name="api_coupon_index", methods={"GET"})
      */
-    public function index(): Response {
+    public function index(): Response
+    {
         if (!$this->isGranted('ROLE_ADMIN')) {
             $this->logger->info(
                 'User tried to access admin page without permission',

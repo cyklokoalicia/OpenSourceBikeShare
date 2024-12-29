@@ -27,11 +27,14 @@ class CouponRepository
 
     public function sell(string $coupon)
     {
+        $coupon = $this->db->escape($coupon);
         $this->db->query("UPDATE coupons SET status='1' WHERE coupon='" . $coupon . "' LIMIT 1");
     }
 
     public function addItem(string $coupon, float $value)
     {
+        $coupon = $this->db->escape($coupon);
+        $value = $this->db->escape($value);
         $this->db->query("INSERT INTO coupons (coupon, value, status) VALUES ('" . $coupon . "', " . $value . ", 0)");
     }
 }

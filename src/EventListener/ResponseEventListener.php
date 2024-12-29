@@ -40,7 +40,7 @@ class ResponseEventListener
         $this->db->query("
             INSERT INTO sent 
                 SET number='$number',
-                    text='" . $event->getResponse()->getContent(). "'
+                    text='" . $this->db->escape($event->getResponse()->getContent()) . "'
         ");
 
         $this->db->commit();
