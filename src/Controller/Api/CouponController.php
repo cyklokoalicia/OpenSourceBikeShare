@@ -102,6 +102,10 @@ class CouponController extends AbstractController
             return $this->json([], Response::HTTP_FORBIDDEN);
         }
         $multiplier = $request->request->get('multiplier');
+        if (!is_numeric($multiplier) || $multiplier <= 0) {
+            return new Response('Invalid multiplier value', Response::HTTP_BAD_REQUEST);
+        }
+        if ($this->creditSystem->isEnabled() === false) {
         if ($this->creditSystem->isEnabled() === false) {
             $this->logger->notice('Credit system is disabled', [
                 'user' => $this->getUser()->getUserIdentifier(),
