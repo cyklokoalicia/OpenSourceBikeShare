@@ -64,11 +64,13 @@ class UserRepository
         string $number,
         int $privileges,
         int $userLimit
-    ): void
-    {
+    ): void {
         $this->db->query(
             'UPDATE users 
-              SET username="' . $username . '", mail="' . $email . '", number="' . $number . '", privileges=' . $privileges . ' 
+              SET username="' . $username . '", 
+                  mail="' . $email . '",
+                  number="' . $number . '",
+                  privileges=' . $privileges . ' 
               WHERE userId=' . $userId
         );
 
