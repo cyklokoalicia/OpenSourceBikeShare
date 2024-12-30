@@ -1,7 +1,4 @@
-var oTable;
-
 $(document).ready(function () {
-    $("#edituser").hide();
     $("#where").click(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-where');
         bikeInfo($('#bikeNumber').val());
@@ -16,14 +13,6 @@ $(document).ready(function () {
         last($(this).data('bike-number'));
         event.preventDefault();
     });
-    $("#stands").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-stands');
-        stands();
-    });
-    $("#userlist").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-userlist');
-        userlist();
-    });
     $("#userstats").click(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-userstats');
         userstats();
@@ -36,55 +25,54 @@ $(document).ready(function () {
         sellcoupon($(this).data('coupon'));
         event.preventDefault();
     });
-    $("#generatecoupons1").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons');
-        generatecoupons(1);
+    $('#userconsole').on('click', '.edituser', function (event) {
+        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-edituser', $(this).attr('data-userid'));
+        edituser($(this).attr('data-userid'));
+        event.preventDefault();
+    })
+    $('#edituser').on('click', '.cancel', function (event) {
+        $('#edituser')
+            .addClass('d-none')
+            .find('input').val('');
+        event.preventDefault();
     });
-    $("#generatecoupons2").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons');
-        generatecoupons(5);
-    });
-    $("#generatecoupons3").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons');
-        generatecoupons(10);
+    $(".generatecoupons").click(function (event) {
+        generatecoupons($(this).data('multiplier'));
+        event.preventDefault();
     });
     $("#trips").click(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-trips');
         trips();
     });
-    $("#saveuser").click(function () {
-        saveuser();
-        return false;
+    $("#saveuser").click(function (event) {
+        saveuser($('#userid').val());
+        event.preventDefault();
     });
-    $("#addcredit").click(function () {
-        addcredit(1);
-        return false;
-    });
-    $("#addcredit2").click(function () {
-        addcredit(5);
-        return false;
-    });
-    $("#addcredit3").click(function () {
-        addcredit(10);
-        return false;
+    $(".addcredit").click(function (event) {
+        addcredit($('#userid').val(), $(this).data('multiplier'));
+        event.preventDefault();
     });
 
     $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
         const target = $(e.target).attr("href");
         switch (target) {
             case "#fleet":
+                if (window.ga) ga('send', 'event', 'bikes', 'admin-fleet');
                 bikeInfo();
                 break;
             case "#users":
+                if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-userlist');
                 userlist();
                 break;
             case "#stands":
+                if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-stands');
                 stands();
                 break;
             case "#reports":
                 userstats();
                 break;
             case "#credit":
+                if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-couponlist');
                 couponlist();
                 break;
         }
@@ -151,8 +139,6 @@ function generateBikeCards(data) {
 }
 
 function bikeInfo(bikeNumber) {
-    if (window.ga) ga('send', 'event', 'bikes', 'where', bikeNumber);
-
     $.ajax({
         url: "/api/bike" + (bikeNumber ? "/" + bikeNumber : ""),
         method: "GET",
@@ -167,8 +153,6 @@ function bikeInfo(bikeNumber) {
 }
 
 function last(bikeNumber) {
-    if (window.ga) ga('send', 'event', 'bikes', 'last', bikeNumber);
-
     $.ajax({
         url: "/api/bikeLastUsage/" + bikeNumber,
         method: "GET",
@@ -203,7 +187,6 @@ function last(bikeNumber) {
             console.error("Error fetching bike data:", error);
         }
     });
-
 }
 
 function stands() {
@@ -216,41 +199,63 @@ function stands() {
 }
 
 function userlist() {
-    var code = "";
-    $.ajax({
-        url: "command.php?action=userlist"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        if (jsonobject.length > 0) code = '<table class="table table-striped" id="usertable"><thead><tr><th>' + _user + '</th><th>' + _privileges + '</th><th>' + _limit + '</th>';
-        if (creditenabled == 1) code = code + '<th>' + _credit + '</th>';
-        code = code + '</tr></thead>';
-        for (var i = 0, len = jsonobject.length; i < len; i++) {
-            code = code + '<tr><td><a href="#" class="edituser" data-userid="' + jsonobject[i]["userid"] + '">' + jsonobject[i]["username"] + '</a><br />' + jsonobject[i]["number"] + '<br />' + jsonobject[i]["mail"] + '</td><td>' + jsonobject[i]["privileges"] + '</td><td>' + jsonobject[i]["limit"] + '</td>';
-            if (creditenabled == 1) {
-                code = code + '<td>' + jsonobject[i]["credit"] + creditcurrency + '</td></tr>';
+    let table = $('#user-table').DataTable({
+        destroy: true,
+        searching: false,
+        ajax: {
+            url: '/api/user',
+            dataSrc: '',
+            cache: true
+        },
+        dom: 'lrtip',
+        columns: [
+            {
+                data: 'username',
+                name: 'username',
+                render: function(data, type, row) {
+                    return `<a href="#" class="edituser" data-userid="${row.userId}">${data}</a>
+                        <br />${row.number}
+                        <br />${row.mail}`;
+                }
+            },
+            {
+                data: 'privileges',
+                name: 'privileges'
+            },
+            {
+                data: 'userLimit',
+                name: 'userLimit'
+            },
+            {
+                data: 'credit',
+                name: 'credit',
+                visible: creditenabled === 1,
+                render: function(data, type, row) {
+                    return `${data} ${creditcurrency}`;
+                }
             }
+        ],
+        error: function(xhr, error, code) {
+            console.error('Error loading data:', error);
         }
-        if (jsonobject.length > 0) code = code + '</table>';
-        $('#userconsole').html(code);
-        createeditlinks();
-        oTable = $('#usertable').dataTable({
-            "dom": 'f<"filtertoolbar">prti',
-            "paging": false,
-            "ordering": false,
-            "info": false
-        });
-        $('div.filtertoolbar').html('<select id="columnfilter"><option></option></select>');
-        $('#usertable th').each(function () {
-            $('#columnfilter').append($("<option></option>").attr('value', $(this).text()).text($(this).text()));
-        });
-        $('#usertable_filter input').keyup(function () {
-            x = $('#columnfilter').prop("selectedIndex") - 1;
-            if (x == -1) fnResetAllFilters(); else oTable.fnFilter($(this).val(), x);
-        });
-        $('#columnfilter').change(function () {
-            x = $('#columnfilter').prop("selectedIndex") - 1;
-            if (x == -1) fnResetAllFilters(); else oTable.fnFilter($('#usertable_filter input').val(), x);
-        });
+    });
+
+    // Variable to track the column index for custom search
+    let searchColumnIndex = 0;
+
+    // Update dropdown and search column index
+    $('.search-option').click(function () {
+        const columnName = $(this).data('column');
+        searchColumnIndex = table.column(`${columnName}:name`).index(); // Get column index
+        $('#searchTypeDropdown').text($(this).text()); // Update dropdown button text
+    });
+
+    // Custom search logic
+    $('#customSearchInput').on('keyup', function () {
+        const searchTerm = this.value;
+        table.columns(searchColumnIndex)
+             .search(searchTerm)
+             .draw();
     });
 }
 
@@ -266,7 +271,6 @@ function userstats() {
         }
         if (jsonobject.length > 0) code = code + '</table>';
         $('#reportsconsole').html(code);
-        createeditlinks();
         $('#userstatstable').dataTable({
             "paging": false,
             "ordering": false,
@@ -290,61 +294,81 @@ function usagestats() {
     });
 }
 
-function createeditlinks() {
-    $('.edituser').each(function () {
-        $(this).click(function () {
-            if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-edituser', $(this).attr('data-userid'));
-            edituser($(this).attr('data-userid'));
-        });
-    });
-}
-
 function edituser(userid) {
     $.ajax({
-        url: "command.php?action=edituser&edituserid=" + userid
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        if (jsonobject) {
-            $('#userid').val(jsonobject["userid"]);
-            $('#username').val(jsonobject["username"]);
-            $('#email').val(jsonobject["email"]);
-            if ($('#phone')) $('#phone').val(jsonobject["phone"]);
-            $('#privileges').val(jsonobject["privileges"]);
-            $('#limit').val(jsonobject["limit"]);
-            $('#edituser').show();
-            $('a[href="#users"]').trigger('click');
+        url: "/api/user/" + userid,
+        method: "GET",
+        dataType: "json",
+        success: function(data) {
+            console.log(data);
+            $container = $("#edituser");
+            $container.find('input').val('');
+            $container.find('#userid').val(data.userId);
+            $container.find('#username').val(data.username);
+            $container.find('#email').val(data.mail);
+            if ($container.find('#phone').length) {
+                $container.find('#phone').val(data.number);
+            }
+            $container.find('#privileges').val(data.privileges);
+            $container.find('#limit').val(data.userLimit);
+            $container.removeClass('d-none');
+            $('html, body').animate({
+                scrollTop: $container.offset().top
+            }, 500);
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching user data:", error);
         }
     });
 }
 
-function saveuser() {
-    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-saveuser', $('#userid').val());
-    var phone = "";
-    if ($('#phone')) phone = "&phone=" + $('#phone').val();
+function saveuser(userId) {
+    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-saveuser', userId);
+
     $.ajax({
-        url: "command.php?action=saveuser&edituserid=" + $('#userid').val() + "&username=" + $('#username').val() + "&email=" + $('#email').val() + "&privileges=" + $('#privileges').val() + "&limit=" + $('#limit').val() + phone
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        $("#edituser").hide();
-        handleresponse("userconsole", jsonobject);
-        setTimeout(userlist, 2000);
+        url: "/api/user/" + userId,
+        method: "PUT",
+        dataType: "json",
+        data: {
+            'username': $('#username').val(),
+            'email': $('#email').val(),
+            'number': $('#phone').length ? $('#phone').val() : '',
+            'privileges': $('#privileges').val(),
+            'userLimit': $('#limit').val()
+
+        },
+        success: function(data) {
+            $("#edituser").addClass('d-none');
+            userlist();
+        },
+        error: function(xhr, status, error) {
+            console.error("Error update user data:", error);
+        }
     });
 }
 
-function addcredit(creditmultiplier) {
-    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-addcredit', $('#userid').val());
+function addcredit(userId, multiplier) {
+    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-addcredit', userId, multiplier);
+
     $.ajax({
-        url: "command.php?action=addcredit&edituserid=" + $('#userid').val() + "&creditmultiplier=" + creditmultiplier
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        $("#edituser").hide();
-        handleresponse("userconsole", jsonobject);
-        setTimeout(userlist, 2000);
+        url: "/api/credit",
+        method: "PUT",
+        dataType: "json",
+        data: {
+            'userId': userId,
+            'multiplier': multiplier
+        },
+        success: function(data) {
+            $("#edituser").addClass('d-none');
+            userlist();
+        },
+        error: function(xhr, status, error) {
+            console.error("Error update user data:", error);
+        }
     });
 }
 
 function couponlist() {
-    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-couponlist');
     $.ajax({
         url: "/api/coupon",
         method: "GET",
@@ -375,6 +399,7 @@ function couponlist() {
 }
 
 function generatecoupons(multiplier) {
+    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons', multiplier);
     $.ajax({
         url: "/api/coupon/generate",
         method: "POST",
@@ -446,12 +471,4 @@ function revert(bikeNumber) {
         jsonobject = $.parseJSON(jsonresponse);
         handleresponse("fleetconsole", jsonobject);
     });
-}
-
-function fnResetAllFilters() {
-    var oSettings = oTable.fnSettings();
-    for (iCol = 0; iCol < oSettings.aoPreSearchCols.length; iCol++) {
-        oSettings.aoPreSearchCols[iCol].sSearch = '';
-    }
-    oTable.fnDraw();
 }
