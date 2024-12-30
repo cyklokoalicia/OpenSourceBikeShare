@@ -19,7 +19,7 @@ class UserRepository
     public function findAll(): array
     {
         $users = $this->db->query(
-        'SELECT 
+            'SELECT 
                 users.userId,
                 username,
                 mail,
@@ -27,10 +27,10 @@ class UserRepository
                 privileges,
                 credit,
                 userLimit 
-              FROM users 
-              LEFT JOIN credit ON users.userId=credit.userId 
-              LEFT JOIN limits ON users.userId=limits.userId 
-              ORDER BY username'
+            FROM users 
+            LEFT JOIN credit ON users.userId=credit.userId 
+            LEFT JOIN limits ON users.userId=limits.userId 
+            ORDER BY username'
         )->fetchAllAssoc();
 
 
@@ -57,7 +57,14 @@ class UserRepository
         return $user;
     }
 
-    public function updateItem(int $userId, string $username, string $email, string $number, int $privileges, int $userLimit)
+    public function updateItem(
+        int $userId,
+        string $username,
+        string $email,
+        string $number,
+        int $privileges,
+        int $userLimit
+    ): void
     {
         $this->db->query(
             'UPDATE users 
