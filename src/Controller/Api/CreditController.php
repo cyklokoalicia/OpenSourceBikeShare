@@ -65,9 +65,11 @@ class CreditController extends AbstractController
 
         $user = $userRepository->findItem($userId);
 
-        return new Response(
-            'Added ' . $creditAmount . $creditSystem->getCreditCurrency() . ' credit for '
-            . $user['username'] . '.'
+        return $this->json(
+            [
+                'message' => 'Added ' . $creditAmount . $creditSystem->getCreditCurrency() . ' credit for '
+                    . $user['username'] . '.',
+            ]
         );
     }
 }

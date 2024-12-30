@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Db\DbInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\Security\Core\Security;
 
@@ -39,11 +40,16 @@ class ResponseEventListener
         }
 
         $number = $this->security->getUser()->getUserIdentifier();
+        if ($event->getResponse() instanceof JsonResponse) {
+            $response = json_decode($event->getResponse()->getContent(), true)['message'];
+        } else {
+            $response = $event->getResponse()->getContent();
+        }
 
         $this->db->query("
             INSERT INTO sent 
                 SET number='$number',
-                    text='" . $this->db->escape($event->getResponse()->getContent()) . "'
+                    text='" . $this->db->escape($response) . "'
         ");
 
         $this->db->commit();

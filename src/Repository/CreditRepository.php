@@ -20,6 +20,6 @@ class CreditRepository
     {
         $userId = $this->db->escape($userId);
         $creditAmount = $this->db->escape($creditAmount);
-        $this->db->query("UPDATE credit SET credit=credit+' . $creditAmount . ' WHERE userId=' . $userId . '");
+        $this->db->query("UPDATE credit SET credit=credit+" . $creditAmount . " WHERE userId=" . $userId);
     }
 }

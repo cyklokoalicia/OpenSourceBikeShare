@@ -199,9 +199,9 @@ function stands() {
 }
 
 function userlist() {
+    $('#customSearchInput').val('');
     let table = $('#user-table').DataTable({
         destroy: true,
-        searching: false,
         ajax: {
             url: '/api/user',
             dataSrc: '',
@@ -300,7 +300,6 @@ function edituser(userid) {
         method: "GET",
         dataType: "json",
         success: function(data) {
-            console.log(data);
             $container = $("#edituser");
             $container.find('input').val('');
             $container.find('#userid').val(data.userId);
