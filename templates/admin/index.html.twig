@@ -78,44 +78,7 @@
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="users">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <button type="button" id="userlist" class="btn btn-outline-primary" title="{{ 'Show list of users.'|trans }}">
-                                <span class="fas fa-user"></span> {{ 'User list'|trans }}
-                            </button>
-                        </div>
-                    </div>
-                    <form class="container" id="edituser">
-                        <div class="form-group">
-                            <label for="username" class="control-label">{{ 'Fullname:'|trans }}</label>
-                            <input type="text" name="username" id="username" class="form-control"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">{{ 'Email:'|trans }}</label>
-                            <input type="text" name="email" id="email" class="form-control"/>
-                        </div>
-                        {% if configuration.get('connectors')['sms'] %}
-                            <div class="form-group">
-                                <label for="phone">{{ 'Phone number:'|trans }}</label>
-                                <input type="text" name="phone" id="phone" class="form-control"/>
-                            </div>
-                        {% endif %}
-                        <div class="form-group">
-                            <label for="privileges">{{ 'Privileges:'|trans }}</label>
-                            <input type="text" name="privileges" id="privileges" class="form-control"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="limit">{{ 'Bike limit:'|trans }}</label>
-                            <input type="text" name="limit" id="limit" class="form-control"/>
-                        </div>
-                        <input type="hidden" name="userid" id="userid" value=""/>
-                        <button type="button" id="saveuser" class="btn btn-primary">{{ 'Save'|trans }}</button>
-                        or
-                        <button type="button" id="addcredit" class="btn btn-success">{{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() }} {{ creditSystem.getCreditCurrency() }}</button>
-                        <button type="button" id="addcredit2" class="btn btn-success">{{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() * 5 }} {{ creditSystem.getCreditCurrency() }}</button>
-                        <button type="button" id="addcredit3" class="btn btn-success">{{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() * 10 }} {{ creditSystem.getCreditCurrency() }}</button>
-                    </form>
-                    <div id="userconsole"></div>
+                    {% include ('admin/user.html.twig') %}
                 </div>
                 {% if creditSystem.isEnabled %}
                     <div role="tabpanel" class="tab-pane" id="credit">

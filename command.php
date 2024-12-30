@@ -106,12 +106,6 @@ switch($action)
       checkprivileges($userid);
       liststands();
       break;
-   case "userlist":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      checkprivileges($userid);
-      getuserlist();
-      break;
    case "userstats":
       logrequest($userid,$action);
       $auth->refreshSession();
@@ -123,18 +117,6 @@ switch($action)
       $auth->refreshSession();
       checkprivileges($userid);
       getusagestats();
-      break;
-   case "edituser":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      checkprivileges($userid);
-      edituser($_GET["edituserid"]);
-      break;
-   case "saveuser":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      checkprivileges($userid);
-      saveuser($_GET["edituserid"],$_GET["username"],$_GET["email"],$_GET["phone"],$_GET["privileges"],$_GET["limit"]);
       break;
    case "addcredit":
       logrequest($userid,$action);

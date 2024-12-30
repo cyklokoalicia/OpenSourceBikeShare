@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api;
 
-use BikeShare\Repository\BikeRepository;
+use BikeShare\App\Configuration;
+use BikeShare\Repository\UserRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class BikeController extends AbstractController
+class UserController extends AbstractController
 {
     /**
-     * @Route("/api/bike", name="api_bike_index", methods={"GET"})
+     * @Route("/api/user", name="api_user_index", methods={"GET"})
      */
     public function index(
-        BikeRepository $bikeRepository,
+        UserRepository $userRepository,
         LoggerInterface $logger
     ): Response {
         if (!$this->isGranted('ROLE_ADMIN')) {
@@ -30,17 +32,17 @@ class BikeController extends AbstractController
             return $this->json([], Response::HTTP_FORBIDDEN);
         }
 
-        $bikes = $bikeRepository->findAll();
+        $bikes = $userRepository->findAll();
 
         return $this->json($bikes);
     }
 
     /**
-     * @Route("/api/bike/{bikeNumber}", name="api_bike_item", methods={"GET"})
+     * @Route("/api/user/{userId}", name="api_user_item", methods={"GET"})
      */
     public function item(
-        $bikeNumber,
-        BikeRepository $bikeRepository,
+        $userId,
+        UserRepository $userRepository,
         LoggerInterface $logger
     ): Response {
         if (!$this->isGranted('ROLE_ADMIN')) {
@@ -54,21 +56,23 @@ class BikeController extends AbstractController
             return $this->json([], Response::HTTP_FORBIDDEN);
         }
 
-        if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
+        if (empty($userId) || !is_numeric($userId)) {
             return $this->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        $bikes = $bikeRepository->findItem((int)$bikeNumber);
+        $user = $userRepository->findItem((int)$userId);
 
-        return $this->json($bikes);
+        return $this->json($user);
     }
 
     /**
-     * @Route("/bikeLastUsage/{bikeNumber}", name="api_bike_last_usage", methods={"GET"})
+     * @Route("/api/user/{userId}", name="api_user_item_update", methods={"PUT"})
      */
-    public function lastUsage(
-        $bikeNumber,
-        BikeRepository $bikeRepository,
+    public function update(
+        $userId,
+        Request $request,
+        UserRepository $userRepository,
+        Configuration $configuration,
         LoggerInterface $logger
     ): Response {
         if (!$this->isGranted('ROLE_ADMIN')) {
@@ -82,12 +86,34 @@ class BikeController extends AbstractController
             return $this->json([], Response::HTTP_FORBIDDEN);
         }
 
-        if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
+        if (empty($userId) || !is_numeric($userId)) {
             return $this->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        $bikes = $bikeRepository->findItemLastUsage((int)$bikeNumber);
+        $userName = $request->request->get('username');
+        $email = $request->request->get('email');
+        $number = $request->request->get('number');
+        $privileges = $request->request->getInt('privileges');
+        $userLimit = $request->request->getInt('userLimit');
 
-        return $this->json($bikes);
+        if (
+            empty($userName)
+            || empty($email)
+            || !filter_var($email, FILTER_VALIDATE_EMAIL)
+            || ($configuration->get('connectors')['sms'] !== '' && empty($number))
+        ) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $userRepository->updateItem(
+            (int)$userId,
+            $userName,
+            $email,
+            $number,
+            $privileges,
+            $userLimit
+        );
+
+        return new Response('Details of user ' . $userName . ' updated.');
     }
 }

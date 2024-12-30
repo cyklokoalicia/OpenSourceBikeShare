@@ -301,16 +301,6 @@ function trips($userId, $bike = 0)
     echo json_encode($jsoncontent); // TODO change to response function
 }
 
-function getuserlist()
-{
-    global $db;
-    $result = $db->query('SELECT users.userId,username,mail,number,privileges,credit,userLimit FROM users LEFT JOIN credit ON users.userId=credit.userId LEFT JOIN limits ON users.userId=limits.userId ORDER BY username');
-    while ($row = $result->fetch_assoc()) {
-        $jsoncontent[] = array('userid' => $row['userId'], 'username' => $row['username'], 'mail' => $row['mail'], 'number' => $row['number'], 'privileges' => $row['privileges'], 'credit' => $row['credit'], 'limit' => $row['userLimit']);
-    }
-    echo json_encode($jsoncontent); // TODO change to response function
-}
-
 function getuserstats()
 {
     global $db;
@@ -333,27 +323,6 @@ function getusagestats()
         $jsoncontent[] = array('day' => $row['day'], 'count' => $row['count'], 'action' => $row['action']);
     }
     echo json_encode($jsoncontent); // TODO change to response function
-}
-
-function edituser($userid)
-{
-    global $db;
-    $result = $db->query('SELECT users.userId,userName,mail,number,privileges,userLimit,credit FROM users LEFT JOIN limits ON users.userId=limits.userId LEFT JOIN credit ON users.userId=credit.userId WHERE users.userId=' . $userid);
-    $row = $result->fetch_assoc();
-    $jsoncontent = array('userid' => $row['userId'], 'username' => $row['userName'], 'email' => $row['mail'], 'phone' => $row['number'], 'privileges' => $row['privileges'], 'limit' => $row['userLimit'], 'credit' => $row['credit']);
-    echo json_encode($jsoncontent); // TODO change to response function
-}
-
-function saveuser($userid, $username, $email, $phone, $privileges, $limit)
-{
-    global $db;
-    $result = $db->query("UPDATE users SET username='$username',mail='$email',privileges='$privileges' WHERE userId=" . $userid);
-    if ($phone) {
-        $result = $db->query("UPDATE users SET number='$phone' WHERE userId=" . $userid);
-    }
-
-    $result = $db->query("UPDATE limits SET userLimit='$limit' WHERE userId=" . $userid);
-    response(_('Details of user') . ' ' . $username . ' ' . _('updated') . '.');
 }
 
 function addcredit($userid, $creditmultiplier)

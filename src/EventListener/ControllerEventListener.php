@@ -17,6 +17,9 @@ class ControllerEventListener
         'api_coupon_index',
         'api_coupon_sell',
         'api_coupon_generate',
+        'api_user_index',
+        'api_user_item',
+        'api_user_item_update',
     ];
 
     private DbInterface $db;
