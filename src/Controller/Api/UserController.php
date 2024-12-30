@@ -114,6 +114,10 @@ class UserController extends AbstractController
             $userLimit
         );
 
-        return new Response('Details of user ' . $userName . ' updated.');
+        return $this->json(
+            [
+                'message' => 'Details of user ' . $userName . ' updated.'
+            ]
+        );
     }
 }

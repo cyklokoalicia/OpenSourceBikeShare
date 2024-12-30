@@ -82,7 +82,11 @@ class CouponController extends AbstractController
         }
         $this->couponRepository->sell($coupon);
 
-        return new Response('Coupon ' . $coupon . ' sold.');
+        return $this->json(
+            [
+                'message' => 'Coupon ' . $coupon . ' sold.',
+            ]
+        );
     }
 
     /**
@@ -122,8 +126,11 @@ class CouponController extends AbstractController
             $this->couponRepository->addItem($coupon, $value);
         }
 
-        return new Response(
-            'Generated 10 new ' . $value . ' ' . $this->creditSystem->getCreditCurrency() . ' coupons.'
+        return $this->json(
+            [
+                'message' => 'Generated 10 new ' . $value . ' '
+                    . $this->creditSystem->getCreditCurrency() . ' coupons.'
+            ]
         );
     }
 }
