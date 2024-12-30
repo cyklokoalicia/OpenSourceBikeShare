@@ -1,15 +1,13 @@
 {% block credit %}
     <div class="row">
         <div class="col-lg-12">
-            <button type="button" id="generatecoupons1" class="btn btn-success" title="{{ 'Generate new coupons.'|trans }}">
-                <span class="fas fa-plus"></span> {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
-            </button>
-            <button type="button" id="generatecoupons2" class="btn btn-success" title="{{ 'Generate new coupons.'|trans }}">
-                <span class="fas fa-plus"></span> {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() * 5 }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
-            </button>
-            <button type="button" id="generatecoupons3" class="btn btn-success" title="{{ 'Generate new coupons.'|trans }}">
-                <span class="fas fa-plus"></span> {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() * 10 }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
-            </button>
+            {% set multipliers = [1, 5, 10] %}
+            {% for multiplier in multipliers %}
+                <button type="button" class="btn btn-success generatecoupons" title="{{ 'Generate new coupons.'|trans }}">
+                    <span class="fas fa-plus"></span>
+                    {{ 'Generate'|trans }} {{ creditSystem.getMinRequiredCredit() * multiplier }} {{ creditSystem.getCreditCurrency() }} {{ 'coupons'|trans }}
+                </button>
+            {% endfor %}
             <div id="creditconsole">
 
             </div>

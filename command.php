@@ -118,12 +118,6 @@ switch($action)
       checkprivileges($userid);
       getusagestats();
       break;
-   case "addcredit":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      checkprivileges($userid);
-      addcredit($_GET["edituserid"],$_GET["creditmultiplier"]);
-      break;
    case "trips":
       logrequest($userid,$action);
       $auth->refreshSession();

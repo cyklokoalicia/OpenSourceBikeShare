@@ -27,15 +27,12 @@
         <button type="button" class="cancel btn btn-secondary">{{ 'Cancel'|trans }}</button>
         {% if creditSystem.isEnabled %}
             or
-            <button type="button" id="addcredit" class="btn btn-success">
-                {{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() }} {{ creditSystem.getCreditCurrency() }}
-            </button>
-            <button type="button" id="addcredit2" class="btn btn-success">
-                {{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() * 5 }} {{ creditSystem.getCreditCurrency() }}
-            </button>
-            <button type="button" id="addcredit3" class="btn btn-success">
-                {{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() * 10 }} {{ creditSystem.getCreditCurrency() }}
-            </button>
+            {% set multipliers = [1, 5, 10] %}
+            {% for multiplier in multipliers %}
+                <button type="button" class="btn btn-success addcredit" data-multiplier="{{ multiplier }}">
+                    {{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() * multiplier }} {{ creditSystem.getCreditCurrency() }}
+                </button>
+            {% endfor %}
         {% endif %}
     </form>
     <div id="userconsole">
@@ -77,6 +74,5 @@
                 </div>
             </div>
         </div>
-
     </div>
 {% endblock %}

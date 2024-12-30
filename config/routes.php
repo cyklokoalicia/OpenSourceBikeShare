@@ -55,6 +55,9 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_user_item_update', '/api/user/{userId}')
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\UserController::class, 'update']);
+    $routes->add('api_credit_add', '/api/credit')
+        ->methods(['PUT'])
+        ->controller([\BikeShare\Controller\Api\CreditController::class, 'add']);
 
     $routes->add('personal_stats_year', '/personalStats/year/{year}')
         ->methods(['GET'])

@@ -15,6 +15,7 @@ class ResponseEventListener
         'api_coupon_generate',
         'api_user_item',
         'api_user_item_update',
+        'api_credit_add',
     ];
 
     private DbInterface $db;

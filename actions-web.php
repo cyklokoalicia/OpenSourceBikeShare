@@ -325,19 +325,6 @@ function getusagestats()
     echo json_encode($jsoncontent); // TODO change to response function
 }
 
-function addcredit($userid, $creditmultiplier)
-{
-    global $db, $user, $creditSystem;
-
-    $minRequiredCredit = $creditSystem->getMinRequiredCredit();
-    $addcreditamount = $minRequiredCredit * $creditmultiplier;
-    $result = $db->query('UPDATE credit SET credit=credit+' . $addcreditamount . ' WHERE userId=' . $userid);
-    $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=0,action='CREDITCHANGE',parameter='" . $addcreditamount . '|add+' . $addcreditamount . "'");
-    $userName = $user->findUserName($userid);
-
-    response(_('Added') . ' ' . $addcreditamount . $creditSystem->getCreditCurrency() . ' ' . _('credit for') . ' ' . $userName . '.');
-}
-
 function validatecoupon($userid, $coupon)
 {
     global $db, $creditSystem;

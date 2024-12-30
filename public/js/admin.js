@@ -36,17 +36,9 @@ $(document).ready(function () {
             .find('input').val('');
         event.preventDefault();
     });
-    $("#generatecoupons1").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons');
-        generatecoupons(1);
-    });
-    $("#generatecoupons2").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons');
-        generatecoupons(5);
-    });
-    $("#generatecoupons3").click(function () {
-        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons');
-        generatecoupons(10);
+    $(".generatecoupons").click(function (event) {
+        generatecoupons($(this).data('multiplier'));
+        event.preventDefault();
     });
     $("#trips").click(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-trips');
@@ -56,17 +48,9 @@ $(document).ready(function () {
         saveuser($('#userid').val());
         event.preventDefault();
     });
-    $("#addcredit").click(function () {
-        addcredit(1);
-        return false;
-    });
-    $("#addcredit2").click(function () {
-        addcredit(5);
-        return false;
-    });
-    $("#addcredit3").click(function () {
-        addcredit(10);
-        return false;
+    $(".addcredit").click(function (event) {
+        addcredit($('#userid').val(), $(this).data('multiplier'));
+        event.preventDefault();
     });
 
     $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
@@ -363,15 +347,24 @@ function saveuser(userId) {
     });
 }
 
-function addcredit(creditmultiplier) {
-    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-addcredit', $('#userid').val());
+function addcredit(userId, multiplier) {
+    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-addcredit', userId, multiplier);
+
     $.ajax({
-        url: "command.php?action=addcredit&edituserid=" + $('#userid').val() + "&creditmultiplier=" + creditmultiplier
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        $("#edituser").hide();
-        handleresponse("userconsole", jsonobject);
-        setTimeout(userlist, 2000);
+        url: "/api/credit",
+        method: "PUT",
+        dataType: "json",
+        data: {
+            'userId': userId,
+            'multiplier': multiplier
+        },
+        success: function(data) {
+            $("#edituser").addClass('d-none');
+            userlist();
+        },
+        error: function(xhr, status, error) {
+            console.error("Error update user data:", error);
+        }
     });
 }
 
@@ -406,6 +399,7 @@ function couponlist() {
 }
 
 function generatecoupons(multiplier) {
+    if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons', multiplier);
     $.ajax({
         url: "/api/coupon/generate",
         method: "POST",
