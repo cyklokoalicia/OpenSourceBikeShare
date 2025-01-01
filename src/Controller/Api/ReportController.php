@@ -35,12 +35,12 @@ class ReportController extends AbstractController
         return $this->json($stats);
     }
     /**
-     * @Route("/report/user/{year}", name="api_report_user", , requirements: ['year' => '\d+'] methods={"GET"})
+     * @Route("/report/user/{year}", name="api_report_user", requirements: {'year' => '\d+'}, methods={"GET"})
      */
     public function user(
-        $year = 1900,
         HistoryRepository $historyRepository,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        $year = null
     ): Response {
         if (!$this->isGranted('ROLE_ADMIN')) {
             $logger->info(
@@ -52,7 +52,7 @@ class ReportController extends AbstractController
 
             return $this->json([], Response::HTTP_FORBIDDEN);
         }
-        if ($year === 1900) {
+        if (is_null($year)) {
             $year = (int)date('Y');
         } elseif (
             $year > (int)date('Y')

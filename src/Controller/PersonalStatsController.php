@@ -17,12 +17,12 @@ class PersonalStatsController extends AbstractController
      * @Route("/personalStats/year/{year}", name="personal_stats_year", methods={"GET"}, requirements: {"year"="\d+"})
      */
     public function yearStats(
-        $year = 1900,
         StatsRepository $statsRepository,
         StandRepository $standRepository,
-        User $user
+        User $user,
+        $year = null
     ): Response {
-        if ($year === 1900) {
+        if (is_null($year)) {
             $year = (int)date('Y');
         } elseif (
             $year > (int)date('Y')

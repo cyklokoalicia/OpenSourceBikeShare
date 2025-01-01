@@ -45,8 +45,8 @@ class HistoryRepository
               AND action IN ('RENT','RETURN') 
             GROUP BY day 
             ORDER BY day DESC
-            LIMIT 60
-        ")->fetchAllAssoc();
+            LIMIT 60"
+        )->fetchAllAssoc();
 
         return $result;
     }
@@ -65,8 +65,8 @@ class HistoryRepository
             WHERE history.userId IS NOT NULL
               AND YEAR(time) = " . $year . "
             GROUP BY username 
-            ORDER BY totalActionCount DESC
-        ")->fetchAllAssoc();
+            ORDER BY totalActionCount DESC"
+        )->fetchAllAssoc();
 
         return $result;
     }

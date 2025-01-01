@@ -18,8 +18,7 @@ class StandController extends AbstractController
     public function index(
         StandRepository $standRepository,
         LoggerInterface $logger
-    ): Response
-    {
+    ): Response {
         if (!$this->isGranted('ROLE_ADMIN')) {
             $logger->info(
                 'User tried to access admin page without permission',
