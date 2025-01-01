@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\Security;
 class ControllerEventListener
 {
     private const LOGGED_ROUTES = [
+        'api_stand_index',
         'api_bike_index',
         'api_bike_item',
         'api_bike_last_usage',
@@ -21,6 +22,8 @@ class ControllerEventListener
         'api_user_item',
         'api_user_item_update',
         'api_credit_add',
+        'api_report_daily',
+        'api_report_user',
     ];
 
     private DbInterface $db;

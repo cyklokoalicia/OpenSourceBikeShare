@@ -38,7 +38,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user/{userId}", name="api_user_item", methods={"GET"})
+     * @Route("/api/user/{userId}", name="api_user_item", methods={"GET"}, requirements: {"userId"="\d+"})
      */
     public function item(
         $userId,
@@ -66,7 +66,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user/{userId}", name="api_user_item_update", methods={"PUT"})
+     * @Route("/api/user/{userId}", name="api_user_item_update", methods={"PUT"}, requirements: {"userId"="\d+"})
      */
     public function update(
         $userId,

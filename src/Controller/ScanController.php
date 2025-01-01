@@ -6,6 +6,7 @@ use BikeShare\App\Kernel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 class ScanController extends AbstractController
 {
@@ -17,7 +18,7 @@ class ScanController extends AbstractController
     }
 
     /**
-     * @Route("/scan.php/{action}/{id}", name="scan")
+     * @Route("/scan.php/{action}/{id}", name="scan", requirements={"action"="rent|return"}, requirements: {"id"="\d+"})
      */
     public function index(
         Request $request

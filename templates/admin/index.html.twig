@@ -71,11 +71,7 @@
                     {% include ('admin/fleet.html.twig') %}
                 </div>
                 <div role="tabpanel" class="tab-pane" id="stands">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div id="standsconsole"></div>
-                        </div>
-                    </div>
+                    {% include ('admin/stands.html.twig') %}
                 </div>
                 <div role="tabpanel" class="tab-pane" id="users">
                     {% include ('admin/user.html.twig') %}
@@ -86,17 +82,7 @@
                     </div>
                 {% endif %}
                 <div role="tabpanel" class="tab-pane" id="reports">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <button type="button" id="usagestats" class="btn btn-outline-primary" title="{{ 'Show usage stats by day.'|trans }}">
-                                <span class="fas fa-road"></span> {{ 'Daily stats'|trans }}
-                            </button>
-                            <button type="button" id="userstats" class="btn btn-outline-primary" title="{{ 'Show user stats.'|trans }}">
-                                <span class="fas fa-road"></span> {{ 'User stats'|trans }}
-                            </button>
-                            <div id="reportsconsole"></div>
-                        </div>
-                    </div>
+                    {% include ('admin/report.html.twig') %}
                 </div>
             </div>
 

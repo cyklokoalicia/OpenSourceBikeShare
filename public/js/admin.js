@@ -69,7 +69,7 @@ $(document).ready(function () {
                 stands();
                 break;
             case "#reports":
-                userstats();
+                usagestats();
                 break;
             case "#credit":
                 if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-couponlist');
@@ -189,12 +189,53 @@ function last(bikeNumber) {
     });
 }
 
-function stands() {
+function generateStandCards(data) {
+    const $container = $("#standsconsole");
+    const $template = $("#stand-card-template");
+    $container.empty();
+
+    $.each(data, function (index, item) {
+        const $card = $template.clone().removeAttr("id").removeClass("d-none");
+
+        $card.find(".stand-name").text(item.standName);
+
+        const $photo = $card.find(".stand-photo");
+        if (item.standPhoto) {
+            $photo.attr("src", item.standPhoto).removeClass("d-none");
+        } else {
+            $photo.addClass("d-none");
+        }
+
+        $card.find(".stand-description").text(item.standDescription);
+
+        if (parseInt(item.latitude) !== 0 && parseInt(item.longitude) !== 0) {
+            const googleMapsUrl = `https://www.google.com/maps?q=${item.latitude},${item.longitude}`;
+            $card.find(".stand-location")
+                .removeClass("d-none")
+                .attr("href", googleMapsUrl);
+        }
+
+        if (item.standName.toLowerCase().includes("servis")) {
+            $card.find(".service-stand").removeClass("d-none");
+        } else if (item.standName.toLowerCase().includes("zruseny")) {
+            $card.find(".removed-stand").removeClass("d-none");
+        }
+
+        $container.append($card);
+    });
+}
+
+function stands(standId) {
     $.ajax({
-        url: "command.php?action=stands"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        handleresponse("standsconsole", jsonobject);
+        url: "/api/stand" + (standId ? "/" + standId : ""),
+        method: "GET",
+        dataType: "json",
+        success: function(response) {
+            generateStandCards(response);
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching stand data:", error);
+        }
     });
 }
 
@@ -207,7 +248,9 @@ function userlist() {
             dataSrc: '',
             cache: true
         },
-        dom: 'lrtip',
+        layout: {
+            topEnd: null //disable default searchField
+        },
         columns: [
             {
                 data: 'username',
@@ -220,15 +263,18 @@ function userlist() {
             },
             {
                 data: 'privileges',
-                name: 'privileges'
+                name: 'privileges',
+                type: 'num'
             },
             {
                 data: 'userLimit',
-                name: 'userLimit'
+                name: 'userLimit',
+                type: 'num'
             },
             {
                 data: 'credit',
                 name: 'credit',
+                type: 'num-fmt',
                 visible: creditenabled === 1,
                 render: function(data, type, row) {
                     return `${data} ${creditcurrency}`;
@@ -260,37 +306,73 @@ function userlist() {
 }
 
 function userstats() {
-    var code = "";
-    $.ajax({
-        url: "command.php?action=userstats"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        if (jsonobject.length > 0) code = '<table class="table table-striped" id="userstatstable"><thead><tr><th>User</th><th>Actions</th><th>Rentals</th><th>Returns</th></tr></thead>';
-        for (var i = 0, len = jsonobject.length; i < len; i++) {
-            code = code + '<tr><td><a href="#" class="edituser" data-userid="' + jsonobject[i]["userid"] + '">' + jsonobject[i]["username"] + '</a></td><td>' + jsonobject[i]["count"] + '</td><td>' + jsonobject[i]["rentals"] + '</td><td>' + jsonobject[i]["returns"] + '</td></tr>';
+    $('#report-daily-table').addClass('d-none').closest('#stats-report-table_wrapper').addClass('d-none');
+    $('#report-user-year').removeClass('d-none');
+    let table = $('#report-user-table').removeClass('d-none').DataTable({
+        destroy: true,
+        paging: false,
+        info: false,
+        searching: false,
+        ajax: {
+            url: '/api/report/user/',
+            dataSrc: '',
+            cache: true,
+        },
+        order: [[3, 'desc']],
+        columns: [
+            {
+                data: 'username',
+                name: 'username',
+            },
+            {
+                data: 'rentCount',
+            },
+            {
+                data: 'returnCount',
+            },
+            {
+                data: 'totalActionCount',
+            }
+        ],
+        error: function(xhr, error, code) {
+            console.error('Error loading daily report data:', error);
         }
-        if (jsonobject.length > 0) code = code + '</table>';
-        $('#reportsconsole').html(code);
-        $('#userstatstable').dataTable({
-            "paging": false,
-            "ordering": false,
-            "info": false
-        });
+    });
+
+    $('#year').on('change', function() {
+        table.ajax.url('/api/report/user/' + $('#year').val());
+        table.ajax.reload();
     });
 }
 
 function usagestats() {
-    var code = "";
-    $.ajax({
-        url: "command.php?action=usagestats"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        if (jsonobject.length > 0) code = '<table class="table table-striped" id="usagestatstable"><thead><tr><th>Day</th><th>Action</th><th>Count</th></tr></thead>';
-        for (var i = 0, len = jsonobject.length; i < len; i++) {
-            code = code + '<tr><td>' + jsonobject[i]["day"] + '</td><td>' + jsonobject[i]["action"] + '</td><td>' + jsonobject[i]["count"] + '</td></tr>';
+    $('#report-user-table').addClass('d-none').closest('#report-user-table_wrapper').addClass('d-none');
+    $('#report-user-year').addClass('d-none');
+    $('#report-daily-table').removeClass('d-none').DataTable({
+        destroy: true,
+        paging: false,
+        info: false,
+        searching: false,
+        ajax: {
+            url: '/api/report/daily',
+            dataSrc: '',
+            cache: true,
+        },
+        order: [[0, 'desc']],
+        columns: [
+            {
+                data: 'day',
+            },
+            {
+                data: 'rentCount',
+            },
+            {
+                data: 'returnCount',
+            }
+        ],
+        error: function(xhr, error, code) {
+            console.error('Error loading user report data:', error);
         }
-        if (jsonobject.length > 0) code = code + '</table>';
-        $('#reportsconsole').html(code);
     });
 }
 

@@ -1,40 +1,5 @@
 {% block user %}
-    <form class="container d-none" id="edituser">
-        <div class="form-group">
-            <label for="username" class="control-label">{{ 'Fullname:'|trans }}</label>
-            <input type="text" name="username" id="username" class="form-control"/>
-        </div>
-        <div class="form-group">
-            <label for="email">{{ 'Email:'|trans }}</label>
-            <input type="email" name="email" id="email" class="form-control"/>
-        </div>
-        {% if configuration.get('connectors')['sms'] %}
-            <div class="form-group">
-                <label for="phone">{{ 'Phone number:'|trans }}</label>
-                <input type="number" name="phone" id="phone" class="form-control"/>
-            </div>
-        {% endif %}
-        <div class="form-group">
-            <label for="privileges">{{ 'Privileges:'|trans }}</label>
-            <input type="number" name="privileges" id="privileges" class="form-control"/>
-        </div>
-        <div class="form-group">
-            <label for="limit">{{ 'Bike limit:'|trans }}</label>
-            <input type="number" name="limit" id="limit" class="form-control"/>
-        </div>
-        <input type="hidden" name="userid" id="userid" value=""/>
-        <button type="button" id="saveuser" class="btn btn-primary">{{ 'Save'|trans }}</button>
-        <button type="button" class="cancel btn btn-secondary">{{ 'Cancel'|trans }}</button>
-        {% if creditSystem.isEnabled %}
-            or
-            {% set multipliers = [1, 5, 10] %}
-            {% for multiplier in multipliers %}
-                <button type="button" class="btn btn-success addcredit" data-multiplier="{{ multiplier }}">
-                    {{ 'Add'|trans }} {{ creditSystem.getMinRequiredCredit() * multiplier }} {{ creditSystem.getCreditCurrency() }}
-                </button>
-            {% endfor %}
-        {% endif %}
-    </form>
+    {% include ('admin/user.edit.html.twig') %}
     <div id="userconsole">
         <div class="container mt-4">
             <div class="row">

@@ -84,32 +84,6 @@ function listbikes($stand)
     response($bicycles, 0, array('notes' => $notes, 'stacktopbike' => $stacktopbike), 0);
 }
 
-function liststands()
-{
-    global $db;
-
-    response(_('not implemented'), 0, '', 0);
-    exit;
-    $result = $db->query('SELECT standId,standName,standDescription,standPhoto,serviceTag,placeName,longitude,latitude FROM stands ORDER BY standName');
-    while ($row = $result->fetch_assoc()) {
-        $bikenum = $row['bikeNum'];
-        $result2 = $db->query("SELECT note FROM notes WHERE bikeNum='$bikenum' AND deleted IS NULL ORDER BY time DESC");
-        $note = '';
-        while ($row = $result2->fetch_assoc()) {
-            $note .= $row['note'] . '; ';
-        }
-        $note = substr($note, 0, strlen($note) - 2); // remove last two chars - comma and space
-        if ($note) {
-            $bicycles[] = '*' . $bikenum; // bike with note / issue
-            $notes[] = $note;
-        } else {
-            $bicycles[] = $bikenum;
-            $notes[] = '';
-        }
-    }
-    response($stands, 0, '', 0);
-}
-
 function removenote($userId, $bikeNum)
 {
     global $db;
@@ -297,30 +271,6 @@ function trips($userId, $bike = 0)
             $bikenum = $row['bikeNum'];
             $jsoncontent[$bikenum][] = array('longitude' => $row['longitude'], 'latitude' => $row['latitude']);
         }
-    }
-    echo json_encode($jsoncontent); // TODO change to response function
-}
-
-function getuserstats()
-{
-    global $db;
-    $result = $db->query('SELECT users.userId,username,count(action) AS count FROM users LEFT JOIN history ON users.userId=history.userId WHERE history.userId IS NOT NULL GROUP BY username ORDER BY count DESC');
-    while ($row = $result->fetch_assoc()) {
-        $result2 = $db->query("SELECT count(action) AS rentals FROM history WHERE action='RENT' AND userId=" . $row['userId']);
-        $row2 = $result2->fetch_assoc();
-        $result2 = $db->query("SELECT count(action) AS returns FROM history WHERE action='RETURN' AND userId=" . $row['userId']);
-        $row3 = $result2->fetch_assoc();
-        $jsoncontent[] = array('userid' => $row['userId'], 'username' => $row['username'], 'count' => $row['count'], 'rentals' => $row2['rentals'], 'returns' => $row3['returns']);
-    }
-    echo json_encode($jsoncontent); // TODO change to response function
-}
-
-function getusagestats()
-{
-    global $db;
-    $result = $db->query("SELECT count(action) AS count,DATE(time) AS day,action FROM history WHERE userId IS NOT NULL AND action IN ('RENT','RETURN') GROUP BY day,action ORDER BY day DESC LIMIT 60");
-    while ($row = $result->fetch_assoc()) {
-        $jsoncontent[] = array('day' => $row['day'], 'count' => $row['count'], 'action' => $row['action']);
     }
     echo json_encode($jsoncontent); // TODO change to response function
 }
