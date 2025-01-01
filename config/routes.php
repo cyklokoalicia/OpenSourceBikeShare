@@ -8,9 +8,9 @@ return function (RoutingConfigurator $routes) {
     $routes->add('command', '/command.php')
         ->controller([\BikeShare\Controller\CommandController::class, 'index']);
     $routes->add('scan', '/scan.php/{action}/{id}')
+        ->requirements(['id' => '\d+'])
+        ->requirements(['action' => 'rent|return'])
         ->controller([\BikeShare\Controller\ScanController::class, 'index']);
-    $routes->add('admin_old', '/admin.php')
-        ->controller([\BikeShare\Controller\AdminController::class, 'index']);
     $routes->add('admin', '/admin')
         ->controller([\BikeShare\Controller\AdminController::class, 'index']);
     $routes->add('register', '/register.php')
@@ -28,14 +28,19 @@ return function (RoutingConfigurator $routes) {
     $routes->add('reset_password', '/resetPassword')
         ->controller([\BikeShare\Controller\SecurityController::class, 'resetPassword']);
 
+    $routes->add('api_stand_index', '/api/stand')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\StandController::class, 'index']);
     $routes->add('api_bike_index', '/api/bike')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'index']);
     $routes->add('api_bike_item', '/api/bike/{bikeNumber}')
+        ->requirements(['bikeNumber' => '\d+'])
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'item']);
     $routes->add('api_bike_last_usage', '/api/bikeLastUsage/{bikeNumber}')
         ->methods(['GET'])
+        ->requirements(['bikeNumber' => '\d+'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'lastUsage']);
     $routes->add('api_coupon_index', '/api/coupon')
         ->methods(['GET'])
@@ -51,15 +56,27 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\Api\UserController::class, 'index']);
     $routes->add('api_user_item', '/api/user/{userId}')
         ->methods(['GET'])
+        ->requirements(['userId' => '\d+'])
         ->controller([\BikeShare\Controller\Api\UserController::class, 'item']);
     $routes->add('api_user_item_update', '/api/user/{userId}')
         ->methods(['PUT'])
+        ->requirements(['userId' => '\d+'])
         ->controller([\BikeShare\Controller\Api\UserController::class, 'update']);
     $routes->add('api_credit_add', '/api/credit')
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\CreditController::class, 'add']);
+    $routes->add('api_report_daily', '/api/report/daily')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\ReportController::class, 'daily']);
+    $routes->add('api_report_users', '/api/report/user/{year}')
+        ->methods(['GET'])
+        ->defaults(['year' => date('Y')])
+        ->requirements(['year' => '\d+'])
+        ->controller([\BikeShare\Controller\Api\ReportController::class, 'user']);
 
     $routes->add('personal_stats_year', '/personalStats/year/{year}')
         ->methods(['GET'])
+        ->defaults(['year' => date('Y')])
+        ->requirements(['year' => '\d+'])
         ->controller([\BikeShare\Controller\PersonalStatsController::class, 'yearStats']);
 };

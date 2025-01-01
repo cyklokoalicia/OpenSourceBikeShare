@@ -100,24 +100,6 @@ switch($action)
       checkbikeno($bikeno);
       revert($userid,$bikeno);
       break;
-   case "stands": #"operationId": "stand.get",
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      checkprivileges($userid);
-      liststands();
-      break;
-   case "userstats":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      checkprivileges($userid);
-      getuserstats();
-      break;
-   case "usagestats":
-      logrequest($userid,$action);
-      $auth->refreshSession();
-      checkprivileges($userid);
-      getusagestats();
-      break;
    case "trips":
       logrequest($userid,$action);
       $auth->refreshSession();

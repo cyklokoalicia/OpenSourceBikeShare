@@ -37,6 +37,7 @@ class AdminController extends AbstractController
             [
                 'configuration' => $configuration,
                 'creditSystem' => $creditSystem,
+                'currentYear' => date('Y'),
             ]
         );
     }

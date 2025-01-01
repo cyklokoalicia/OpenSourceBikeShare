@@ -28,7 +28,8 @@ class StandRepository
                     placeName,
                     longitude,
                     latitude
-                FROM stands'
+                FROM stands 
+                ORDER BY standName'
         )->fetchAllAssoc();
 
         $stands = [];

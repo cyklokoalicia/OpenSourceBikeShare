@@ -36,7 +36,7 @@ class BikeController extends AbstractController
     }
 
     /**
-     * @Route("/api/bike/{bikeNumber}", name="api_bike_item", methods={"GET"})
+     * @Route("/api/bike/{bikeNumber}", name="api_bike_item", methods={"GET"}, requirements: {"bikeNumber"="\d+"})
      */
     public function item(
         $bikeNumber,

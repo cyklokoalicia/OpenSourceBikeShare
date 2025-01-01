@@ -15,6 +15,7 @@ return [
     'Login' => 'Login',
     'Keep me logged in' => 'Keep me logged in',
     'Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.' => 'Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.',
+    'Day' => 'Day',
     'Rent' => 'Rent',
     'Describe problem' => 'Describe problem',
     'Return this bicycle to the selected stand.' => 'Return this bicycle to the selected stand.',
@@ -387,4 +388,9 @@ return [
         =0 { day }
         =1 { days }
     }',
+    'Rents' => 'Rents',
+    'Returns' => 'Returns',
+    'Total Actions' => 'Total Actions',
+    'Year' => 'Year',
+    'View on Google Maps' => 'View on Google Maps',
 ];
