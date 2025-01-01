@@ -5,7 +5,6 @@ use BikeShare\Rent\RentSystemInterface;
 require_once 'vendor/autoload.php';
 require_once 'actions-qrcode.php';
 
-$auth->refreshSession();
 $userid = $auth->getUserId();
 
 if (!$auth->isLoggedIn()) {

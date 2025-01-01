@@ -49,12 +49,6 @@
         var freeTimeSeconds =  {{ configuration.watches.freetime * 60 }}; // and convert to seconds
         var serverTimeSeconds = {{ date().timestamp }}; // using the server timestamp for time difference calculation
     </script>
-    <!--
-    {#    <?php if (file_exists('analytics.php')) { #}
-    {#        require 'analytics.php'; #}
-    {#    } #}
-    {#    ?> #}
-    -->
 </head>
 <body>
 <div id="map"></div>

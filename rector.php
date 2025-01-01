@@ -14,4 +14,7 @@ return RectorConfig::configure()
     ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_74)
     ->withSets([
         \Rector\Set\ValueObject\SetList::PHP_74,
+        \Rector\Symfony\Set\SymfonySetList::SYMFONY_54,
+        \Rector\Symfony\Set\SymfonySetList::SYMFONY_CODE_QUALITY,
+        \Rector\Symfony\Set\SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
     ]);

@@ -4,7 +4,7 @@ Open Source Bike Share
 
 Bottom-up bicycle sharing system suitable for smaller communities or areas such as campuses, companies etc.
 
-Website: [OpenSourceBikeShare.com](http://opensourcebikeshare.com)
+Website: [OpenSourceBikeShare.com](https://whitebikes.info/)
 
 Features
 ----------
@@ -17,17 +17,19 @@ Features
 * Admin to edit users, create stands or change bicycle availability
 * Google Analytics enabled for stats on web and bike usage
 * Connector system to support any provider of SMS Gateway / API
-* Easy web install to launch system
+* ~~Easy web install to launch system~~
 
 Where is it working?
 ---------
-3 bike sharing systems in 2 cities.
+Bikesharing system works in main city Bratislava.
+Previously worked in city Kezmarok Slovakia.
+~~3 bike sharing systems in 2 cities.~~
 
 ### Pilot project
-Currently running with about 50 bicycles in Bratislava, the capital of Slovakia.
+Currently running with about 80 bicycles in Bratislava, the capital of Slovakia.
 
 The bicycles in the bike share (featuring four digit code U-locks)
-![The bicycles in the bike share](http://i.cubeupload.com/Jr5pR3.jpg "Bicycles")
+![The bicycles in the bike share](http://whitebikes.info/img/u-lock.png "Bicycles")
 One of the stands
 ![One of the stand of the open source bicycle sharing system](http://whitebikes.info/stands/MAINSQ.jpg "The bicycles at one of the stands")
 Another stand with some bicycles
@@ -40,9 +42,6 @@ Play video to see it in action:
 [![Video of Cycling Faculty](https://cloud.githubusercontent.com/assets/8550349/5429137/281c4e54-83e1-11e4-8f7d-8780eb1a59c6.jpg)](http://youtu.be/WDCRNr_xXTY?t=40s)
 
 ![Web of the university bicycle share for students](https://cloud.githubusercontent.com/assets/8550349/5425915/ee90a994-832e-11e4-806e-a7e17242594d.png "Cycling Faculty student bicycle share")
-
-### Second city - Kezmarok
-Community run system with about 10 bicycles in Kezmarok, Slovakia.
 
 Demo
 ---------
