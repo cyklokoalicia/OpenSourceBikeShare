@@ -66,6 +66,9 @@
 <script src="//code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="//cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"></script>
 <script src="//stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% if googleAnalyticsId is not empty %}
+    {% include ('google.analytics.html.twig') %}
+{% endif %}
 {% block scripts %}{% endblock %}
 </body>
 </html>

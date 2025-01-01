@@ -1,9 +1,11 @@
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-55219995-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+<?php if (!empty($_ENV['GOOGLE_ANALYTICS_ID'])): ?>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?= $_ENV['GOOGLE_ANALYTICS_ID'] ?>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'UA-55219995-1');
-</script>
+      gtag('config', '<?= $_ENV['GOOGLE_ANALYTICS_ID'] ?>');
+    </script>
+<?php endif; ?>

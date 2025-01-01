@@ -30,21 +30,6 @@ class Auth
         }
     }
 
-    public function login($number, $password)
-    {
-        throw new \Exception("Deprecated method");
-    }
-
-    public function logout()
-    {
-        throw new \Exception("Deprecated method");
-    }
-
-    public function refreshSession()
-    {
-//        throw new \Exception("Deprecated method");
-    }
-
     public function isLoggedIn()
     {
         return !is_null($this->security->getUser());

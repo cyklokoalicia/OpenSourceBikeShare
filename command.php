@@ -38,14 +38,12 @@ switch($action)
       break;
    case "rent":
       logrequest($userid,$action);
-      $auth->refreshSession();
       $bikeno=trim($_GET["bikeno"]);
       checkbikeno($bikeno);
        $rentSystem->rentBike($userid,$bikeno);
       break;
    case "return":
       logrequest($userid,$action);
-      $auth->refreshSession();
       $bikeno=trim($_GET["bikeno"]);
       $stand=trim($_GET["stand"]);
       $note="";
@@ -55,19 +53,16 @@ switch($action)
       break;
    case "validatecoupon":
       logrequest($userid,$action);
-      $auth->refreshSession();
       $coupon=trim($_GET["coupon"]);
       validatecoupon($userid,$coupon);
       break;
 	case "changecity":
       logrequest($userid,$action);
-      $auth->refreshSession();
       $city=trim($_GET["city"]);
       changecity($userid,$city);
       break;
    case "forcerent":
       logrequest($userid,$action);
-      $auth->refreshSession();
       checkprivileges($userid);
       $bikeno=trim($_GET["bikeno"]);
       checkbikeno($bikeno);
@@ -75,7 +70,6 @@ switch($action)
       break;
    case "forcereturn":
       logrequest($userid,$action);
-      $auth->refreshSession();
       checkprivileges($userid);
       $bikeno=trim($_GET["bikeno"]);
       $stand=trim($_GET["stand"]);
@@ -86,7 +80,6 @@ switch($action)
       break;
    case "removenote":
       logrequest($userid,$action);
-      $auth->refreshSession();
       checkprivileges($userid);
       $bikeno = trim($_GET["bikeno"]);
       checkbikeno($bikeno);
@@ -94,7 +87,6 @@ switch($action)
       break;
    case "revert":
       logrequest($userid,$action);
-      $auth->refreshSession();
       $bikeno=trim($_GET["bikeno"]);
       checkprivileges($userid);
       checkbikeno($bikeno);
@@ -102,7 +94,6 @@ switch($action)
       break;
    case "trips":
       logrequest($userid,$action);
-      $auth->refreshSession();
       checkprivileges($userid);
       if ($_GET["bikeno"])
          {

@@ -13,4 +13,15 @@ Daniel Duris, dusoft@staznosti.sk
 * Code improvements
 * Bug fixes
 
+Volodymyr Panivko, sveneld300@gmail.com
+------------
+* Migration to Symfony
+* Migration to new php version
+* Unit testing
+* Code improvements
+* Bug fixes
+* Documentation
+* Composer support
+* etc.
+
 See LICENSE for more info.
