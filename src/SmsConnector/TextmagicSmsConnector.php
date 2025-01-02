@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\SmsConnector;
 
-use BikeShare\App\Configuration;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * http://textmagic.com
@@ -11,43 +13,21 @@ use BikeShare\App\Configuration;
  */
 class TextmagicSmsConnector extends AbstractConnector
 {
-    /**
-     * @var string
-     */
-    private $gatewayUser = '';
-    /**
-     * @var string
-     */
-    private $gatewayPassword = '';
-    /**
-     * @var string
-     */
-    private $gatewaySenderNumber = '';
+    private string $gatewayUser = '';
+    private string $gatewayPassword = '';
+    private string $gatewaySenderNumber = '';
+    private Request $request;
 
     public function __construct(
-        Configuration $config,
+        Request $request,
+        array $configuration,
         $debugMode = false
     ) {
-        parent::__construct($config, $debugMode);
-
-        if (isset($_POST["text"])) {
-            $this->message = $_POST["text"];
-        }
-        if (isset($_POST["from"])) {
-            $this->number = $_POST["from"];
-        }
-        if (isset($_POST["message_id"])) {
-            $this->uuid = $_POST["message_id"];
-        }
-        if (isset($_POST["timestamp"])) {
-            $this->time = date("Y-m-d H:i:s", $_POST["timestamp"]);
-        }
-        if (isset($_SERVER['REMOTE_ADDR'])) {
-            $this->ipaddress = $_SERVER['REMOTE_ADDR'];
-        }
+        parent::__construct($configuration, $debugMode);
+        $this->request = $request;
     }
 
-    public function checkConfig(array $config)
+    public function checkConfig(array $config): void
     {
         if ($this->debugMode) {
             return;
@@ -67,14 +47,11 @@ class TextmagicSmsConnector extends AbstractConnector
     // confirm SMS received to API
     public function respond()
     {
-        if ($this->debugMode) {
-            return;
-        }
         // do nothing as no response required
     }
 
     // send SMS message via API
-    public function send($number, $text)
+    public function send($number, $text): void
     {
         if ($this->debugMode) {
             return;
@@ -90,6 +67,25 @@ class TextmagicSmsConnector extends AbstractConnector
         );
 
         fopen($url, "r");
+    }
+
+    public function receive(): void
+    {
+        if ($this->request->request->has('text')) {
+            $this->message = $this->request->request->get('text');
+        }
+        if ($this->request->request->has('from')) {
+            $this->number = $this->request->request->get('from');
+        }
+        if ($this->request->request->has('message_id')) {
+            $this->uuid = $this->request->request->get('message_id');
+        }
+        if ($this->request->request->has('timestamp')) {
+            $this->time = date("Y-m-d H:i:s", $this->request->request->get('timestamp'));
+        }
+        if ($this->request->server->has('REMOTE_ADDR')) {
+            $this->ipaddress = $this->request->server->get('REMOTE_ADDR');
+        }
     }
 
     public static function getType(): string

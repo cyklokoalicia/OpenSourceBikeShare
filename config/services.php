@@ -20,6 +20,7 @@ use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Rent\RentSystemInterface;
 use BikeShare\Sms\SmsSender;
 use BikeShare\Sms\SmsSenderInterface;
+use BikeShare\SmsCommand\SmsCommandInterface;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -33,6 +34,7 @@ return static function (ContainerConfigurator $container): void {
     $services->instanceof(RentSystemInterface::class)->tag('rentSystem');
     $services->instanceof(MailSenderInterface::class)->tag('mailSender');
     $services->instanceof(SmsConnectorInterface::class)->tag('smsConnector');
+    $services->instanceof(SmsCommandInterface::class)->tag('smsCommand');
 
     $services->alias('logger', 'monolog.logger');
 
@@ -62,6 +64,9 @@ return static function (ContainerConfigurator $container): void {
             '../src/App/Kernel.php',
             '../src/App/Entity',
         ]);
+
+    $services->get(\BikeShare\Controller\SmsRequestController::class)
+        ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 
     $services->get(MysqliDb::class)
         ->args([
@@ -100,11 +105,10 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$forceStack', expr("service('BikeShare\\\App\\\Configuration').get('forceStack')"));
 
     $services->load('BikeShare\\SmsConnector\\', '../src/SmsConnector')
-        ->exclude([
-            '../src/SmsConnector/SmsGateway/SmsGateway.php'
-        ]);
+        ->bind('$request', expr("service('request_stack').getCurrentRequest()"))
+        ->bind('$configuration', env('json:SMS_CONNECTOR_CONFIG'));
     $services->get(SmsConnectorFactory::class)
-        ->arg('$connectorConfig', expr("service('BikeShare\\\App\\\Configuration').get('connectors')"));
+        ->arg('$connectorName', env('SMS_CONNECTOR'));
 
     $services->alias(SmsSenderInterface::class, SmsSender::class);
 

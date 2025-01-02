@@ -1,47 +1,12 @@
 <?php
 
-use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
-
 require_once 'vendor/autoload.php';
 require("common.php");
-
-function help($number)
-{
-    global $db, $smsSender, $user, $creditSystem;
-    $userid = $user->findUserIdByNumber($number);
-    $privileges = $user->findPrivileges($userid);
-   if ($privileges>0)
-      {
-      $message="Commands:\nHELP\n";
-      if ($creditSystem->isEnabled()) {
-          $message.="CREDIT\n";
-      }
-      $message.="FREE\nRENT bikenumber\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem\n---\nFORCERENT bikenumber\nFORCERETURN bikeno stand\nLIST stand\nLAST bikeno\nREVERT bikeno\nADD email phone fullname\nDELNOTE bikeno [pattern]\nTAG stand note for all bikes\nUNTAG stand [pattern]";
-      $smsSender->send($number,$message);
-      }
-   else
-      {
-      $message="Commands:\nHELP\n";
-      if ($creditSystem->isEnabled()) {
-          $message.="CREDIT\n";
-      }
-      $message.="FREE\nRENT bikeno\nRETURN bikeno stand\nWHERE bikeno\nINFO stand\nNOTE bikeno problem description\nNOTE stand problem description";
-      $smsSender->send($number,$message);
-      }
-}
 
 function unknownCommand($number,$command)
 {
    global $smsSender;
    $smsSender->send($number,_('Error. The command')." ".$command." "._('does not exist. If you need help, send:')." HELP");
-}
-
-function validateNumber($number)
-{
-    global $user;
-
-    return !empty($user->findUserIdByNumber($number));
 }
 
 function info($number,$stand)
@@ -92,16 +57,6 @@ function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$er
       }
    // if more arguments provided than required, they will be silently ignored
    return TRUE;
-}
-
-function credit($number)
-{
-    global $smsSender, $user, $creditSystem;
-
-    $userId = $user->findUserIdByNumber($number);
-    $userRemainingCredit = $creditSystem->getUserCredit($userId) . $creditSystem->getCreditCurrency();
-
-    $smsSender->send($number, _('Your remaining credit:') . " " . $userRemainingCredit);
 }
 
 function where($number,$bike)
@@ -230,41 +185,6 @@ function freeBikes($number)
 
    $smsSender->send($number,$listBikes);
 }
-
-function log_sms($sms_uuid, $sender, $receive_time, $sms_text, $ip)
-{
-    global $configuration, $logger;
-    /**
-     * @var DbInterface
-     */
-    $localdb = new MysqliDb(
-        $configuration->get('dbserver'),
-        $configuration->get('dbuser'),
-        $configuration->get('dbpassword'),
-        $configuration->get('dbname'),
-        $logger
-    );
-
-    #TODO does it needed???
-    $localdb->setAutocommit(true);
-
-    $sms_uuid = $localdb->escape($sms_uuid);
-    $sender = $localdb->escape($sender);
-    $receive_time = $localdb->escape($receive_time);
-    $sms_text = $localdb->escape($sms_text);
-    $ip = $localdb->escape($ip);
-
-    $result = $localdb->query("SELECT sms_uuid FROM received WHERE sms_uuid='$sms_uuid'");
-    if (DEBUG === FALSE and $result->num_rows >= 1) {
-        // sms already exists in DB, possible problem
-        notifyAdmins(_('Problem with SMS') . " $sms_uuid!", 1);
-        return FALSE;
-    } else {
-        $result = $localdb->query("INSERT INTO received SET sms_uuid='$sms_uuid',sender='$sender',receive_time='$receive_time',sms_text='$sms_text',ip='$ip'");
-    }
-}
-
-
 
 function delnote($number,$bikeNum,$message)
 {
