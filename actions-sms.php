@@ -9,54 +9,22 @@ function unknownCommand($number,$command)
    $smsSender->send($number,_('Error. The command')." ".$command." "._('does not exist. If you need help, send:')." HELP");
 }
 
-function info($number,$stand)
-{
-        global $db, $smsSender;
-        $stand = strtoupper($stand);
-
-        if (!preg_match("/^[A-Z]+[0-9]*$/",$stand))
-        {
-                $smsSender->send($number,_('Stand name')." '".$stand."' "._('has not been recognized. Stands are marked by CAPITALLETTERS.'));
-                return;
-        }
-        $result=$db->query("SELECT standId FROM stands where standName='$stand'");
-                if ($result->num_rows!=1)
-                {
-                        $smsSender->send($number,_('Stand')." '$stand' "._('does not exist.'));
-                        return;
-                }
-                $row =$result->fetch_assoc();
-                $standId =$row["standId"];
-        $result=$db->query("SELECT * FROM stands where standname='$stand'");
-                $row =$result->fetch_assoc();
-                $standDescription=$row["standDescription"];
-                $standPhoto=$row["standPhoto"];
-                $standLat=round($row["latitude"],5);
-                $standLong=round($row["longitude"],5);
-                $message=$stand." - ".$standDescription;
-                if ($standLong AND $standLat) $message.=", GPS: ".$standLat.",".$standLong;
-                if ($standPhoto) $message.=", ".$standPhoto;
-                $smsSender->send($number,$message);
-
-}
-
 /** Validate received SMS - check message for required number of arguments
  * @param string $number sender's phone number
  * @param int $receivedargumentno number of received arguments
  * @param int $requiredargumentno number of requiredarguments
  * @param string $errormessage error message to send back in case of mismatch
 **/
-function validateReceivedSMS($number,$receivedargumentno,$requiredargumentno,$errormessage)
+function validateReceivedSMS($number, $receivedargumentno, $requiredargumentno, $errormessage)
 {
-   global $db, $sms, $smsSender;
-   if ($receivedargumentno<$requiredargumentno)
-      {
-      $smsSender->send($number,_('Error. More arguments needed, use command')." ".$errormessage);
-      $sms->respond();
-      exit;
-      }
-   // if more arguments provided than required, they will be silently ignored
-   return TRUE;
+    global $db, $sms, $smsSender;
+    if ($receivedargumentno < $requiredargumentno) {
+        $smsSender->send($number, _('Error. More arguments needed, use command') . " " . $errormessage);
+        $sms->respond();
+        exit;
+    }
+    // if more arguments provided than required, they will be silently ignored
+    return TRUE;
 }
 
 function where($number,$bike)
@@ -142,48 +110,6 @@ function listBikes($number,$stand)
    if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
 
    $smsSender->send($number,sprintf(ngettext('%d bike','%d bikes',$rentedBikes),$rentedBikes)." "._('on stand')." ".$stand.": ".$listBikes);
-}
-
-
-function freeBikes($number)
-{
-
-   global $db, $smsSender, $user;
-   $userId = $user->findUserIdByNumber($number);
-
-   $result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount>0 order by placeName");
-   $rentedBikes=$result->num_rows;
-
-   if ($rentedBikes==0)
-   {
-   	$listBikes=_('No free bikes.');
-   }
-   else $listBikes=_('Free bikes counts').":";
-
-   $listBikes="";
-   while ($row=$result->fetch_assoc())
-      {
-      $listBikes.=$row["placeName"].":".$row["bikeCount"];
-      $listBikes.=",";
-      }
-   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
-
-   $result=$db->query("SELECT count(bikeNum) as bikeCount,placeName from bikes right join stands on bikes.currentStand=stands.standId where stands.serviceTag=0 group by placeName having bikeCount=0 order by placeName");
-   $rentedBikes=$result->num_rows;
-
-   if ($rentedBikes!=0)
-   {
-        $listBikes.=" "._('Empty stands').": ";
-   }
-
-   while ($row=$result->fetch_assoc())
-      {
-      $listBikes.=$row["placeName"];
-      $listBikes.=",";
-      }
-   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
-
-   $smsSender->send($number,$listBikes);
 }
 
 function delnote($number,$bikeNum,$message)
@@ -566,50 +492,6 @@ function note($number,$bikeNum,$message)
       notifyAdmins(_('Note #').$noteid.": b.".$bikeNum." (".$bikeStatus.") "._('by')." ".$reportedBy." (".$number."):".$userNote);
       }
 
-}
-
-function last($number,$bike)
-{
-    //@see \BikeShare\Repository\BikeRepository::findItemLastUsage
-    global $db, $smsSender, $user;
-    $userId = $user->findUserIdByNumber($number);
-    $bikeNum = intval($bike);
-
-    $result = $db->query("SELECT bikeNum FROM bikes where bikeNum=$bikeNum");
-    if ($result->rowCount() != 1) {
-        $smsSender->send($number, _('Bike') . " " . $bikeNum . " " . _('does not exist') . ".");
-        return;
-    }
-
-    $result = $db->query(
-        "SELECT userName,parameter,standName,action 
-               FROM `history`
-               JOIN users ON history.userid=users.userid
-               LEFT JOIN stands ON stands.standid=history.parameter 
-               WHERE bikenum=$bikeNum AND action in ('RETURN','RENT','REVERT')
-               ORDER BY time DESC
-               LIMIT 10"
-    );
-
-    $historyInfo = "B.$bikeNum:";
-    while ($row = $result->fetchAssoc()) {
-        if (($standName = $row["standName"]) != NULL) {
-            if ($row["action"] == "REVERT")  {
-                $historyInfo .= "*";
-            }
-            $historyInfo .= $standName;
-        } else {
-            $historyInfo .= $row["userName"] . "(" . $row["parameter"] . ")";
-        }
-        if ($result->rowCount() > 1) {
-            $historyInfo .= ",";
-        }
-    }
-    if ($result->rowCount() > 1)  {
-        $historyInfo = substr($historyInfo, 0, strlen($historyInfo) - 1);
-    }
-
-    $smsSender->send($number, $historyInfo);
 }
 
 function revert($number,$bikeNum)

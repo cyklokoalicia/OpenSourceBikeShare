@@ -8,16 +8,16 @@ use BikeShare\App\Entity\User;
 use BikeShare\App\Kernel;
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Sms\SmsSenderInterface;
+use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\SmsCommand\SmsCommandInterface;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SmsRequestController extends AbstractController
 {
@@ -26,7 +26,7 @@ class SmsRequestController extends AbstractController
     private SmsSenderInterface $smsSender;
     private ServiceLocator $commandLocator;
     private UserProvider $userProvider;
-    private Translator $translator;
+    private TranslatorInterface $translator;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -35,7 +35,7 @@ class SmsRequestController extends AbstractController
         SmsSenderInterface $smsSender,
         ServiceLocator $commandLocator,
         UserProvider $userProvider,
-        Translator $translator,
+        TranslatorInterface $translator,
         LoggerInterface $logger
     ) {
         $this->kernel = $kernel;
@@ -98,6 +98,12 @@ class SmsRequestController extends AbstractController
                     '%helpCommand%' => 'HELP'
                 ]
             );
+        } catch (ValidationException $e) {
+            $this->logger->warning(
+                'Validation error',
+                ['user' => $user, 'command' => $commandName, 'exception' => $e]
+            );
+            $message = $e->getMessage();
         } catch (\Throwable $e) {
             $this->logger->error(
                 'Error executing command',

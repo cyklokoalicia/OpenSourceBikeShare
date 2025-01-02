@@ -6,18 +6,18 @@ namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Credit\CreditSystemInterface;
-use Symfony\Bundle\FrameworkBundle\Translation\Translator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class CreditCommand implements SmsCommandInterface
 {
     private const COMMAND_NAME = 'CREDIT';
 
     private CreditSystemInterface $creditSystem;
-    private Translator $translator;
+    private TranslatorInterface $translator;
 
     public function __construct(
         CreditSystemInterface $creditSystem,
-        Translator $translator
+        TranslatorInterface $translator
     ) {
         $this->creditSystem = $creditSystem;
         $this->translator = $translator;
@@ -27,10 +27,10 @@ class CreditCommand implements SmsCommandInterface
     {
         if (!$this->creditSystem->isEnabled()) {
             return $this->translator->trans(
-                'Error. The command %badCommand% does not exist. If you need help, send: %helpCommand%',
+                'Error. The command {badCommand} does not exist. If you need help, send: {helpCommand}',
                 [
-                    '%badCommand%' => self::COMMAND_NAME,
-                    '%helpCommand%' => 'HELP'
+                    'badCommand' => self::COMMAND_NAME,
+                    'helpCommand' => 'HELP'
                 ]
             );
         }
@@ -38,7 +38,7 @@ class CreditCommand implements SmsCommandInterface
         $userRemainingCredit = $this->creditSystem->getUserCredit($user->getUserId())
             . $this->creditSystem->getCreditCurrency();
 
-        $message = $this->translator->trans('Your remaining credit: %credit%', ['credit' => $userRemainingCredit]);
+        $message = $this->translator->trans('Your remaining credit: {credit}', ['credit' => $userRemainingCredit]);
 
         return $message;
     }

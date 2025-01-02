@@ -151,4 +151,21 @@ class BikeRepository
 
         return $result;
     }
+
+    public function findFreeBikes(): array
+    {
+        $result = $this->db->query(
+            "SELECT 
+              count(*) as bikeCount,
+              standName
+            FROM bikes
+            JOIN stands on bikes.currentStand=stands.standId 
+            WHERE stands.serviceTag=0
+            GROUP BY placeName 
+            HAVING bikeCount>0 
+            ORDER BY 2"
+        )->fetchAllAssoc();
+
+        return $result;
+    }
 }

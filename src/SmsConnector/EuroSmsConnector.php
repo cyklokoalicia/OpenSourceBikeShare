@@ -66,16 +66,16 @@ class EuroSmsConnector extends AbstractConnector
     public function receive(): void
     {
         if ($this->request->query->has('sms_text')) {
-            $this->message = $this->request->query->get('sms_text');
+            $this->message = $this->request->query->get('sms_text', '');
         }
         if ($this->request->query->has('sender')) {
-            $this->number = $this->request->query->get('sender');
+            $this->number = $this->request->query->get('sender', '');
         }
         if ($this->request->query->has('sms_uuid')) {
-            $this->uuid = $this->request->query->get('sms_uuid');
+            $this->uuid = $this->request->query->get('sms_uuid', '');
         }
         if ($this->request->query->has('receive_time')) {
-            $this->time = $this->request->query->get('receive_time');
+            $this->time = $this->request->query->get('receive_time', '');
         }
         if ($this->request->server->has('REMOTE_ADDR')) {
             $this->ipaddress = $this->request->server->get('REMOTE_ADDR');

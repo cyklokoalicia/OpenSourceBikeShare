@@ -13,9 +13,6 @@ $rentSystem = $rentSystemFactory->getRentSystem('sms');
 $args = preg_split("/\s+/", $sms->getProcessedMessage());//preg_split must be used instead of explode because of multiple spaces
 
 switch ($args[0]) {
-    case "FREE":
-        freeBikes($sms->getNumber());
-        break;
     case "RENT":
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number:') . " RENT 47");
         $rentSystem->rentBike($sms->getNumber(), $args[1]);//intval
@@ -38,10 +35,6 @@ switch ($args[0]) {
     case "WHO":
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number:') . " WHERE 47");
         where($sms->getNumber(), $args[1]);
-        break;
-    case "INFO":
-        validateReceivedSMS($sms->getNumber(), count($args), 2, _('with stand name:') . " INFO RACKO");
-        info($sms->getNumber(), $args[1]);
         break;
     case "NOTE":
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number/stand name and problem description:') . " NOTE 47 " . _('Flat tire on front wheel'));
@@ -74,11 +67,6 @@ switch ($args[0]) {
         checkUserPrivileges($sms->getNumber());
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number:') . " REVERT 47");
         revert($sms->getNumber(), $args[1]);
-        break;
-    case "LAST":
-        checkUserPrivileges($sms->getNumber());
-        validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number:') . " LAST 47");
-        last($sms->getNumber(), $args[1]);
         break;
     default:
         unknownCommand($sms->getNumber(), $args[0]);

@@ -38,10 +38,10 @@ class DebugConnector extends AbstractConnector
 
     public function receive(): void
     {
-        $this->message = $this->request->get('message');
-        $this->number = $this->request->get('number');
-        $this->uuid = $this->request->get('uuid');
-        $this->time = $this->request->get('time');
+        $this->message = $this->request->get('message', '');
+        $this->number = $this->request->get('number', '');
+        $this->uuid = $this->request->get('uuid', '');
+        $this->time = $this->request->get('time', '');
         if ($this->request->server->has('REMOTE_ADDR')) {
             $this->ipaddress = $this->request->server->get('REMOTE_ADDR');
         }
