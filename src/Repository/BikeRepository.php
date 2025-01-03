@@ -168,4 +168,21 @@ class BikeRepository
 
         return $result;
     }
+
+    public function findBikeCurrentUsage(int $bikeNumber): array
+    {
+        $result = $this->db->query(
+            "SELECT
+                bikes.bikeNum,
+                users.number,
+                users.userName,
+                stands.standName 
+            FROM bikes 
+                LEFT JOIN users on bikes.currentUser=users.userID 
+                LEFT JOIN stands on bikes.currentStand=stands.standId 
+            where bikeNum=$bikeNumber"
+        )->fetchAssoc();
+
+        return $result;
+    }
 }

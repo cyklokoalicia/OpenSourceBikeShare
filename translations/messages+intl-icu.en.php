@@ -138,6 +138,8 @@ return [
     'has been returned by admin' => '',
     'Credit' => 'Credit',
     'Bike note' => '',
+    'Bike {bikeNumber} is at stand {standName}. {note}' => 'Bike {bikeNumber} is at stand {standName}. {note}',
+    'Bike {bikeNumber} is rented by {userName} (+{phone}). {note}' => 'Bike {bikeNumber} is rented by {userName} (+{phone}). {note}',
     'is at stand' => '',
     'is rented by' => '',
     'is empty' => '',

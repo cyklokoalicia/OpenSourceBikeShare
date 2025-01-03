@@ -22,33 +22,6 @@ function response($message, $error = 0, $additional = '', $log = 1)
     exit;
 }
 
-function where($userId, $bike)
-{
-    global $db;
-    $bikeNum = $bike;
-
-    $result = $db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
-    $row = $result->fetch_assoc();
-    $phone = $row['number'];
-    $userName = $row['userName'];
-    $standName = $row['standName'];
-    $result = $db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC");
-    $note = '';
-    while ($row = $result->fetch_assoc()) {
-        $note .= $row['note'] . '; ';
-    }
-    $note = substr($note, 0, strlen($note) - 2); // remove last two chars - comma and space
-    if ($note) {
-        $note = _('Bike note:') . ' ' . $note;
-    }
-
-    if ($standName) {
-        response('<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('at') . ' <span class="label label-primary">' . $standName . '</span>.</h3>' . $note);
-    } else {
-        response('<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('rented by') . ' <span class="label label-primary">' . $userName . '</span>.</h3>' . _('Phone') . ': <a href="tel:+' . $phone . '">+' . $phone . '</a>. ' . $note);
-    }
-}
-
 function listbikes($stand)
 {
     global $db, $configuration;

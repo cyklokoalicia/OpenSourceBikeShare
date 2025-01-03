@@ -27,43 +27,6 @@ function validateReceivedSMS($number, $receivedargumentno, $requiredargumentno, 
     return TRUE;
 }
 
-function where($number,$bike)
-{
-
-   global $db, $smsSender, $user;
-   $userId = $user->findUserIdByNumber($number);
-   $bikeNum = intval($bike);
-
-   $result=$db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
-   if ($result->num_rows!=1)
-      {
-      $smsSender->send($number,_('Bike')." ".$bikeNum." "._('does not exist').".");
-      return;
-      }
-   $row =$result->fetch_assoc();
-   $phone=$row["number"];
-   $userName=$row["userName"];
-   $standName=$row["standName"];
-   $result=$db->query("SELECT note FROM notes WHERE bikeNum=$bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1");
-   $row=$result->fetch_assoc();
-   $note=$row["note"];
-   if ($note)
-      {
-      $note=" "._('Bike note').": $note";
-      }
-
-   if ($standName!=NULL)
-      {
-      $smsSender->send($number,_('Bike')." ".$bikeNum." "._('is at stand')." ".$standName.$note);
-      }
-   else
-      {
-      $smsSender->send($number,_('Bike')." ".$bikeNum." "._('is rented by')." ".$userName." (+".$phone.").".$note);
-      }
-
-}
-
-
 function listBikes($number,$stand)
 {
 

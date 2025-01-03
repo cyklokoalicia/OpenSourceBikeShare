@@ -31,11 +31,6 @@ switch ($args[0]) {
         validateReceivedSMS($sms->getNumber(), count($args), 3, _('with bike number and stand name:') . " FORCERETURN 47 RACKO");
         $rentSystem->returnBike($sms->getNumber(), $args[1], $args[2], trim(urldecode($sms->getMessage())), TRUE);
         break;
-    case "WHERE":
-    case "WHO":
-        validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number:') . " WHERE 47");
-        where($sms->getNumber(), $args[1]);
-        break;
     case "NOTE":
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number/stand name and problem description:') . " NOTE 47 " . _('Flat tire on front wheel'));
         note($sms->getNumber(), $args[1], trim(urldecode($sms->getMessage())));

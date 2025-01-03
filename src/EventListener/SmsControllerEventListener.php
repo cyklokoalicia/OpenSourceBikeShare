@@ -27,7 +27,13 @@ class SmsControllerEventListener
 
     public function __invoke(ControllerEvent $event): void
     {
-        if (!$event->isMainRequest()) {
+        if (
+            !$event->isMainRequest()
+            || !in_array(
+                $event->getRequest()->attributes->get('_route'),
+                ['sms_request', 'sms_request_old']
+            )
+        ) {
             return;
         }
 
