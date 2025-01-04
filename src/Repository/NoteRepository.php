@@ -52,7 +52,7 @@ class NoteRepository
         return $result;
     }
 
-    public function addNoteToStand($standId, int $userId, string $note)
+    public function addNoteToStand(int $standId, int $userId, string $note)
     {
         $this->db->query(
             'INSERT INTO notes (standId, userId, note, time)
@@ -66,5 +66,31 @@ class NoteRepository
             'INSERT INTO notes (bikeNum, userId, note, time)
                 VALUES (' . $bikeNumber . ', ' . $userId . ', "' . $note . '", NOW())'
         );
+    }
+
+    public function deleteStandNote(int $standId, string $notePattern): int
+    {
+        $this->db->query(
+            'UPDATE notes
+                SET deleted = NOW()
+                WHERE standId = ' . $standId . '
+                    AND deleted IS NULL
+                    AND note LIKE "%' . $notePattern . '%"'
+        );
+
+        return $this->db->getAffectedRows();
+    }
+
+    public function deleteBikeNote(int $bikeNumber, string $notePattern): int
+    {
+        $this->db->query(
+            'UPDATE notes
+                SET deleted = NOW()
+                WHERE bikeNum = ' . $bikeNumber . '
+                    AND deleted IS NULL
+                    AND note LIKE "%' . $notePattern . '%"'
+        );
+
+        return $this->db->getAffectedRows();
     }
 }

@@ -51,7 +51,7 @@ class NoteCommand extends AbstractCommand implements SmsCommandInterface
         );
     }
 
-    private function addBikeNote(User $user, int $bikeNumber, string $note)
+    private function addBikeNote(User $user, int $bikeNumber, string $note): string
     {
         if (empty($note)) {
             return $this->translator->trans(

@@ -35,10 +35,6 @@ switch ($args[0]) {
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with stand name and problem description:') . " TAG MAINSQUARE " . _('vandalism'));
         tag($sms->getNumber(), $args[1], trim(urldecode($sms->getMessage())));
         break;
-    case "DELNOTE":
-        validateReceivedSMS($sms->getNumber(), count($args), 1, _('with bike number and optional pattern. All messages or notes matching pattern will be deleted:') . " NOTE 47 wheel");
-        delnote($sms->getNumber(), $args[1], trim(urldecode($sms->getMessage())));
-        break;
     case "UNTAG":
         validateReceivedSMS($sms->getNumber(), count($args), 1, _('with stand name and optional pattern. All notes matching pattern will be deleted for all bikes on that stand:') . " UNTAG SAFKO1 pohoda");
         untag($sms->getNumber(), $args[1], trim(urldecode($sms->getMessage())));

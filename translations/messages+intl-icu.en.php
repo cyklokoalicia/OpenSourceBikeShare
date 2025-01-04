@@ -32,16 +32,36 @@ return [
     'Flat tire on front wheel' => 'Flat tire on front wheel',
     'Note for stand {standName} saved.' => 'Note for stand {standName} saved.',
     'Bike {bikeNumber} is at {standName}.' => 'Bike {bikeNumber} is at {standName}.',
-    'with bike number and optional pattern. All messages or notes matching pattern will be deleted:' => '',
+    'with bike number and optional pattern. All messages or notes matching pattern will be deleted: {example}' => 'with bike number and optional pattern. All messages or notes matching pattern will be deleted: {example}',
+    'No notes found for stand {standName} to delete.' => 'No notes found for stand {standName} to delete.',
+    'No notes matching pattern {pattern} found on stand {standName} to delete.' => 'No notes matching pattern {pattern} found on stand {standName} to delete.',
+    'No notes found for bike {bikeNumber} to delete.' => 'No notes found for bike {bikeNumber} to delete.',
+    'No notes matching pattern {pattern} found for bike {bikeNumber} to delete.' => 'No notes matching pattern {pattern} found for bike {bikeNumber} to delete.',
+    'All {count} notes for bike {bikeNumber} were deleted.' => '{count, plural, 
+        one {One note for bike {bikeNumber} was deleted.}
+        other {All # notes for bike {bikeNumber} were deleted.}
+    }',
+    '{count} notes matching pattern "{pattern}" for bike {bikeNumber} were deleted.' => '{count, plural, 
+        one {One note matching pattern "{pattern}" for bike {bikeNumber} was deleted.}
+        other {# notes matching pattern "{pattern}" for bike {bikeNumber} were deleted.}
+    }',
+    'All {count} notes for stand {standName} were deleted.' => '{count, plural, 
+        one {One note for stand {standName} was deleted.}
+        other {All # notes for stand {standName} were deleted.}
+    }',
+    '{count} notes matching pattern "{pattern}" for stand {standName} were deleted.' => '{count, plural, 
+        one {One note matching pattern "{pattern}" for stand {standName} was deleted.}
+        other {# notes matching pattern "{pattern}" for stand {standName} were deleted.}
+    }',
     'with email, phone, fullname:' => '',
     'You are not logged in.' => '',
     'You are below required credit' => '',
     'Please, recharge your credit.' => '',
     'You can not rent any bikes. Contact the admins to lift the ban.' => '',
     'You can only rent' => '',
-    '%d bike' => '{$key, plural,
-        =0 { bike }
-        =1 { bikes }
+    '{count} bike' => '{count, plural,
+        one { 1 bike }
+        other { # bikes }
     }',
     'at once' => '',
     'at once and you have already rented' => '',
@@ -160,9 +180,9 @@ return [
     'No notes matching pattern' => '',
     'found for bike' => '',
     'All' => '',
-    '%d note' => '{$key, plural,
-        =0 {  }
-        =1 {  }
+    '{count} note' => '{count, plural,
+        one { 1 note } }
+        other { # notes }
     }',
     'for bike' => '',
     'deleted by' => '',
@@ -201,9 +221,9 @@ return [
     'deleted' => '',
     'history' => '',
     'Current network usage:' => '',
-    '%d bicycle' => '{$key, plural,
-        =0 {  }
-        =1 {  }
+    '{count} bicycle' => '{count, plural,
+        one { 1 bicycle }
+        other { # bicycles }
     }',
     'in use' => '',
     'Bicycle' => '',
@@ -315,14 +335,14 @@ return [
     'Active' => '',
     'Not used / hidden' => '',
     'Stand location:' => '',
-    '%d stand' => '{$key, plural,
-        =0 {  }
-        =1 {  }
+    '{count} stand' => '{count, plural,
+        one { 1 stand }
+        other { # stands }
     }',
     'set up and' => '',
-    '%d photo' => '{$key, plural,
-        =0 {  }
-        =1 {  }
+    '{count} photo' => '{count, plural,
+        one { 1 photo }
+        other { # photos }
     }',
     'uploaded' => '',
     'Set system options' => '',
