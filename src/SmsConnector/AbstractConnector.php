@@ -29,7 +29,7 @@ abstract class AbstractConnector implements SmsConnectorInterface
 
     public function getProcessedMessage(): string
     {
-        return strtoupper(trim(urldecode($this->message)));
+        return trim(urldecode($this->message));
     }
 
     public function getNumber(): string

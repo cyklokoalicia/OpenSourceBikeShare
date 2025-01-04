@@ -51,6 +51,7 @@ class SmsControllerEventListener
         if ($result->rowCount() >= 1) {
             // sms already exists in DB, possible problem
             $this->logger->error("SMS already exists in DB", compact('sms_uuid'));
+            //TODO: notify admins
             //notifyAdmins(_('Problem with SMS') . " $sms_uuid!", 1);
         } else {
             $this->db->query(

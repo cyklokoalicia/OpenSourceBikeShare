@@ -51,4 +51,20 @@ class NoteRepository
 
         return $result;
     }
+
+    public function addNoteToStand($standId, int $userId, string $note)
+    {
+        $this->db->query(
+            'INSERT INTO notes (standId, userId, note, time)
+                VALUES (' . $standId . ', ' . $userId . ', "' . $note . '", NOW())'
+        );
+    }
+
+    public function addNoteToBike(int $bikeNumber, int $userId, string $note)
+    {
+        $this->db->query(
+            'INSERT INTO notes (bikeNum, userId, note, time)
+                VALUES (' . $bikeNumber . ', ' . $userId . ', "' . $note . '", NOW())'
+        );
+    }
 }
