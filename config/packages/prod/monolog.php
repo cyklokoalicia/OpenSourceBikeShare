@@ -11,4 +11,8 @@ return static function (MonologConfig $monolog): void {
         ->path('%kernel.project_dir%/var/log/log.log')
         ->maxFiles(30)
         ->level('notice');
+    $monolog->handler('sentry')
+        ->type('sentry')
+        ->level('info')
+        ->dsn('%env(SENTRY_DSN)%');
 };
