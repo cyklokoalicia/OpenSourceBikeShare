@@ -52,7 +52,7 @@ class NoteRepository
         return $result;
     }
 
-    public function addNoteToStand(int $standId, int $userId, string $note)
+    public function addNoteToStand(int $standId, int $userId, string $note): void
     {
         $this->db->query(
             'INSERT INTO notes (standId, userId, note, time)
@@ -60,7 +60,7 @@ class NoteRepository
         );
     }
 
-    public function addNoteToBike(int $bikeNumber, int $userId, string $note)
+    public function addNoteToBike(int $bikeNumber, int $userId, string $note): void
     {
         $this->db->query(
             'INSERT INTO notes (bikeNum, userId, note, time)
@@ -89,6 +89,30 @@ class NoteRepository
                 WHERE bikeNum = ' . $bikeNumber . '
                     AND deleted IS NULL
                     AND note LIKE "%' . $notePattern . '%"'
+        );
+
+        return $this->db->getAffectedRows();
+    }
+
+    public function addNoteToAllBikesOnStand(int $standId, int $userId, string $note): void
+    {
+        $this->db->query(
+            "INSERT INTO notes (bikeNum,userId,note) 
+                SELECT bikeNum,'{$userId}','$note'
+                FROM bikes 
+                WHERE currentStand='$standId'"
+        );
+    }
+
+    public function deleteNotesForAllBikesOnStand(int $standId, string $note): int
+    {
+        $this->db->query(
+            "UPDATE notes 
+            JOIN bikes ON notes.bikeNum = bikes.bikeNum
+            SET deleted=now()
+            WHERE bikes.currentStand='$standId'
+              AND note LIKE '%$note%'
+              AND deleted IS NULL"
         );
 
         return $this->db->getAffectedRows();

@@ -53,6 +53,16 @@ return [
         one {One note matching pattern "{pattern}" for stand {standName} was deleted.}
         other {# notes matching pattern "{pattern}" for stand {standName} were deleted.}
     }',
+    'All {count} notes for bikes on stand {standName} were deleted.' => '{count, plural, 
+        one {One note for bikes on stand {standName} was deleted.}
+        other {# notes for bikes on stand {standName} were deleted.}
+    }',
+    '{count} notes matching pattern "{pattern}" for bikes on stand {standName} were deleted.' => '{count, plural, 
+        one {One note matching pattern "{pattern}" for bikes on stand {standName} was deleted.}
+        other {# notes matching pattern "{pattern}" for bikes on stand {standName} were deleted.}
+    }',
+    'with stand name and problem description: {example}' => 'with stand name and problem description: {example}',
+    'vandalism' => 'vandalism',
     'with email, phone, fullname:' => '',
     'You are not logged in.' => '',
     'You are below required credit' => '',
@@ -150,6 +160,11 @@ return [
     'You does not have bike' => '',
     'You have rented the following' => '',
     'is not rented. Saint Thomas, the patronus of all unrented bikes, prohibited returning unrented bikes.' => '',
+    'Empty tag for stand {standName} not saved, for deleting notes for all bikes on stand use UNTAG (for admins).' => 'Empty tag for stand {standName} not saved, for deleting notes for all bikes on stand use UNTAG (for admins).',
+    'with stand name and optional pattern. All notes matching pattern will be deleted for all bikes on that stand: {example}' => 'with stand name and optional pattern. All notes matching pattern will be deleted for all bikes on that stand: {example}',
+    'All bikes on stand {standName} tagged with note.' => 'All bikes on stand {standName} tagged with note.',
+    'No bikes with notes found for stand {standName} to delete.' => 'No bikes with notes found for stand {standName} to delete.',
+    'No notes matching pattern "{pattern}" found for bikes on stand {standName} to delete.' => 'No notes matching pattern "{pattern}" found for bikes on stand {standName} to delete.',
     'Empty note for stand {standName} not saved, for deleting notes use DELNOTE (for admins).' => 'Empty note for stand {standName} not saved, for deleting notes use DELNOTE (for admins).',
     'Empty note for bike {bikeNumber} not saved, for deleting notes use DELNOTE (for admins).' => 'Empty note for bike {bikeNumber} not saved, for deleting notes use DELNOTE (for admins).',
     'does not exist' => '',
