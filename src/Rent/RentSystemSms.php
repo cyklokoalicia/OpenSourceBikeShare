@@ -79,6 +79,22 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
     }
 
+    public function revertBike($number, $bikeId)
+    {
+        $this->number = $number;
+        $userId = $this->user->findUserIdByNumber($number);
+
+        if (is_null($userId)) {
+            $this->logger->error("Invalid number", ["number" => $number]);
+            //currently do nothing
+            //return $this->response(_('Your number is not registered.'), ERROR);
+
+            return;
+        }
+
+        return parent::revertBike($userId, $bikeId);
+    }
+
     public static function getType(): string
     {
         return 'sms';

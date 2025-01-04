@@ -90,7 +90,7 @@ switch($action)
       $bikeno=trim($_GET["bikeno"]);
       checkprivileges($userid);
       checkbikeno($bikeno);
-      revert($userid,$bikeno);
+      $rentSystem->revertBike($userid, $bikeno);
       break;
    case "trips":
       logrequest($userid,$action);

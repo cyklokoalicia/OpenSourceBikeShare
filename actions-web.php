@@ -100,42 +100,6 @@ function userbikes($userId)
     response($bicycles, 0, $codes, 0);
 }
 
-function revert($userId, $bikeNum)
-{
-    global $db, $smsSender, $user;
-
-    $standId = 0;
-    $result = $db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser IS NOT NULL");
-    if (!$result->num_rows) {
-        response(_('Bicycle') . ' ' . $bikeNum . ' ' . _('is not rented right now. Revert not successful!'), ERROR);
-        return;
-    } else {
-        $row = $result->fetch_assoc();
-        $revertusernumber = $user->findPhoneNumber($row['currentUser']);
-    }
-    $result = $db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=$bikeNum AND action IN ('RETURN','FORCERETURN') ORDER BY time DESC LIMIT 1");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        $standId = $row['parameter'];
-        $stand = $row['standName'];
-    }
-    $result = $db->query("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action IN ('RENT','FORCERENT') ORDER BY time DESC LIMIT 1,1");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        $code = str_pad($row['parameter'], 4, '0', STR_PAD_LEFT);
-    }
-    if ($standId and $code) {
-        $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code WHERE bikeNum=$bikeNum");
-        $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'");
-        $result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code");
-        $result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
-        response('<h3>' . _('Bicycle') . ' ' . $bikeNum . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
-        $smsSender->send($revertusernumber, _('Bike') . ' ' . $bikeNum . ' ' . _('has been returned. You can now rent a new bicycle.'));
-    } else {
-        response(_('No last stand or code for bicycle') . ' ' . $bikeNum . ' ' . _('found. Revert not successful!'), ERROR);
-    }
-}
-
 function register($number, $code, $checkcode, $fullname, $email, $password, $password2, $existing)
 {
     global $db, $configuration, $user;

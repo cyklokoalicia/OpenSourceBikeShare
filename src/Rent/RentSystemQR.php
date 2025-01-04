@@ -41,6 +41,11 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
     }
 
+    public function revertBike($userId, $bikeId)
+    {
+        return $this->response(_('Revert is not supported for QR code'), self::ERROR);
+    }
+
     public static function getType(): string
     {
         return 'qr';

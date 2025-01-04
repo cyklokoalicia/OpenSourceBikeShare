@@ -232,6 +232,56 @@ abstract class AbstractRentSystem implements RentSystemInterface
         return $this->response($message);
     }
 
+    public function revertBike($userId, $bikeId)
+    {
+        $standId = 0;
+        $result = $this->db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeId AND currentUser IS NOT NULL");
+        if (!$result->rowCount()) {
+            return $this->response(_('Bicycle') . ' ' . $bikeId . ' ' . _('is not rented right now. Revert not successful!'), ERROR);
+        } else {
+            $row = $result->fetchAssoc();
+            $revertUserNumber = $this->user->findPhoneNumber($row['currentUser']);
+        }
+        $result = $this->db->query(
+            "SELECT parameter,standName 
+                   FROM stands
+                   LEFT JOIN history ON stands.standId=parameter
+                   WHERE bikeNum=$bikeId 
+                     AND action IN ('RETURN','FORCERETURN') 
+                   ORDER BY time DESC
+                   LIMIT 1"
+        );
+        if ($result->rowCount() === 1) {
+            $row = $result->fetchAssoc();
+            $standId = $row['parameter'];
+            $stand = $row['standName'];
+        }
+        $result = $this->db->query(
+            "SELECT parameter 
+                   FROM history 
+                   WHERE bikeNum=$bikeId 
+                     AND action IN ('RENT','FORCERENT') 
+                   ORDER BY time DESC
+                   LIMIT 1,1"
+        );
+        if ($result->rowCount() == 1) {
+            $row = $result->fetchAssoc();
+            $code = str_pad($row['parameter'], 4, '0', STR_PAD_LEFT);
+        }
+        if ($standId and $code) {
+            $this->db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code WHERE bikeNum=$bikeId");
+            $this->db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeId,action='REVERT',parameter='$standId|$code'");
+            $this->db->query("INSERT INTO history SET userId=0,bikeNum=$bikeId,action='RENT',parameter=$code");
+            $this->db->query("INSERT INTO history SET userId=0,bikeNum=$bikeId,action='RETURN',parameter=$standId");
+            //TODO add SMS notification for user who rented the bike before revert
+//            $this->smsSender->send($revertUserNumber, _('Bike') . ' ' . $bikeId . ' ' . _('has been returned. You can now rent a new bicycle.'));
+
+            return $this->response('<h3>' . _('Bicycle') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
+        } else {
+            return $this->response(_('No last stand or code for bicycle') . ' ' . $bikeId . ' ' . _('found. Revert not successful!'), ERROR);
+        }
+    }
+
     abstract public static function getType(): string;
 
     protected function response($message, $error = 0)

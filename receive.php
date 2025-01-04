@@ -45,7 +45,7 @@ switch ($args[0]) {
     case "REVERT":
         checkUserPrivileges($sms->getNumber());
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number:') . " REVERT 47");
-        revert($sms->getNumber(), $args[1]);
+        $rentSystem->revertBike($sms->getNumber(), $args[1]);
         break;
     default:
         unknownCommand($sms->getNumber(), $args[0]);

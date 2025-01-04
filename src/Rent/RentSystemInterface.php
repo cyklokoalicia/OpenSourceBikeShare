@@ -8,5 +8,7 @@ interface RentSystemInterface
 
     public function returnBike($userId, $bikeId, $standName, $note = '', $force = false);
 
+    public function revertBike($userId, $bikeId);
+
     public static function getType(): string;
 }
