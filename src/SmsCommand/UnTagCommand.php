@@ -71,7 +71,7 @@ class UnTagCommand extends AbstractCommand implements SmsCommandInterface
         } else {
             if (is_null($pattern)) {
                 $message = $this->translator->trans(
-                    'All {count} notes for bikes on stand {$standName} were deleted.',
+                    'All {count} notes for bikes on stand {standName} were deleted.',
                     ['standName' => $standName, 'count' => $count]
                 );
             } else {
