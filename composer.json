@@ -42,6 +42,7 @@
     "symfony/translation": "^5.4",
     "symfony/asset": "^5.4",
     "symfony/security-bundle": "^5.4",
+    "symfony/event-dispatcher": "^5.4",
     "sentry/sentry-symfony": "^5.1"
   },
   "require-dev": {

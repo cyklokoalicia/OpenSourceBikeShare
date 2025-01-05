@@ -40,7 +40,7 @@ class StandRepository
         return $stands;
     }
 
-    public function findItem(int $standId): array
+    public function findItem(int $standId): ?array
     {
         $stand = $this->db->query(
             'SELECT
@@ -54,8 +54,44 @@ class StandRepository
                     latitude
                 FROM stands
                 WHERE standId = ' . $standId . ''
-        )->fetchAllAssoc();
+        )->fetchAssoc();
 
         return $stand;
+    }
+
+    public function findItemByName(string $standName): ?array
+    {
+        $stand = $this->db->query(
+            'SELECT
+                    standId,
+                    standName,
+                    standDescription,
+                    standPhoto,
+                    serviceTag,
+                    placeName,
+                    longitude,
+                    latitude
+                FROM stands
+                WHERE standName = "' . $standName . '" LIMIT 1'
+        )->fetchAssoc();
+
+        return $stand;
+    }
+
+    public function findFreeStands(): array
+    {
+        $result = $this->db->query(
+            "SELECT 
+              count(bikes.bikeNum) as bikeCount,
+              standName
+              FROM stands
+              LEFT JOIN bikes ON bikes.currentStand = stands.standId
+              WHERE stands.serviceTag=0
+              GROUP BY standName
+              HAVING bikeCount=0
+              ORDER BY 2"
+        )->fetchAllAssoc();
+
+        return $result;
     }
 }

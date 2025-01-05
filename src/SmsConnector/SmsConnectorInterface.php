@@ -1,26 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\SmsConnector;
 
 interface SmsConnectorInterface
 {
-    public function checkConfig(array $config);
+    public function checkConfig(array $config): void;
 
     public function respond();
 
-    public function send($number, $text);
+    public function receive(): void;
 
-    public function getMessage();
+    public function send($number, $text): void;
 
-    public function getProcessedMessage();
+    public function getMessage(): string;
 
-    public function getNumber();
+    public function getProcessedMessage(): string;
 
-    public function getUUID();
+    public function getNumber(): string;
 
-    public function getTime();
+    public function getUUID(): string;
 
-    public function getIPAddress();
+    public function getTime(): string;
+
+    public function getIPAddress(): string;
 
     public static function getType(): string;
 }

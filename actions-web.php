@@ -22,33 +22,6 @@ function response($message, $error = 0, $additional = '', $log = 1)
     exit;
 }
 
-function where($userId, $bike)
-{
-    global $db;
-    $bikeNum = $bike;
-
-    $result = $db->query("SELECT number,userName,stands.standName FROM bikes LEFT JOIN users on bikes.currentUser=users.userID LEFT JOIN stands on bikes.currentStand=stands.standId where bikeNum=$bikeNum");
-    $row = $result->fetch_assoc();
-    $phone = $row['number'];
-    $userName = $row['userName'];
-    $standName = $row['standName'];
-    $result = $db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC");
-    $note = '';
-    while ($row = $result->fetch_assoc()) {
-        $note .= $row['note'] . '; ';
-    }
-    $note = substr($note, 0, strlen($note) - 2); // remove last two chars - comma and space
-    if ($note) {
-        $note = _('Bike note:') . ' ' . $note;
-    }
-
-    if ($standName) {
-        response('<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('at') . ' <span class="label label-primary">' . $standName . '</span>.</h3>' . $note);
-    } else {
-        response('<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('rented by') . ' <span class="label label-primary">' . $userName . '</span>.</h3>' . _('Phone') . ': <a href="tel:+' . $phone . '">+' . $phone . '</a>. ' . $note);
-    }
-}
-
 function listbikes($stand)
 {
     global $db, $configuration;
@@ -125,42 +98,6 @@ function userbikes($userId)
     }
 
     response($bicycles, 0, $codes, 0);
-}
-
-function revert($userId, $bikeNum)
-{
-    global $db, $smsSender, $user;
-
-    $standId = 0;
-    $result = $db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeNum AND currentUser IS NOT NULL");
-    if (!$result->num_rows) {
-        response(_('Bicycle') . ' ' . $bikeNum . ' ' . _('is not rented right now. Revert not successful!'), ERROR);
-        return;
-    } else {
-        $row = $result->fetch_assoc();
-        $revertusernumber = $user->findPhoneNumber($row['currentUser']);
-    }
-    $result = $db->query("SELECT parameter,standName FROM stands LEFT JOIN history ON stands.standId=parameter WHERE bikeNum=$bikeNum AND action IN ('RETURN','FORCERETURN') ORDER BY time DESC LIMIT 1");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        $standId = $row['parameter'];
-        $stand = $row['standName'];
-    }
-    $result = $db->query("SELECT parameter FROM history WHERE bikeNum=$bikeNum AND action IN ('RENT','FORCERENT') ORDER BY time DESC LIMIT 1,1");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        $code = str_pad($row['parameter'], 4, '0', STR_PAD_LEFT);
-    }
-    if ($standId and $code) {
-        $result = $db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code WHERE bikeNum=$bikeNum");
-        $result = $db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='REVERT',parameter='$standId|$code'");
-        $result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RENT',parameter=$code");
-        $result = $db->query("INSERT INTO history SET userId=0,bikeNum=$bikeNum,action='RETURN',parameter=$standId");
-        response('<h3>' . _('Bicycle') . ' ' . $bikeNum . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
-        $smsSender->send($revertusernumber, _('Bike') . ' ' . $bikeNum . ' ' . _('has been returned. You can now rent a new bicycle.'));
-    } else {
-        response(_('No last stand or code for bicycle') . ' ' . $bikeNum . ' ' . _('found. Revert not successful!'), ERROR);
-    }
 }
 
 function register($number, $code, $checkcode, $fullname, $email, $password, $password2, $existing)

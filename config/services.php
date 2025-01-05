@@ -13,6 +13,11 @@ use BikeShare\Credit\CreditSystemFactory;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
+use BikeShare\Event\BikeRevertEvent;
+use BikeShare\Event\SmsDuplicateDetectedEvent;
+use BikeShare\Event\SmsProcessedEvent;
+use BikeShare\EventListener\AdminNotificationEventListener;
+use BikeShare\EventListener\BikeRevertEventListener;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Mail\PHPMailerMailSender;
 use BikeShare\Purifier\PhonePurifier;
@@ -20,6 +25,7 @@ use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Rent\RentSystemInterface;
 use BikeShare\Sms\SmsSender;
 use BikeShare\Sms\SmsSenderInterface;
+use BikeShare\SmsCommand\SmsCommandInterface;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -33,6 +39,7 @@ return static function (ContainerConfigurator $container): void {
     $services->instanceof(RentSystemInterface::class)->tag('rentSystem');
     $services->instanceof(MailSenderInterface::class)->tag('mailSender');
     $services->instanceof(SmsConnectorInterface::class)->tag('smsConnector');
+    $services->instanceof(SmsCommandInterface::class)->tag('smsCommand');
 
     $services->alias('logger', 'monolog.logger');
 
@@ -61,7 +68,14 @@ return static function (ContainerConfigurator $container): void {
             '../src/App/EventListener/ErrorListener.php',
             '../src/App/Kernel.php',
             '../src/App/Entity',
+            '../src/Event',
         ]);
+
+    $services->get(\BikeShare\Controller\SmsRequestController::class)
+        ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
+
+    $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
+        ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 
     $services->get(MysqliDb::class)
         ->args([
@@ -100,11 +114,10 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$forceStack', expr("service('BikeShare\\\App\\\Configuration').get('forceStack')"));
 
     $services->load('BikeShare\\SmsConnector\\', '../src/SmsConnector')
-        ->exclude([
-            '../src/SmsConnector/SmsGateway/SmsGateway.php'
-        ]);
+        ->bind('$request', expr("service('request_stack').getCurrentRequest()"))
+        ->bind('$configuration', env('json:SMS_CONNECTOR_CONFIG'));
     $services->get(SmsConnectorFactory::class)
-        ->arg('$connectorConfig', expr("service('BikeShare\\\App\\\Configuration').get('connectors')"));
+        ->arg('$connectorName', env('SMS_CONNECTOR'));
 
     $services->alias(SmsSenderInterface::class, SmsSender::class);
 
@@ -112,6 +125,19 @@ return static function (ContainerConfigurator $container): void {
 
     $services->alias(PhonePurifierInterface::class, PhonePurifier::class);
 
+    $services->get(AdminNotificationEventListener::class)
+        ->tag('kernel.event_listener', ['event' => SmsDuplicateDetectedEvent::NAME, 'method' => 'onSmsDuplicateDetected'])
+        ->tag('kernel.event_listener', ['event' => SmsProcessedEvent::NAME, 'method' => 'onSmsProcessed'])
+        ->bind('$appName', env('APP_NAME'));
+    $services->get(BikeRevertEventListener::class)
+        ->tag('kernel.event_listener', ['event' => BikeRevertEvent::NAME]);
+
     $services->load('BikeShare\\EventListener\\', '../src/EventListener')
+        ->exclude(
+            [
+                '../src/EventListener/AdminNotificationEventListener.php',
+                '../src/EventListener/RevertEventListener.php',
+            ]
+        )
         ->tag('kernel.event_listener');
 };

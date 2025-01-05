@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\BikeShare\SmsConnector;
 
-use BikeShare\App\Configuration;
 use BikeShare\SmsConnector\EuroSmsConnector;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
 
 class EuroSmsConnectorTest extends TestCase
 {
@@ -13,25 +15,17 @@ class EuroSmsConnectorTest extends TestCase
 
     public function testCheckConfig()
     {
-        $configuration = $this->createMock(Configuration::class);
-        $configuration
-            ->expects($this->once())
-            ->method('get')
-            ->with('connectors')
-            ->willReturn(
-                [
-                    'config' => [
-                        'eurosms' => json_encode(
-                            [
-                                'gatewayId' => 'Id',
-                                'gatewayKey' => 'Key',
-                                'gatewaySenderNumber' => 'SenderNumber',
-                            ]
-                        )
-                    ]
-                ]
-            );
+        $configuration = [
+            'eurosms' => [
+                'gatewayId' => 'Id',
+                'gatewayKey' => 'Key',
+                'gatewaySenderNumber' => 'SenderNumber',
+            ]
+        ];
+
+        $request = $this->createMock(Request::class);
         $smsConnector = new EuroSmsConnector(
+            $request,
             $configuration,
             false
         );
@@ -62,25 +56,16 @@ class EuroSmsConnectorTest extends TestCase
         $gatewaySenderNumber
     ) {
         $this->expectException(\RuntimeException::class);
-        $configuration = $this->createMock(Configuration::class);
-        $configuration
-            ->expects($this->once())
-            ->method('get')
-            ->with('connectors')
-            ->willReturn(
-                [
-                    'config' => [
-                        'eurosms' => json_encode(
-                            [
-                                'gatewayId' => $gatewayId,
-                                'gatewayKey' => $gatewayKey,
-                                'gatewaySenderNumber' => $gatewaySenderNumber,
-                            ]
-                        )
-                    ]
-                ]
-            );
+        $configuration = [
+            'eurosms' => [
+                'gatewayId' => $gatewayId,
+                'gatewayKey' => $gatewayKey,
+                'gatewaySenderNumber' => $gatewaySenderNumber,
+            ]
+        ];
+        $request = $this->createMock(Request::class);
         $smsConnector = new EuroSmsConnector(
+            $request,
             $configuration,
             false
         );
@@ -108,25 +93,16 @@ class EuroSmsConnectorTest extends TestCase
 
     public function testRespond()
     {
-        $configuration = $this->createMock(Configuration::class);
-        $configuration
-            ->expects($this->once())
-            ->method('get')
-            ->with('connectors')
-            ->willReturn(
-                [
-                    'config' => [
-                        'eurosms' => json_encode(
-                            [
-                                'gatewayId' => 'Id',
-                                'gatewayKey' => 'Key',
-                                'gatewaySenderNumber' => 'SenderNumber',
-                            ]
-                        )
-                    ]
-                ]
-            );
+        $configuration = [
+            'eurosms' => [
+                'gatewayId' => 'Id',
+                'gatewayKey' => 'Key',
+                'gatewaySenderNumber' => 'SenderNumber',
+            ]
+        ];
+        $request = $this->createMock(Request::class);
         $smsConnector = new EuroSmsConnector(
+            $request,
             $configuration,
             false
         );
@@ -142,25 +118,16 @@ class EuroSmsConnectorTest extends TestCase
 
     public function testSend()
     {
-        $configuration = $this->createMock(Configuration::class);
-        $configuration
-            ->expects($this->once())
-            ->method('get')
-            ->with('connectors')
-            ->willReturn(
-                [
-                    'config' => [
-                        'eurosms' => json_encode(
-                            [
-                                'gatewayId' => 'Id',
-                                'gatewayKey' => 'Key',
-                                'gatewaySenderNumber' => 'SenderNumber',
-                            ]
-                        )
-                    ]
-                ]
-            );
+        $configuration = [
+            'eurosms' => [
+                'gatewayId' => 'Id',
+                'gatewayKey' => 'Key',
+                'gatewaySenderNumber' => 'SenderNumber',
+            ]
+        ];
+        $request = $this->createMock(Request::class);
         $smsConnector = new EuroSmsConnector(
+            $request,
             $configuration,
             false
         );

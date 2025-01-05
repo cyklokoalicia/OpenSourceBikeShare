@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\SmsConnector;
 
 class DisabledConnector extends AbstractConnector
 {
-    public function checkConfig(array $config)
+    public function checkConfig(array $config): void
     {
     }
 
@@ -12,7 +14,11 @@ class DisabledConnector extends AbstractConnector
     {
     }
 
-    public function send($number, $text)
+    public function send($number, $text): void
+    {
+    }
+
+    public function receive(): void
     {
     }
 

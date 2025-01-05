@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\BikeShare\SmsConnector;
 
-use BikeShare\App\Configuration;
 use BikeShare\SmsConnector\DisabledConnector;
 use BikeShare\SmsConnector\EuroSmsConnector;
 use BikeShare\SmsConnector\LoopbackConnector;
 use BikeShare\SmsConnector\SmsConnectorFactory;
-use BikeShare\SmsConnector\SmsGatewayConnector;
 use BikeShare\SmsConnector\TextmagicSmsConnector;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -23,30 +23,29 @@ class SmsConnectorFactoryTest extends TestCase
      * @dataProvider getConnectorDataProvider
      */
     public function testGetConnector(
-        $config,
+        $connectorName,
         $debugMode,
         $expectedInstance,
         $expectedExceptionMessage = null
     ) {
         $logger = $this->createMock(LoggerInterface::class);
-        $configuration = $this->createMock(Configuration::class);
         $serviceLocatorMock = $this->createMock(ServiceLocator::class);
 
         if ($expectedExceptionMessage) {
             $serviceLocatorMock
                 ->expects($this->once())
                 ->method('get')
-                ->with($config['sms'])
+                ->with($connectorName)
                 ->willThrowException(new \Exception($expectedExceptionMessage));
         } else {
             $serviceLocatorMock
                 ->expects($this->once())
                 ->method('get')
-                ->with($config['sms'])
+                ->with($connectorName)
                 ->willReturn($this->createMock($expectedInstance));
         }
 
-        $smsConnectorFactory = new SmsConnectorFactory($config, $serviceLocatorMock, $configuration, $logger);
+        $smsConnectorFactory = new SmsConnectorFactory($connectorName, $serviceLocatorMock, $logger);
 
         if ($expectedExceptionMessage) {
             $logger
@@ -54,7 +53,7 @@ class SmsConnectorFactoryTest extends TestCase
                 ->method('error')
                 ->with(
                     'Error creating SMS connector',
-                    $this->callback(fn($context) => $context['connector'] === $config['sms']
+                    $this->callback(fn($context) => $context['connector'] === $connectorName
                         && $context['exception'] instanceof \Exception
                         && $context['exception']->getMessage() === $expectedExceptionMessage)
                 );
@@ -66,45 +65,28 @@ class SmsConnectorFactoryTest extends TestCase
     public function getConnectorDataProvider()
     {
         yield 'loopback' => [
-            'config' => [
-                'sms' => 'loopback',
-            ],
+            'connectorName' => 'loopback',
             'debugMode' => true,
             'expectedInstance' => LoopbackConnector::class,
         ];
         yield 'eurosms' => [
-            'config' => [
-                'sms' => 'eurosms',
-            ],
+            'connectorName' => 'eurosms',
             'debugMode' => true,
             'expectedInstance' => EuroSmsConnector::class,
         ];
-        yield 'smsgateway' => [
-            'config' => [
-                'sms' => 'smsgateway.me',
-            ],
-            'debugMode' => true,
-            'expectedInstance' => SmsGatewayConnector::class,
-        ];
         yield 'textmagic' => [
-            'config' => [
-                'sms' => 'textmagic.com',
-            ],
+            'connectorName' => 'textmagic.com',
             'debugMode' => true,
             'expectedInstance' => TextmagicSmsConnector::class,
         ];
         yield 'unknown' => [
-            'config' => [
-                'sms' => 'unknown',
-            ],
+            'connectorName' => 'unknown',
             'debugMode' => true,
             'expectedInstance' => DisabledConnector::class,
         ];
 
         yield 'throwException' => [
-            'config' => [
-                'sms' => 'eurosms',
-            ],
+            'connectorName' => 'eurosms',
             'debugMode' => false,
             'expectedInstance' => DisabledConnector::class,
             'expectedExceptionMessage' => 'Invalid EuroSms configuration',

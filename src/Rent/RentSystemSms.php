@@ -8,6 +8,7 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
 {
@@ -23,6 +24,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         CreditSystemInterface $creditSystem,
         User $user,
         Auth $auth,
+        EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger,
         array $watchesConfig,
         array $connectorsConfig,
@@ -33,6 +35,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
             $creditSystem,
             $user,
             $auth,
+            $eventDispatcher,
             $logger,
             $watchesConfig,
             $connectorsConfig,
@@ -77,6 +80,22 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         }
 
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
+    }
+
+    public function revertBike($number, $bikeId)
+    {
+        $this->number = $number;
+        $userId = $this->user->findUserIdByNumber($number);
+
+        if (is_null($userId)) {
+            $this->logger->error("Invalid number", ["number" => $number]);
+            //currently do nothing
+            //return $this->response(_('Your number is not registered.'), ERROR);
+
+            return;
+        }
+
+        return parent::revertBike($userId, $bikeId);
     }
 
     public static function getType(): string

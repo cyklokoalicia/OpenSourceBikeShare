@@ -1,40 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\SmsConnector;
 
-use BikeShare\App\Configuration;
+use Symfony\Component\HttpFoundation\Request;
 
 class LoopbackConnector extends AbstractConnector
 {
-    /**
-     * @var array
-     */
-    private $store;
+    private array $store = [];
+    private Request $request;
 
     public function __construct(
-        Configuration $config,
+        Request $request,
+        array $configuration,
         $debugMode = false
     ) {
-        parent::__construct($config, $debugMode);
-
-        if (isset($_GET["sms_text"])) {
-            $this->message = $_GET["sms_text"];
-        }
-        if (isset($_GET["sender"])) {
-            $this->number = $_GET["sender"];
-        }
-        if (isset($_GET["sms_uuid"])) {
-            $this->uuid = $_GET["sms_uuid"];
-        }
-        if (isset($_GET["receive_time"])) {
-            $this->time = $_GET["receive_time"];
-        }
-        if (isset($_SERVER['REMOTE_ADDR'])) {
-            $this->ipaddress = $_SERVER['REMOTE_ADDR'];
-        }
+        parent::__construct($configuration, $debugMode);
+        $this->request = $request;
     }
 
-    public function checkConfig(array $config)
+    public function checkConfig(array $config): void
     {
         if ($this->debugMode) {
             return;
@@ -45,7 +31,7 @@ class LoopbackConnector extends AbstractConnector
     // confirm SMS received to API
     public function respond()
     {
-        $log = "<|~" . $_GET["sender"] . "|~" . $this->message . "\n";
+        $log = "<|~" . $this->request->query->has('sender') . "|~" . $this->message . "\n";
         foreach ($this->store as $message) {
             $log .= $message;
         }
@@ -54,9 +40,28 @@ class LoopbackConnector extends AbstractConnector
     }
 
     // send SMS message via API
-    public function send($number, $text)
+    public function send($number, $text): void
     {
         $this->store[] = ">|~" . $number . "|~" . urlencode($text) . "\n";
+    }
+
+    public function receive(): void
+    {
+        if ($this->request->query->has('sms_text')) {
+            $this->message = $this->request->query->get('sms_text', '');
+        }
+        if ($this->request->query->has('sender')) {
+            $this->number = $this->request->query->get('sender', '');
+        }
+        if ($this->request->query->has('sms_uuid')) {
+            $this->uuid = $this->request->query->get('sms_uuid', '');
+        }
+        if ($this->request->query->has('receive_time')) {
+            $this->time = $this->request->query->get('receive_time', '');
+        }
+        if ($this->request->server->has('REMOTE_ADDR')) {
+            $this->ipaddress = $this->request->server->get('REMOTE_ADDR');
+        }
     }
 
     // if Respond is not called, this forces the log to save / flush

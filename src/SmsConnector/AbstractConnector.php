@@ -1,82 +1,62 @@
 <?php
 
-namespace BikeShare\SmsConnector;
+declare(strict_types=1);
 
-use BikeShare\App\Configuration;
+namespace BikeShare\SmsConnector;
 
 abstract class AbstractConnector implements SmsConnectorInterface
 {
-    /**
-     * @var bool
-     */
-    protected $debugMode = false;
-    /**
-     * @var string
-     */
-    protected $message = '';
-    /**
-     * @var string
-     */
-    protected $number = '';
-    /**
-     * @var string
-     */
-    protected $uuid = '';
-    /**
-     * @var string
-     */
-    protected $time = '';
-    /**
-     * @var string
-     */
-    protected $ipaddress = '';
+    protected bool $debugMode = false;
+    protected string $message = '';
+    protected string $number = '';
+    protected string $uuid = '';
+    protected string $time = '';
+    protected string $ipaddress = '';
 
     public function __construct(
-        Configuration $configuration,
+        array $configuration,
         $debugMode = false
     ) {
         $this->debugMode = $debugMode;
-        $connectorConfig = json_decode(
-            $configuration->get('connectors')['config'][static::getType()] ?? '[]',
-            true
-        ) ?? [];
+        $connectorConfig = $configuration[static::getType()] ?? [];
         $this->checkConfig($connectorConfig);
     }
 
-
-    public function getMessage()
+    public function getMessage(): string
     {
         return $this->message;
     }
 
-    public function getProcessedMessage()
+    public function getProcessedMessage(): string
     {
-        return strtoupper(trim(urldecode($this->message)));
+        return trim(urldecode($this->message));
     }
 
-    public function getNumber()
+    public function getNumber(): string
     {
         return $this->number;
     }
 
-    public function getUUID()
+    public function getUUID(): string
     {
         return $this->uuid;
     }
 
-    public function getTime()
+    public function getTime(): string
     {
         return $this->time;
     }
 
-    public function getIPAddress()
+    public function getIPAddress(): string
     {
         return $this->ipaddress;
     }
 
-    abstract public function checkConfig(array $config);
+    abstract public function checkConfig(array $config): void;
 
-    abstract public function send($number, $text);
+    abstract public function send($number, $text): void;
+
+    abstract public function receive(): void;
 
     // confirm SMS received to API
     abstract public function respond();
