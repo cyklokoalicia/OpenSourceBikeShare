@@ -6,32 +6,34 @@ namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Credit\CreditSystemInterface;
+use BikeShare\SmsCommand\Exception\ValidationException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class CreditCommand implements SmsCommandInterface
+class CreditCommand extends AbstractCommand implements SmsCommandInterface
 {
-    private const COMMAND_NAME = 'CREDIT';
+    protected const COMMAND_NAME = 'CREDIT';
 
     private CreditSystemInterface $creditSystem;
-    private TranslatorInterface $translator;
 
     public function __construct(
-        CreditSystemInterface $creditSystem,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        CreditSystemInterface $creditSystem
     ) {
+        parent::__construct($translator);
         $this->creditSystem = $creditSystem;
-        $this->translator = $translator;
     }
 
-    public function execute(User $user, array $args): string
+    public function __invoke(User $user): string
     {
         if (!$this->creditSystem->isEnabled()) {
-            return $this->translator->trans(
-                'Error. The command {badCommand} does not exist. If you need help, send: {helpCommand}',
-                [
-                    'badCommand' => self::COMMAND_NAME,
-                    'helpCommand' => 'HELP'
-                ]
+            throw new ValidationException(
+                $this->translator->trans(
+                    'Error. The command {badCommand} does not exist. If you need help, send: {helpCommand}',
+                    [
+                        'badCommand' => self::COMMAND_NAME,
+                        'helpCommand' => 'HELP'
+                    ]
+                )
             );
         }
 
@@ -43,8 +45,8 @@ class CreditCommand implements SmsCommandInterface
         return $message;
     }
 
-    public static function getName(): string
+    public function getHelpMessage(): string
     {
-        return self::COMMAND_NAME;
+        return '';
     }
 }

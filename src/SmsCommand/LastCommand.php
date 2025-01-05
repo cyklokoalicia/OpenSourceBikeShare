@@ -6,12 +6,12 @@ namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Repository\BikeRepository;
+use BikeShare\SmsCommand\Exception\ValidationException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class LastCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'LAST';
-    protected const ARGUMENT_COUNT = 2;
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
     private BikeRepository $bikeRepository;
@@ -24,13 +24,13 @@ class LastCommand extends AbstractCommand implements SmsCommandInterface
         $this->bikeRepository = $bikeRepository;
     }
 
-    protected function run(User $user, array $args): string
+    public function __invoke(User $user, int $bikeNumber): string
     {
-        $bikeNumber = (int)(trim($args[1]));
-
         $bikeInfo = $this->bikeRepository->findItem($bikeNumber);
         if (empty($bikeInfo)) {
-            return $this->translator->trans('Bike {bikeNumber} does not exist.', ['bikeNumber' => $bikeNumber]);
+            throw new ValidationException(
+                $this->translator->trans('Bike {bikeNumber} does not exist.', ['bikeNumber' => $bikeNumber])
+            );
         }
 
         $lastUsage = $this->bikeRepository->findItemLastUsage($bikeNumber);
@@ -54,7 +54,7 @@ class LastCommand extends AbstractCommand implements SmsCommandInterface
         return implode(',', $historyInfo);
     }
 
-    protected function getValidationErrorMessage(): string
+    public function getHelpMessage(): string
     {
         return $this->translator->trans('with bike number: {example}', ['example' => 'LAST 42']);
     }

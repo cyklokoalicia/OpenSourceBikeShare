@@ -47,7 +47,9 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     {
         $identifier = $this->phonePurifier->purify($identifier);
         $result = $this->db->query(
-            "SELECT userId, number, mail, password, city, userName, privileges FROM users WHERE number='$identifier'"
+            "SELECT userId, number, mail, password, city, userName, privileges 
+                   FROM users 
+                   WHERE number='$identifier'"
         );
         if (!$result || $result->rowCount() == 0) {
             throw new UserNotFoundException(sprintf('Unknown user %s', $identifier));

@@ -6,31 +6,34 @@ namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Credit\CreditSystemInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-class HelpCommand implements SmsCommandInterface
+class HelpCommand extends AbstractCommand implements SmsCommandInterface
 {
-    private const COMMAND_NAME = 'HELP';
+    protected const COMMAND_NAME = 'HELP';
 
     private CreditSystemInterface $creditSystem;
 
     public function __construct(
+        TranslatorInterface $translator,
         CreditSystemInterface $creditSystem
     ) {
+        parent::__construct($translator);
         $this->creditSystem = $creditSystem;
     }
 
-    public function execute(User $user, array $args): string
+    public function __invoke(User $user): string
     {
         $availableCommands = [
             'HELP' => 0,
             'CREDIT' => 0,
             'FREE' => 0,
-            'RENT bikenumber' => 0,
-            'RETURN bikenumber stand' => 0,
-            'WHERE bikenumber' => 0,
-            'INFO stand' => 0,
-            'NOTE bikenumber problem_description' => 0,
-            'NOTE stand problem_description' => 0,
+            'RENT bikeNumber' => 0,
+            'RETURN bikeNumber standName' => 0,
+            'WHERE bikeNumber' => 0,
+            'INFO standName' => 0,
+            'NOTE bikeNumber problem' => 0,
+            'NOTE standName problem' => 0,
         ];
         if (!$this->creditSystem->isEnabled()) {
             unset($availableCommands['CREDIT']);
@@ -40,15 +43,16 @@ class HelpCommand implements SmsCommandInterface
             $availableCommands = array_merge(
                 $availableCommands,
                 [
-                    'FORCERENT bikenumber' => 0,
-                    'FORCERETURN bikenumber stand' => 0,
-                    'LIST stand' => 0,
-                    'LAST bikenumber' => 0,
-                    'REVERT bikenumber' => 0,
+                    'FORCERENT bikeNumber' => 0,
+                    'FORCERETURN bikeNumber standName' => 0,
+                    'LIST standName' => 0,
+                    'LAST bikeNumber' => 0,
+                    'REVERT bikeNumber' => 0,
                     'ADD email phone fullname' => 0,
-                    'DELNOTE bikenumber [pattern]' => 0,
-                    'TAG stand note for all bikes' => 0,
-                    'UNTAG stand [pattern]' => 0,
+                    'DELNOTE bikeNumber [pattern]' => 0,
+                    'DELNOTE standName [pattern]' => 0,
+                    'TAG standName note for all bikes' => 0,
+                    'UNTAG standName [pattern]' => 0,
                 ]
             );
         }
@@ -57,8 +61,8 @@ class HelpCommand implements SmsCommandInterface
         return $message;
     }
 
-    public static function getName(): string
+    public function getHelpMessage(): string
     {
-        return self::COMMAND_NAME;
+        return '';
     }
 }

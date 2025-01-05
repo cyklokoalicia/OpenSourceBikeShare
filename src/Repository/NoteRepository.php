@@ -81,7 +81,7 @@ class NoteRepository
         return $this->db->getAffectedRows();
     }
 
-    public function deleteBikeNote(int $bikeNumber, string $notePattern): int
+    public function deleteBikeNote(int $bikeNumber, ?string $notePattern): int
     {
         $this->db->query(
             'UPDATE notes

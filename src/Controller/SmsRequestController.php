@@ -4,47 +4,39 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
-use BikeShare\App\Entity\User;
 use BikeShare\App\Kernel;
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Sms\SmsSenderInterface;
-use BikeShare\SmsCommand\Exception\ValidationException;
-use BikeShare\SmsCommand\SmsCommandInterface;
+use BikeShare\SmsCommand\CommandExecutor;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
-use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SmsRequestController extends AbstractController
 {
     private Kernel $kernel;
     private SmsConnectorInterface $smsConnector;
     private SmsSenderInterface $smsSender;
-    private ServiceLocator $commandLocator;
     private UserProvider $userProvider;
-    private TranslatorInterface $translator;
     private LoggerInterface $logger;
+    private CommandExecutor $commandExecutor;
 
     public function __construct(
         Kernel $kernel,
         SmsConnectorInterface $smsConnector,
         SmsSenderInterface $smsSender,
-        ServiceLocator $commandLocator,
         UserProvider $userProvider,
-        TranslatorInterface $translator,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        CommandExecutor $commandExecutor
     ) {
         $this->kernel = $kernel;
         $this->smsConnector = $smsConnector;
         $this->smsSender = $smsSender;
-        $this->commandLocator = $commandLocator;
         $this->userProvider = $userProvider;
-        $this->translator = $translator;
         $this->logger = $logger;
+        $this->commandExecutor = $commandExecutor;
     }
 
     /**
@@ -65,13 +57,10 @@ class SmsRequestController extends AbstractController
             return new Response("Invalid number");
         }
 
-        //preg_split must be used instead of explode because of multiple spaces
-        $args = preg_split("/\s+/", $this->smsConnector->getProcessedMessage());
-        $commandName = strtoupper($args[0] ?? '');
-
-        if ($this->commandLocator->has($commandName)) {
-            $this->tryExecuteCommand($commandName, $user, $args);
-        } else {
+        try {
+            $message = $this->commandExecutor->execute($this->smsConnector->getProcessedMessage(), $user);
+            $this->smsSender->send($this->smsConnector->getNumber(), $message);
+        } catch (\Throwable $e) {
             $kernel = $this->kernel;
             $sms = $this->smsConnector;
 
@@ -81,37 +70,5 @@ class SmsRequestController extends AbstractController
         }
 
         return new Response($this->smsConnector->respond());
-    }
-
-    private function tryExecuteCommand(string $commandName, User $user, array $args): void
-    {
-        try {
-            /* @var SmsCommandInterface $command */
-            $command = $this->commandLocator->get($commandName);
-            $message = $command->execute($user, $args);
-        } catch (ServiceNotFoundException $e) {
-            $this->logger->warning('Unknown command', ['user' => $user, 'command' => $commandName]);
-            $message = $this->translator->trans(
-                'Error. The command %badCommand% does not exist. If you need help, send: %helpCommand%',
-                [
-                    '%badCommand%' => $commandName,
-                    '%helpCommand%' => 'HELP'
-                ]
-            );
-        } catch (ValidationException $e) {
-            $this->logger->warning(
-                'Validation error',
-                ['user' => $user, 'command' => $commandName, 'exception' => $e]
-            );
-            $message = $e->getMessage();
-        } catch (\Throwable $e) {
-            $this->logger->error(
-                'Error executing command',
-                ['user' => $user, 'command' => $commandName, 'exception' => $e->getMessage()]
-            );
-            $message = $this->translator->trans('An error occurred while processing your request.');
-        }
-
-        $this->smsSender->send($this->smsConnector->getNumber(), $message);
     }
 }

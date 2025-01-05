@@ -5,23 +5,28 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Event\SmsDuplicateDetectedEvent;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class SmsControllerEventListener
 {
     private DbInterface $db;
     private SmsConnectorInterface $smsConnector;
+    private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
 
     public function __construct(
         DbInterface $db,
         SmsConnectorInterface $smsConnector,
+        EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger
     ) {
         $this->db = $db;
         $this->smsConnector = $smsConnector;
+        $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger;
     }
 
@@ -51,8 +56,10 @@ class SmsControllerEventListener
         if ($result->rowCount() >= 1) {
             // sms already exists in DB, possible problem
             $this->logger->error("SMS already exists in DB", compact('sms_uuid'));
-            //TODO: notify admins
-            //notifyAdmins(_('Problem with SMS') . " $sms_uuid!", 1);
+            $this->eventDispatcher->dispatch(
+                new SmsDuplicateDetectedEvent($sms_uuid),
+                SmsDuplicateDetectedEvent::NAME
+            );
         } else {
             $this->db->query(
                 "INSERT INTO received SET 

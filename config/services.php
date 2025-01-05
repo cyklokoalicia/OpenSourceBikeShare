@@ -13,6 +13,11 @@ use BikeShare\Credit\CreditSystemFactory;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
+use BikeShare\Event\BikeRevertEvent;
+use BikeShare\Event\SmsDuplicateDetectedEvent;
+use BikeShare\Event\SmsProcessedEvent;
+use BikeShare\EventListener\AdminNotificationEventListener;
+use BikeShare\EventListener\BikeRevertEventListener;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Mail\PHPMailerMailSender;
 use BikeShare\Purifier\PhonePurifier;
@@ -63,9 +68,13 @@ return static function (ContainerConfigurator $container): void {
             '../src/App/EventListener/ErrorListener.php',
             '../src/App/Kernel.php',
             '../src/App/Entity',
+            '../src/Event',
         ]);
 
     $services->get(\BikeShare\Controller\SmsRequestController::class)
+        ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
+
+    $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 
     $services->get(MysqliDb::class)
@@ -116,6 +125,19 @@ return static function (ContainerConfigurator $container): void {
 
     $services->alias(PhonePurifierInterface::class, PhonePurifier::class);
 
+    $services->get(AdminNotificationEventListener::class)
+        ->tag('kernel.event_listener', ['event' => SmsDuplicateDetectedEvent::NAME, 'method' => 'onSmsDuplicateDetected'])
+        ->tag('kernel.event_listener', ['event' => SmsProcessedEvent::NAME, 'method' => 'onSmsProcessed'])
+        ->bind('$appName', env('APP_NAME'));
+    $services->get(BikeRevertEventListener::class)
+        ->tag('kernel.event_listener', ['event' => BikeRevertEvent::NAME]);
+
     $services->load('BikeShare\\EventListener\\', '../src/EventListener')
+        ->exclude(
+            [
+                '../src/EventListener/AdminNotificationEventListener.php',
+                '../src/EventListener/RevertEventListener.php',
+            ]
+        )
         ->tag('kernel.event_listener');
 };

@@ -8,6 +8,7 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
 {
@@ -23,6 +24,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         CreditSystemInterface $creditSystem,
         User $user,
         Auth $auth,
+        EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger,
         array $watchesConfig,
         array $connectorsConfig,
@@ -33,6 +35,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
             $creditSystem,
             $user,
             $auth,
+            $eventDispatcher,
             $logger,
             $watchesConfig,
             $connectorsConfig,

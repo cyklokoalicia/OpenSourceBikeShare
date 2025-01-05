@@ -9,11 +9,10 @@ use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class FreeCommand implements SmsCommandInterface
+class FreeCommand extends AbstractCommand implements SmsCommandInterface
 {
-    private const COMMAND_NAME = 'FREE';
+    protected const COMMAND_NAME = 'FREE';
 
-    private TranslatorInterface $translator;
     private BikeRepository $bikeRepository;
     private StandRepository $standRepository;
 
@@ -22,12 +21,12 @@ class FreeCommand implements SmsCommandInterface
         BikeRepository $bikeRepository,
         StandRepository $standRepository
     ) {
-        $this->translator = $translator;
+        parent::__construct($translator);
         $this->bikeRepository = $bikeRepository;
         $this->standRepository = $standRepository;
     }
 
-    public function execute(User $user, array $args): string
+    public function __invoke(User $user): string
     {
         $freeBikes = $this->bikeRepository->findFreeBikes();
 
@@ -52,8 +51,8 @@ class FreeCommand implements SmsCommandInterface
         return $message;
     }
 
-    public static function getName(): string
+    public function getHelpMessage(): string
     {
-        return self::COMMAND_NAME;
+        return '';
     }
 }

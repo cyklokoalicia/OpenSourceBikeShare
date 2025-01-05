@@ -5,8 +5,10 @@ namespace BikeShare\Rent;
 use BikeShare\Authentication\Auth;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
+use BikeShare\Event\BikeRevertEvent;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @phpcs:disable PSR12.Classes.PropertyDeclaration
@@ -32,6 +34,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
      */
     protected $auth;
     /**
+     * @var EventDispatcherInterface
+     */
+    protected $eventDispatcher;
+    /**
      * @var LoggerInterface
      */
     protected $logger;
@@ -53,6 +59,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         CreditSystemInterface $creditSystem,
         User $user,
         Auth $auth,
+        EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger,
         array $watchesConfig,
         array $connectorsConfig,
@@ -62,6 +69,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $this->creditSystem = $creditSystem;
         $this->user = $user;
         $this->auth = $auth;
+        $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger;
         $this->watchesConfig = $watchesConfig;
         $this->connectorsConfig = $connectorsConfig;
@@ -234,13 +242,15 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
     public function revertBike($userId, $bikeId)
     {
+        $bikeId = intval($bikeId);
+
         $standId = 0;
         $result = $this->db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeId AND currentUser IS NOT NULL");
         if (!$result->rowCount()) {
             return $this->response(_('Bicycle') . ' ' . $bikeId . ' ' . _('is not rented right now. Revert not successful!'), ERROR);
         } else {
             $row = $result->fetchAssoc();
-            $revertUserNumber = $this->user->findPhoneNumber($row['currentUser']);
+            $previousOwnerId = $row['currentUser'];
         }
         $result = $this->db->query(
             "SELECT parameter,standName 
@@ -268,13 +278,16 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $row = $result->fetchAssoc();
             $code = str_pad($row['parameter'], 4, '0', STR_PAD_LEFT);
         }
-        if ($standId and $code) {
+        if ($standId && $code) {
             $this->db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code WHERE bikeNum=$bikeId");
             $this->db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeId,action='REVERT',parameter='$standId|$code'");
             $this->db->query("INSERT INTO history SET userId=0,bikeNum=$bikeId,action='RENT',parameter=$code");
             $this->db->query("INSERT INTO history SET userId=0,bikeNum=$bikeId,action='RETURN',parameter=$standId");
-            //TODO add SMS notification for user who rented the bike before revert
-//            $this->smsSender->send($revertUserNumber, _('Bike') . ' ' . $bikeId . ' ' . _('has been returned. You can now rent a new bicycle.'));
+
+            $this->eventDispatcher->dispatch(
+                new BikeRevertEvent($bikeId, $userId, $previousOwnerId),
+                BikeRevertEvent::NAME
+            );
 
             return $this->response('<h3>' . _('Bicycle') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
         } else {

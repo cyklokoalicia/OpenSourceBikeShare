@@ -1,12 +1,14 @@
 <?php
 
 use BikeShare\Rent\RentSystemInterface;
+use BikeShare\SmsConnector\SmsConnectorInterface;
 
 require_once 'vendor/autoload.php';
 require_once "actions-sms.php";
 
 /**
  * @var RentSystemInterface $rentSystem
+ * @var SmsConnectorInterface $sms
  */
 $rentSystem = $rentSystemFactory->getRentSystem('sms');
 

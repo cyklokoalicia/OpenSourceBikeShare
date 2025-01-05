@@ -10,7 +10,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 abstract class AbstractCommand implements SmsCommandInterface
 {
-    protected const ARGUMENT_COUNT = 1;
     protected const COMMAND_NAME = '';
     protected const MIN_PRIVILEGES_LEVEL = 0;
 
@@ -22,35 +21,14 @@ abstract class AbstractCommand implements SmsCommandInterface
         $this->translator = $translator;
     }
 
-    public function execute(User $user, array $args): string
-    {
-        $this->checkPrivileges($user);
-        $this->validate($args);
-
-        return $this->run($user, $args);
-    }
-
     public static function getName(): string
     {
         return static::COMMAND_NAME;
     }
 
-    /**
-     * @throws ValidationException
-     */
-    protected function validate(array $args): void
-    {
-        if (count($args) < $this->getRequiredArgsCount()) {
-            throw new ValidationException(
-                $this->translator->trans(
-                    'Error. More arguments needed, use command {command}',
-                    ['{command}' => $this->getValidationErrorMessage()]
-                )
-            );
-        }
-    }
+    abstract public function getHelpMessage(): string;
 
-    protected function checkPrivileges(User $user): void
+    public function checkPrivileges(User $user): void
     {
         if ($user->getPrivileges() < $this->getRequiredPrivileges()) {
             throw new ValidationException(
@@ -65,13 +43,4 @@ abstract class AbstractCommand implements SmsCommandInterface
     {
         return static::MIN_PRIVILEGES_LEVEL;
     }
-
-    protected function getRequiredArgsCount(): int
-    {
-        return static::ARGUMENT_COUNT;
-    }
-
-    abstract protected function run(User $user, array $args): string;
-
-    abstract protected function getValidationErrorMessage(): string;
 }

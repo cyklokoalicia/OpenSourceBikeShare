@@ -40,7 +40,7 @@ class StandRepository
         return $stands;
     }
 
-    public function findItem(int $standId): array
+    public function findItem(int $standId): ?array
     {
         $stand = $this->db->query(
             'SELECT
@@ -59,7 +59,7 @@ class StandRepository
         return $stand;
     }
 
-    public function findItemByName(string $standName): array
+    public function findItemByName(string $standName): ?array
     {
         $stand = $this->db->query(
             'SELECT
