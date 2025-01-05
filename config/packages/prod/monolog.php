@@ -13,6 +13,6 @@ return static function (MonologConfig $monolog): void {
         ->level('notice');
     $monolog->handler('sentry')
         ->type('sentry')
-        ->level('info')
+        ->level('notice')
         ->dsn('%env(SENTRY_DSN)%');
 };
