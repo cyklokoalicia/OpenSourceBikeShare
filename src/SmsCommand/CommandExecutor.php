@@ -92,7 +92,7 @@ class CommandExecutor
         } catch (\Throwable $e) {
             $this->logger->error(
                 'Error executing command',
-                ['user' => $user, 'command' => $commandName, 'exception' => $e->getMessage()]
+                ['user' => $user, 'command' => $commandName, 'exception' => $e]
             );
             $message = $this->translator->trans('An error occurred while processing your request.');
         }

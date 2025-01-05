@@ -37,6 +37,9 @@ class CommandDetector
             if (preg_match($pattern, $message, $matches, PREG_UNMATCHED_AS_NULL)) {
                 $namedMatches = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
                 unset($namedMatches['command']);
+                if (!is_null($namedMatches['bikeNumber'])) {
+                    $namedMatches['bikeNumber'] = (int)$namedMatches['bikeNumber'];
+                }
 
                 return ['command' => strtoupper($matches['command']), 'arguments' => $namedMatches];
             }
