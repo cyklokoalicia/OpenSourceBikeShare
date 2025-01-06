@@ -9,11 +9,11 @@ use Symfony\Component\HttpFoundation\Request;
 
 class DebugConnector extends AbstractConnector
 {
-    private Request $request;
+    private ?Request $request;
     private LoggerInterface $logger;
 
     public function __construct(
-        Request $request,
+        ?Request $request,
         LoggerInterface $logger,
         array $configuration,
         $debugMode = false
@@ -38,6 +38,9 @@ class DebugConnector extends AbstractConnector
 
     public function receive(): void
     {
+        if (is_null($this->request)) {
+            throw new \RuntimeException('Could not receive sms in cli');
+        }
         $this->message = $this->request->get('message', '');
         $this->number = $this->request->get('number', '');
         $this->uuid = $this->request->get('uuid', '');

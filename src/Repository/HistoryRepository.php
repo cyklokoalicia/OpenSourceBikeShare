@@ -70,4 +70,25 @@ class HistoryRepository
 
         return $result;
     }
+
+    public function findLastBikeRentByUser(int $bikeNumber, int $userId): ?array
+    {
+        $result = $this->db->query(
+            "SELECT
+              userId,
+              bikeNum,
+              time,
+              action,
+              parameter,
+              standId
+            FROM history 
+            WHERE bikeNum = $bikeNumber 
+              AND userId = $userId 
+              AND action = 'RENT' 
+            ORDER BY time DESC 
+            LIMIT 1"
+        )->fetchAssoc();
+
+        return $result;
+    }
 }

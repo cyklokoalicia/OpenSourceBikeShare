@@ -152,6 +152,22 @@ class BikeRepository
         return $result;
     }
 
+    public function findRentedBikes(): array
+    {
+        $result = $this->db->query(
+            "SELECT
+                bikes.bikeNum,
+                users.userId,
+                users.number,
+                users.userName
+             FROM bikes
+             JOIN users ON bikes.currentUser=users.userId
+             WHERE currentStand IS NULL"
+        )->fetchAllAssoc();
+
+        return $result;
+    }
+
     public function findFreeBikes(): array
     {
         $result = $this->db->query(

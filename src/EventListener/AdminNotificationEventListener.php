@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace BikeShare\EventListener;
 
+use BikeShare\App\Configuration;
 use BikeShare\Db\DbInterface;
+use BikeShare\Event\LongRentEvent;
 use BikeShare\Event\SmsDuplicateDetectedEvent;
 use BikeShare\Event\SmsProcessedEvent;
 use BikeShare\Mail\MailSenderInterface;
@@ -14,9 +16,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsEventListener(event: SmsDuplicateDetectedEvent::NAME, method: 'onSmsDuplicateDetected')]
 #[AsEventListener(event: SmsProcessedEvent::NAME, method: 'onSmsProcessed')]
+#[AsEventListener(event: LongRentEvent::NAME, method: 'onLongRent')]
 class AdminNotificationEventListener
 {
     private string $appName;
+    private Configuration $configuration;
     private DbInterface $db;
     private MailSenderInterface $mailer;
     private SmsSenderInterface $smsSender;
@@ -24,16 +28,31 @@ class AdminNotificationEventListener
 
     public function __construct(
         string $appName,
+        Configuration $configuration,
         DbInterface $db,
         MailSenderInterface $mailer,
         SmsSenderInterface $smsSender,
         TranslatorInterface $translator
     ) {
         $this->appName = $appName;
+        $this->configuration = $configuration;
         $this->db = $db;
         $this->mailer = $mailer;
         $this->smsSender = $smsSender;
         $this->translator = $translator;
+    }
+
+    public function onLongRent(LongRentEvent $event): void
+    {
+        $message = $this->translator->trans(
+            'Bike rental exceed {hour} hours',
+            ['hour' => $this->configuration->get('watches')['longrental']]
+        );
+        foreach ($event->getAbusers() as $abuser) {
+            $message .= PHP_EOL . 'B' . $abuser['bikeNumber'] . ' ' . $abuser['userName'] . ' ' . $abuser['userPhone'];
+        }
+
+        $this->sendNotification($message);
     }
 
     public function onSmsDuplicateDetected(SmsDuplicateDetectedEvent $event): void
