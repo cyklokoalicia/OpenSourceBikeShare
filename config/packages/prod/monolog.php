@@ -14,5 +14,6 @@ return static function (MonologConfig $monolog): void {
     $monolog->handler('sentry')
         ->type('sentry')
         ->level('notice')
+        ->fillExtraContext(true)
         ->dsn('%env(SENTRY_DSN)%');
 };
