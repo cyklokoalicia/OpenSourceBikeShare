@@ -3,10 +3,12 @@
 namespace BikeShare\Controller;
 
 use BikeShare\App\Kernel;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 class CommandController extends AbstractController
 {
@@ -21,9 +23,18 @@ class CommandController extends AbstractController
      * @Route("/command.php", name="command")
      */
     public function index(
-        Request $request
+        Request $request,
+        LoggerInterface $logger
     ): Response {
         $kernel = $this->kernel;
+
+        if (is_null($this->getUser())) {
+            $logger->notice('Access to command.php without authentication', [
+                'ip' => $request->getClientIp(),
+                'uri' => $request->getRequestUri(),
+                'request' => $request->request->all(),
+            ]);
+        }
 
         ob_start();
         require_once $this->getParameter('kernel.project_dir') . '/command.php';
