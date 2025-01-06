@@ -255,38 +255,6 @@ function checktopofstack($standid)
     return false;
 }
 
-function checklongrental()
-{
-    global $db, $smsSender, $configuration;
-
-    $abusers = '';
-    $found = 0;
-    $result = $db->query('SELECT bikeNum,currentUser,userName,number FROM bikes LEFT JOIN users ON bikes.currentUser=users.userId WHERE currentStand IS NULL');
-    while ($row = $result->fetch_assoc()) {
-        $bikenum = $row['bikeNum'];
-        $userid = $row['currentUser'];
-        $username = $row['userName'];
-        $userphone = $row['number'];
-        $result2 = $db->query("SELECT time FROM history WHERE bikeNum=$bikenum AND userId=$userid AND action='RENT' ORDER BY time DESC LIMIT 1");
-        if ($result2->num_rows) {
-            $row2 = $result2->fetch_assoc();
-            $time = $row2['time'];
-            $time = strtotime($time);
-            if ($time + ($configuration->get('watches')['longrental'] * 3600) <= time()) {
-                $abusers .= ' b' . $bikenum . ' ' . _('by') . ' ' . $username . ',';
-                $found = 1;
-                if ($configuration->get('notifyuser')) {
-                    $smsSender->send($userphone, _('Please, return your bike ') . $bikenum . _(' immediately to the closest stand! Ignoring this warning can get you banned from the system.'));
-                }
-            }
-        }
-    }
-    if ($found) {
-        $abusers = substr($abusers, 0, strlen($abusers) - 1);
-        notifyAdmins($configuration->get('watches')['longrental'] . '+ ' . _('hour rental') . ':' . $abusers);
-    }
-}
-
 // cron - called from cron by default, set to 0 if from rent function, userid needs to be passed if cron=0
 function checktoomany($cron = 1, $userid = 0)
 {

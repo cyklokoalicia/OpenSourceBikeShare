@@ -286,8 +286,7 @@ return [
     'By clicking the following link you agree to the System rules:' => '',
     'Registration key not found!' => '',
     'Your account has been activated. Welcome!' => '',
-    'Please, return your bike ' => '',
-    ' immediately to the closest stand! Ignoring this warning can get you banned from the system.' => '',
+    'Please, return your bike {bikeNumber} immediately to the closest stand! Ignoring this warning can get you banned from the system.' => 'Please, return your bike {bikeNumber} immediately to the closest stand! Ignoring this warning can get you banned from the system.',
     'hour rental' => '',
     'limit' => '',
     'Over limit in' => '',
@@ -441,4 +440,8 @@ return [
     'Total Actions' => 'Total Actions',
     'Year' => 'Year',
     'View on Google Maps' => 'View on Google Maps',
+    'Bike rental exceed {hour} hours' => '{hour, plural,
+        one {Bike rental exceed 1 hour}
+        other {Bike rental exceed # hours}
+    }',
 ];

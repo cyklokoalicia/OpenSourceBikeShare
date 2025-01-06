@@ -14,6 +14,7 @@ use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
 use BikeShare\Event\BikeRevertEvent;
+use BikeShare\Event\LongRentEvent;
 use BikeShare\Event\SmsDuplicateDetectedEvent;
 use BikeShare\Event\SmsProcessedEvent;
 use BikeShare\EventListener\AdminNotificationEventListener;
@@ -70,6 +71,9 @@ return static function (ContainerConfigurator $container): void {
             '../src/App/Entity',
             '../src/Event',
         ]);
+
+    $services->get(\BikeShare\Command\LongRentalCheckCommand::class)
+        ->bind('$notifyUser', env('bool:NOTIFY_USER_ABOUT_LONG_RENTAL'));
 
     $services->get(\BikeShare\Controller\SmsRequestController::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
@@ -128,6 +132,7 @@ return static function (ContainerConfigurator $container): void {
     $services->get(AdminNotificationEventListener::class)
         ->tag('kernel.event_listener', ['event' => SmsDuplicateDetectedEvent::NAME, 'method' => 'onSmsDuplicateDetected'])
         ->tag('kernel.event_listener', ['event' => SmsProcessedEvent::NAME, 'method' => 'onSmsProcessed'])
+        ->tag('kernel.event_listener', ['event' => LongRentEvent::NAME, 'method' => 'onLongRent'])
         ->bind('$appName', env('APP_NAME'));
     $services->get(BikeRevertEventListener::class)
         ->tag('kernel.event_listener', ['event' => BikeRevertEvent::NAME]);

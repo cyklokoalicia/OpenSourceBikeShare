@@ -11,7 +11,7 @@ require_once '../vendor/autoload.php';
 if (file_exists("../config.php")) {
     require "../config.php";
 } else {
-    require "../config.php.example";
+    require "../config.example.php";
 }
 
 /**

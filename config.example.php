@@ -35,8 +35,6 @@ $credit["longrental"]=5; // long rental fee ($watches["longrental"] time)
 $credit["limitincrease"]=10; // credit needed to temporarily increase limit, applicable only when $limits["increase"]>0
 $credit["violation"]=5; // credit deduction for rule violations (applied by admins)
 
-$notifyuser=0; // 0 = no notication send to users (when admins get notified), 1 = notification messages sent to users as well
-
 /*** Database ***/
 $dbserver="localhost";
 $dbuser="bikeshare";
