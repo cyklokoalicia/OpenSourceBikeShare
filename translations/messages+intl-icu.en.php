@@ -444,4 +444,12 @@ return [
         one {Bike rental exceed 1 hour}
         other {Bike rental exceed # hours}
     }',
+    'Bike rental over limit in {hour} hours' => '{hour, plural,
+        one {Bike rental over limit in 1 hour}
+        other {Bike rental over limit in # hours}
+    }',
+    '{userName} ({phone}) rented {count} bikes' => '{count, plural,
+        one {{userName} ({phone}) rented 1 bike}
+        other {{userName} ({phone}) rented # bikes}
+    }',
 ];

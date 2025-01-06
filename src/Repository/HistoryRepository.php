@@ -91,4 +91,18 @@ class HistoryRepository
 
         return $result;
     }
+
+    public function findRentCountByUser(int $userId, string $offsetTime): int
+    {
+        $result = $this->db->query(
+            "SELECT
+              COUNT(*) AS rentCount
+            FROM history 
+            WHERE userId = $userId 
+              AND action = 'RENT' 
+              AND time > '$offsetTime'"
+        )->fetchAssoc();
+
+        return (int)($result['rentCount'] ?? 0);
+    }
 }
