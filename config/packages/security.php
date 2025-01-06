@@ -72,6 +72,10 @@ return function (SecurityConfig $security) {
         ->accessControl()
         ->path('^/resetPassword$')
         ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
+    $security
+        ->accessControl()
+        ->path('^/command.php$')
+        ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
 
     $security
         ->accessControl()
