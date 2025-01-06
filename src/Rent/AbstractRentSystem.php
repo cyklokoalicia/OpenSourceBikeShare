@@ -5,6 +5,8 @@ namespace BikeShare\Rent;
 use BikeShare\Authentication\Auth;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
+use BikeShare\Event\BikeRentEvent;
+use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Event\BikeRevertEvent;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
@@ -79,6 +81,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
     public function rentBike($userId, $bikeId, $force = false)
     {
         $stacktopbike = false;
+        $userId = intval($userId);
         $bikeNum = intval($bikeId);
 
         $result = $this->db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
@@ -91,8 +94,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $minRequiredCredit = $this->creditSystem->getMinRequiredCredit();
                 return $this->response(_('You are below required credit') . ' ' . $minRequiredCredit . $this->creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), self::ERROR);
             }
-
-            $this->checktoomany($userId);
 
             $result = $this->db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
             $row = $result->fetchAssoc();
@@ -174,11 +175,17 @@ abstract class AbstractRentSystem implements RentSystemInterface
             //$this->response(_('System override') . ": " . _('Your rented bike') . " " . $bikeNum . " " . _('has been rented by admin') . ".");
         }
 
+        $this->eventDispatcher->dispatch(
+            new BikeRentEvent($bikeNum, $userId, $force),
+            BikeRentEvent::NAME
+        );
+
         return $this->response($message);
     }
 
     public function returnBike($userId, $bikeId, $standName, $note = '', $force = false)
     {
+        $userId = intval($userId);
         $bikeNum = intval($bikeId);
         $stand = strtoupper($standName);
 
@@ -237,11 +244,17 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $result = $this->db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeNum,action='FORCERETURN',parameter=$standId");
         }
 
+        $this->eventDispatcher->dispatch(
+            new BikeReturnEvent($bikeNum, $standName, $userId, $force),
+            BikeReturnEvent::NAME
+        );
+
         return $this->response($message);
     }
 
     public function revertBike($userId, $bikeId)
     {
+        $userId = intval($userId);
         $bikeId = intval($bikeId);
 
         $standId = 0;
@@ -308,11 +321,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
             'error' => $error,
             'content' => $message,
         ];
-    }
-
-    private function checktoomany($userId)
-    {
-        checktoomany(0, $userId);
     }
 
     private function checktopofstack($standid)

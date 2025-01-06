@@ -255,45 +255,6 @@ function checktopofstack($standid)
     return false;
 }
 
-// cron - called from cron by default, set to 0 if from rent function, userid needs to be passed if cron=0
-function checktoomany($cron = 1, $userid = 0)
-{
-    global $db, $configuration;
-
-    $abusers = '';
-    $found = 0;
-
-    if ($cron) { // called from cron
-        $result = $db->query('SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId');
-        while ($row = $result->fetch_assoc()) {
-            $userid = $row['userId'];
-            $username = $row['userName'];
-            $userlimit = $row['userLimit'];
-            $currenttime = date('Y-m-d H:i:s', time() - $configuration->get('watches')['timetoomany'] * 3600);
-            $result2 = $db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
-            if ($result2->num_rows >= ($userlimit + $configuration->get('watches')['numbertoomany'])) {
-                $abusers .= ' ' . $result2->num_rows . ' (' . _('limit') . ' ' . $userlimit . ') ' . _('by') . ' ' . $username . ',';
-                $found = 1;
-            }
-        }
-    } else { // called from function for user userid
-        $result = $db->query("SELECT users.userId,userName,userLimit FROM users LEFT JOIN limits ON users.userId=limits.userId WHERE users.userId=$userid");
-        $row = $result->fetch_assoc();
-        $username = $row['userName'];
-        $userlimit = $row['userLimit'];
-        $currenttime = date('Y-m-d H:i:s', time() - $configuration->get('watches')['timetoomany'] * 3600);
-        $result = $db->query("SELECT bikeNum FROM history WHERE userId=$userid AND action='RENT' AND time>'$currenttime'");
-        if ($result->num_rows >= ($userlimit + $configuration->get('watches')['numbertoomany'])) {
-            $abusers .= ' ' . $result->num_rows . ' (' . _('limit') . ' ' . $userlimit . ') ' . _('by') . ' ' . $username . ',';
-            $found = 1;
-        }
-    }
-    if ($found) {
-        $abusers = substr($abusers, 0, strlen($abusers) - 1);
-        notifyAdmins(_('Over limit in') . ' ' . $configuration->get('watches')['timetoomany'] . ' ' . _('hs') . ':' . $abusers);
-    }
-}
-
 function issmssystemenabled()
 {
     global $configuration;

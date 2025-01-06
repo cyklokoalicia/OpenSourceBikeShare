@@ -7,6 +7,7 @@ namespace BikeShare\EventListener;
 use BikeShare\App\Configuration;
 use BikeShare\Db\DbInterface;
 use BikeShare\Event\LongRentEvent;
+use BikeShare\Event\ManyRentEvent;
 use BikeShare\Event\SmsDuplicateDetectedEvent;
 use BikeShare\Event\SmsProcessedEvent;
 use BikeShare\Mail\MailSenderInterface;
@@ -17,6 +18,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AsEventListener(event: SmsDuplicateDetectedEvent::NAME, method: 'onSmsDuplicateDetected')]
 #[AsEventListener(event: SmsProcessedEvent::NAME, method: 'onSmsProcessed')]
 #[AsEventListener(event: LongRentEvent::NAME, method: 'onLongRent')]
+#[AsEventListener(event: ManyRentEvent::NAME, method: 'onManyRent')]
 class AdminNotificationEventListener
 {
     private string $appName;
@@ -40,6 +42,22 @@ class AdminNotificationEventListener
         $this->mailer = $mailer;
         $this->smsSender = $smsSender;
         $this->translator = $translator;
+    }
+
+    public function onManyRent(ManyRentEvent $event): void
+    {
+        $message = $this->translator->trans(
+            'Bike rental over limit in {hour} hours',
+            ['hour' => $this->configuration->get('watches')['timetoomany']]
+        );
+        foreach ($event->getAbusers() as $abuser) {
+            $message .= PHP_EOL . $this->translator->trans(
+                '{userName} ({phone}) rented {count} bikes',
+                ['userName' => $abuser['userName'], 'phone' => $abuser['userPhone'], 'count' => $abuser['rentCount']]
+            );
+        }
+
+        $this->sendNotification($message);
     }
 
     public function onLongRent(LongRentEvent $event): void
