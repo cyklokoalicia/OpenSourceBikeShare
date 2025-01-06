@@ -49,7 +49,7 @@ Open Source Bicycle Share is a community run system and therefore requires some 
 You can set these using `$watches` variable. Any violations from the set rules will be reported to the admins (with `privileges` 2+) by SMS and by email `$watches["email"]`.
 Watch and report:
 * if bicycle is taken out of stack, if $forcestack is enabled (see below): `$watches["stack"]`.
-* if any long rentals occur: `$watches["longrental"]`. In addition, if `$notifyuser` is set to 1, user will be notified as well to his phone.
+* if any long rentals occur: `$watches["longrental"]`. In addition, if `$_ENV['NOTIFY_USER_ABOUT_LONG_RENTAL']` is set to true, user will be notified as well to his phone.
 * if any user has rented too many bikes during a short period: `$watches["timetoomany"]` and `$watches["numbertoomany"]`.
 
 Additional variables are used by the credit system (if enabled):

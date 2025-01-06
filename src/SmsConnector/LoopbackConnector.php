@@ -9,10 +9,10 @@ use Symfony\Component\HttpFoundation\Request;
 class LoopbackConnector extends AbstractConnector
 {
     private array $store = [];
-    private Request $request;
+    private ?Request $request;
 
     public function __construct(
-        Request $request,
+        ?Request $request,
         array $configuration,
         $debugMode = false
     ) {
@@ -47,6 +47,9 @@ class LoopbackConnector extends AbstractConnector
 
     public function receive(): void
     {
+        if (is_null($this->request)) {
+            throw new \RuntimeException('Could not receive sms in cli');
+        }
         if ($this->request->query->has('sms_text')) {
             $this->message = $this->request->query->get('sms_text', '');
         }

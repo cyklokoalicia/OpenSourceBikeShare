@@ -16,7 +16,7 @@ if (file_exists("../config.php")) {
 die('Under construction. Contact us for support.');
 
 require_once '../vendor/autoload.php';
-$configfilename = "../config.php.example";
+$configfilename = "../config.example.php";
 require $configfilename;
 
 $logger = new Logger('BikeShare');

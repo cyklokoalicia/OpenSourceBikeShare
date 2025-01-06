@@ -16,10 +16,10 @@ class TextmagicSmsConnector extends AbstractConnector
     private string $gatewayUser = '';
     private string $gatewayPassword = '';
     private string $gatewaySenderNumber = '';
-    private Request $request;
+    private ?Request $request;
 
     public function __construct(
-        Request $request,
+        ?Request $request,
         array $configuration,
         $debugMode = false
     ) {
@@ -71,6 +71,9 @@ class TextmagicSmsConnector extends AbstractConnector
 
     public function receive(): void
     {
+        if (is_null($this->request)) {
+            throw new \RuntimeException('Could not receive sms in cli');
+        }
         if ($this->request->request->has('text')) {
             $this->message = $this->request->request->get('text', '');
         }
