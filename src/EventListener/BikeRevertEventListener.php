@@ -10,7 +10,6 @@ use BikeShare\User\User;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[AsEventListener(event: BikeRevertEvent::NAME)]
 class BikeRevertEventListener
 {
     private User $user;
