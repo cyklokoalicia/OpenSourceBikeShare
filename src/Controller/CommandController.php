@@ -28,7 +28,11 @@ class CommandController extends AbstractController
     ): Response {
         $kernel = $this->kernel;
 
-        if (is_null($this->getUser())) {
+        if (
+            is_null($this->getUser())
+            && $request->get('action') !== 'map:markers'
+            && $request->headers->get('User-Agent') !== 'PyBikes'
+        ) {
             $logger->notice('Access to command.php without authentication', [
                 'ip' => $request->getClientIp(),
                 'uri' => $request->getRequestUri(),
