@@ -2,6 +2,13 @@
 
 require_once "common.php";
 
+function t(?string $id, array $parameters = [], ?string $domain = null, ?string $locale = null): string
+{
+    global $translator;
+
+    return $translator->trans($id, $parameters, $domain, $locale);
+}
+
 function response($message,$error=0,$log=1)
 {
     global $configuration, $db, $user, $auth;

@@ -6,8 +6,6 @@ namespace BikeShare\Event;
 
 class BikeReturnEvent
 {
-    public const NAME = 'bike.return';
-
     private int $bikeNumber;
     private string $standName;
     private int $userId;

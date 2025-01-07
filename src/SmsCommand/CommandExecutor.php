@@ -71,16 +71,15 @@ class CommandExecutor
             $message = $command(...$arguments);
 
             $this->eventDispatcher->dispatch(
-                new SmsProcessedEvent($user, $commandName, $commandInfo['arguments'], $message),
-                SmsProcessedEvent::NAME
+                new SmsProcessedEvent($user, $commandName, $commandInfo['arguments'], $message)
             );
         } catch (ServiceNotFoundException $e) {
             $this->logger->warning('Unknown command', ['user' => $user, 'command' => $commandName]);
             $message = $this->translator->trans(
-                'Error. The command %badCommand% does not exist. If you need help, send: %helpCommand%',
+                'Error. The command {badCommand} does not exist. If you need help, send: {helpCommand}',
                 [
-                    '%badCommand%' => $commandName,
-                    '%helpCommand%' => 'HELP'
+                    'badCommand' => $commandName,
+                    'helpCommand' => 'HELP'
                 ]
             );
         } catch (ValidationException $e) {

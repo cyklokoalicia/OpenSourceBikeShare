@@ -6,30 +6,31 @@ namespace BikeShare\EventListener;
 
 use BikeShare\App\Configuration;
 use BikeShare\Event\BikeRentEvent;
-use BikeShare\Event\ManyRentEvent;
+use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
-use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[AsEventListener(event: BikeRentEvent::NAME)]
 class TooManyBikeRentEventListener
 {
     private UserRepository $userRepository;
     private HistoryRepository $historyRepository;
     private Configuration $configuration;
-    private EventDispatcherInterface $eventDispatcher;
+    private TranslatorInterface $translator;
+    private AdminNotifier $adminNotifier;
 
     public function __construct(
         UserRepository $userRepository,
         HistoryRepository $historyRepository,
         Configuration $configuration,
-        EventDispatcherInterface $eventDispatcher
+        TranslatorInterface $translator,
+        AdminNotifier $adminNotifier
     ) {
         $this->userRepository = $userRepository;
         $this->historyRepository = $historyRepository;
         $this->configuration = $configuration;
-        $this->eventDispatcher = $eventDispatcher;
+        $this->translator = $translator;
+        $this->adminNotifier = $adminNotifier;
     }
 
     public function __invoke(BikeRentEvent $event): void
@@ -42,17 +43,16 @@ class TooManyBikeRentEventListener
 
         $rentCount = $this->historyRepository->findRentCountByUser($event->getUserId(), $offsetTime);
         if ($rentCount >= ($user['userLimit'] + $this->configuration->get('watches')['numbertoomany'])) {
-            $abusers = [];
-            $abusers[] = [
-                'userId' => $user['userId'],
-                'userName' => $user['username'],
-                'userPhone' => $user['number'],
-                'rentCount' => $rentCount,
-            ];
-            $this->eventDispatcher->dispatch(
-                new ManyRentEvent($abusers),
-                ManyRentEvent::NAME
+            $message = $this->translator->trans(
+                'Bike rental over limit in {hour} hours',
+                ['hour' => $this->configuration->get('watches')['timetoomany']]
             );
+            $message .= PHP_EOL . $this->translator->trans(
+                '{userName} ({phone}) rented {count} bikes',
+                ['userName' => $user['userName'], 'phone' => $user['number'], 'count' => $rentCount]
+            );
+
+            $this->adminNotifier->notify($message, true, [$user['userId']]);
         }
     }
 }
