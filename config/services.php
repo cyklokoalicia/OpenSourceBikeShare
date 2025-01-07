@@ -13,17 +13,9 @@ use BikeShare\Credit\CreditSystemFactory;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\MysqliDb;
-use BikeShare\Event\BikeRentEvent;
-use BikeShare\Event\BikeRevertEvent;
-use BikeShare\Event\LongRentEvent;
-use BikeShare\Event\ManyRentEvent;
-use BikeShare\Event\SmsDuplicateDetectedEvent;
-use BikeShare\Event\SmsProcessedEvent;
-use BikeShare\EventListener\AdminNotificationEventListener;
-use BikeShare\EventListener\BikeRevertEventListener;
-use BikeShare\EventListener\TooManyBikeRentEventListener;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Mail\PHPMailerMailSender;
+use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Rent\RentSystemInterface;
@@ -132,24 +124,9 @@ return static function (ContainerConfigurator $container): void {
 
     $services->alias(PhonePurifierInterface::class, PhonePurifier::class);
 
-    $services->get(AdminNotificationEventListener::class)
-        ->tag('kernel.event_listener', ['event' => SmsDuplicateDetectedEvent::NAME, 'method' => 'onSmsDuplicateDetected'])
-        ->tag('kernel.event_listener', ['event' => SmsProcessedEvent::NAME, 'method' => 'onSmsProcessed'])
-        ->tag('kernel.event_listener', ['event' => LongRentEvent::NAME, 'method' => 'onLongRent'])
-        ->tag('kernel.event_listener', ['event' => ManyRentEvent::NAME, 'method' => 'onManyRent'])
+    $services->get(AdminNotifier::class)
         ->bind('$appName', env('APP_NAME'));
-    $services->get(BikeRevertEventListener::class)
-        ->tag('kernel.event_listener', ['event' => BikeRevertEvent::NAME]);
-    $services->get(TooManyBikeRentEventListener::class)
-        ->tag('kernel.event_listener', ['event' => BikeRentEvent::NAME]);
 
     $services->load('BikeShare\\EventListener\\', '../src/EventListener')
-        ->exclude(
-            [
-                '../src/EventListener/AdminNotificationEventListener.php',
-                '../src/EventListener/BikeRevertEventListener.php',
-                '../src/EventListener/TooManyBikeRentEventListener.php',
-            ]
-        )
         ->tag('kernel.event_listener');
 };

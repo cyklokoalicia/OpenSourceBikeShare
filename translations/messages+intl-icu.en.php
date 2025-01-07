@@ -280,7 +280,7 @@ return [
     'Password confirmation:' => '',
     'Create account' => '',
     'Privacy policy' => '',
-    'notification' => '',
+    '{appName} notification' => '{appName} notification',
     'you have been registered into community bike share system' => '',
     'System rules are available here:' => '',
     'By clicking the following link you agree to the System rules:' => '',

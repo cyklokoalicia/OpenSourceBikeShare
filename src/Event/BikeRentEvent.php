@@ -6,8 +6,6 @@ namespace BikeShare\Event;
 
 class BikeRentEvent
 {
-    public const NAME = 'bike.rent';
-
     private int $bikeNumber;
     private int $userId;
     private bool $isForce;

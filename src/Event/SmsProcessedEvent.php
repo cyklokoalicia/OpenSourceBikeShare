@@ -8,8 +8,6 @@ use BikeShare\App\Entity\User;
 
 class SmsProcessedEvent
 {
-    public const NAME = 'sms.processed';
-
     private User $user;
     private string $commandName;
     private array $commandArguments;

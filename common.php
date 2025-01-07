@@ -78,20 +78,6 @@ putenv("LANG=" . $locale);
 bindtextdomain("messages", dirname(__FILE__) . '/languages');
 textdomain("messages");
 
-function t(?string $id, array $parameters = [], ?string $domain = null, ?string $locale = null): string
-{
-    global $translator;
-
-    return $translator->trans($id, $parameters, $domain, $locale);
-}
-
-function error($message)
-{
-   global $db;
-   $db->rollback();
-   exit($message);
-}
-
 function logrequest($userid)
 {
    global $configuration, $user, $logger;
@@ -164,27 +150,9 @@ function checkstandname($stand)
 {
     global $db;
     $standname = trim(strtoupper($stand));
-    $result = $db->query("SELECT standName FROM stands WHERE standName='$stand'");
+    $result = $db->query("SELECT standName FROM stands WHERE standName='$standname'");
     if (!$result->num_rows) {
-        response('<h3>' . _('Stand') . ' ' . $stand . ' ' . _('does not exist') . '!</h3>', ERROR);
-    }
-}
-
-/**
- * @param int $notificationtype 0 = via SMS, 1 = via email
- **/
-function notifyAdmins($message, $notificationtype = 0)
-{
-    global $db, $configuration, $mailer, $smsSender;
-
-    $result = $db->query('SELECT number,mail FROM users where privileges & 2 != 0');
-    while ($row = $result->fetch_assoc()) {
-        if ($notificationtype == 0) {
-            $smsSender->send($row['number'], $message);
-            $mailer->sendMail($configuration->get('watches')['email'], $configuration->get('systemname') . ' ' . _('notification'), $message);
-        } else {
-            $mailer->sendMail($row['mail'], $configuration->get('systemname') . ' ' . _('notification'), $message);
-        }
+        response('<h3>' . _('Stand') . ' ' . $standname . ' ' . _('does not exist') . '!</h3>', ERROR);
     }
 }
 

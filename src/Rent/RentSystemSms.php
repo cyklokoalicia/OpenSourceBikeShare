@@ -5,6 +5,7 @@ namespace BikeShare\Rent;
 use BikeShare\Authentication\Auth;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
+use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
@@ -25,6 +26,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         User $user,
         Auth $auth,
         EventDispatcherInterface $eventDispatcher,
+        AdminNotifier $adminNotifier,
         LoggerInterface $logger,
         array $watchesConfig,
         array $connectorsConfig,
@@ -36,6 +38,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
             $user,
             $auth,
             $eventDispatcher,
+            $adminNotifier,
             $logger,
             $watchesConfig,
             $connectorsConfig,

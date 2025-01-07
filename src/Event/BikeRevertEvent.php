@@ -6,8 +6,6 @@ namespace BikeShare\Event;
 
 class BikeRevertEvent
 {
-    public const NAME = 'bike.revert';
-
     private int $bikeNumber;
     private int $revertedByUserId;
     private int $previousOwnerId;

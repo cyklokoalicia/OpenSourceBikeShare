@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Command;
 
 use BikeShare\App\Configuration;
-use BikeShare\Event\LongRentEvent;
+use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Sms\SmsSenderInterface;
@@ -14,7 +14,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsCommand(name: 'app:long_rental_check', description: 'Check user which have long rental')]
@@ -28,7 +27,7 @@ class LongRentalCheckCommand extends Command
     private Configuration $configuration;
     private SmsSenderInterface $smsSender;
     private TranslatorInterface $translator;
-    private EventDispatcherInterface $eventDispatcher;
+    private AdminNotifier $adminNotifier;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -38,7 +37,7 @@ class LongRentalCheckCommand extends Command
         Configuration $configuration,
         SmsSenderInterface $smsSender,
         TranslatorInterface $translator,
-        EventDispatcherInterface $eventDispatcher,
+        AdminNotifier $adminNotifier,
         LoggerInterface $logger
     ) {
         $this->notifyUser = $notifyUser;
@@ -47,7 +46,7 @@ class LongRentalCheckCommand extends Command
         $this->configuration = $configuration;
         $this->smsSender = $smsSender;
         $this->translator = $translator;
-        $this->eventDispatcher = $eventDispatcher;
+        $this->adminNotifier = $adminNotifier;
         $this->logger = $logger;
         parent::__construct();
     }
@@ -91,10 +90,16 @@ class LongRentalCheckCommand extends Command
             }
         }
         if (!empty($abusers)) {
-            $this->eventDispatcher->dispatch(
-                new LongRentEvent($abusers),
-                LongRentEvent::NAME
+            $message = $this->translator->trans(
+                'Bike rental exceed {hour} hours',
+                ['hour' => $this->configuration->get('watches')['longrental']]
             );
+            foreach ($abusers as $abuser) {
+                $message .= PHP_EOL . 'B' . $abuser['bikeNumber'] . ' '
+                    . $abuser['userName'] . ' ' . $abuser['userPhone'];
+            }
+
+            $this->adminNotifier->notify($message);
         }
 
         return Command::SUCCESS;

@@ -8,6 +8,7 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Event\BikeRentEvent;
 use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Event\BikeRevertEvent;
+use BikeShare\Notifier\AdminNotifier;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -40,6 +41,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
      */
     protected $eventDispatcher;
     /**
+     * @var AdminNotifier
+     */
+    protected $adminNotifier;
+    /**
      * @var LoggerInterface
      */
     protected $logger;
@@ -62,6 +67,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         User $user,
         Auth $auth,
         EventDispatcherInterface $eventDispatcher,
+        AdminNotifier $adminNotifier,
         LoggerInterface $logger,
         array $watchesConfig,
         array $connectorsConfig,
@@ -72,6 +78,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $this->user = $user;
         $this->auth = $auth;
         $this->eventDispatcher = $eventDispatcher;
+        $this->adminNotifier = $adminNotifier;
         $this->logger = $logger;
         $this->watchesConfig = $watchesConfig;
         $this->connectorsConfig = $connectorsConfig;
@@ -132,7 +139,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     $row = $result->fetchAssoc();
                     $stand = $row['standName'];
                     $userName = $this->user->findUserName($userId);
-                    $this->notifyAdmins(_('Bike') . ' ' . $bikeId . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', self::ERROR);
+                    $this->notifyAdmins(_('Bike') . ' ' . $bikeId . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', false);
                 }
                 if ($this->forceStack and $stacktopbike != $bikeId) {
                     return $this->response(_('Bike') . ' ' . $bikeId . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', self::ERROR);
@@ -176,8 +183,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         $this->eventDispatcher->dispatch(
-            new BikeRentEvent($bikeNum, $userId, $force),
-            BikeRentEvent::NAME
+            new BikeRentEvent($bikeNum, $userId, $force)
         );
 
         return $this->response($message);
@@ -245,8 +251,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         $this->eventDispatcher->dispatch(
-            new BikeReturnEvent($bikeNum, $standName, $userId, $force),
-            BikeReturnEvent::NAME
+            new BikeReturnEvent($bikeNum, $standName, $userId, $force)
         );
 
         return $this->response($message);
@@ -298,8 +303,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $this->db->query("INSERT INTO history SET userId=0,bikeNum=$bikeId,action='RETURN',parameter=$standId");
 
             $this->eventDispatcher->dispatch(
-                new BikeRevertEvent($bikeId, $userId, $previousOwnerId),
-                BikeRevertEvent::NAME
+                new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
             );
 
             return $this->response('<h3>' . _('Bicycle') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
@@ -328,9 +332,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
         return checktopofstack($standid);
     }
 
-    private function notifyAdmins($message, $notificationtype = 0)
+    private function notifyAdmins(string $message, bool $bySms = true)
     {
-        notifyAdmins($message, $notificationtype);
+        $this->adminNotifier->notify($message, $bySms);
     }
 
     private function addnote($userId, $bikeNum, $message)
