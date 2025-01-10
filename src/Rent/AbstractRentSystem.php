@@ -52,10 +52,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
      * @var array
      */
     protected $watchesConfig;
-    /**
-     * @var array
-     */
-    protected $connectorsConfig;
+    protected bool $isSmsSystemEnabled;
     /**
      * @var false
      */
@@ -70,7 +67,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         AdminNotifier $adminNotifier,
         LoggerInterface $logger,
         array $watchesConfig,
-        array $connectorsConfig,
+        bool $isSmsSystemEnabled,
         $forceStack = false
     ) {
         $this->db = $db;
@@ -81,7 +78,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $this->adminNotifier = $adminNotifier;
         $this->logger = $logger;
         $this->watchesConfig = $watchesConfig;
-        $this->connectorsConfig = $connectorsConfig;
+        $this->isSmsSystemEnabled = $isSmsSystemEnabled;
         $this->forceStack = $forceStack;
     }
 

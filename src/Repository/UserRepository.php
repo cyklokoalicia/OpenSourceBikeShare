@@ -37,7 +37,7 @@ class UserRepository
         return $users;
     }
 
-    public function findItem(int $userId): array
+    public function findItem(int $userId): ?array
     {
         $user = $this->db->query(
             'SELECT 
@@ -52,6 +52,46 @@ class UserRepository
               LEFT JOIN credit ON users.userId=credit.userId 
               LEFT JOIN limits ON users.userId=limits.userId 
               WHERE users.userId=' . $userId
+        )->fetchAssoc();
+
+        return $user;
+    }
+
+    public function findItemByPhoneNumber(string $phoneNumber): ?array
+    {
+        $user = $this->db->query(
+            'SELECT 
+                users.userId,
+                username,
+                mail,
+                number,
+                privileges,
+                credit,
+                userLimit 
+              FROM users 
+              LEFT JOIN credit ON users.userId=credit.userId 
+              LEFT JOIN limits ON users.userId=limits.userId 
+              WHERE users.number="' . $phoneNumber . '"'
+        )->fetchAssoc();
+
+        return $user;
+    }
+
+    public function findItemByEmail(string $email): ?array
+    {
+        $user = $this->db->query(
+            'SELECT 
+                users.userId,
+                username,
+                mail,
+                number,
+                privileges,
+                credit,
+                userLimit 
+              FROM users 
+              LEFT JOIN credit ON users.userId=credit.userId 
+              LEFT JOIN limits ON users.userId=limits.userId 
+              WHERE users.mail="' . $email . '"'
         )->fetchAssoc();
 
         return $user;
@@ -78,6 +118,15 @@ class UserRepository
             'UPDATE limits 
               SET userLimit=' . $userLimit . ' 
               WHERE userId=' . $userId
+        );
+    }
+
+    public function updateUserLimit(int $userId, int $userLimit): void
+    {
+        $this->db->query(
+            'INSERT INTO limits (userId, userLimit) 
+                  VALUES (' . $userId . ', ' . $userLimit . ') 
+                  ON DUPLICATE KEY UPDATE userLimit=' . $userLimit
         );
     }
 }

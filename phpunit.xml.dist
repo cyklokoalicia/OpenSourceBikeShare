@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         bootstrap="vendor/autoload.php"
+         bootstrap="tests/bootstrap.php"
          cacheResult="false"
          colors="true"
          convertErrorsToExceptions="true"
@@ -19,4 +19,13 @@
             <directory>./tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="KERNEL_CLASS" value="\BikeShare\App\Kernel"/>
+        <ini name="display_errors" value="1" />
+        <ini name="error_reporting" value="-1" />
+        <server name="APP_ENV" value="test" force="true" />
+        <server name="SHELL_VERBOSITY" value="-1" />
+        <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
+        <server name="SYMFONY_PHPUNIT_VERSION" value="9.6" />
+    </php>
 </phpunit>

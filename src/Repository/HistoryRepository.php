@@ -105,4 +105,24 @@ class HistoryRepository
 
         return (int)($result['rentCount'] ?? 0);
     }
+
+    public function findRegistration($checkCode): ?array
+    {
+        $result = $this->db->query(
+            "SELECT
+              userId,
+              bikeNum,
+              time,
+              action,
+              parameter,
+              standId
+            FROM history 
+            WHERE action = 'REGISTER' 
+              AND parameter = '$checkCode' 
+            ORDER BY time DESC 
+            LIMIT 1"
+        )->fetchAssoc();
+
+        return $result;
+    }
 }

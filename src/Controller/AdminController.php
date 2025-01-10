@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
-use BikeShare\App\Configuration;
 use BikeShare\Credit\CreditSystemInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class AdminController extends AbstractController
 {
@@ -17,7 +17,7 @@ class AdminController extends AbstractController
      * @Route("/admin.php", name="admin_old")
      */
     public function index(
-        Configuration $configuration,
+        bool $isSmsSystemEnabled,
         CreditSystemInterface $creditSystem,
         LoggerInterface $logger
     ): Response {
@@ -35,7 +35,7 @@ class AdminController extends AbstractController
         return $this->render(
             'admin/index.html.twig',
             [
-                'configuration' => $configuration,
+                'isSmsSystemEnabled' => $isSmsSystemEnabled,
                 'creditSystem' => $creditSystem,
                 'currentYear' => date('Y'),
             ]

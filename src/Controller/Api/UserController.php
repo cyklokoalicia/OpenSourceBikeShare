@@ -70,6 +70,7 @@ class UserController extends AbstractController
      */
     public function update(
         $userId,
+        bool $isSmsSystemEnabled,
         Request $request,
         UserRepository $userRepository,
         Configuration $configuration,
@@ -100,7 +101,7 @@ class UserController extends AbstractController
             empty($userName)
             || empty($email)
             || !filter_var($email, FILTER_VALIDATE_EMAIL)
-            || ($configuration->get('connectors')['sms'] !== '' && empty($number))
+            || ($isSmsSystemEnabled && empty($number))
         ) {
             return $this->json([], Response::HTTP_BAD_REQUEST);
         }

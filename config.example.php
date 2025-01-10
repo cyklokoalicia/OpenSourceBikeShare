@@ -10,7 +10,6 @@ $systemlat="48.148154"; // default map center point - latitude
 $systemlong="17.117232"; // default map center point - longitude
 $systemzoom="15"; // default map zoom
 $systemrules="http://example.com/rules.htm"; // system rules / help URL
-$systememail="email@example.com"; // system From: email address for sending emails
 
 $forcestack=0; // 0 = allow renting any bike at stand, 1 = allow renting last bicycle returned only (top of stack)
 $watches["email"]="email@example.com"; // notification email for notifications such as notes etc., blank if notifications not required
@@ -41,14 +40,7 @@ $dbuser="bikeshare";
 $dbpassword="YourPassword";
 $dbname="WB";
 
-/*** Email ***/
-$email["smtp"]="mail.example.com"; // SMTP mail server for notifications
-$email["user"]="user"; // mail server username
-$email["pass"]="pass"; // mail server password
-
 /*** SMS related ***/
-$connectors["sms"]=""; // API connector used for SMS operations (connectors/ directory); empty to disable SMS system, "loopback" to simulate dummy gateway API for testing
-$connectors["config"]["disabled"]="{}"; //json string for configuration of sms service
 $countrycode=""; // international dialing code (country code prefix), no plus sign
 
 $cities = ['Bratislava']; //avalible in cities

@@ -17,21 +17,6 @@ if (isset($_GET["action"])) $action=trim($_GET["action"]);
 
 switch($action)
    {
-   case "smscode":
-      $number=trim($_GET["number"]);
-      smscode($number);
-      break;
-   case "register": #"operationId": "user.register",
-      $number=trim($_GET["validatednumber"]);
-      $smscode=trim($_GET["smscode"]);
-      $checkcode=trim($_GET["checkcode"]);
-      $fullname=trim($_GET["fullname"]);
-      $useremail=trim($_GET["useremail"]);
-      $password=trim($_GET["password"]);
-      $password2=trim($_GET["password2"]);
-      $existing=trim($_GET["existing"]);
-      register($number,$smscode,$checkcode,$fullname,$useremail,$password,$password2,$existing);
-      break;
    case "list":
       $stand=trim($_GET["stand"]);
       listbikes($stand);

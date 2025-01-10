@@ -2,9 +2,12 @@
 
 namespace BikeShare\Controller;
 
+use BikeShare\App\Configuration;
+use BikeShare\Credit\CreditSystemInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
 {
@@ -13,17 +16,12 @@ class HomeController extends AbstractController
      */
     public function index(
         Request $request,
-        \BikeShare\Authentication\Auth $auth,
-        \BikeShare\User\User $user,
-        \BikeShare\Credit\CreditSystemInterface $creditSystem,
-        \BikeShare\App\Configuration $configuration
+        CreditSystemInterface $creditSystem,
+        Configuration $configuration
     ): Response {
         return $this->render('index.html.twig', [
             'configuration' => $configuration,
-            'auth' => $auth,
-            'user' => $user,
             'creditSystem' => $creditSystem,
-            'isSmsSystemEnabled' => $configuration->get('connectors')['sms'] == '',
             'error' => $request->get('error', null),
         ]);
     }

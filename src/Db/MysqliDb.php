@@ -4,6 +4,9 @@ namespace BikeShare\Db;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * @deprecated use PdoDb instead
+ */
 class MysqliDb implements DbInterface
 {
     /**

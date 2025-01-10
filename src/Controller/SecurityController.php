@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
-use BikeShare\App\Configuration;
 use BikeShare\Mail\MailSenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,8 +20,8 @@ class SecurityController extends AbstractController
      * @Route("/login", name="login")
      */
     public function login(
-        AuthenticationUtils $authenticationUtils,
-        Configuration $configuration
+        bool $isSmsSystemEnabled,
+        AuthenticationUtils $authenticationUtils
     ) {
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
@@ -30,7 +29,7 @@ class SecurityController extends AbstractController
         return $this->render(
             'security/login.html.twig',
             [
-                'isSmsSystemEnabled' => $configuration->get('connectors')['sms'] == '',
+                'isSmsSystemEnabled' => $isSmsSystemEnabled,
                 'last_username' => $lastUsername,
                 'error' => $error,
             ]
@@ -50,8 +49,8 @@ class SecurityController extends AbstractController
      * @Route("/resetPassword", name="reset_password")
      */
     public function resetPassword(
+        bool $isSmsSystemEnabled,
         Request $request,
-        Configuration $configuration,
         MailSenderInterface $mailer,
         UserProviderInterface $userProvider,
         UserPasswordHasherInterface $passwordHasher,
@@ -98,7 +97,7 @@ class SecurityController extends AbstractController
         return $this->render(
             'security/reset_password.html.twig',
             [
-                'isSmsSystemEnabled' => $configuration->get('connectors')['sms'] == '',
+                'isSmsSystemEnabled' => $isSmsSystemEnabled,
             ]
         );
     }

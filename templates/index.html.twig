@@ -30,10 +30,10 @@
 
         var mapzoom = {{ configuration.systemzoom }};
 
-        {% if auth.isLoggedIn %}
+        {% if app.user %}
         var loggedin = 1;
-        var priv = {{ user.findPrivileges(auth.userId) }};
-        {% set usercity = user.findCity(auth.userId) %}
+        var priv = {{ app.user.privileges }};
+        {% set usercity = app.user.city %}
         {% if configuration.cities and configuration.citiesGPS %}
         var maplat = {{ configuration.citiesGPS[usercity][0] }};
         var maplon = {{ configuration.citiesGPS[usercity][1] }};
@@ -47,7 +47,6 @@
 
         var standselected = 0;
         var creditsystem = {{ creditSystem.isEnabled ? 1 : 0 }};
-        var sms = {{ isSmsSystemEnabled ? 1 : 0 }};
         var freeTimeSeconds =  {{ configuration.watches.freetime * 60 }}; // and convert to seconds
         var serverTimeSeconds = {{ date().timestamp }}; // using the server timestamp for time difference calculation
     </script>
@@ -65,7 +64,7 @@
                         <span class="glyphicon glyphicon-question-sign"></span>&nbsp;{{ 'Help'|trans }}
                     </a>
                 </li>
-                {% if auth.isLoggedIn and user.findPrivileges(auth.userId) > 0 %}
+                {% if app.user and app.user.privileges > 0 %}
                     <li>
                         <a href="/admin">
                             <span class="glyphicon glyphicon-cog"></span>&nbsp;{{ 'Admin'|trans }}
@@ -77,13 +76,13 @@
                         </a>
                     </li>
                 {% endif %}
-                {% if auth.isLoggedIn %}
+                {% if app.user %}
                     <li>
-                    <span class="glyphicon glyphicon-user"></span><small>{{ user.findUserName(auth.userId) }}</small>
+                    <span class="glyphicon glyphicon-user"></span><small>{{ app.user.username }}</small>
                     {% if creditSystem.isEnabled %}
                         (
                         <span id="usercredit"
-                              title="{{ 'Remaining credit'|trans }}">{{ creditSystem.getUserCredit(auth.userId) }} </span>
+                              title="{{ 'Remaining credit'|trans }}">{{ creditSystem.getUserCredit(app.user.userId) }} </span>
                         {{ creditSystem.getCreditCurrency() }}
                         <button type="button" class="btn btn-success btn-xs" id="opencredit"
                                 title="{{ 'Add credit'|trans }}">

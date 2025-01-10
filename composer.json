@@ -27,6 +27,7 @@
     "ext-mysqli": "*",
     "ext-gettext": "*",
     "ext-curl": "*",
+    "ext-pdo": "*",
     "monolog/monolog": "^1.27",
     "symfony/dependency-injection": "^5.4",
     "symfony/http-kernel": "^5.4",
@@ -43,13 +44,16 @@
     "symfony/asset": "^5.4",
     "symfony/security-bundle": "^5.4",
     "symfony/event-dispatcher": "^5.4",
-    "sentry/sentry-symfony": "^5.1"
+    "sentry/sentry-symfony": "^5.1",
+    "symfony/form": "^5.4"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.10|^4.0",
     "phpunit/phpunit": "^9.5",
     "php-mock/php-mock-phpunit": "^2.3",
-    "rector/rector": "^1.1"
+    "rector/rector": "^1.1",
+    "symfony/browser-kit": "^5.4",
+    "symfony/test-pack": "^1.1"
   },
   "config": {
     "allow-plugins": {
