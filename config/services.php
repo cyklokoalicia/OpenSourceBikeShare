@@ -100,9 +100,13 @@ return static function (ContainerConfigurator $container): void {
 
     $services->get(PHPMailerMailSender::class)
         ->args([
-            expr("service('BikeShare\\\App\\\Configuration').get('systemname')"),
-            expr("service('BikeShare\\\App\\\Configuration').get('systememail')"),
-            expr("service('BikeShare\\\App\\\Configuration').get('email')"),
+            env('APP_NAME'),
+            env('SMTP_FROM_EMAIL'),
+            [
+                'smtp_host' => env('SMTP_HOST'),
+                'smtp_user' => env('SMTP_USER'),
+                'smtp_password' => env('SMTP_PASSWORD'),
+            ],
             inline_service(PHPMailer::class)->args([false])
         ]);
 

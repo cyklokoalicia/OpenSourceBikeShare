@@ -48,9 +48,9 @@ class PHPMailerMailSender implements MailSenderInterface
 
         $this->mailer->isSMTP(); // Set mailer to use SMTP
         //$this->mailer->SMTPDebug  = 2;
-        $this->mailer->Host = $this->emailConfig["smtp"]; // Specify main and backup SMTP servers
-        $this->mailer->Username = $this->emailConfig["user"]; // SMTP username
-        $this->mailer->Password = $this->emailConfig["pass"]; // SMTP password
+        $this->mailer->Host = $this->emailConfig["smtp_host"]; // Specify main and backup SMTP servers
+        $this->mailer->Username = $this->emailConfig["smtp_user"]; // SMTP username
+        $this->mailer->Password = $this->emailConfig["smtp_password"]; // SMTP password
         $this->mailer->SMTPAuth = true; // Enable SMTP authentication
         $this->mailer->SMTPSecure = "ssl"; // Enable SSL
         $this->mailer->Port = 465; // TCP port to connect to

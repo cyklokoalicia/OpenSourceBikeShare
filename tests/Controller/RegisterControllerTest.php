@@ -6,7 +6,7 @@ namespace Test\BikeShare\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class RegistrationControllerTest extends WebTestCase
+class RegisterControllerTest extends WebTestCase
 {
     /**
      * @dataProvider provideRegistrationSteps
