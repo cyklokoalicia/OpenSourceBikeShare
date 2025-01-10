@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ErrorListener extends SymfonyErrorListener
 {
-    protected function logException(\Throwable $exception, string $message, string $logLevel = null): void
+    protected function logException(\Throwable $exception, string $message, ?string $logLevel = null): void
     {
         if (null !== $this->logger) {
             if (!$exception instanceof HttpExceptionInterface || $exception->getStatusCode() >= 500) {
