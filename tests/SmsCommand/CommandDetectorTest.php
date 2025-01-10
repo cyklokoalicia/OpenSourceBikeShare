@@ -89,11 +89,11 @@ class CommandDetectorTest extends TestCase
         ];
         yield 'ADD' => [
             'command' => 'ADD king@earth.com 0901456789 Martin Luther King Jr.',
-            'expected' => ['command' => 'ADD', 'arguments' => ['email' => 'king@earth.com', 'phone' => '0901456789', 'fullname' => 'Martin Luther King Jr.']],
+            'expected' => ['command' => 'ADD', 'arguments' => ['email' => 'king@earth.com', 'phone' => '0901456789', 'fullName' => 'Martin Luther King Jr.']],
         ];
         yield 'ADD with many spaces' => [
             'command' => 'ADD    king@earth.com     0901456789 Martin     Luther King Jr.',
-            'expected' => ['command' => 'ADD', 'arguments' => ['email' => 'king@earth.com', 'phone' => '0901456789', 'fullname' => 'Martin     Luther King Jr.']],
+            'expected' => ['command' => 'ADD', 'arguments' => ['email' => 'king@earth.com', 'phone' => '0901456789', 'fullName' => 'Martin     Luther King Jr.']],
         ];
         yield 'DELNOTE all' => [
             'command' => 'DELNOTE 42',

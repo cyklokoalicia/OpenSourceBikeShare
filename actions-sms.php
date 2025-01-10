@@ -75,46 +75,6 @@ function listBikes($number,$stand)
    $smsSender->send($number,sprintf(ngettext('%d bike','%d bikes',$rentedBikes),$rentedBikes)." "._('on stand')." ".$stand.": ".$listBikes);
 }
 
-function add($number,$email,$phone,$message)
-{
-
-    global $db, $smsSender, $user, $phonePurifier, $configuration;
-    $userId = $user->findUserIdByNumber($number); #maybe we should check if the user exist???
-    $phone = $phonePurifier->purify($phone);
-
-   $result=$db->query("SELECT number,mail,userName FROM users where number=$phone OR mail='$email'");
-          if ($result->num_rows!=0)
-      {
-             $row =$result->fetch_assoc();
-
-         $oldPhone=$row["number"];
-         $oldName=$row["userName"];
-         $oldMail=$row["mail"];
-
-         $smsSender->send($number,_('Contact information conflict: This number already registered:')." ".$oldMail." +".$oldPhone." ".$oldName);
-         return;
-      }
-
-    if (
-        $phone < $configuration->get('countrycode') . "000000000"
-        || $phone > ($configuration->get('countrycode') + 1) . "000000000"
-        || !preg_match("/add\s+([a-z0-9._%+-]+@[a-z0-9.-]+)\s+\+?[0-9]+\s+(.{2,}\s.{2,})/i", $message, $matches)
-    ) {
-        $smsSender->send($number, _('Contact information is in incorrect format. Use:') . " ADD king@earth.com 0901456789 Martin Luther King Jr.");
-        return;
-    }
-   $userName=$db->escape(trim($matches[2]));
-   $email=$db->escape(trim($matches[1]));
-
-   $result=$db->query("INSERT into users SET userName='$userName',number=$phone,mail='$email'");
-
-   sendConfirmationEmail($email);
-
-   $smsSender->send($number,_('User')." ".$userName." "._('added. They need to read email and agree to rules before using the system.'));
-
-
-}
-
 function checkUserPrivileges($number)
 {
    global $db, $sms, $smsSender, $user;

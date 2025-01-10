@@ -156,32 +156,6 @@ function checkstandname($stand)
     }
 }
 
-function sendConfirmationEmail($emailto)
-{
-
-    global $db, $configuration, $mailer;
-
-    $subject = _('Registration');
-
-    $result = $db->query("SELECT userName,userId FROM users WHERE mail='" . $emailto . "'");
-    $row = $result->fetch_assoc();
-
-    $userId = $row['userId'];
-    $userKey = hash('sha256', $emailto . $configuration->get('dbpassword') . rand(0, 1000000));
-
-    $db->query("INSERT INTO registration SET userKey='$userKey',userId='$userId'");
-    $db->query("INSERT INTO limits SET userId='$userId',userLimit=0");
-    $db->query("INSERT INTO credit SET userId='$userId',credit=0");
-
-    $names = preg_split("/[\s,]+/", $row['userName']);
-    $firstname = $names[0];
-    $message = _('Hello') . ' ' . $firstname . ",\n\n" .
-        _('you have been registered into community bike share system') . ' ' . $configuration->get('systemname') . ".\n\n" .
-        _('System rules are available here:') . "\n" . $configuration->get('systemrules') . "\n\n" .
-        _('By clicking the following link you agree to the System rules:') . "\n" . $configuration->get('systemURL') . 'agree.php?key=' . $userKey;
-    $mailer->sendMail($emailto, $subject, $message);
-}
-
 function confirmUser($userKey)
 {
     global $db, $configuration;
@@ -221,15 +195,4 @@ function checktopofstack($standid)
         }
     }
     return false;
-}
-
-function issmssystemenabled()
-{
-    global $configuration;
-
-    if ($configuration->get('connectors')['sms'] == '') {
-        return false;
-    }
-
-    return true;
 }

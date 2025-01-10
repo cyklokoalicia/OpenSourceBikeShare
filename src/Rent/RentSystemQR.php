@@ -29,7 +29,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         } elseif ($bikeNumber > 1) {
             $message = _('You have') . ' ' . $bikeNumber . ' '
                 . _('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
-            if ($this->connectorsConfig["sms"]) {
+            if ($this->isSmsSystemEnabled) {
                 $message .= _(' or SMS');
             }
             $message .= _(' to return the bikes.');

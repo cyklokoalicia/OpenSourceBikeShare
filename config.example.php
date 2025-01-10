@@ -47,8 +47,6 @@ $email["user"]="user"; // mail server username
 $email["pass"]="pass"; // mail server password
 
 /*** SMS related ***/
-$connectors["sms"]=""; // API connector used for SMS operations (connectors/ directory); empty to disable SMS system, "loopback" to simulate dummy gateway API for testing
-$connectors["config"]["disabled"]="{}"; //json string for configuration of sms service
 $countrycode=""; // international dialing code (country code prefix), no plus sign
 
 $cities = ['Bratislava']; //avalible in cities

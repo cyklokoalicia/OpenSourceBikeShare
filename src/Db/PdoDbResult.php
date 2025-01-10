@@ -1,22 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Db;
 
-use mysqli_result;
+use PDOStatement;
 
-/**
- * @deprecated use PdoDbResult instead
- */
-class MysqliDbResult implements DbResultInterface
+class PdoDbResult implements DbResultInterface
 {
     /**
-     * @var mysqli_result|bool
+     * @var PDOStatement|bool
      */
     private $result;
 
     public function __construct($result)
     {
-        if (!($result instanceof mysqli_result) && !is_bool($result)) {
+        if (!($result instanceof PDOStatement) && !is_bool($result)) {
             throw new \Exception("Invalid result type");
         }
         $this->result = $result;
@@ -24,12 +23,12 @@ class MysqliDbResult implements DbResultInterface
 
     public function fetchAssoc()
     {
-        return $this->result ? $this->result->fetch_assoc() : false;
+        return $this->result ? $this->result->fetch() : false;
     }
 
     public function fetchAllAssoc()
     {
-        return $this->result ? $this->result->fetch_all(MYSQLI_ASSOC) : [];
+        return $this->result ? $this->result->fetchAll() : [];
     }
 
     /**
@@ -44,7 +43,7 @@ class MysqliDbResult implements DbResultInterface
 
     public function rowCount()
     {
-        return $this->result ? (int)$this->result->num_rows : 0;
+        return $this->result ? (int)$this->result->rowCount() : 0;
     }
 
     /**

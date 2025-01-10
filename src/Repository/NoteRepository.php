@@ -70,7 +70,7 @@ class NoteRepository
 
     public function deleteStandNote(int $standId, string $notePattern): int
     {
-        $this->db->query(
+        $result = $this->db->query(
             'UPDATE notes
                 SET deleted = NOW()
                 WHERE standId = ' . $standId . '
@@ -78,12 +78,12 @@ class NoteRepository
                     AND note LIKE "%' . $notePattern . '%"'
         );
 
-        return $this->db->getAffectedRows();
+        return $result->rowCount();
     }
 
     public function deleteBikeNote(int $bikeNumber, ?string $notePattern): int
     {
-        $this->db->query(
+        $result = $this->db->query(
             'UPDATE notes
                 SET deleted = NOW()
                 WHERE bikeNum = ' . $bikeNumber . '
@@ -91,7 +91,7 @@ class NoteRepository
                     AND note LIKE "%' . $notePattern . '%"'
         );
 
-        return $this->db->getAffectedRows();
+        return $result->rowCount();
     }
 
     public function addNoteToAllBikesOnStand(int $standId, int $userId, string $note): void
@@ -106,7 +106,7 @@ class NoteRepository
 
     public function deleteNotesForAllBikesOnStand(int $standId, string $note): int
     {
-        $this->db->query(
+        $result = $this->db->query(
             "UPDATE notes 
             JOIN bikes ON notes.bikeNum = bikes.bikeNum
             SET deleted=now()
@@ -115,6 +115,6 @@ class NoteRepository
               AND deleted IS NULL"
         );
 
-        return $this->db->getAffectedRows();
+        return $result->rowCount();
     }
 }

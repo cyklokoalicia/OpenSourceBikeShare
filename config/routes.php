@@ -13,7 +13,9 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\ScanController::class, 'index']);
     $routes->add('admin', '/admin')
         ->controller([\BikeShare\Controller\AdminController::class, 'index']);
-    $routes->add('register', '/register.php')
+    $routes->add('register_old', '/register.php')
+        ->controller([\BikeShare\Controller\RegisterController::class, 'index']);
+    $routes->add('register', '/register')
         ->controller([\BikeShare\Controller\RegisterController::class, 'index']);
     $routes->add('sms_request_old', '/sms/receive.php')
         ->controller([\BikeShare\Controller\SmsRequestController::class, 'index']);

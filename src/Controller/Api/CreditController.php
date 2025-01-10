@@ -55,7 +55,7 @@ class CreditController extends AbstractController
         $minRequiredCredit = $creditSystem->getMinRequiredCredit();
         $creditAmount = $minRequiredCredit * $multiplier;
 
-        $creditRepository->addItem($userId, (float)$creditAmount);
+        $creditRepository->addCredits($userId, (float)$creditAmount);
         $historyRepository->addItem(
             $userId,
             0, //BikeNum

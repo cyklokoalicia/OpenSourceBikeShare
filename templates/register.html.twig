@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Registration'|trans }}{% endblock %}
+
+{% block body %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="page-header">
+        {% if isSmsSystemEnabled %}
+            <h1>{{ registrationStep == 1 ? 'Step 1 - Confirm your phone number' | trans : 'Step 2 - Create account' | trans }}</h1>
+        {% else %}
+            <h1>{{ 'Step 1 - Create account' | trans }}</h1>
+        {% endif %}
+        <div id="console"></div>
+    </div>
+
+    {{ form_start(form, {'attr': {'class': 'container'}}) }}
+
+    {% if registrationStep == 1 %}
+        <div class="alert alert-info">{{ 'You will receive SMS code to this phone number.' | trans }}</div>
+    {% endif %}
+
+    {{ form_widget(form) }}
+
+    <button type="submit" class="btn btn-primary">
+        {{ registrationStep == 1 ? 'Validate this phone number' | trans : 'Create account' | trans }}
+    </button>
+    {{ form_end(form) }}
+
+{% endblock %}

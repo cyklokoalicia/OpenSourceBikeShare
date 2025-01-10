@@ -8,7 +8,7 @@
             <label for="email">{{ 'Email:'|trans }}</label>
             <input type="email" name="email" id="email" class="form-control"/>
         </div>
-        {% if configuration.get('connectors')['sms'] %}
+        {% if isSmsSystemEnabled %}
             <div class="form-group">
                 <label for="phone">{{ 'Phone number:'|trans }}</label>
                 <input type="number" name="phone" id="phone" class="form-control"/>

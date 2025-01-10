@@ -256,9 +256,9 @@ function userlist() {
                 data: 'username',
                 name: 'username',
                 render: function(data, type, row) {
-                    return `<a href="#" class="edituser" data-userid="${row.userId}">${data}</a>
-                        <br />${row.number}
-                        <br />${row.mail}`;
+                    return `<a href="#" class="edituser" data-userid="${row.userId}">${data}</a>` +
+                        (isSmsSystemEnabled ? `<br />${row.number}` : '') +
+                        `<br />${row.mail}`;
                 }
             },
             {

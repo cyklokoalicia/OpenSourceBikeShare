@@ -29,7 +29,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         AdminNotifier $adminNotifier,
         LoggerInterface $logger,
         array $watchesConfig,
-        array $connectorsConfig,
+        bool $isSmsSystemEnabled,
         $forceStack = false
     ) {
         parent::__construct(
@@ -41,7 +41,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
             $adminNotifier,
             $logger,
             $watchesConfig,
-            $connectorsConfig,
+            $isSmsSystemEnabled,
             $forceStack
         );
         $this->smsSender = $smsSender;

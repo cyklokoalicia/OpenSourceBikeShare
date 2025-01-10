@@ -22,7 +22,6 @@ class HomeController extends AbstractController
         return $this->render('index.html.twig', [
             'configuration' => $configuration,
             'creditSystem' => $creditSystem,
-            'isSmsSystemEnabled' => $configuration->get('connectors')['sms'] == '',
             'error' => $request->get('error', null),
         ]);
     }

@@ -119,4 +119,28 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $user->getPrivileges()
         );
     }
+
+    public function addUser(
+        string $number,
+        string $mail,
+        string $plainPassword,
+        string $city,
+        string $userName,
+        int $privileges
+    ): User {
+        $this->db->query(
+            "INSERT INTO users (number, mail, password, city, userName, privileges) 
+                   VALUES ('$number', '$mail', '$plainPassword', '$city', '$userName', $privileges)"
+        );
+
+        return new User(
+            $this->db->getLastInsertId(),
+            $number,
+            $mail,
+            $plainPassword,
+            $city,
+            $userName,
+            $privileges
+        );
+    }
 }

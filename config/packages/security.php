@@ -62,11 +62,11 @@ return function (SecurityConfig $security) {
         ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
     $security
         ->accessControl()
-        ->path('^/register.php$')
+        ->path('^/register(.php)?$')
         ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
     $security
         ->accessControl()
-        ->path('^/agree.php$')
+        ->path('^/agree(.php)?$')
         ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
     $security
         ->accessControl()

@@ -100,47 +100,6 @@ function userbikes($userId)
     response($bicycles, 0, $codes, 0);
 }
 
-function register($number, $code, $checkcode, $fullname, $email, $password, $password2, $existing)
-{
-    global $db, $configuration, $user;
-
-    $number = $db->escape(trim($number));
-    $code = $db->escape(trim($code));
-    $checkcode = $db->escape(trim($checkcode));
-    $fullname = $db->escape(trim($fullname));
-    $email = $db->escape(trim($email));
-    $password = $db->escape(trim($password));
-    $password2 = $db->escape(trim($password2));
-    $existing = $db->escape(trim($existing));
-    $parametercheck = $number . ';' . str_replace(' ', '', $code) . ';' . $checkcode;
-    if ($password != $password2) {
-        response(_('Password do not match. Please correct and try again.'), ERROR);
-    }
-    if (issmssystemenabled() == true) {
-        $result = $db->query("SELECT parameter FROM history WHERE userId=0 AND bikeNum=0 AND action='REGISTER' AND parameter='$parametercheck' ORDER BY time DESC LIMIT 1");
-        if ($result->num_rows == 1) {
-            if (!$existing) { // new user registration
-                $result = $db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='$number',privileges=0");
-                $userId = $db->getLastInsertId();
-                sendConfirmationEmail($email);
-                response(_('You have been successfully registered. Please, check your email and read the instructions to finish your registration.'));
-            } else { // existing user, password change
-                $userId = $user->findUserIdByNumber($number);
-                $result = $db->query("UPDATE users SET password=SHA2('$password',512) WHERE userId='$userId'");
-                response(_('Password successfully changed. Your username is your phone number. Continue to') . ' <a href="' . $configuration->get('systemURL') . '">' . _('login') . '</a>.');
-            }
-        } else {
-            response(_('Problem with the SMS code entered. Please check and try again.'), ERROR);
-        }
-    } else { // SMS system disabled
-        $result = $db->query("INSERT INTO users SET userName='$fullname',password=SHA2('$password',512),mail='$email',number='',privileges=0");
-        $userId = $db->getLastInsertId();
-        $result = $db->query("UPDATE users SET number='$userId' WHERE userId='$userId'");
-        sendConfirmationEmail($email);
-        response(_('You have been successfully registered. Please, check your email and read the instructions to finish your registration. Your number for login is:') . ' ' . $userId);
-    }
-}
-
 function checkprivileges($userid)
 {
     global $db, $user;
@@ -148,47 +107,6 @@ function checkprivileges($userid)
     if ($privileges < 1) {
         response(_('Sorry, this command is only available for the privileged users.'), ERROR);
         exit;
-    }
-}
-
-function smscode($number)
-{
-    global $db, $smsSender, $user, $phonePurifier;
-    srand();
-
-    $number = $phonePurifier->purify($number);
-    $number = $db->escape($number);
-    $userexists = 0;
-    if ($user->findUserIdByNumber($number)) {
-        $userexists = 1;
-    }
-
-    $smscode = chr(rand(65, 90)) . chr(rand(65, 90)) . ' ' . rand(100000, 999999);
-    $smscodenormalized = str_replace(' ', '', $smscode);
-    $checkcode = md5('WB' . $number . $smscodenormalized);
-    if (!$userexists) {
-        $text = _('Enter this code to register:') . ' ' . $smscode;
-    } else {
-        $text = _('Enter this code to change password:') . ' ' . $smscode;
-    }
-
-    $text = $db->escape($text);
-
-    if (!issmssystemenabled()) {
-        $result = $db->query("INSERT INTO sent SET number='$number',text='$text'");
-    }
-
-    $result = $db->query("INSERT INTO history SET userId=0,bikeNum=0,action='REGISTER',parameter='$number;$smscodenormalized;$checkcode'");
-
-    if (DEBUG === true) {
-        response($number, 0, array('checkcode' => $checkcode, 'smscode' => $smscode, 'existing' => $userexists));
-    } else {
-        $smsSender->send($number, $text);
-        if (issmssystemenabled() == true) {
-            response($number, 0, array('checkcode' => $checkcode, 'existing' => $userexists));
-        } else {
-            response($number, 0, array('checkcode' => $checkcode, 'existing' => $userexists));
-        }
     }
 }
 

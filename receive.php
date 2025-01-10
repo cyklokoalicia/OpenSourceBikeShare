@@ -39,11 +39,6 @@ switch ($args[0]) {
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with stand name:') . " LIST RACKO");
         listBikes($sms->getNumber(), $args[1]);
         break;
-    case "ADD":
-        checkUserPrivileges($sms->getNumber());
-        validateReceivedSMS($sms->getNumber(), count($args), 3, _('with email, phone, fullname:') . " ADD king@earth.com 0901456789 Martin Luther King Jr.");
-        add($sms->getNumber(), $args[1], $args[2], trim(urldecode($sms->getMessage())));
-        break;
     case "REVERT":
         checkUserPrivileges($sms->getNumber());
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number:') . " REVERT 47");
