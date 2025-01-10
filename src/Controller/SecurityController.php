@@ -7,6 +7,7 @@ namespace BikeShare\Controller;
 use BikeShare\Mail\MailSenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
@@ -22,7 +23,7 @@ class SecurityController extends AbstractController
     public function login(
         bool $isSmsSystemEnabled,
         AuthenticationUtils $authenticationUtils
-    ) {
+    ): Response {
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
@@ -39,7 +40,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/logout", name="logout")
      */
-    public function logout()
+    public function logout(): void
     {
         // controller can be blank: it will never be executed!
         throw new \Exception('Don\'t forget to activate logout in security.php');
@@ -55,7 +56,7 @@ class SecurityController extends AbstractController
         UserProviderInterface $userProvider,
         UserPasswordHasherInterface $passwordHasher,
         TranslatorInterface $translator
-    ) {
+    ): Response {
         if ($request->isMethod('POST')) {
             $number = $request->request->get('number');
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Test\BikeShare\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 
 class RegisterControllerTest extends WebTestCase
 {
@@ -22,7 +23,7 @@ class RegisterControllerTest extends WebTestCase
 
         $client->catchExceptions(false);
 
-        $crawler = $client->request('GET', '/register');
+        $crawler = $client->request(Request::METHOD_GET, '/register');
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', $expectedTitle);
