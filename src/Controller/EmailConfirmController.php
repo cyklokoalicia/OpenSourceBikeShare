@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\App\Configuration;
+use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class EmailConfirmController extends AbstractController
         string $key,
         RegistrationRepository $registrationRepository,
         UserRepository $userRepository,
+        HistoryRepository $historyRepository,
         TranslatorInterface $translator,
         Configuration $configuration
     ): Response {
@@ -35,6 +37,13 @@ class EmailConfirmController extends AbstractController
                         $configuration->get('limits')['registration'] ?? 0
                     );
                 }
+
+                $historyRepository->addItem(
+                    (int)$registration['userId'],
+                    0,
+                    'EMAIL_CONFIRMED',
+                    ''
+                );
 
                 $this->addFlash(
                     'success',
