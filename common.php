@@ -80,60 +80,30 @@ textdomain("messages");
 
 function logrequest($userid)
 {
-   global $configuration, $user, $logger;
-    /**
-     * @var DbInterface
-     */
-    $localdb = new MysqliDb(
-        $configuration->get('dbserver'),
-        $configuration->get('dbuser'),
-        $configuration->get('dbpassword'),
-        $configuration->get('dbname'),
-        $logger
-    );
-
-    #TODO does it needed???
-    $localdb->setAutocommit(true);
+    global $user, $db;
 
     $number = $user->findPhoneNumber($userid);
 
-    $localdb->query("INSERT INTO received SET sms_uuid='', sender='$number',receive_time='" . date('Y-m-d H:i:s') . "',sms_text='" . $_SERVER['REQUEST_URI'] . "',ip='" . $_SERVER['REMOTE_ADDR'] . "'");
+    $db->query("INSERT INTO received SET sms_uuid='', sender='$number',receive_time='" . date('Y-m-d H:i:s') . "',sms_text='" . $_SERVER['REQUEST_URI'] . "',ip='" . $_SERVER['REMOTE_ADDR'] . "'");
 }
 
 function logresult($userid, $text)
 {
-    global $configuration, $logger;
+    global $db;
 
-    /**
-     * @var DbInterface
-     */
-    $localdb = new MysqliDb(
-        $configuration->get('dbserver'),
-        $configuration->get('dbuser'),
-        $configuration->get('dbpassword'),
-        $configuration->get('dbname'),
-        $logger
-    );
+    $userid = $db->escape($userid);
+    $logtext = "";
+    if (is_array($text)) {
+        foreach ($text as $value) {
+            $logtext .= $value . "; ";
+        }
+    } else {
+        $logtext = $text;
+    }
 
-    #TODO does it needed???
-    $localdb->setAutocommit(true);
-   $userid = $localdb->escape($userid);
-   $logtext="";
-   if (is_array($text))
-      {
-      foreach ($text as $value)
-         {
-         $logtext.=$value."; ";
-         }
-      }
-   else
-      {
-      $logtext=$text;
-      }
+    $logtext = substr(strip_tags($db->escape($logtext)), 0, 200);
 
-    $logtext = substr(strip_tags($localdb->escape($logtext)), 0, 200);
-
-    $result = $localdb->query("INSERT INTO sent SET number='$userid',text='$logtext'");
+    $db->query("INSERT INTO sent SET number='$userid',text='$logtext'");
 }
 
 function checkbikeno($bikeNum)

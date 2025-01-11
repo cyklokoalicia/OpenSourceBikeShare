@@ -78,28 +78,4 @@ class MysqliDbTest extends TestCase
 
         $this->assertSame($escapedString, $this->db->escape($string));
     }
-    public function testSetAutocommit()
-    {
-        $this->conn->expects($this->once())
-            ->method('autocommit')
-            ->with(false);
-
-        $this->db->setAutocommit(false);
-    }
-
-    public function testCommit()
-    {
-        $this->conn->expects($this->once())
-            ->method('commit');
-
-        $this->db->commit();
-    }
-
-    public function testRollback()
-    {
-        $this->conn->expects($this->once())
-            ->method('rollback');
-
-        $this->db->rollback();
-    }
 }

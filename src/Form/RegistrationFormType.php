@@ -8,6 +8,7 @@ use BikeShare\App\Configuration;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -19,6 +20,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationFormType extends AbstractType
@@ -87,6 +89,16 @@ class RegistrationFormType extends AbstractType
                 'label' => $this->translator->trans('SMS code (received to your phone):')
             ]);
         }
+        $builder->add('agree', CheckboxType::class, [
+            'label' => $this->translator->trans(
+                'By registering I confirm that I have read: {systemRules} and agree with the terms and conditions.',
+                [
+                    'systemRules' => '<a href="' . $this->configuration->get('systemrules') . '" target="_blank">'
+                        . $this->translator->trans('User Guide') . '</a>'
+                ]
+            ),
+            'label_html' => true,
+        ]);
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
@@ -171,6 +183,15 @@ class RegistrationFormType extends AbstractType
                                 )
                             );
                         }
+                    }
+                    if (empty($data['agree'])) {
+                        $form->get('agree')->addError(
+                            new FormError(
+                                $this->translator->trans(
+                                    'You must agree with the terms and conditions to register.'
+                                )
+                            )
+                        );
                     }
                 }
             }

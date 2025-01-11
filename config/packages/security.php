@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use BikeShare\App\Security\TokenProvider;
+use BikeShare\App\Security\UserConfirmedEmailChecker;
 use BikeShare\App\Security\UserProvider;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Config\SecurityConfig;
@@ -44,6 +45,9 @@ return function (SecurityConfig $security) {
                 'service' => TokenProvider::class,
             ]
         );
+    $mainFirewall
+        ->pattern('^/')
+        ->userChecker(UserConfirmedEmailChecker::class);
 
     $security->roleHierarchy('ROLE_ADMIN', ['ROLE_USER']);
     $security->roleHierarchy('ROLE_SUPER_ADMIN', ['ROLE_ADMIN']);
@@ -55,27 +59,27 @@ return function (SecurityConfig $security) {
     $security
         ->accessControl()
         ->path('^/login$')
-        ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
+        ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
         ->path('^/(sms/)?receive.php$')
-        ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
+        ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
         ->path('^/register(.php)?$')
-        ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
+        ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
-        ->path('^/agree(.php)?$')
-        ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
+        ->path('^/user/confirm(/\w*)?$')
+        ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
         ->path('^/resetPassword$')
-        ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
+        ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
         ->path('^/command.php$')
-        ->roles(['IS_AUTHENTICATED_ANONYMOUSLY']);
+        ->roles(['PUBLIC_ACCESS']);
 
     $security
         ->accessControl()

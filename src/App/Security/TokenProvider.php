@@ -70,7 +70,6 @@ class TokenProvider implements TokenProviderInterface
         $this->db->query(
             "DELETE FROM remember_me_token WHERE series='{$this->db->escape($series)}'"
         );
-        $this->db->commit();
 
         unset($this->tokens[$series]);
     }
@@ -88,7 +87,6 @@ class TokenProvider implements TokenProviderInterface
                     '{$this->db->escape($token->getTokenValue())}',
                     '{$token->getLastUsed()->format('Y-m-d H:i:s')}')"
         );
-        $this->db->commit();
 
         $this->tokens[$token->getSeries()] = $token;
     }

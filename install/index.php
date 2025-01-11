@@ -259,7 +259,6 @@ if (!$connectors["sms"])
    $result=$db->query("UPDATE users SET number='$userid' WHERE userId='$userid'");
    }
 $result=$db->query("REPLACE INTO limits SET userId='$userid',userLimit='100'");
-$db->commit();
 ?>
       <h2><?php echo _('Create bicycles and stands'); ?></h2>
        <?php echo '<div class="alert alert-success" role="alert">',_('Admin user'),' ',$_POST["username"],' ',_('created with password:'),' ',$_POST["password"]; if (!$connectors["sms"]) { echo '. ',_('Use number'),' <span class="label label-default">',$userid,'</span> ',_('for login'),'.'; } echo '</div>'; ?>
@@ -286,7 +285,6 @@ for ($i=1;$i<=$_POST["bicyclestotal"];$i++)
    $code=sprintf("%04d",rand(100,9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
    $result=$db->query("REPLACE INTO bikes SET bikeNum='".$i."',currentStand=1,currentCode='".$code."'");
    }
-$db->commit();
 ?>
       <h2><?php echo _('Set up stands'); ?></h2>
 <?php
@@ -354,7 +352,6 @@ foreach ($_POST["standdesc"] as $standid=>$value)
       }
    if (isset($_POST["placename"][$standid])) $result=$db->query("UPDATE stands SET placeName='".$_POST["placename"][$standid]."' WHERE standId='$standid'");
    }
-$db->commit();
 echo '<div class="alert alert-success" role="alert">',sprintf(ngettext('%d stand','%d stands',count($_POST["standdesc"])),count($_POST["standdesc"])),' ',_('set up and'),' ',sprintf(ngettext('%d photo','%d photos',$uploadtotal),$uploadtotal),' ',_('uploaded'),'</div>';
 ?>
       <form class="container" method="post" action="index.php?step=6">
@@ -440,7 +437,6 @@ if ($creditSystem->isEnabled()) {
     $row = $result->fetch_assoc();
     $result = $db->query("REPLACE INTO credit SET userId='" . $row["userId"] . "',credit='$newcredit'");
 }
-$db->commit();
 ?>
       <h2>Installation finished</h2>
       <div class="alert alert-success" role="alert"><?php echo _('System options set.'); ?></div>

@@ -49,9 +49,6 @@ class SmsSenderTest extends TestCase
             ->expects($this->exactly(count($dbCallParams)))
             ->method('query')
             ->withConsecutive(...$dbCallParams);
-        $this->db
-            ->expects($this->exactly(count($dbCallParams)))
-            ->method('commit');
 
         $this->smsSender->send($number, $message);
     }
