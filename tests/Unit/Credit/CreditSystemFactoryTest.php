@@ -1,6 +1,8 @@
 <?php
 
-namespace Credit;
+declare(strict_types=1);
+
+namespace Test\BikeShare\Unit\Credit;
 
 use BikeShare\Credit\CreditSystem;
 use BikeShare\Credit\CreditSystemFactory;

@@ -1,6 +1,8 @@
 <?php
 
-namespace Test\BikeShare\Sms;
+declare(strict_types=1);
+
+namespace Test\BikeShare\Unit\Sms;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Sms\SmsSender;

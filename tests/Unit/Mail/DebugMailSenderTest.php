@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\Mail;
+namespace Test\BikeShare\Unit\Mail;
 
 use BikeShare\Mail\DebugMailSender;
 use PHPUnit\Framework\TestCase;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\BikeShare\User;
+namespace Test\BikeShare\Unit\User;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\DbResultInterface;

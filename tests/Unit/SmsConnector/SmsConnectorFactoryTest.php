@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\SmsConnector;
+namespace Test\BikeShare\Unit\SmsConnector;
 
 use BikeShare\SmsConnector\DisabledConnector;
 use BikeShare\SmsConnector\EuroSmsConnector;

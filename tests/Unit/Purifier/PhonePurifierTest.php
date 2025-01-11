@@ -1,6 +1,8 @@
 <?php
 
-namespace Test\BikeShare\Purifier;
+declare(strict_types=1);
+
+namespace Test\BikeShare\Unit\Purifier;
 
 use BikeShare\Purifier\PhonePurifier;
 use PHPUnit\Framework\TestCase;

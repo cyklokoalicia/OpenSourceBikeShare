@@ -1,6 +1,8 @@
 <?php
 
-namespace Test\BikeShare\Credit\CodeGenerator;
+declare(strict_types=1);
+
+namespace Test\BikeShare\Unit\Credit\CodeGenerator;
 
 use BikeShare\Credit\CodeGenerator\CodeGenerator;
 use PHPUnit\Framework\TestCase;

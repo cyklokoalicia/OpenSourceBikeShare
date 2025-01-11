@@ -1,6 +1,8 @@
 <?php
 
-namespace Test\BikeShare\Db;
+declare(strict_types=1);
+
+namespace Test\BikeShare\Unit\Db;
 
 use BikeShare\Db\DbResultInterface;
 use BikeShare\Db\MysqliDb;
