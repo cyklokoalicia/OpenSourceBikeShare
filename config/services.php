@@ -99,17 +99,18 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(DbInterface::class, PdoDb::class);
 
     $services->get(PHPMailerMailSender::class)
-        ->args([
-            env('APP_NAME'),
-            env('SMTP_FROM_EMAIL'),
-            [
-                'smtp_host' => env('SMTP_HOST'),
-                'smtp_port' => env('int:SMTP_PORT'),
-                'smtp_user' => env('SMTP_USER'),
-                'smtp_password' => env('SMTP_PASSWORD'),
-            ],
+        ->bind('$fromEmail', env('SMTP_FROM_EMAIL'))
+        ->bind('$fromName', env('APP_NAME'))
+        ->bind('$emailConfig', [
+            'smtp_host' => env('SMTP_HOST'),
+            'smtp_port' => env('int:SMTP_PORT'),
+            'smtp_user' => env('SMTP_USER'),
+            'smtp_password' => env('SMTP_PASSWORD'),
+        ])
+        ->bind(
+            '$mailer',
             inline_service(PHPMailer::class)->args([false])->property('Debugoutput', service('logger')),
-        ]);
+        );
 
     $services->get(PhonePurifier::class)
         ->args([
