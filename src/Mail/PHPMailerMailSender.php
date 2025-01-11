@@ -57,7 +57,9 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->Body = $message;
         $this->sendLog = [];
         $this->mailer->send();
-        $this->saveSendLog();
+        if ($this->debugLevel > 0 && $this->logger && count($this->sendLog) > 0) {
+            $this->saveSendLog();
+        }
     }
 
     /**
