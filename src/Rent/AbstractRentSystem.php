@@ -316,7 +316,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $userid = $this->auth->getUserId();
         $number = $this->user->findPhoneNumber($userid);
         $this->logResult($number, $message);
-        $this->db->commit();
 
         return [
             'error' => $error,

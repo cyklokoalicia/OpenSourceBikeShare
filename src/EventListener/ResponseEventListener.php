@@ -50,7 +50,5 @@ class ResponseEventListener
                 SET number='$number',
                     text='" . $this->db->escape($response) . "'
         ");
-
-        $this->db->commit();
     }
 }

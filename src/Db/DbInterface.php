@@ -26,23 +26,4 @@ interface DbInterface
      * @return int
      */
     public function getLastInsertId();
-
-    /**
-     * TODO does it needed???
-     * @param bool $mode
-     * @return bool
-     */
-    public function setAutocommit($mode = true);
-
-    /**
-     * TODO does it needed???
-     * @return bool
-     */
-    public function commit();
-
-    /**
-     * TODO does it needed???
-     * @return bool
-     */
-    public function rollback();
 }

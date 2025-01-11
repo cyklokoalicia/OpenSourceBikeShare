@@ -28,7 +28,6 @@ class PdoDb implements DbInterface
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_AUTOCOMMIT => false,
             ]
         );
     }
@@ -46,7 +45,6 @@ class PdoDb implements DbInterface
                     'errno' => $this->conn->errorCode() ? $this->conn->errorCode() : 'unknown',
                 ]
             );
-            $this->conn->rollback();
 
             throw new \RuntimeException('DB error in : ' . $query);
         }
@@ -54,12 +52,9 @@ class PdoDb implements DbInterface
         return new PdoDbResult($result);
     }
 
-    /**
-     * @return int
-     */
     public function getAffectedRows(): int
     {
-        return $this->conn->affected_rows;
+        throw new \RuntimeException('Not implemented');
     }
 
     public function getLastInsertId(): int
@@ -70,44 +65,5 @@ class PdoDb implements DbInterface
     public function escape($string)
     {
         return $string;
-    }
-
-    /**
-     * TODO does it needed???
-     * @param bool $mode
-     * @return bool
-     */
-    public function setAutocommit($mode = true)
-    {
-        return $this->conn->setAttribute(
-            PDO::ATTR_AUTOCOMMIT,
-            $mode
-        );
-    }
-
-    /**
-     * TODO does it needed???
-     * @return bool
-     */
-    public function commit()
-    {
-        if ($this->conn->inTransaction()) {
-            return $this->conn->commit();
-        }
-
-        return true;
-    }
-
-    /**
-     * TODO does it needed???
-     * @return bool
-     */
-    public function rollback()
-    {
-        if (!$this->conn->inTransaction()) {
-            return true;
-        }
-
-        return $this->conn->rollback();
     }
 }

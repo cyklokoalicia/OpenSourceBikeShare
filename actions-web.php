@@ -17,7 +17,6 @@ function response($message, $error = 0, $additional = '', $log = 1)
         $number = $user->findPhoneNumber($userid);
         logresult($number, $message);
     }
-    $db->commit();
     echo $json;
     exit;
 }

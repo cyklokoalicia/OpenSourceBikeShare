@@ -37,4 +37,24 @@ class RegistrationRepository
 
         return $result;
     }
+
+    public function deleteItem(string $key): void
+    {
+        $this->db->query(
+            'DELETE FROM registration WHERE userKey="' . $key . '"'
+        );
+    }
+
+    public function findItemByUserId($userId): ?array
+    {
+        $result = $this->db->query(
+            'SELECT 
+                userId,
+                userKey 
+              FROM registration 
+              WHERE userId="' . $userId . '"'
+        )->fetchAssoc();
+
+        return $result;
+    }
 }

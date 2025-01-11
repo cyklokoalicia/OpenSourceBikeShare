@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Db;
 
+use PDO;
 use PDOStatement;
 
 class PdoDbResult implements DbResultInterface
@@ -23,12 +24,20 @@ class PdoDbResult implements DbResultInterface
 
     public function fetchAssoc()
     {
-        return $this->result ? $this->result->fetch() : false;
+        if ($this->result === false) {
+            return false;
+        } elseif ($this->result->rowCount() > 0) {
+            return $this->result->fetch(PDO::FETCH_ASSOC);
+        } elseif ($this->result->rowCount() === 0) {
+            return null;
+        } else {
+            return false;
+        }
     }
 
     public function fetchAllAssoc()
     {
-        return $this->result ? $this->result->fetchAll() : [];
+        return $this->result ? $this->result->fetchAll(PDO::FETCH_ASSOC) : [];
     }
 
     /**

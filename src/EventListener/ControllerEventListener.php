@@ -56,6 +56,5 @@ class ControllerEventListener
                     sms_text='" . $event->getRequest()->getRequestUri() . "',
                     ip='" . $event->getRequest()->getClientIp() . "'
         ");
-        $this->db->commit();
     }
 }

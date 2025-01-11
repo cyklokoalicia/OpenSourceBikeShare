@@ -47,5 +47,4 @@ switch ($args[0]) {
     default:
         unknownCommand($sms->getNumber(), $args[0]);
 }
-$db->commit();
 

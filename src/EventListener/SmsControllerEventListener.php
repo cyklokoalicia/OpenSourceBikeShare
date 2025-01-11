@@ -73,7 +73,5 @@ class SmsControllerEventListener
                  ip='$ip'"
             );
         }
-
-        $this->db->commit();
     }
 }

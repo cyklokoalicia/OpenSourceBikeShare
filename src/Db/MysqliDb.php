@@ -105,32 +105,4 @@ class MysqliDb implements DbInterface
     {
         return $this->conn->real_escape_string($string);
     }
-
-    /**
-     * TODO does it needed???
-     * @param bool $mode
-     * @return bool
-     */
-    public function setAutocommit($mode = true)
-    {
-        return $this->conn->autocommit($mode);
-    }
-
-    /**
-     * TODO does it needed???
-     * @return bool
-     */
-    public function commit()
-    {
-        return $this->conn->commit();
-    }
-
-    /**
-     * TODO does it needed???
-     * @return bool
-     */
-    public function rollback()
-    {
-        return $this->conn->rollback();
-    }
 }

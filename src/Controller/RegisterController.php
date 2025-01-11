@@ -31,6 +31,10 @@ class RegisterController extends AbstractController
         TranslatorInterface $translator,
         UserRegistration $userRegistration
     ): Response {
+        if ($this->getUser()) {
+            return $this->redirectToRoute('home');
+        }
+
         $registrationStep = $session->get('registrationStep', $isSmsSystemEnabled ? 1 : 2);
 
         if ($registrationStep === 1) {

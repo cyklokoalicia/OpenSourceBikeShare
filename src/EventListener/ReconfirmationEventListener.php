@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\App\Configuration;
-use BikeShare\Event\UserRegistrationEvent;
+use BikeShare\Event\UserReconfirmationEvent;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\RegistrationRepository;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class RegistrationEventListener
+class ReconfirmationEventListener
 {
-    private string $appName;
     private RegistrationRepository $registrationRepository;
-    private Configuration $configuration;
     private MailSenderInterface $mailSender;
     private TranslatorInterface $translator;
     private UrlGeneratorInterface $urlGenerator;
@@ -36,26 +34,24 @@ class RegistrationEventListener
         $this->urlGenerator = $urlGenerator;
     }
 
-    public function __invoke(UserRegistrationEvent $event): void
+    public function __invoke(UserReconfirmationEvent $event): void
     {
         $user = $event->getUser();
 
-        $subject = $this->translator->trans('Registration');
+        $subject = $this->translator->trans('Email confirmation');
 
         $userId = $user->getUserId();
         $emailRecipient = $user->getEmail();
-        $userKey = hash('sha256', md5(mt_rand() . microtime() . $emailRecipient));
 
-        $this->registrationRepository->addItem($userId, $userKey);
+        $registration = $this->registrationRepository->findItemByUserId($userId);
+        $userKey = $registration['userKey'];
 
         $names = preg_split("/[\s,]+/", $user->getUsername());
         $firstName = $names[0];
         $message = $this->translator->trans(
-            'success.registration.mail',
+            'email.confirmation.mail',
             [
                 'name' => $firstName,
-                'systemName' => $this->appName,
-                'systemRulesPageUrl' => $this->configuration->get('systemrules'),
                 'emailConfirmURL' => $this->urlGenerator->generate(
                     'user_confirm',
                     ['key' => $userKey],

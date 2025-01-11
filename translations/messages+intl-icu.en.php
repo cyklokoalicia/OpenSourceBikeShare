@@ -226,9 +226,13 @@ return [
     'added. They need to read email and agree to rules before using the system.' => '',
     'Sorry, this command is only available for the privileged users.' => '',
     'account activation' => '',
-    'Account activation' => '',
+    'Account activation' => 'Account activation',
+    'By registering I confirm that I have read: {systemRules} and agree with the terms and conditions.' => 'By registering I confirm that I have read: {systemRules} and agree with the terms and conditions.',
+    'You must agree with the terms and conditions to register.' => 'You must agree with the terms and conditions to register.',
+    'Your email is confirmed. Thank You. You can now log in to the system.' => 'Your email is confirmed. Thank You. You can now log in to the system.',
+    'User does not confirmed email. Check your email for confirmation letter.' => 'User does not confirmed email. Check your email for confirmation letter.',
     'By registering I confirm that I have read:' => '',
-    'User Guide' => '',
+    'User Guide' => 'User Guide',
     'Privacy policy:' => '',
     'We will use your details for' => 'We will use your details for',
     'related activities only' => 'related activities only',
@@ -275,13 +279,17 @@ return [
 'Hello {name}
 you have been registered into community bike share system {systemName}.
 System rules are available here: {systemRulesPageUrl}
-By clicking the following link you agree to the System rules: {systemRulesAgreeURL}',
+By clicking the following link you will confirm your email: {emailConfirmURL}',
+    'email.confirmation.mail' =>
+'Hello {name}
+By clicking the following link you will confirm your email: {emailConfirmURL}',
     'Hello' => 'Hello',
     'Your password has been reset successfully.' => 'Your password has been reset successfully.',
     'Your new password is:' => 'Your new password is:',
     'Check your email.' => 'Check your email.',
     'registration' => '',
     'Registration' => 'Registration',
+    'Email confirmation' => 'Email confirmation',
     'Step 1 - Confirm your phone number' => 'Step 1 - Confirm your phone number',
     'You will receive SMS code to this phone number.' => 'You will receive SMS code to this phone number.',
     'Validate this phone number' => 'Validate this phone number',
@@ -296,7 +304,7 @@ By clicking the following link you agree to the System rules: {systemRulesAgreeU
     'you have been registered into community bike share system' => '',
     'System rules are available here:' => '',
     'By clicking the following link you agree to the System rules:' => '',
-    'Registration key not found!' => '',
+    'Registration key not found!' => 'Registration key not found!',
     'Your account has been activated. Welcome!' => '',
     'Please, return your bike {bikeNumber} immediately to the closest stand! Ignoring this warning can get you banned from the system.' => 'Please, return your bike {bikeNumber} immediately to the closest stand! Ignoring this warning can get you banned from the system.',
     'hour rental' => '',

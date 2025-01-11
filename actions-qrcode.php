@@ -16,7 +16,6 @@ function response($message,$error=0,$log=1)
         $userid = $auth->getUserId();
         $number = $user->findPhoneNumber($userid);
         logresult($number, $message);
-        $db->commit();
     }
    echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$configuration->get('systemname'),'</title>';
    echo '<base href="' . $configuration->get('systemURL') . '" />';
