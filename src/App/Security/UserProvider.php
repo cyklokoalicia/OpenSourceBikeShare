@@ -47,9 +47,12 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     {
         $identifier = $this->phonePurifier->purify($identifier);
         $result = $this->db->query(
-            "SELECT userId, number, mail, password, city, userName, privileges 
-                   FROM users 
-                   WHERE number='$identifier'"
+            'SELECT userId, number, mail, password, city, userName, privileges 
+             FROM users 
+             WHERE number = :identifier',
+            [
+                'identifier' => $identifier
+            ]
         );
         if (!$result || $result->rowCount() == 0) {
             throw new UserNotFoundException(sprintf('Unknown user %s', $identifier));
@@ -106,7 +109,11 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
         $this->db->query(
-            "UPDATE users SET password='$newHashedPassword' WHERE number='" . $user->getNumber() . "'"
+            'UPDATE users SET password = :newHashedPassword WHERE number = :number',
+            [
+                'newHashedPassword' => $newHashedPassword,
+                'number' => $user->getNumber()
+            ]
         );
 
         $user = new User(
@@ -129,8 +136,16 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
         int $privileges
     ): User {
         $this->db->query(
-            "INSERT INTO users (number, mail, password, city, userName, privileges) 
-                   VALUES ('$number', '$mail', '$plainPassword', '$city', '$userName', $privileges)"
+            'INSERT INTO users (number, mail, password, city, userName, privileges) 
+               VALUES (:number, :mail, :plainPassword, :city, :userName, :privileges)',
+            [
+                'number' => $number,
+                'mail' => $mail,
+                'plainPassword' => $plainPassword,
+                'city' => $city,
+                'userName' => $userName,
+                'privileges' => $privileges,
+            ]
         );
 
         return new User(

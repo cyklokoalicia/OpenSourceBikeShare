@@ -26,9 +26,12 @@ class NoteRepository
                     note,
                     time
                 FROM notes 
-                WHERE bikeNum = ' . $bikeNumber . '
+                WHERE bikeNum = :bikeNumber
                     AND deleted is NULL
-                ORDER BY time desc'
+                ORDER BY time desc',
+            [
+                'bikeNumber' => $bikeNumber,
+            ]
         )->fetchAllAssoc();
 
         return $result;
@@ -44,9 +47,12 @@ class NoteRepository
                     note,
                     time
                 FROM notes 
-                WHERE standId = ' . $standId . '
+                WHERE standId = :standId
                     AND deleted is NULL
-                ORDER BY time desc'
+                ORDER BY time desc',
+            [
+                'standId' => $standId,
+            ]
         )->fetchAllAssoc();
 
         return $result;
@@ -56,7 +62,12 @@ class NoteRepository
     {
         $this->db->query(
             'INSERT INTO notes (standId, userId, note, time)
-                VALUES (' . $standId . ', ' . $userId . ', "' . $note . '", NOW())'
+                VALUES (:standId, :userId, :note, NOW())',
+            [
+                'standId' => $standId,
+                'userId' => $userId,
+                'note' => $note,
+            ]
         );
     }
 
@@ -64,7 +75,12 @@ class NoteRepository
     {
         $this->db->query(
             'INSERT INTO notes (bikeNum, userId, note, time)
-                VALUES (' . $bikeNumber . ', ' . $userId . ', "' . $note . '", NOW())'
+                VALUES (:bikeNumber, :userId, :note, NOW())',
+            [
+                'bikeNumber' => $bikeNumber,
+                'userId' => $userId,
+                'note' => $note,
+            ]
         );
     }
 
@@ -73,9 +89,13 @@ class NoteRepository
         $result = $this->db->query(
             'UPDATE notes
                 SET deleted = NOW()
-                WHERE standId = ' . $standId . '
+                WHERE standId = :standId
                     AND deleted IS NULL
-                    AND note LIKE "%' . $notePattern . '%"'
+                    AND note LIKE :notePattern',
+            [
+                'standId' => $standId,
+                'notePattern' => '%' . $notePattern . '%',
+            ]
         );
 
         return $result->rowCount();
@@ -86,9 +106,13 @@ class NoteRepository
         $result = $this->db->query(
             'UPDATE notes
                 SET deleted = NOW()
-                WHERE bikeNum = ' . $bikeNumber . '
+                WHERE bikeNum = :bikeNumber
                     AND deleted IS NULL
-                    AND note LIKE "%' . $notePattern . '%"'
+                    AND note LIKE :notePattern',
+            [
+                'bikeNumber' => $bikeNumber,
+                'notePattern' => '%' . $notePattern . '%',
+            ]
         );
 
         return $result->rowCount();
@@ -97,10 +121,15 @@ class NoteRepository
     public function addNoteToAllBikesOnStand(int $standId, int $userId, string $note): void
     {
         $this->db->query(
-            "INSERT INTO notes (bikeNum,userId,note) 
-                SELECT bikeNum,'{$userId}','$note'
+            "INSERT INTO notes (bikeNum, userId, note) 
+                SELECT bikeNum, :userId, :note
                 FROM bikes 
-                WHERE currentStand='$standId'"
+                WHERE currentStand = :standId",
+            [
+                'userId' => $userId,
+                'note' => $note,
+                'standId' => $standId,
+            ]
         );
     }
 
@@ -110,9 +139,13 @@ class NoteRepository
             "UPDATE notes 
             JOIN bikes ON notes.bikeNum = bikes.bikeNum
             SET deleted=now()
-            WHERE bikes.currentStand='$standId'
-              AND note LIKE '%$note%'
-              AND deleted IS NULL"
+            WHERE bikes.currentStand=:standId
+              AND note LIKE :note
+              AND deleted IS NULL",
+            [
+                'standId' => $standId,
+                'note' => '%' . $note . '%',
+            ]
         );
 
         return $result->rowCount();

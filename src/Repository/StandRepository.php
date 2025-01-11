@@ -53,7 +53,10 @@ class StandRepository
                     longitude,
                     latitude
                 FROM stands
-                WHERE standId = ' . $standId . ''
+                WHERE standId = :standId',
+            [
+                'standId' => $standId,
+            ]
         )->fetchAssoc();
 
         return $stand;
@@ -72,7 +75,10 @@ class StandRepository
                     longitude,
                     latitude
                 FROM stands
-                WHERE standName = "' . $standName . '" LIMIT 1'
+                WHERE standName = :standName LIMIT 1',
+            [
+                'standName' => $standName,
+            ]
         )->fetchAssoc();
 
         return $stand;

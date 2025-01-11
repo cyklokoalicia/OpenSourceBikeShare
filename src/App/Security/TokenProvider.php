@@ -25,7 +25,8 @@ class TokenProvider implements TokenProviderInterface
     {
         if (!isset($this->tokens[$series])) {
             $result = $this->db->query(
-                "SELECT * FROM remember_me_token WHERE series='{$this->db->escape($series)}'"
+                'SELECT * FROM remember_me_token WHERE series = :series',
+                ['series' => $series]
             );
             if (!$result || $result->rowCount() == 0) {
                 throw new TokenNotFoundException('No token found.');
@@ -68,7 +69,8 @@ class TokenProvider implements TokenProviderInterface
     public function deleteTokenBySeries(string $series)
     {
         $this->db->query(
-            "DELETE FROM remember_me_token WHERE series='{$this->db->escape($series)}'"
+            'DELETE FROM remember_me_token WHERE series= :series',
+            ['series' => $series]
         );
 
         unset($this->tokens[$series]);
@@ -80,12 +82,15 @@ class TokenProvider implements TokenProviderInterface
     public function createNewToken(PersistentTokenInterface $token)
     {
         $this->db->query(
-            "INSERT INTO remember_me_token (class, username, series, value, lastUsed) 
-            VALUES ('{$this->db->escape($token->getClass())}',
-                    '{$this->db->escape($token->getUserIdentifier())}',
-                    '{$this->db->escape($token->getSeries())}',
-                    '{$this->db->escape($token->getTokenValue())}',
-                    '{$token->getLastUsed()->format('Y-m-d H:i:s')}')"
+            'INSERT INTO remember_me_token (class, username, series, value, lastUsed) 
+             VALUES (:class, :username, :series, :value, :lastUsed)',
+            [
+                'class' => $token->getClass(),
+                'username' => $token->getUserIdentifier(),
+                'series' => $token->getSeries(),
+                'value' => $token->getTokenValue(),
+                'lastUsed' => $token->getLastUsed()->format('Y-m-d H:i:s'),
+            ]
         );
 
         $this->tokens[$token->getSeries()] = $token;

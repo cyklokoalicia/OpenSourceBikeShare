@@ -38,15 +38,19 @@ class BikeRepository
              * Should be optimized to one query
              */
             if (!empty($bike['userName'])) {
-                $historyInfo = $this->db->query('
-                    SELECT time 
-                    FROM history 
-                    WHERE bikeNum=' . $bike['bikeNum'] . ' 
-                        AND userId=' . $bike['userId'] . ' 
-                        AND action=\'RENT\' 
-                    ORDER BY time DESC 
-                    LIMIT 1
-                ')->fetchAssoc();
+                $historyInfo = $this->db->query(
+                    'SELECT time 
+                     FROM history 
+                     WHERE bikeNum = :bikeNumber
+                         AND userId = :userId
+                         AND action =\'RENT\' 
+                     ORDER BY time DESC 
+                     LIMIT 1',
+                    [
+                        'bikeNumber' => $bike['bikeNum'],
+                        'userId' => $bike['userId'],
+                    ]
+                )->fetchAssoc();
 
                 $bike['rentTime'] = date('d/m H:i', strtotime($historyInfo['time']));
             }
@@ -71,8 +75,11 @@ class BikeRepository
                          LEFT JOIN users ON bikes.currentUser=users.userId
                          LEFT JOIN stands ON bikes.currentStand=stands.standId
                          LEFT JOIN notes ON bikes.bikeNum=notes.bikeNum AND notes.deleted IS NULL
-                WHERE bikes.bikeNum = ' . $bikeNumber . '
-                GROUP BY bikeNum'
+                WHERE bikes.bikeNum = :bikeNumber
+                GROUP BY bikeNum',
+            [
+                'bikeNumber' => $bikeNumber,
+            ]
         )->fetchAllAssoc();
 
         foreach ($bikes as &$bike) {
@@ -80,15 +87,19 @@ class BikeRepository
              * Should be optimized to one query
              */
             if (!empty($bike['userName'])) {
-                $historyInfo = $this->db->query('
-                    SELECT time 
-                    FROM history 
-                    WHERE bikeNum=' . $bike['bikeNum'] . ' 
-                        AND userId=' . $bike['userId'] . ' 
-                        AND action=\'RENT\' 
-                    ORDER BY time DESC 
-                    LIMIT 1
-                ')->fetchAssoc();
+                $historyInfo = $this->db->query(
+                    'SELECT time 
+                     FROM history 
+                     WHERE bikeNum = :bikeNumber
+                         AND userId = :userId 
+                         AND action = \'RENT\' 
+                     ORDER BY time DESC 
+                     LIMIT 1',
+                    [
+                        'bikeNumber' => $bike['bikeNum'],
+                        'userId' => $bike['userId'],
+                    ]
+                )->fetchAssoc();
 
                 $bike['rentTime'] = date('d/m H:i', strtotime($historyInfo['time']));
             }
@@ -100,30 +111,36 @@ class BikeRepository
 
     public function findItemLastUsage(int $bikeNumber): array
     {
-        $notes = $this->db->query('
-            SELECT 
-                GROUP_CONCAT(note ORDER BY time SEPARATOR \'; \') as notes
-            FROM notes 
-            WHERE bikeNum=' . $bikeNumber . ' 
-                AND deleted IS NULL 
-            GROUP BY bikeNum
-        ')->fetchAssoc();
+        $notes = $this->db->query(
+            'SELECT 
+                 GROUP_CONCAT(note ORDER BY time SEPARATOR \'; \') as notes
+             FROM notes 
+             WHERE bikeNum = :bikeNumber
+                 AND deleted IS NULL 
+             GROUP BY bikeNum',
+            [
+                'bikeNumber' => $bikeNumber,
+            ]
+        )->fetchAssoc();
 
-        $history = $this->db->query('
-            SELECT
-                userName,
-                parameter,
-                standName,
-                action,
-                time
-            FROM history
-            JOIN users ON history.userid=users.userid 
-            LEFT JOIN stands ON stands.standid=history.parameter 
-            WHERE bikenum= ' . $bikeNumber . ' 
-              AND action NOT LIKE \'%CREDIT%\'
-            ORDER BY time DESC 
-            LIMIT 10
-        ')->fetchAllAssoc();
+        $history = $this->db->query(
+            'SELECT
+                 userName,
+                 parameter,
+                 standName,
+                 action,
+                 time
+             FROM history
+             JOIN users ON history.userid=users.userid 
+             LEFT JOIN stands ON stands.standid=history.parameter 
+             WHERE bikenum = :bikeNumber
+               AND action NOT LIKE \'%CREDIT%\'
+             ORDER BY time DESC 
+             LIMIT 10',
+            [
+                'bikeNumber' => $bikeNumber,
+            ]
+        )->fetchAllAssoc();
 
         $result = [];
         $result['notes'] = $notes['notes'] ?? '';
@@ -196,7 +213,10 @@ class BikeRepository
             FROM bikes 
                 LEFT JOIN users on bikes.currentUser=users.userID 
                 LEFT JOIN stands on bikes.currentStand=stands.standId 
-            where bikeNum=$bikeNumber"
+            where bikeNum = :bikeNumber",
+            [
+                'bikeNumber' => $bikeNumber,
+            ]
         )->fetchAssoc();
 
         return $result;

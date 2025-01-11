@@ -18,12 +18,15 @@ class CreditRepository
 
     public function addCredits(int $userId, float $creditAmount): void
     {
-        $userId = $this->db->escape($userId);
-        $creditAmount = $this->db->escape($creditAmount);
         $this->db->query(
             "INSERT INTO credit (userId, credit)
-                   VALUES (" . $userId . ", " . $creditAmount . ")
-                   ON DUPLICATE KEY UPDATE credit=credit+" . $creditAmount
+             VALUES (:userId, :creditAmount)
+              ON DUPLICATE KEY UPDATE credit = credit + :creditAmountUpdate",
+            [
+                'userId' => $userId,
+                'creditAmount' => $creditAmount,
+                'creditAmountUpdate' => $creditAmount,
+            ]
         );
     }
 }

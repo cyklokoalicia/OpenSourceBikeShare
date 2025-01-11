@@ -34,20 +34,8 @@ class PdoDb implements DbInterface
 
     public function query($query, $params = [])
     {
-        $result = $this->conn->query($query);
-        if (!$result) {
-            $this->logger->error(
-                'DB query error',
-                [
-                    'query' => $query,
-                    'params' => $params,
-                    'error' => $this->conn->errorInfo() ? $this->conn->errorInfo() : 'unknown',
-                    'errno' => $this->conn->errorCode() ? $this->conn->errorCode() : 'unknown',
-                ]
-            );
-
-            throw new \RuntimeException('DB error in : ' . $query);
-        }
+        $result = $this->conn->prepare($query);
+        $result->execute($params);
 
         return new PdoDbResult($result);
     }

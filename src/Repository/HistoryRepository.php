@@ -22,15 +22,16 @@ class HistoryRepository
         string $action,
         string $parameter
     ): void {
-        $userId = $this->db->escape($userId);
-        $bikeNum = $this->db->escape($bikeNum);
-        $action = $this->db->escape($action);
-        $parameter = $this->db->escape($parameter);
-
-        $this->db->query("
-            INSERT INTO history (userId, bikeNum, action, parameter)
-            VALUES ($userId, $bikeNum, '$action', '$parameter')
-        ");
+        $this->db->query(
+            'INSERT INTO history (userId, bikeNum, action, parameter)
+             VALUES (:userId, :bikeNum, :action, :parameter)',
+            [
+                'userId' => $userId,
+                'bikeNum' => $bikeNum,
+                'action' => $action,
+                'parameter' => $parameter,
+            ]
+        );
     }
 
     public function dailyStats(): array
@@ -63,9 +64,10 @@ class HistoryRepository
             FROM users 
             LEFT JOIN history ON users.userId=history.userId 
             WHERE history.userId IS NOT NULL
-              AND YEAR(time) = " . $year . "
+              AND YEAR(time) = :year
             GROUP BY username 
-            ORDER BY totalActionCount DESC"
+            ORDER BY totalActionCount DESC",
+            ['year' => $year]
         )->fetchAllAssoc();
 
         return $result;
@@ -82,11 +84,15 @@ class HistoryRepository
               parameter,
               standId
             FROM history 
-            WHERE bikeNum = $bikeNumber 
-              AND userId = $userId 
+            WHERE bikeNum = :bikeNumber 
+              AND userId = :userId 
               AND action = 'RENT' 
             ORDER BY time DESC 
-            LIMIT 1"
+            LIMIT 1",
+            [
+                'bikeNumber' => $bikeNumber,
+                'userId' => $userId,
+            ]
         )->fetchAssoc();
 
         return $result;
@@ -98,9 +104,13 @@ class HistoryRepository
             "SELECT
               COUNT(*) AS rentCount
             FROM history 
-            WHERE userId = $userId 
+            WHERE userId = :userId 
               AND action = 'RENT' 
-              AND time > '$offsetTime'"
+              AND time > :offsetTime",
+            [
+                'userId' => $userId,
+                'offsetTime' => $offsetTime,
+            ]
         )->fetchAssoc();
 
         return (int)($result['rentCount'] ?? 0);
@@ -118,9 +128,10 @@ class HistoryRepository
               standId
             FROM history 
             WHERE action = 'REGISTER' 
-              AND parameter = '$checkCode' 
+              AND parameter = :checkCode 
             ORDER BY time DESC 
-            LIMIT 1"
+            LIMIT 1",
+            ['checkCode' => $checkCode]
         )->fetchAssoc();
 
         return $result;

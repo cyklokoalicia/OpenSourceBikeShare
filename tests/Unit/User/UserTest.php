@@ -30,7 +30,7 @@ class UserTest extends TestCase
         $dbMock = $this->createMock(DbInterface::class);
         $dbMock->expects($this->exactly(2))
             ->method('query')
-            ->with("SELECT userId FROM users WHERE number='{$userNumber}'")
+            ->with('SELECT userId FROM users WHERE number = :number', ['number' => $userNumber])
             ->willReturnOnConsecutiveCalls(
                 $dbFoundUserResult,
                 $dbNotFoundUserResult
@@ -61,7 +61,7 @@ class UserTest extends TestCase
         $dbMock = $this->createMock(DbInterface::class);
         $dbMock->expects($this->exactly(2))
             ->method('query')
-            ->with("SELECT number FROM users WHERE userId='{$userId}'")
+            ->with('SELECT number FROM users WHERE userId = :userId', ['userId' => $userId])
             ->willReturnOnConsecutiveCalls(
                 $dbFoundUserResult,
                 $dbNotFoundUserResult
@@ -92,7 +92,7 @@ class UserTest extends TestCase
         $dbMock = $this->createMock(DbInterface::class);
         $dbMock->expects($this->exactly(2))
             ->method('query')
-            ->with("SELECT city FROM users WHERE userId='{$userId}'")
+            ->with('SELECT city FROM users WHERE userId = :userId', ['userId' => $userId])
             ->willReturnOnConsecutiveCalls(
                 $dbFoundUserResult,
                 $dbNotFoundUserResult
@@ -123,7 +123,7 @@ class UserTest extends TestCase
         $dbMock = $this->createMock(DbInterface::class);
         $dbMock->expects($this->exactly(2))
             ->method('query')
-            ->with("SELECT userName FROM users WHERE userId='{$userId}'")
+            ->with('SELECT userName FROM users WHERE userId = :userId', ['userId' => $userId])
             ->willReturnOnConsecutiveCalls(
                 $dbFoundUserResult,
                 $dbNotFoundUserResult
@@ -154,7 +154,7 @@ class UserTest extends TestCase
         $dbMock = $this->createMock(DbInterface::class);
         $dbMock->expects($this->exactly(2))
             ->method('query')
-            ->with("SELECT privileges FROM users WHERE userId='{$userId}'")
+            ->with('SELECT privileges FROM users WHERE userId = :userId', ['userId' => $userId])
             ->willReturnOnConsecutiveCalls(
                 $dbFoundUserResult,
                 $dbNotFoundUserResult

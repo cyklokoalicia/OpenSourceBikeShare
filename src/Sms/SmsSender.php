@@ -44,6 +44,12 @@ class SmsSender implements SmsSenderInterface
     private function log($number, $message)
     {
         $message = $this->db->escape($message);
-        $this->db->query("INSERT INTO sent SET number='$number', text='$message'");
+        $this->db->query(
+            'INSERT INTO sent SET number = :number, text = :message',
+            [
+                'number' => $number,
+                'message' => $message
+            ]
+        );
     }
 }
