@@ -18,7 +18,8 @@ class ScanController extends AbstractController
     }
 
     /**
-     * @Route("/scan.php/{action}/{id}", name="scan", requirements={"action"="rent|return"}, requirements: {"id"="\d+"})
+     * @Route("/scan.php/rent/{bikeNumber}", name="scan_bike", requirements: {"bikeNumber"="\d+"})
+     * @Route("/scan.php/return/{standName}", name="scan_stand", requirements: {"standName"="\w+"})
      */
     public function index(
         Request $request

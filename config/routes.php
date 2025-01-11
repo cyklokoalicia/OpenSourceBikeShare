@@ -7,9 +7,11 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\HomeController::class, 'index']);
     $routes->add('command', '/command.php')
         ->controller([\BikeShare\Controller\CommandController::class, 'index']);
-    $routes->add('scan', '/scan.php/{action}/{id}')
+    $routes->add('scan_bike', '/scan.php/rent/{bikeNumber}')
         ->requirements(['id' => '\d+'])
-        ->requirements(['action' => 'rent|return'])
+        ->controller([\BikeShare\Controller\ScanController::class, 'index']);
+    $routes->add('scan_stand', '/scan.php/return/{standName}')
+        ->requirements(['standName' => '\w+'])
         ->controller([\BikeShare\Controller\ScanController::class, 'index']);
     $routes->add('admin', '/admin')
         ->controller([\BikeShare\Controller\AdminController::class, 'index']);
