@@ -22,6 +22,7 @@ class PHPMailerSenderTest extends TestCase
     {
         $email = [
             'smtp_host' => 'smtp_host',
+            'smtp_port' => 999,
             'smtp_user' => 'smtp_user',
             'smtp_password' => 'smtp_password',
         ];
@@ -66,7 +67,7 @@ class PHPMailerSenderTest extends TestCase
         $this->assertEquals($this->mailer->Password, 'smtp_password');
         $this->assertEquals($this->mailer->SMTPAuth, true);
         $this->assertEquals($this->mailer->SMTPSecure, 'ssl');
-        $this->assertEquals($this->mailer->Port, 465);
+        $this->assertEquals($this->mailer->Port, 999);
         $this->assertEquals($this->mailer->CharSet, 'UTF-8');
         $this->assertEquals($this->mailer->From, 'fromEmail');
         $this->assertEquals($this->mailer->FromName, 'fromName');
