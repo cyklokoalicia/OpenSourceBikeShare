@@ -15,6 +15,7 @@ class PHPMailerMailSender implements MailSenderInterface
     private PHPMailer $mailer;
     private int $debugLevel;
     private ?LoggerInterface $logger;
+    private array $sendLog = [];
 
     public function __construct(
         string $fromEmail,
@@ -54,14 +55,21 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->addBCC($this->fromEmail);     // Add a recipient
         $this->mailer->Subject = $subject;
         $this->mailer->Body = $message;
+        $this->sendLog = [];
         $this->mailer->send();
+        $this->saveSendLog();
     }
 
     /**
      * @internal
      */
-    public function debugOutput($str, $level)
+    public function debugOutput($str, $level): void
     {
-        $this->logger->notice('PhpMailer Debug', ['output' => sprintf('[%s] %s', $level, $str)]);
+        $this->sendLog[] = sprintf('[%s] %s', $level, $str);
+    }
+
+    private function saveSendLog(): void
+    {
+        $this->logger->notice('PhpMailer Debug', ['sendLog' => $this->sendLog]);
     }
 }
