@@ -104,10 +104,11 @@ return static function (ContainerConfigurator $container): void {
             env('SMTP_FROM_EMAIL'),
             [
                 'smtp_host' => env('SMTP_HOST'),
+                'smtp_port' => env('int:SMTP_PORT'),
                 'smtp_user' => env('SMTP_USER'),
                 'smtp_password' => env('SMTP_PASSWORD'),
             ],
-            inline_service(PHPMailer::class)->args([false])
+            inline_service(PHPMailer::class)->args([false])->property('Debugoutput', service('logger')),
         ]);
 
     $services->get(PhonePurifier::class)
