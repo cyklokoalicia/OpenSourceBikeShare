@@ -1,45 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Mail;
 
 use PHPMailer\PHPMailer\PHPMailer;
+use Psr\Log\LoggerInterface;
 
 class PHPMailerMailSender implements MailSenderInterface
 {
-    /**
-     * @var string
-     */
-    private $fromEmail;
-    /**
-     * @var string
-     */
-    private $fromName;
-    /**
-     * @var array
-     */
-    private $emailConfig;
-    /**
-     * @var PHPMailer
-     */
-    private $mailer;
+    private string $fromEmail;
+    private string $fromName;
+    private array $emailConfig;
+    private PHPMailer $mailer;
+    private int $debugLevel;
+    private ?LoggerInterface $logger;
 
-    /**
-     * @param string $fromEmail
-     * @param string $fromName
-     * @param array $emailConfig
-     * @param PHPMailer $mailer
-     */
     public function __construct(
-        $fromEmail,
-        $fromName,
+        string $fromEmail,
+        string $fromName,
         array $emailConfig,
-        PHPMailer $mailer
+        PHPMailer $mailer,
+        int $debugLevel = 0,
+        ?LoggerInterface $logger = null
     ) {
-        #todo add validation of incoming params and throw exception if not valid
         $this->fromEmail = $fromEmail;
         $this->fromName = $fromName;
         $this->emailConfig = $emailConfig;
         $this->mailer = $mailer;
+        $this->debugLevel = $debugLevel;
+        $this->logger = $logger;
     }
 
     public function sendMail($recipient, $subject, $message)
@@ -47,7 +37,10 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->clearAllRecipients();
 
         $this->mailer->isSMTP(); // Set mailer to use SMTP
-        //$this->mailer->SMTPDebug  = 2;
+        $this->mailer->SMTPDebug  = $this->debugLevel;
+        if ($this->debugLevel > 0 && $this->logger) {
+            $this->mailer->Debugoutput = [$this, "debugOutput"];
+        }
         $this->mailer->Host = $this->emailConfig["smtp_host"]; // Specify main and backup SMTP servers
         $this->mailer->Port = $this->emailConfig["smtp_port"]; // TCP port to connect to
         $this->mailer->Username = $this->emailConfig["smtp_user"]; // SMTP username
@@ -62,5 +55,13 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->Subject = $subject;
         $this->mailer->Body = $message;
         $this->mailer->send();
+    }
+
+    /**
+     * @internal
+     */
+    public function debugOutput($str, $level)
+    {
+        $this->logger->notice('PhpMailer Debug', ['output' => sprintf('[%s] %s', $level, $str)]);
     }
 }

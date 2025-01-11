@@ -98,6 +98,8 @@ return static function (ContainerConfigurator $container): void {
 
     $services->alias(DbInterface::class, PdoDb::class);
 
+    $services->get(\BikeShare\Mail\MailSenderFactory::class)
+        ->bind('$smtpHost', env('SMTP_HOST'));
     $services->get(PHPMailerMailSender::class)
         ->bind('$fromEmail', env('SMTP_FROM_EMAIL'))
         ->bind('$fromName', env('APP_NAME'))
@@ -107,6 +109,7 @@ return static function (ContainerConfigurator $container): void {
             'smtp_user' => env('SMTP_USER'),
             'smtp_password' => env('SMTP_PASSWORD'),
         ])
+        ->bind('$debugLevel', env('int:SMTP_DEBUG_LEVEL'))
         ->bind(
             '$mailer',
             inline_service(PHPMailer::class)->args([false])->property('Debugoutput', service('logger')),
