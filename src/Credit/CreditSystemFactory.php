@@ -9,22 +9,19 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 class CreditSystemFactory
 {
     private ServiceLocator $locator;
-    private array $creditConfiguration;
+    private bool $isEnabled;
 
     public function __construct(
         ServiceLocator $locator,
-        array $creditConfiguration
+        bool $isEnabled
     ) {
         $this->locator = $locator;
-        $this->creditConfiguration = $creditConfiguration;
+        $this->isEnabled = $isEnabled;
     }
 
     public function getCreditSystem(): CreditSystemInterface
     {
-        if (!isset($this->creditConfiguration["enabled"])) {
-            $this->creditConfiguration["enabled"] = false;
-        }
-        if (!$this->creditConfiguration["enabled"]) {
+        if (!$this->isEnabled) {
             return $this->locator->get(DisabledCreditSystem::class);
         } else {
             return $this->locator->get(CreditSystem::class);

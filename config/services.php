@@ -84,7 +84,6 @@ return static function (ContainerConfigurator $container): void {
             env('DB_DSN'),
             env('DB_USER'),
             env('DB_PASSWORD'),
-            service('logger')
         ]);
 
     $services->alias(DbInterface::class, PdoDb::class);
@@ -112,10 +111,17 @@ return static function (ContainerConfigurator $container): void {
         ]);
 
     $services->get(CreditSystemFactory::class)
-        ->bind('$creditConfiguration', expr("service('BikeShare\\\App\\\Configuration').get('credit')"));
+        ->bind('$isEnabled', env('bool:CREDIT_SYSTEM_ENABLED'));
 
     $services->get(CreditSystem::class)
-        ->bind('$creditConfiguration', expr("service('BikeShare\\\App\\\Configuration').get('credit')"));
+        ->bind('$isEnabled', env('bool:CREDIT_SYSTEM_ENABLED'))
+        ->bind('$creditCurrency', env('CREDIT_SYSTEM_CURRENCY'))
+        ->bind('$minBalanceCredit', env('float:CREDIT_SYSTEM_MIN_BALANCE'))
+        ->bind('$rentalFee', env('float:CREDIT_SYSTEM_RENTAL_FEE'))
+        ->bind('$priceCycle', env('int:CREDIT_SYSTEM_PRICE_CYCLE'))
+        ->bind('$longRentalFee', env('float:CREDIT_SYSTEM_LONG_RENTAL_FEE'))
+        ->bind('$limitIncreaseFee', env('float:CREDIT_SYSTEM_LIMIT_INCREASE_FEE'))
+        ->bind('$violationFee', env('float:CREDIT_SYSTEM_VIOLATION_FEE'));
 
     $services->load('BikeShare\\Rent\\', '../src/Rent')
         ->bind('$watchesConfig', expr("service('BikeShare\\\App\\\Configuration').get('watches')"))

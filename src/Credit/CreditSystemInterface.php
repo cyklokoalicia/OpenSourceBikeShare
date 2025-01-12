@@ -1,56 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Credit;
 
 interface CreditSystemInterface
 {
-    /**
-     * @return int
-     */
-    public function getUserCredit($userId);
+    public function getUserCredit($userId): float;
 
-    /**
-     * @return int
-     */
-    public function getMinRequiredCredit();
+    public function getMinRequiredCredit(): float;
 
-    /**
-     * @return bool
-     */
-    public function isEnoughCreditForRent($userid);
+    public function isEnoughCreditForRent($userid): bool;
 
-    /**
-     * @return bool
-     */
-    public function isEnabled();
+    public function isEnabled(): bool;
 
-    /**
-     * @return string
-     */
-    public function getCreditCurrency();
+    public function getCreditCurrency(): string;
 
-    /**
-     * @return int
-     */
-    public function getRentalFee();
+    public function getRentalFee(): float;
 
-    /**
-     * @return int
-     */
-    public function getPriceCycle();
+    public function getPriceCycle(): int;
 
-    /**
-     * @return int
-     */
-    public function getLongRentalFee();
+    public function getLongRentalFee(): float;
 
-    /**
-     * @return int
-     */
-    public function getLimitIncreaseFee();
+    public function getLimitIncreaseFee(): float;
 
-    /**
-     * @return int
-     */
-    public function getViolationFee();
+    public function getViolationFee(): float;
 }
