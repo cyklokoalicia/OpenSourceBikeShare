@@ -15,59 +15,65 @@ class CreditSystemTest extends TestCase
      * @dataProvider constructorDataProvider
      */
     public function testConstructor(
-        $configuration,
-        $expectedIsEnabled,
-        $expectedCreditCurrency,
+        $isEnabled,
+        $creditCurrency,
+        $minRequiredCredit,
+        $rentalFee,
+        $priceCycle,
+        $longRentalFee,
+        $limitIncreaseFee,
+        $violationFee,
         $expectedMinRequiredCredit,
-        $expectedRentalFee,
-        $expectedPriceCycle,
-        $expectedLongRentalFee,
-        $expectedLimitIncreaseFee,
-        $expectedViolationFee
+        $expectedException = null
     ) {
-        $creditSystem = new CreditSystem($configuration, $this->createMock(DbInterface::class));
-        $this->assertEquals($expectedIsEnabled, $creditSystem->isEnabled());
-        $this->assertEquals($expectedCreditCurrency, $creditSystem->getCreditCurrency());
+        if (!is_null($expectedException)) {
+            $this->expectException($expectedException);
+        }
+        $creditSystem = new CreditSystem(
+            $isEnabled,
+            $creditCurrency,
+            $minRequiredCredit,
+            $rentalFee,
+            $priceCycle,
+            $longRentalFee,
+            $limitIncreaseFee,
+            $violationFee,
+            $this->createMock(DbInterface::class)
+        );
+        $this->assertEquals($isEnabled, $creditSystem->isEnabled());
+        $this->assertEquals($creditCurrency, $creditSystem->getCreditCurrency());
         $this->assertEquals($expectedMinRequiredCredit, $creditSystem->getMinRequiredCredit());
-        $this->assertEquals($expectedRentalFee, $creditSystem->getRentalFee());
-        $this->assertEquals($expectedPriceCycle, $creditSystem->getPriceCycle());
-        $this->assertEquals($expectedLongRentalFee, $creditSystem->getLongRentalFee());
-        $this->assertEquals($expectedLimitIncreaseFee, $creditSystem->getLimitIncreaseFee());
-        $this->assertEquals($expectedViolationFee, $creditSystem->getViolationFee());
+        $this->assertEquals($rentalFee, $creditSystem->getRentalFee());
+        $this->assertEquals($priceCycle, $creditSystem->getPriceCycle());
+        $this->assertEquals($longRentalFee, $creditSystem->getLongRentalFee());
+        $this->assertEquals($limitIncreaseFee, $creditSystem->getLimitIncreaseFee());
+        $this->assertEquals($violationFee, $creditSystem->getViolationFee());
     }
 
     public function constructorDataProvider()
     {
-        yield 'empty configuration' => [
-            'configuration' => [],
-            'expectedIsEnabled' => false,
-            'expectedCreditCurrency' => '€',
+        yield 'disabled configuration' => [
+            'isEnabled' => false,
+            'creditCurrency' => '€',
+            'minRequiredCredit' => 9,
+            'rentalFee' => 2,
+            'priceCycle' => 0,
+            'longRentalFee' => 5,
+            'limitIncreaseFee' => 10,
+            'violationFee' => 5,
             'expectedMinRequiredCredit' => 9,
-            'expectedRentalFee' => 2,
-            'expectedPriceCycle' => 0,
-            'expectedLongRentalFee' => 5,
-            'expectedLimitIncreaseFee' => 10,
-            'expectedViolationFee' => 5
+            'expectedException' => \RuntimeException::class,
         ];
         yield 'full configuration' => [
-            'configuration' => [
-                'enabled' => true,
-                'currency' => '$',
-                'min' => 3,
-                'rent' => 3,
-                'pricecycle' => 1,
-                'longrental' => 6,
-                'limitincrease' => 11,
-                'violation' => 6
-            ],
-            'expectedIsEnabled' => true,
-            'expectedCreditCurrency' => '$',
-            'expectedMinRequiredCredit' => 12,
-            'expectedRentalFee' => 3,
-            'expectedPriceCycle' => 1,
-            'expectedLongRentalFee' => 6,
-            'expectedLimitIncreaseFee' => 11,
-            'expectedViolationFee' => 6
+            'isEnabled' => true,
+            'creditCurrency' => '$',
+            'minRequiredCredit' => 12,
+            'rentalFee' => 3,
+            'priceCycle' => 1,
+            'longRentalFee' => 6,
+            'limitIncreaseFee' => 11,
+            'violationFee' => 6,
+            'expectedMinRequiredCredit' => 21,
         ];
     }
 
@@ -88,7 +94,17 @@ class CreditSystemTest extends TestCase
             ->with('SELECT credit FROM credit WHERE userId = :userId', ['userId' => $userId])
             ->willReturn($dbResult);
 
-        $creditSystem = new CreditSystem(['isEnabled' => true], $db);
+        $creditSystem = new CreditSystem(
+            true, //isEnabled
+            '€', //creditCurrency
+            9, //minRequiredCredit
+            2, //rentalFee
+            0, //priceCycle
+            5, //longRentalFee
+            10, //limitIncreaseFee
+            5, //violationFee
+            $db
+        );
 
         $this->assertEquals(5, $creditSystem->getUserCredit($userId));
     }
@@ -107,7 +123,17 @@ class CreditSystemTest extends TestCase
             ->with('SELECT credit FROM credit WHERE userId = :userId', ['userId' => $userId])
             ->willReturn($dbResult);
 
-        $creditSystem = new CreditSystem(['isEnabled' => true], $db);
+        $creditSystem = new CreditSystem(
+            true, //isEnabled
+            '€', //creditCurrency
+            9, //minRequiredCredit
+            2, //rentalFee
+            0, //priceCycle
+            5, //longRentalFee
+            10, //limitIncreaseFee
+            5, //violationFee
+            $db
+        );
 
         $this->assertEquals(0, $creditSystem->getUserCredit($userId));
     }

@@ -5,25 +5,20 @@ declare(strict_types=1);
 namespace BikeShare\Db;
 
 use PDO;
-use Psr\Log\LoggerInterface;
 
 class PdoDb implements DbInterface
 {
     private PDO $conn;
-    private ?LoggerInterface $logger;
 
     public function __construct(
         string $dsn,
-        string $dbuser,
-        string $dbpassword,
-        ?LoggerInterface $logger
+        string $userName,
+        string $password
     ) {
-        $this->logger = $logger;
-
         $this->conn = new PDO(
             $dsn,
-            $dbuser,
-            $dbpassword,
+            $userName,
+            $password,
             [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_EMULATE_PREPARES => false,

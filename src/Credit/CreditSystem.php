@@ -1,43 +1,61 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Credit;
 
 use BikeShare\Db\DbInterface;
 
 class CreditSystem implements CreditSystemInterface
 {
-    // 0 = no credit system, 1 = apply credit system rules and deductions
-    private $isEnabled = false;
+    // false = no credit system and Exceptions will be thrown
+    // true = apply credit system rules and deductions
+    private bool $isEnabled;
     // currency used for credit system
-    private $creditCurrency = "€";
+    private string $creditCurrency;
     // minimum credit required to allow any bike operations
-    private $minBalanceCredit = 2;
+    private float $minBalanceCredit;
     // rental fee (after $watches["freetime"])
-    private $rentalFee = 2;
-    // 0 = disabled, 1 = charge flat price $credit["rent"] every $watches["flatpricecycle"] minutes,
+    private float $rentalFee;
+    // 0 = disabled,
+    // 1 = charge flat price $credit["rent"] every $watches["flatpricecycle"] minutes,
     // 2 = charge doubled price $credit["rent"] every $watches["doublepricecycle"] minutes
-    private $priceCycle = 0;
+    private int $priceCycle;
     // long rental fee ($watches["longrental"] time)
-    private $longRentalFee = 5;
+    private float $longRentalFee;
     // credit needed to temporarily increase limit, applicable only when $limits["increase"]>0
-    private $limitIncreaseFee = 10;
+    private float $limitIncreaseFee;
     // credit deduction for rule violations (applied by admins)
-    private $violationFee = 5;
+    private float $violationFee;
 
-    /**
-     * @var DbInterface
-     */
-    private $db;
+    private DbInterface $db;
 
     public function __construct(
-        array $creditConfiguration,
+        bool $isEnabled,
+        string $creditCurrency,
+        float $minBalanceCredit,
+        float $rentalFee,
+        int $priceCycle,
+        float $longRentalFee,
+        float $limitIncreaseFee,
+        float $violationFee,
         DbInterface $db
     ) {
-        $this->parseConfiguration($creditConfiguration);
+        if (!$isEnabled) {
+            throw new \RuntimeException('Use DisabledCreditSystem instead');
+        }
+        $this->isEnabled = $isEnabled;
+        $this->creditCurrency = $creditCurrency;
+        $this->minBalanceCredit = $minBalanceCredit;
+        $this->rentalFee = $rentalFee;
+        $this->priceCycle = $priceCycle;
+        $this->longRentalFee = $longRentalFee;
+        $this->limitIncreaseFee = $limitIncreaseFee;
+        $this->violationFee = $violationFee;
         $this->db = $db;
     }
 
-    public function getUserCredit($userId)
+    public function getUserCredit($userId): float
     {
         $result = $this->db->query('SELECT credit FROM credit WHERE userId = :userId', ['userId' => $userId]);
         if ($result->rowCount() == 0) {
@@ -47,100 +65,48 @@ class CreditSystem implements CreditSystemInterface
         return $result->fetchAssoc()['credit'];
     }
 
-    public function getMinRequiredCredit()
+    public function getMinRequiredCredit(): float
     {
         return $this->minBalanceCredit + $this->rentalFee + $this->longRentalFee;
     }
 
-    public function isEnoughCreditForRent($userid)
+    public function isEnoughCreditForRent($userid): bool
     {
         return $this->getUserCredit($userid) >= $this->getMinRequiredCredit();
     }
 
-    /**
-     * @return bool
-     */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return $this->isEnabled;
     }
-    /**
-     * @return string
-     */
-    public function getCreditCurrency()
+
+    public function getCreditCurrency(): string
     {
         return $this->creditCurrency;
     }
 
-    /**
-     * @return int
-     */
-    public function getRentalFee()
+    public function getRentalFee(): float
     {
         return $this->rentalFee;
     }
 
-    /**
-     * @return int
-     */
-    public function getPriceCycle()
+    public function getPriceCycle(): int
     {
         return $this->priceCycle;
     }
 
-    /**
-     * @return int
-     */
-    public function getLongRentalFee()
+    public function getLongRentalFee(): float
     {
         return $this->longRentalFee;
     }
 
-    /**
-     * @return int
-     */
-    public function getLimitIncreaseFee()
+    public function getLimitIncreaseFee(): float
     {
         return $this->limitIncreaseFee;
     }
 
-    /**
-     * @return int
-     */
-    public function getViolationFee()
+    public function getViolationFee(): float
     {
         return $this->violationFee;
-    }
-
-    /**
-     * @TODO move to a CreditSystemFactory
-     * @param array $creditConfiguration
-     */
-    private function parseConfiguration(array $creditConfiguration)
-    {
-        if (isset($creditConfiguration['enabled'])) {
-            $this->isEnabled = (bool)$creditConfiguration['enabled'];
-        }
-        if (isset($creditConfiguration['currency'])) {
-            $this->creditCurrency = (string)$creditConfiguration['currency'];
-        }
-        if (isset($creditConfiguration['min'])) {
-            $this->minBalanceCredit = (int)$creditConfiguration['min'];
-        }
-        if (isset($creditConfiguration['rent'])) {
-            $this->rentalFee = (int)$creditConfiguration['rent'];
-        }
-        if (isset($creditConfiguration['pricecycle'])) {
-            $this->priceCycle = (int)$creditConfiguration['pricecycle'];
-        }
-        if (isset($creditConfiguration['longrental'])) {
-            $this->longRentalFee = (int)$creditConfiguration['longrental'];
-        }
-        if (isset($creditConfiguration['limitincrease'])) {
-            $this->limitIncreaseFee = (int)$creditConfiguration['limitincrease'];
-        }
-        if (isset($creditConfiguration['violation'])) {
-            $this->violationFee = (int)$creditConfiguration['violation'];
-        }
     }
 }

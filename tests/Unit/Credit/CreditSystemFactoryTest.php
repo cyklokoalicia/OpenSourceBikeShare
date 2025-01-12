@@ -16,13 +16,13 @@ class CreditSystemFactoryTest extends TestCase
      * @dataProvider creditSystemDataProvider
      */
     public function testGetCreditSystem(
-        $configuration,
+        $isCreditSystemEnabled,
         $expectedSystemClass
     ) {
         $serviceLocatorMock = $this->createMock(ServiceLocator::class);
         $factory = new CreditSystemFactory(
             $serviceLocatorMock,
-            $configuration
+            $isCreditSystemEnabled
         );
 
         $serviceLocatorMock->expects($this->once())
@@ -39,13 +39,11 @@ class CreditSystemFactoryTest extends TestCase
     public function creditSystemDataProvider()
     {
         yield 'disabled credit system' => [
-            'configuration' => [],
+            'isCreditSystemEnabled' => false,
             'expectedSystemClass' => DisabledCreditSystem::class
         ];
         yield 'enabled credit system' => [
-            'configuration' => [
-                'enabled' => true
-            ],
+            'isCreditSystemEnabled' => true,
             'expectedSystemClass' => CreditSystem::class
         ];
     }
