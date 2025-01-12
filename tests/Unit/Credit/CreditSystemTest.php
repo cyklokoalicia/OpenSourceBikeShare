@@ -52,19 +52,7 @@ class CreditSystemTest extends TestCase
 
     public function constructorDataProvider()
     {
-        yield 'disabled configuration' => [
-            'isEnabled' => false,
-            'creditCurrency' => '€',
-            'minRequiredCredit' => 9,
-            'rentalFee' => 2,
-            'priceCycle' => 0,
-            'longRentalFee' => 5,
-            'limitIncreaseFee' => 10,
-            'violationFee' => 5,
-            'expectedMinRequiredCredit' => 9,
-            'expectedException' => \RuntimeException::class,
-        ];
-        yield 'full configuration' => [
+        $default = [
             'isEnabled' => true,
             'creditCurrency' => '$',
             'minRequiredCredit' => 12,
@@ -75,6 +63,56 @@ class CreditSystemTest extends TestCase
             'violationFee' => 6,
             'expectedMinRequiredCredit' => 21,
         ];
+        yield 'enabled configuration' => $default;
+        yield 'disabled configuration' => array_merge(
+            $default,
+            [
+                'isEnabled' => false,
+                'expectedException' => \RuntimeException::class,
+            ]
+        );
+        yield 'negative minRequiredCredit' => array_merge(
+            $default,
+            [
+                'minRequiredCredit' => -1,
+                'expectedException' => \InvalidArgumentException::class,
+            ]
+        );
+        yield 'negative rentalFee' => array_merge(
+            $default,
+            [
+                'rentalFee' => -1,
+                'expectedException' => \InvalidArgumentException::class,
+            ]
+        );
+        yield 'negative priceCycle' => array_merge(
+            $default,
+            [
+                'priceCycle' => -1,
+                'expectedException' => \InvalidArgumentException::class,
+            ]
+        );
+        yield 'negative longRentalFee' => array_merge(
+            $default,
+            [
+                'longRentalFee' => -1,
+                'expectedException' => \InvalidArgumentException::class,
+            ]
+        );
+        yield 'negative limitIncreaseFee' => array_merge(
+            $default,
+            [
+                'limitIncreaseFee' => -1,
+                'expectedException' => \InvalidArgumentException::class,
+            ]
+        );
+        yield 'negative violationFee' => array_merge(
+            $default,
+            [
+                'violationFee' => -1,
+                'expectedException' => \InvalidArgumentException::class,
+            ]
+        );
     }
 
     public function testGetUserCredit()
@@ -108,6 +146,7 @@ class CreditSystemTest extends TestCase
 
         $this->assertEquals(5, $creditSystem->getUserCredit($userId));
     }
+
     public function testGetUserCreditNotFoundUser()
     {
         $userId = 1;

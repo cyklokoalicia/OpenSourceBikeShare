@@ -44,6 +44,18 @@ class CreditSystem implements CreditSystemInterface
         if (!$isEnabled) {
             throw new \RuntimeException('Use DisabledCreditSystem instead');
         }
+        if (
+            $minBalanceCredit < 0
+            || $rentalFee < 0
+            || $longRentalFee < 0
+            || $limitIncreaseFee < 0
+            || $violationFee < 0
+        ) {
+            throw new \InvalidArgumentException('Credit values cannot be negative');
+        }
+        if (!in_array($priceCycle, [0, 1, 2], true)) {
+            throw new \InvalidArgumentException('Invalid price cycle value');
+        }
         $this->isEnabled = $isEnabled;
         $this->creditCurrency = $creditCurrency;
         $this->minBalanceCredit = $minBalanceCredit;
