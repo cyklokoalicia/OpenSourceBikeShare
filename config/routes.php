@@ -84,4 +84,7 @@ return function (RoutingConfigurator $routes) {
         ->defaults(['year' => date('Y')])
         ->requirements(['year' => '\d+'])
         ->controller([\BikeShare\Controller\PersonalStatsController::class, 'yearStats']);
+
+    $routes->add('qr_code_generator', '/admin/qrCodeGenerator')
+        ->controller([\BikeShare\Controller\QrCodeGeneratorController::class, 'index']);
 };
