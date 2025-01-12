@@ -21,7 +21,11 @@ class RegistrationRepository
         $this->db->query(
             'INSERT INTO registration 
               (userId, userKey) 
-              VALUES (' . $userId . ', "' . $userKey . '")'
+              VALUES (:userId, :userKey)',
+            [
+                'userId' => $userId,
+                'userKey' => $userKey
+            ]
         );
     }
 
@@ -32,16 +36,22 @@ class RegistrationRepository
                 userId,
                 userKey 
               FROM registration 
-              WHERE userKey="' . $userKey . '"'
+              WHERE userKey=:userKey',
+            [
+                'userKey' => $userKey,
+            ]
         )->fetchAssoc();
 
         return $result;
     }
 
-    public function deleteItem(string $key): void
+    public function deleteItem(string $userKey): void
     {
         $this->db->query(
-            'DELETE FROM registration WHERE userKey="' . $key . '"'
+            'DELETE FROM registration WHERE userKey=:userKey',
+            [
+                'userKey' => $userKey,
+            ]
         );
     }
 
@@ -52,7 +62,10 @@ class RegistrationRepository
                 userId,
                 userKey 
               FROM registration 
-              WHERE userId="' . $userId . '"'
+              WHERE userId = :userId',
+            [
+                'userId' => $userId,
+            ]
         )->fetchAssoc();
 
         return $result;

@@ -66,7 +66,10 @@ class SmsSenderTest extends TestCase
             'dbEscapeCallParams' => [['Hello, World!']],
             'dbEscapeCallResult' => ['Hello, World!'],
             'dbCallParams' => [
-                ["INSERT INTO sent SET number='123456789', text='Hello, World!'"]
+                [
+                    "INSERT INTO sent SET number = :number, text = :message",
+                    ['number' => '123456789', 'message' => 'Hello, World!']
+                ]
             ]
         ];
         yield 'encoded message' => [
@@ -78,7 +81,10 @@ class SmsSenderTest extends TestCase
             'dbEscapeCallParams' => [['Hello, "World"!']],
             'dbEscapeCallResult' => ['Hello, \"World\"!'],
             'dbCallParams' => [
-                ["INSERT INTO sent SET number='123456789', text='Hello, \\\"World\\\"!'"]
+                [
+                    "INSERT INTO sent SET number = :number, text = :message",
+                    ['number' => '123456789', 'message' => 'Hello, \"World\"!']
+                ]
             ]
         ];
         yield 'long message' => [
@@ -117,14 +123,23 @@ class SmsSenderTest extends TestCase
             ],
             'dbCallParams' => [
                 [
-                    "INSERT INTO sent SET number='123456789', text='Hello, World! Lorem ipsum dolor sit amet, "
-                    . "consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. "
-                    . "Vivamus euismod, tellus ac euismod'"],
+                    "INSERT INTO sent SET number = :number, text = :message",
+                    [
+                        'number' => '123456789',
+                        'message' => 'Hello, World! Lorem ipsum dolor sit amet, '
+                            . 'consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. '
+                            . 'Vivamus euismod, tellus ac euismod'
+                    ]
+                ],
                 [
-                    "INSERT INTO sent SET number='123456789', text='ultricies, justo risus luctus ipsum, quis "
-                    . "condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris "
-                    . "tincidunt tincidunt.'"
-                ]
+                    "INSERT INTO sent SET number = :number, text = :message",
+                    [
+                        'number' => '123456789',
+                        'message' => 'ultricies, justo risus luctus ipsum, quis '
+                            . 'condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris '
+                            . 'tincidunt tincidunt.'
+                    ]
+                ],
             ]
         ];
     }

@@ -8,7 +8,6 @@ use BikeShare\Authentication\Auth;
 use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Rent\RentSystemFactory;

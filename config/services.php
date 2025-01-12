@@ -12,7 +12,6 @@ use BikeShare\Credit\CreditSystem;
 use BikeShare\Credit\CreditSystemFactory;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
 use BikeShare\Db\PdoDb;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Mail\PHPMailerMailSender;
@@ -80,14 +79,6 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 
-    $services->get(MysqliDb::class)
-        ->args([
-            expr("service('BikeShare\\\App\\\Configuration').get('dbserver')"),
-            expr("service('BikeShare\\\App\\\Configuration').get('dbuser')"),
-            expr("service('BikeShare\\\App\\\Configuration').get('dbpassword')"),
-            expr("service('BikeShare\\\App\\\Configuration').get('dbname')"),
-            service('logger'),
-        ]);
     $services->get(PdoDb::class)
         ->args([
             env('DB_DSN'),

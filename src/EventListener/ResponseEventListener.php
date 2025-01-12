@@ -45,10 +45,14 @@ class ResponseEventListener
             $response = $event->getResponse()->getContent();
         }
 
-        $this->db->query("
-            INSERT INTO sent 
-                SET number='$number',
-                    text='" . $this->db->escape($response) . "'
-        ");
+        $this->db->query(
+            'INSERT INTO sent 
+             SET number = :number,
+                 text = :text',
+            [
+                'number' => $number,
+                'text' => $response
+            ]
+        );
     }
 }

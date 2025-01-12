@@ -1,7 +1,11 @@
 <?php
 
+//TODO: create an admin page for generation of QR codes
+
+die('Currently disabled');
+
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
+use BikeShare\Db\PdoDb;
 use Monolog\ErrorHandler;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
@@ -21,7 +25,7 @@ if (file_exists("../config.php")) {
 $logger = new Logger('BikeShare');
 $logger->pushHandler(new RotatingFileHandler(__DIR__ . '/../var/log/log.log', 30, Logger::WARNING));
 ErrorHandler::register($logger);
-$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
+$db = new PdoDb($dbserver, $dbuser, $dbpassword, $dbname);
 
 // create new PDF document
 $pdf = new TCPDF('L', PDF_UNIT, 'A5', true, 'UTF-8', false);

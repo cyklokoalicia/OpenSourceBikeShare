@@ -4,7 +4,7 @@
 use BikeShare\Credit\CreditSystemFactory;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
-use BikeShare\Db\MysqliDb;
+use BikeShare\Db\PdoDb;
 use Monolog\ErrorHandler;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
@@ -221,7 +221,7 @@ file_put_contents($configfilename,$newconfig);
 /**
  * @var DbInterface $db
  */
-$db = new MysqliDb($_POST["dbserver"], $_POST["dbuser"], $_POST["dbpassword"], $_POST["dbname"], $logger);
+$db = new PdoDb($_POST["dbserver"], $_POST["dbuser"], $_POST["dbpassword"], $_POST["dbname"], $logger);
 $sql=file_get_contents("../docker-data/mysql/create-database.sql");
 $sql=explode(";",$sql);
 foreach ($sql as $value)
@@ -251,7 +251,7 @@ require($configfilename);
 /**
  * @var DbInterface $db
  */
-$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
+$db = new PdoDb($dbserver, $dbuser, $dbpassword, $dbname);
 $result=$db->query("REPLACE INTO users SET userName='".$_POST["username"]."',password=SHA2('".$_POST["password"]."',512),mail='".$_POST["email"]."',number='".$_POST["phone"]."',privileges=7");
 $userid=$db->getLastInsertId();
 if (!$connectors["sms"])
@@ -273,7 +273,7 @@ $result=$db->query("REPLACE INTO limits SET userId='$userid',userLimit='100'");
 /**
  * @var DbInterface $db
  */
-$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
+$db = new PdoDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 $stands=explode(",",$_POST["stands"]);
 foreach ($stands as $stand)
    {
@@ -337,7 +337,7 @@ if ($connectors["sms"]):
 /**
  * @var DbInterface $db
  */
-$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
+$db = new PdoDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 ?>
       <h2>Set system options</h2>
 <?php
@@ -407,7 +407,7 @@ foreach ($configfile as $line)
 /**
  * @var DbInterface $db
  */
-$db = new MysqliDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
+$db = new PdoDb($dbserver, $dbuser, $dbpassword, $dbname, $logger);
 /**
  * @var CreditSystemInterface $creditSystem
  */

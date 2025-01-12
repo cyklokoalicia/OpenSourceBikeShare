@@ -34,12 +34,6 @@ $credit["longrental"]=5; // long rental fee ($watches["longrental"] time)
 $credit["limitincrease"]=10; // credit needed to temporarily increase limit, applicable only when $limits["increase"]>0
 $credit["violation"]=5; // credit deduction for rule violations (applied by admins)
 
-/*** Database ***/
-$dbserver="localhost";
-$dbuser="bikeshare";
-$dbpassword="YourPassword";
-$dbname="WB";
-
 /*** SMS related ***/
 $countrycode=""; // international dialing code (country code prefix), no plus sign
 

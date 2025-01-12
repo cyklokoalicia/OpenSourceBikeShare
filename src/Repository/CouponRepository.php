@@ -25,16 +25,26 @@ class CouponRepository
         return $coupons;
     }
 
-    public function sell(string $coupon)
+    public function sell(string $coupon): void
     {
-        $coupon = $this->db->escape($coupon);
-        $this->db->query("UPDATE coupons SET status='1' WHERE coupon='" . $coupon . "' LIMIT 1");
+        $this->db->query(
+            'UPDATE coupons SET status=1 WHERE coupon = :coupon LIMIT 1',
+            [
+                'coupon' => $coupon,
+            ]
+        );
     }
 
-    public function addItem(string $coupon, float $value)
+    public function addItem(string $coupon, float $value): void
     {
         $coupon = $this->db->escape($coupon);
         $value = $this->db->escape($value);
-        $this->db->query("INSERT INTO coupons (coupon, value, status) VALUES ('" . $coupon . "', " . $value . ", 0)");
+        $this->db->query(
+            'INSERT INTO coupons (coupon, value, status) VALUES (:coupon, :value, 0)',
+            [
+                'coupon' => $coupon,
+                'value' => $value,
+            ]
+        );
     }
 }

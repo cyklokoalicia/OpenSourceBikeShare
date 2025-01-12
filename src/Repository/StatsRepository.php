@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
@@ -48,12 +50,12 @@ class StatsRepository
                 action,
                 parameter
               FROM history
-              WHERE userId = ' . $userId . '
+              WHERE userId = :userId
                 AND bikeNum != 0
                 AND action NOT LIKE \'%CREDIT%\'
-                AND YEAR(time) = ' . $year . '
+                AND YEAR(time) = :year
               ORDER BY time ASC';
-        $history = $this->db->query($query)->fetchAllAssoc();
+        $history = $this->db->query($query, ['userId' => $userId, 'year' => $year])->fetchAllAssoc();
 
         $rentHistory = [];
         $returnHistory = [];

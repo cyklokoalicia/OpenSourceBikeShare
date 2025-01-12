@@ -7,7 +7,7 @@ interface CreditSystemInterface
     /**
      * @return int
      */
-    public function getUserCredit($userid);
+    public function getUserCredit($userId);
 
     /**
      * @return int
