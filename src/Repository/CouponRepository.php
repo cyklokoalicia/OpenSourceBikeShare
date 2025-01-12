@@ -27,7 +27,6 @@ class CouponRepository
 
     public function sell(string $coupon): void
     {
-        $coupon = $this->db->escape($coupon);
         $this->db->query(
             'UPDATE coupons SET status=1 WHERE coupon = :coupon LIMIT 1',
             [
