@@ -50,17 +50,17 @@ class ControllerEventListener
 
         $this->db->query(
             'INSERT INTO received 
-                SET sms_uuid=\'\', 
+                SET sms_uuid = :uuid, 
                     sender = :number,
                     receive_time = :receive_time,
                     sms_text = :sms_text,
                     ip = :ip',
             [
+                'uuid' => '',
                 'number' => $number,
                 'receive_time' => date('Y-m-d H:i:s'),
                 'sms_text' => $event->getRequest()->getRequestUri(),
                 'ip' => $event->getRequest()->getClientIp(),
             ]
-        );
     }
 }
