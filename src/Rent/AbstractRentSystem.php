@@ -20,43 +20,17 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 abstract class AbstractRentSystem implements RentSystemInterface
 {
     protected const ERROR = 1;
-    /**
-     * @var DbInterface
-     */
-    protected $db;
-    /**
-     * @var CreditSystemInterface
-     */
-    protected $creditSystem;
-    /**
-     * @var User
-     */
-    protected $user;
-    /**
-     * @var Auth
-     */
-    protected $auth;
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $eventDispatcher;
-    /**
-     * @var AdminNotifier
-     */
-    protected $adminNotifier;
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-    /**
-     * @var array
-     */
-    protected $watchesConfig;
+
+    protected DbInterface $db;
+    protected CreditSystemInterface $creditSystem;
+    protected User $user;
+    protected Auth $auth;
+    protected EventDispatcherInterface $eventDispatcher;
+    protected AdminNotifier $adminNotifier;
+    protected LoggerInterface $logger;
+    protected array $watchesConfig;
     protected bool $isSmsSystemEnabled;
-    /**
-     * @var false
-     */
-    protected $forceStack;
+    protected bool $forceStack;
 
     public function __construct(
         DbInterface $db,
@@ -68,7 +42,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         LoggerInterface $logger,
         array $watchesConfig,
         bool $isSmsSystemEnabled,
-        $forceStack = false
+        bool $forceStack
     ) {
         $this->db = $db;
         $this->creditSystem = $creditSystem;

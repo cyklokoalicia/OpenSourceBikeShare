@@ -27,7 +27,7 @@ function listbikes($stand)
 
     $stacktopbike = false;
     $stand = $db->escape($stand);
-    if ($configuration->get('forcestack')) {
+    if ($_ENV['FORCE_STACK'] === 'true') {
         $result = $db->query("SELECT standId FROM stands WHERE standName='$stand'");
         $row = $result->fetch_assoc();
         $stacktopbike = checktopofstack($row['standId']);

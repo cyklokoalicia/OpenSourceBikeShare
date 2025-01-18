@@ -139,7 +139,7 @@ return static function (ContainerConfigurator $container): void {
                 'doublepricecyclecap' => env('int:WATCHES_DOUBLE_PRICE_CYCLE_CAP'),
             ]
         )
-        ->bind('$forceStack', expr("service('BikeShare\\\App\\\Configuration').get('forceStack')"));
+        ->bind('$forceStack', env('bool:FORCE_STACK'));
 
     $services->load('BikeShare\\SmsConnector\\', '../src/SmsConnector')
         ->bind('$request', expr("service('request_stack').getCurrentRequest()"))

@@ -50,7 +50,7 @@ function listBikes($number,$stand)
     $row=$result->fetch_assoc();
     $standId=$row["standId"];
 
-    if ($configuration->get('forcestack')) {
+    if ($_ENV['FORCE_STACK'] === 'true') {
         $stacktopbike = checktopofstack($standId);
     }
 
