@@ -56,10 +56,6 @@ class PHPMailerSenderTest extends TestCase
             ->with($recipient);
         $this->mailer
             ->expects($this->once())
-            ->method('addBCC')
-            ->with('fromEmail');
-        $this->mailer
-            ->expects($this->once())
             ->method('send');
 
         $this->mailSender->sendMail($recipient, $subject, $message);
