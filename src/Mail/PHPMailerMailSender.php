@@ -52,7 +52,6 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->From = $this->fromEmail;
         $this->mailer->FromName = $this->fromName;
         $this->mailer->addAddress($recipient);     // Add a recipient
-        $this->mailer->addBCC($this->fromEmail);     // Add a recipient
         $this->mailer->Subject = $subject;
         $this->mailer->Body = $message;
         $this->sendLog = [];
