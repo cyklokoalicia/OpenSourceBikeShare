@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api;
 
-use BikeShare\App\Configuration;
 use BikeShare\Repository\UserRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -73,7 +72,6 @@ class UserController extends AbstractController
         bool $isSmsSystemEnabled,
         Request $request,
         UserRepository $userRepository,
-        Configuration $configuration,
         LoggerInterface $logger
     ): Response {
         if (!$this->isGranted('ROLE_ADMIN')) {

@@ -16,11 +16,13 @@ class HomeController extends AbstractController
      */
     public function index(
         Request $request,
+        int $freeTimeHours,
         CreditSystemInterface $creditSystem,
         Configuration $configuration
     ): Response {
         return $this->render('index.html.twig', [
             'configuration' => $configuration,
+            'freeTime' => $freeTimeHours,
             'creditSystem' => $creditSystem,
             'error' => $request->get('error', null),
         ]);

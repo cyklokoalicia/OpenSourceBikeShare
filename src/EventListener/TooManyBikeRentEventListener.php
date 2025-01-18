@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\EventListener;
 
-use BikeShare\App\Configuration;
 use BikeShare\Event\BikeRentEvent;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\HistoryRepository;
@@ -13,22 +12,25 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TooManyBikeRentEventListener
 {
+    private int $timeTooManyHours;
+    private int $numberToMany;
     private UserRepository $userRepository;
     private HistoryRepository $historyRepository;
-    private Configuration $configuration;
     private TranslatorInterface $translator;
     private AdminNotifier $adminNotifier;
 
     public function __construct(
+        int $timeTooManyHours,
+        int $numberToMany,
         UserRepository $userRepository,
         HistoryRepository $historyRepository,
-        Configuration $configuration,
         TranslatorInterface $translator,
         AdminNotifier $adminNotifier
     ) {
+        $this->timeTooManyHours = $timeTooManyHours;
+        $this->numberToMany = $numberToMany;
         $this->userRepository = $userRepository;
         $this->historyRepository = $historyRepository;
-        $this->configuration = $configuration;
         $this->translator = $translator;
         $this->adminNotifier = $adminNotifier;
     }
@@ -38,14 +40,14 @@ class TooManyBikeRentEventListener
         $user = $this->userRepository->findItem($event->getUserId());
         $offsetTime = date(
             'Y-m-d H:i:s',
-            time() - $this->configuration->get('watches')['timetoomany'] * 3600
+            time() - $this->timeTooManyHours * 3600
         );
 
         $rentCount = $this->historyRepository->findRentCountByUser($event->getUserId(), $offsetTime);
-        if ($rentCount >= ($user['userLimit'] + $this->configuration->get('watches')['numbertoomany'])) {
+        if ($rentCount >= ($user['userLimit'] + $this->numberToMany)) {
             $message = $this->translator->trans(
                 'Bike rental over limit in {hour} hours',
-                ['hour' => $this->configuration->get('watches')['timetoomany']]
+                ['hour' => $this->timeTooManyHours]
             );
             $message .= PHP_EOL . $this->translator->trans(
                 '{userName} ({phone}) rented {count} bikes',

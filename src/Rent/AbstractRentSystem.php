@@ -391,7 +391,8 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $this->watchesConfig['freetime'] = 1;
             }
             // for further calculations
-            if ($this->creditSystem->getPriceCycle() && $timediff > $this->watchesConfig['freetime'] * 60 * 2) { // after first paid period, i.e. freetime*2; if pricecycle enabled
+            if ($this->creditSystem->getPriceCycle() && $timediff > $this->watchesConfig['freetime'] * 60 * 2) {
+                // after first paid period, i.e. freetime*2; if pricecycle enabled
                 $temptimediff = $timediff - ($this->watchesConfig['freetime'] * 60 * 2);
                 if ($this->creditSystem->getPriceCycle() == 1) { // flat price per cycle
                     $cycles = ceil($temptimediff / ($this->watchesConfig['flatpricecycle'] * 60));
