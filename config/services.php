@@ -71,10 +71,14 @@ return static function (ContainerConfigurator $container): void {
         ]);
 
     $services->get(\BikeShare\Command\LongRentalCheckCommand::class)
-        ->bind('$notifyUser', env('bool:NOTIFY_USER_ABOUT_LONG_RENTAL'));
+        ->bind('$notifyUser', env('bool:NOTIFY_USER_ABOUT_LONG_RENTAL'))
+        ->bind('$longRentalHours', env('int:WATCHES_LONG_RENTAL'));
 
     $services->get(\BikeShare\Controller\SmsRequestController::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
+
+    $services->get(\BikeShare\Controller\HomeController::class)
+        ->bind('$freeTimeHours', env('int:WATCHES_FREE_TIME'));
 
     $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
@@ -124,7 +128,17 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$violationFee', env('float:CREDIT_SYSTEM_VIOLATION_FEE'));
 
     $services->load('BikeShare\\Rent\\', '../src/Rent')
-        ->bind('$watchesConfig', expr("service('BikeShare\\\App\\\Configuration').get('watches')"))
+        ->bind(
+            '$watchesConfig',
+            [
+                'stack' => env('int:WATCHES_STACK'),
+                'longrental' => env('int:WATCHES_LONG_RENTAL'),
+                'freetime' => env('int:WATCHES_FREE_TIME'),
+                'flatpricecycle' => env('int:WATCHES_FLAT_PRICE_CYCLE'),
+                'doublepricecycle' => env('int:WATCHES_DOUBLE_PRICE_CYCLE'),
+                'doublepricecyclecap' => env('int:WATCHES_DOUBLE_PRICE_CYCLE_CAP'),
+            ]
+        )
         ->bind('$forceStack', expr("service('BikeShare\\\App\\\Configuration').get('forceStack')"));
 
     $services->load('BikeShare\\SmsConnector\\', '../src/SmsConnector')
@@ -141,4 +155,8 @@ return static function (ContainerConfigurator $container): void {
 
     $services->load('BikeShare\\EventListener\\', '../src/EventListener')
         ->tag('kernel.event_listener');
+
+    $services->get(\BikeShare\EventListener\TooManyBikeRentEventListener::class)
+        ->bind('$timeTooManyHours', env('int:WATCHES_TIME_TOO_MANY'))
+        ->bind('$numberToMany', env('int:WATCHES_NUMBER_TOO_MANY'));
 };

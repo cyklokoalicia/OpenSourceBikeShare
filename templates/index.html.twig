@@ -47,7 +47,7 @@
 
         var standselected = 0;
         var creditsystem = {{ creditSystem.isEnabled ? 1 : 0 }};
-        var freeTimeSeconds =  {{ configuration.watches.freetime * 60 }}; // and convert to seconds
+        var freeTimeSeconds =  {{ freeTime * 60 }}; // and convert to seconds
         var serverTimeSeconds = {{ date().timestamp }}; // using the server timestamp for time difference calculation
     </script>
 </head>

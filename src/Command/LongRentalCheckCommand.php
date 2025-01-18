@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Command;
 
-use BikeShare\App\Configuration;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
@@ -22,9 +21,9 @@ class LongRentalCheckCommand extends Command
     protected static $defaultName = 'app:long_rental_check';
 
     private bool $notifyUser;
+    private int $longRentalHours;
     private BikeRepository $bikeRepository;
     private HistoryRepository $historyRepository;
-    private Configuration $configuration;
     private SmsSenderInterface $smsSender;
     private TranslatorInterface $translator;
     private AdminNotifier $adminNotifier;
@@ -32,18 +31,18 @@ class LongRentalCheckCommand extends Command
 
     public function __construct(
         bool $notifyUser,
+        int $longRentalHours,
         BikeRepository $bikeRepository,
         HistoryRepository $historyRepository,
-        Configuration $configuration,
         SmsSenderInterface $smsSender,
         TranslatorInterface $translator,
         AdminNotifier $adminNotifier,
         LoggerInterface $logger
     ) {
         $this->notifyUser = $notifyUser;
+        $this->longRentalHours = $longRentalHours;
         $this->bikeRepository = $bikeRepository;
         $this->historyRepository = $historyRepository;
-        $this->configuration = $configuration;
         $this->smsSender = $smsSender;
         $this->translator = $translator;
         $this->adminNotifier = $adminNotifier;
@@ -70,7 +69,7 @@ class LongRentalCheckCommand extends Command
                 continue;
             }
             $time = strtotime($lastRent['time']);
-            if ($time + ($this->configuration->get('watches')['longrental'] * 3600) <= time()) {
+            if ($time + ($this->longRentalHours * 3600) <= time()) {
                 $abusers[] = [
                     'userId' => $userId,
                     'bikeNumber' => $bikeNumber,
@@ -92,7 +91,7 @@ class LongRentalCheckCommand extends Command
         if (!empty($abusers)) {
             $message = $this->translator->trans(
                 'Bike rental exceed {hour} hours',
-                ['hour' => $this->configuration->get('watches')['longrental']]
+                ['hour' => $this->longRentalHours]
             );
             foreach ($abusers as $abuser) {
                 $message .= PHP_EOL . 'B' . $abuser['bikeNumber'] . ' '

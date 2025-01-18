@@ -12,15 +12,6 @@ $systemzoom="15"; // default map zoom
 $systemrules="http://example.com/rules.htm"; // system rules / help URL
 
 $forcestack=0; // 0 = allow renting any bike at stand, 1 = allow renting last bicycle returned only (top of stack)
-$watches["email"]="email@example.com"; // notification email for notifications such as notes etc., blank if notifications not required
-$watches["stack"]=1;  // 0 - do not watch stack, 1 - notify if other than the top of the stack bike is rented from a stand (independent from forcestack)
-$watches["longrental"]=24; // in hours (bike rented for more than X h)
-$watches["timetoomany"]=1; // in hours (high number of rentals by one person in a short time)
-$watches["numbertoomany"]=1; // if userlimit+numbertooomany reached in timetoomany, then notify
-$watches["freetime"]=30; // in minutes (rental changes from free to paid after this time and $credit["rent"] is deducted)
-$watches["flatpricecycle"]=60; // in minutes (uses flat price $credit["rent"] every $watches["flatpricecycle"] minutes after first paid period, i.e. $watches["freetime"]*2)
-$watches["doublepricecycle"]=60; // in minutes (doubles the rental price $credit["rent"] every $watches["doublepricecycle"] minutes after first paid period, i.e. $watches["freetime"]*2)
-$watches["doublepricecyclecap"]=3; // number of cycles after doubling of rental price $credit["rent"] is capped and stays flat (but reached cycle multiplier still applies)
 
 $limits["registration"]=0; // number of bikes user can rent after he registered: 0 = no bike, 1 = 1 bike etc.
 $limits["increase"]=0; // allow more bike rentals in addition to user limit: 0 = not allowed, otherwise: temporary limit increase - number of bikes
