@@ -12,7 +12,9 @@ require_once "actions-sms.php";
  */
 $rentSystem = $rentSystemFactory->getRentSystem('sms');
 
-$args = preg_split("/\s+/", $sms->getProcessedMessage());//preg_split must be used instead of explode because of multiple spaces
+$smsMessage = strtoupper($sms->getProcessedMessage());
+
+$args = preg_split("/\s+/", $smsMessage);//preg_split must be used instead of explode because of multiple spaces
 
 switch ($args[0]) {
     case "RENT":
@@ -21,7 +23,7 @@ switch ($args[0]) {
         break;
     case "RETURN":
         validateReceivedSMS($sms->getNumber(), count($args), 3, _('with bike number and stand name:') . " RETURN 47 RACKO");
-        $rentSystem->returnBike($sms->getNumber(), $args[1], $args[2], trim(urldecode($sms->getMessage())));
+        $rentSystem->returnBike($sms->getNumber(), $args[1], $args[2], $sms->getProcessedMessage());
         break;
     case "FORCERENT":
         checkUserPrivileges($sms->getNumber());
@@ -31,7 +33,7 @@ switch ($args[0]) {
     case "FORCERETURN":
         checkUserPrivileges($sms->getNumber());
         validateReceivedSMS($sms->getNumber(), count($args), 3, _('with bike number and stand name:') . " FORCERETURN 47 RACKO");
-        $rentSystem->returnBike($sms->getNumber(), $args[1], $args[2], trim(urldecode($sms->getMessage())), TRUE);
+        $rentSystem->returnBike($sms->getNumber(), $args[1], $args[2], $sms->getProcessedMessage(), true);
         break;
     case "LIST":
         //checkUserPrivileges($sms->Number()); //allowed for all users as agreed
