@@ -9,5 +9,9 @@ return static function (SentryConfig $sentry) {
         ->httpTimeout(2)
         ->defaultIntegrations(true)
         ->tracesSampleRate(1.0)
-        ->attachStacktrace(true);
+        ->attachStacktrace(true)
+        ->ignoreExceptions([
+            \Symfony\Component\Security\Core\Exception\AccessDeniedException::class,
+            \Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class,
+        ]);
 };
