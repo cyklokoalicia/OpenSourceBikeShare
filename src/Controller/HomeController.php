@@ -24,9 +24,15 @@ class HomeController extends AbstractController
         //show stats for current year if it is end of the year
         $currentData = new \DateTimeImmutable();
         if ($currentData->format('z') > 350) {
-            $personalStatsYearUrl = $this->generateUrl('personal_stats_year', ['year' => $currentData->format('Y')]);
+            $personalStatsYearUrl = $this->generateUrl(
+                'personal_stats_year',
+                ['year' => $currentData->format('Y')]
+            );
         } elseif ($currentData->format('z') < 30) {
-            $personalStatsYearUrl = $this->generateUrl('personal_stats_year', ['year' => $currentData->format('Y') - 1]);
+            $personalStatsYearUrl = $this->generateUrl(
+                'personal_stats_year',
+                ['year' => $currentData->format('Y') - 1]
+            );
         } else {
             $personalStatsYearUrl = null;
         }
