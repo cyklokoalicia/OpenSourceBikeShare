@@ -11,6 +11,7 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Rent\RentSystemFactory;
+use BikeShare\Repository\StandRepository;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\User\User;
@@ -32,6 +33,7 @@ global $configuration,
        $auth,
        $rentSystemFactory,
        $translator,
+       $standRepository,
        $logger;
 
 if (empty($kernel)) {
@@ -70,6 +72,7 @@ $user = $kernel->getContainer()->get(User::class);
 $auth = $kernel->getContainer()->get(Auth::class);
 $rentSystemFactory = $kernel->getContainer()->get(RentSystemFactory::class);
 $translator = $kernel->getContainer()->get('translator');
+$standRepository = $kernel->getContainer()->get(StandRepository::class);
 
 $locale = $configuration->get('systemlang') . ".utf8";
 setlocale(LC_ALL, $locale);
@@ -123,45 +126,4 @@ function checkstandname($stand)
     if (!$result->num_rows) {
         response('<h3>' . _('Stand') . ' ' . $standname . ' ' . _('does not exist') . '!</h3>', ERROR);
     }
-}
-
-function confirmUser($userKey)
-{
-    global $db, $configuration;
-    $userKey = $db->escape($userKey);
-
-    $result = $db->query("SELECT userId FROM registration WHERE userKey='$userKey'");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        $userId = $row['userId'];
-    } else {
-        echo '<div class="alert alert-danger" role="alert">', _('Registration key not found!'), '</div>';
-        return false;
-    }
-
-    $db->query("UPDATE limits SET userLimit='" . $configuration->get('limits')['registration'] . "' WHERE userId=$userId");
-
-    $db->query("DELETE FROM registration WHERE userId='$userId'");
-
-    echo '<div class="alert alert-success" role="alert">', _('Your account has been activated. Welcome!'), '</div>';
-}
-
-function checktopofstack($standid)
-{
-    global $db;
-    $currentbikes = array();
-    // find current bikes at stand
-    $result = $db->query("SELECT bikeNum FROM bikes LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE standId='$standid'");
-    while ($row = $result->fetch_assoc()) {
-        $currentbikes[] = $row['bikeNum'];
-    }
-    if (count($currentbikes)) {
-        // find last returned bike at stand
-        $result = $db->query("SELECT bikeNum FROM history WHERE action IN ('RETURN','FORCERETURN') AND parameter='$standid' AND bikeNum IN (" . implode(',', $currentbikes) . ') ORDER BY time DESC LIMIT 1');
-        if ($result->num_rows) {
-            $row = $result->fetch_assoc();
-            return $row['bikeNum'];
-        }
-    }
-    return false;
 }

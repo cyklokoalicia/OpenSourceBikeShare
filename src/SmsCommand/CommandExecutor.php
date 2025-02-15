@@ -46,7 +46,12 @@ class CommandExecutor
             /* @var \Closure|SmsCommandInterface $possibleCommand */
             $possibleCommand = $this->commandLocator->get($commandInfo['possibleCommand']);
 
-            return $possibleCommand->getHelpMessage();
+            return $this->translator->trans(
+                'Error. More arguments needed, use command {command}',
+                [
+                    'command' => $possibleCommand->getHelpMessage()
+                ]
+            );
         } elseif (!$this->commandLocator->has($commandInfo['command'])) {
             throw new \RuntimeException('Unknown command');
         }

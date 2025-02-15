@@ -6,6 +6,7 @@ use BikeShare\Authentication\Auth;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
 use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Repository\StandRepository;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
@@ -28,6 +29,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         EventDispatcherInterface $eventDispatcher,
         AdminNotifier $adminNotifier,
         LoggerInterface $logger,
+        StandRepository $standRepository,
         array $watchesConfig,
         bool $isSmsSystemEnabled,
         $forceStack = false
@@ -40,6 +42,7 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
             $eventDispatcher,
             $adminNotifier,
             $logger,
+            $standRepository,
             $watchesConfig,
             $isSmsSystemEnabled,
             $forceStack

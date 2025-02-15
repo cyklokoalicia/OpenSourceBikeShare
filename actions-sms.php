@@ -27,54 +27,6 @@ function validateReceivedSMS($number, $receivedargumentno, $requiredargumentno, 
     return TRUE;
 }
 
-function listBikes($number,$stand)
-{
-
-   global $db, $configuration, $smsSender, $user;
-   $stacktopbike=FALSE;
-   $userId = $user->findUserIdByNumber($number);
-   $stand = strtoupper($stand);
-
-   if (!preg_match("/^[A-Z]+[0-9]*$/",$stand))
-   {
-      $smsSender->send($number,_('Stand name')." '$stand' "._('has not been recognized. Stands are marked by CAPITALLETTERS.'));
-      return;
-   }
-
-   $result=$db->query("SELECT standId FROM stands WHERE standName='$stand'");
-   if ($result->num_rows!=1)
-      {
-      $smsSender->send($number,_('Stand')." '$stand' "._('does not exist').".");
-      return;
-      }
-    $row=$result->fetch_assoc();
-    $standId=$row["standId"];
-
-    if ($_ENV['FORCE_STACK'] === 'true') {
-        $stacktopbike = checktopofstack($standId);
-    }
-
-   $result=$db->query("SELECT bikeNum FROM bikes where currentStand=$standId ORDER BY bikeNum");
-   $rentedBikes=$result->num_rows;
-
-   if ($rentedBikes==0)
-      {
-      $smsSender->send($number,_('Stand')." ".$stand." "._('is empty').".");
-      return;
-      }
-
-   $listBikes="";
-  while ($row=$result->fetch_assoc())
-    {
-    $listBikes.=$row["bikeNum"];
-    if ($stacktopbike==$row["bikeNum"]) $listBikes.=" "._('(first)');
-    $listBikes.=",";
-    }
-   if ($rentedBikes>1) $listBikes=substr($listBikes,0,strlen($listBikes)-1);
-
-   $smsSender->send($number,sprintf(ngettext('%d bike','%d bikes',$rentedBikes),$rentedBikes)." "._('on stand')." ".$stand.": ".$listBikes);
-}
-
 function checkUserPrivileges($number)
 {
    global $db, $sms, $smsSender, $user;

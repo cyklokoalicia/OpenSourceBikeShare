@@ -23,14 +23,15 @@ function response($message, $error = 0, $additional = '', $log = 1)
 
 function listbikes($stand)
 {
-    global $db, $configuration;
+    global $db, $configuration, $standRepository;
 
     $stacktopbike = false;
     $stand = $db->escape($stand);
     if ($_ENV['FORCE_STACK'] === 'true') {
         $result = $db->query("SELECT standId FROM stands WHERE standName='$stand'");
         $row = $result->fetch_assoc();
-        $stacktopbike = checktopofstack($row['standId']);
+        $stacktopbike = $standRepository->findLastReturnedBikeOnStand((int)$row['standId']);
+        $stacktopbike = is_null($stacktopbike) ? false : $stacktopbike;
     }
     $result = $db->query("SELECT bikeNum FROM bikes LEFT JOIN stands ON bikes.currentStand=stands.standId WHERE standName='$stand'");
     while ($row = $result->fetch_assoc()) {
