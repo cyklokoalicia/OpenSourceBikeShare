@@ -70,11 +70,13 @@
                             <span class="glyphicon glyphicon-cog"></span>&nbsp;{{ 'Admin'|trans }}
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ path('personal_stats_year', {'year': 2024}) }}">
-                            <span class="glyphicon glyphicon-signal"></span>&nbsp;{{ 'Year statistic'|trans }}
-                        </a>
-                    </li>
+                    {% if personalStatsYearUrl is not none %}
+                        <li>
+                            <a href="{{ personalStatsYearUrl }}">
+                                <span class="glyphicon glyphicon-signal"></span>&nbsp;{{ 'Year statistic'|trans }}
+                            </a>
+                        </li>
+                    {% endif %}
                 {% endif %}
                 {% if app.user %}
                     <li>
