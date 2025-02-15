@@ -66,7 +66,7 @@
                 </li>
                 {% if app.user and app.user.privileges > 0 %}
                     <li>
-                        <a href="/admin">
+                        <a href="{{ path('admin') }}">
                             <span class="glyphicon glyphicon-cog"></span>&nbsp;{{ 'Admin'|trans }}
                         </a>
                     </li>
