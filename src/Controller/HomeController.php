@@ -36,7 +36,7 @@ class HomeController extends AbstractController
         } else {
             $personalStatsYearUrl = null;
         }
-        
+
         return $this->render('index.html.twig', [
             'configuration' => $configuration,
             'personalStatsYearUrl' => $personalStatsYearUrl,
