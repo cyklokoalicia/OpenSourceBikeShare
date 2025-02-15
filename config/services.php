@@ -86,6 +86,9 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\SmsCommand\ListCommand::class)
         ->bind('$forceStack', env('bool:FORCE_STACK'));
 
+    $services->load('BikeShare\\SmsCommand\\', '../src/SmsCommand/*Command.php')
+        ->bind(RentSystemInterface::class, expr('service("BikeShare\\\Rent\\\RentSystemFactory").getRentSystem("sms")'));
+
     $services->get(PdoDb::class)
         ->args([
             env('DB_DSN'),

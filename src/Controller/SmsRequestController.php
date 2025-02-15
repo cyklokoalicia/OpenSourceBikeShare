@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
-use BikeShare\App\Kernel;
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsCommand\CommandExecutor;
@@ -16,7 +15,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SmsRequestController extends AbstractController
 {
-    private Kernel $kernel;
     private SmsConnectorInterface $smsConnector;
     private SmsSenderInterface $smsSender;
     private UserProvider $userProvider;
@@ -24,14 +22,12 @@ class SmsRequestController extends AbstractController
     private CommandExecutor $commandExecutor;
 
     public function __construct(
-        Kernel $kernel,
         SmsConnectorInterface $smsConnector,
         SmsSenderInterface $smsSender,
         UserProvider $userProvider,
         LoggerInterface $logger,
         CommandExecutor $commandExecutor
     ) {
-        $this->kernel = $kernel;
         $this->smsConnector = $smsConnector;
         $this->smsSender = $smsSender;
         $this->userProvider = $userProvider;
@@ -57,17 +53,8 @@ class SmsRequestController extends AbstractController
             return new Response("Invalid number");
         }
 
-        try {
-            $message = $this->commandExecutor->execute($this->smsConnector->getProcessedMessage(), $user);
-            $this->smsSender->send($this->smsConnector->getNumber(), $message);
-        } catch (\Throwable $e) {
-            $kernel = $this->kernel;
-            $sms = $this->smsConnector;
-
-            ob_start();
-            require_once $this->getParameter('kernel.project_dir') . '/receive.php';
-            $content = ob_get_clean();
-        }
+        $message = $this->commandExecutor->execute($this->smsConnector->getProcessedMessage(), $user);
+        $this->smsSender->send($this->smsConnector->getNumber(), $message);
 
         return new Response($this->smsConnector->respond());
     }
