@@ -40,44 +40,48 @@ class CommandDetectorTest extends TestCase
             'expected' => ['command' => 'RENT', 'arguments' => ['bikeNumber' => '42']],
         ];
         yield 'RETURN' => [
-            'command' => 'RETURN 42 MAINSQUEARE',
-            'expected' => ['command' => 'RETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUEARE', 'note' => null]],
+            'command' => 'RETURN 42 MAINSQUARE',
+            'expected' => ['command' => 'RETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUARE', 'note' => null]],
         ];
         yield 'RETURN with note' => [
-            'command' => 'RETURN 42 MAINSQUEARE broken',
-            'expected' => ['command' => 'RETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUEARE', 'note' => 'broken']],
+            'command' => 'RETURN 42 MAINSQUARE broken',
+            'expected' => ['command' => 'RETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUARE', 'note' => 'broken']],
         ];
         yield 'WHERE' => [
             'command' => 'WHERE 42',
             'expected' => ['command' => 'WHERE', 'arguments' => ['bikeNumber' => '42']],
         ];
         yield 'INFO' => [
-            'command' => 'INFO MAINSQUEARE',
-            'expected' => ['command' => 'INFO', 'arguments' => ['standName' => 'MAINSQUEARE']],
+            'command' => 'INFO MAINSQUARE',
+            'expected' => ['command' => 'INFO', 'arguments' => ['standName' => 'MAINSQUARE']],
         ];
         yield 'NOTE bike' => [
             'command' => 'NOTE 42 broken',
             'expected' => ['command' => 'NOTE', 'arguments' => ['bikeNumber' => '42', 'note' => 'broken']],
         ];
         yield 'NOTE standName' => [
-            'command' => 'NOTE MAINSQUEARE broken',
-            'expected' => ['command' => 'NOTE', 'arguments' => ['standName' => 'MAINSQUEARE', 'note' => 'broken']],
+            'command' => 'NOTE MAINSQUARE broken',
+            'expected' => ['command' => 'NOTE', 'arguments' => ['standName' => 'MAINSQUARE', 'note' => 'broken']],
         ];
         yield 'FORCERENT' => [
             'command' => 'FORCERENT 42',
             'expected' => ['command' => 'FORCERENT', 'arguments' => ['bikeNumber' => '42']],
         ];
         yield 'FORCERETURN' => [
-            'command' => 'FORCERETURN 42 MAINSQUEARE',
-            'expected' => ['command' => 'FORCERETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUEARE', 'note' => null]],
+            'command' => 'FORCERETURN 42 MAINSQUARE',
+            'expected' => ['command' => 'FORCERETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUARE', 'note' => null]],
         ];
         yield 'FORCERETURN with note' => [
-            'command' => 'FORCERETURN 42 MAINSQUEARE broken',
-            'expected' => ['command' => 'FORCERETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUEARE', 'note' => 'broken']],
+            'command' => 'FORCERETURN 42 MAINSQUARE broken',
+            'expected' => ['command' => 'FORCERETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUARE', 'note' => 'broken']],
         ];
         yield 'LIST' => [
-            'command' => 'LIST MAINSQUEARE',
-            'expected' => ['command' => 'LIST', 'arguments' => ['standName' => 'MAINSQUEARE']],
+            'command' => 'LIST MAINSQUARE',
+            'expected' => ['command' => 'LIST', 'arguments' => ['standName' => 'MAINSQUARE']],
+        ];
+        yield 'LIST lowecase' => [
+            'command' => 'LIST MAINSQUARE',
+            'expected' => ['command' => 'LIST', 'arguments' => ['standName' => 'MAINSQUARE']],
         ];
         yield 'LAST' => [
             'command' => 'LAST 42',
@@ -104,16 +108,16 @@ class CommandDetectorTest extends TestCase
             'expected' => ['command' => 'DELNOTE', 'arguments' => ['bikeNumber' => '42', 'pattern' => 'wheel']],
         ];
         yield 'TAG' => [
-            'command' => 'TAG MAINSQUEARE broken',
-            'expected' => ['command' => 'TAG', 'arguments' => ['standName' => 'MAINSQUEARE', 'note' => 'broken']],
+            'command' => 'TAG MAINSQUARE broken',
+            'expected' => ['command' => 'TAG', 'arguments' => ['standName' => 'MAINSQUARE', 'note' => 'broken']],
         ];
         yield 'UNTAG all' => [
-            'command' => 'UNTAG MAINSQUEARE',
-            'expected' => ['command' => 'UNTAG', 'arguments' => ['standName' => 'MAINSQUEARE', 'pattern' => null]],
+            'command' => 'UNTAG MAINSQUARE',
+            'expected' => ['command' => 'UNTAG', 'arguments' => ['standName' => 'MAINSQUARE', 'pattern' => null]],
         ];
         yield 'UNTAG pattern' => [
-            'command' => 'UNTAG MAINSQUEARE broken',
-            'expected' => ['command' => 'UNTAG', 'arguments' => ['standName' => 'MAINSQUEARE', 'pattern' => 'broken']],
+            'command' => 'UNTAG MAINSQUARE broken',
+            'expected' => ['command' => 'UNTAG', 'arguments' => ['standName' => 'MAINSQUARE', 'pattern' => 'broken']],
         ];
         yield 'invalid command' => [
             'command' => 'INVALID',
@@ -124,7 +128,7 @@ class CommandDetectorTest extends TestCase
             'expected' => ['command' => 'HELP', 'arguments' => []],
         ];
         yield 'invalid command3' => [
-            'command' => 'RENT MAINSQUEARE 42',
+            'command' => 'RENT MAINSQUARE 42',
             'expected' => ['command' => 'UNKNOWN', 'possibleCommand' => 'RENT' ,'arguments' => []],
         ];
         yield 'rent' => [

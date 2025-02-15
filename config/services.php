@@ -83,6 +83,9 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 
+    $services->get(\BikeShare\SmsCommand\ListCommand::class)
+        ->bind('$forceStack', env('bool:FORCE_STACK'));
+
     $services->get(PdoDb::class)
         ->args([
             env('DB_DSN'),

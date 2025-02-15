@@ -35,12 +35,6 @@ switch ($args[0]) {
         validateReceivedSMS($sms->getNumber(), count($args), 3, _('with bike number and stand name:') . " FORCERETURN 47 RACKO");
         $rentSystem->returnBike($sms->getNumber(), $args[1], $args[2], $sms->getProcessedMessage(), true);
         break;
-    case "LIST":
-        //checkUserPrivileges($sms->Number()); //allowed for all users as agreed
-        checkUserPrivileges($sms->getNumber());
-        validateReceivedSMS($sms->getNumber(), count($args), 2, _('with stand name:') . " LIST RACKO");
-        listBikes($sms->getNumber(), $args[1]);
-        break;
     case "REVERT":
         checkUserPrivileges($sms->getNumber());
         validateReceivedSMS($sms->getNumber(), count($args), 2, _('with bike number:') . " REVERT 47");

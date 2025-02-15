@@ -9,6 +9,7 @@ use BikeShare\Event\BikeRentEvent;
 use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Event\BikeRevertEvent;
 use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Repository\StandRepository;
 use BikeShare\User\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -28,6 +29,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
     protected EventDispatcherInterface $eventDispatcher;
     protected AdminNotifier $adminNotifier;
     protected LoggerInterface $logger;
+    protected StandRepository $standRepository;
     protected array $watchesConfig;
     protected bool $isSmsSystemEnabled;
     protected bool $forceStack;
@@ -40,6 +42,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         EventDispatcherInterface $eventDispatcher,
         AdminNotifier $adminNotifier,
         LoggerInterface $logger,
+        StandRepository $standRepository,
         array $watchesConfig,
         bool $isSmsSystemEnabled,
         bool $forceStack
@@ -51,6 +54,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $this->eventDispatcher = $eventDispatcher;
         $this->adminNotifier = $adminNotifier;
         $this->logger = $logger;
+        $this->standRepository = $standRepository;
         $this->watchesConfig = $watchesConfig;
         $this->isSmsSystemEnabled = $isSmsSystemEnabled;
         $this->forceStack = $forceStack;
@@ -95,7 +99,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $result = $this->db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bikeId'");
                 $row = $result->fetchAssoc();
                 $standid = $row['currentStand'];
-                $stacktopbike = $this->checktopofstack($standid);
+                $stacktopbike = $this->standRepository->findLastReturnedBikeOnStand((int)$standid);
 
                 $result = $this->db->query("SELECT serviceTag FROM stands WHERE standId='$standid'");
                 $row = $result->fetchAssoc();
@@ -295,11 +299,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
             'error' => $error,
             'content' => $message,
         ];
-    }
-
-    private function checktopofstack($standid)
-    {
-        return checktopofstack($standid);
     }
 
     private function notifyAdmins(string $message, bool $bySms = true)
