@@ -47,6 +47,10 @@ class CommandDetectorTest extends TestCase
             'command' => 'RETURN 42 MAINSQUARE broken',
             'expected' => ['command' => 'RETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUARE', 'note' => 'broken']],
         ];
+        yield 'RETURN without stand' => [
+            'command' => 'RETURN 42',
+            'expected' => ['command' => 'UNKNOWN', 'possibleCommand' => 'RETURN' ,'arguments' => []],
+        ];
         yield 'WHERE' => [
             'command' => 'WHERE 42',
             'expected' => ['command' => 'WHERE', 'arguments' => ['bikeNumber' => '42']],
@@ -74,6 +78,10 @@ class CommandDetectorTest extends TestCase
         yield 'FORCERETURN with note' => [
             'command' => 'FORCERETURN 42 MAINSQUARE broken',
             'expected' => ['command' => 'FORCERETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUARE', 'note' => 'broken']],
+        ];
+        yield 'FORCERETURN without stand' => [
+            'command' => 'FORCERETURN 42 ',
+            'expected' => ['command' => 'UNKNOWN', 'possibleCommand' => 'FORCERETURN' ,'arguments' => []],
         ];
         yield 'LIST' => [
             'command' => 'LIST MAINSQUARE',

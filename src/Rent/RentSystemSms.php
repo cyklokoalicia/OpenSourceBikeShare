@@ -1,116 +1,18 @@
 <?php
 
-namespace BikeShare\Rent;
+declare(strict_types=1);
 
-use BikeShare\Authentication\Auth;
-use BikeShare\Credit\CreditSystemInterface;
-use BikeShare\Db\DbInterface;
-use BikeShare\Notifier\AdminNotifier;
-use BikeShare\Repository\StandRepository;
-use BikeShare\Sms\SmsSenderInterface;
-use BikeShare\User\User;
-use Psr\Log\LoggerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+namespace BikeShare\Rent;
 
 class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
 {
-    private $number;
-    /**
-     * @var SmsSenderInterface
-     */
-    private $smsSender;
-
-    public function __construct(
-        SmsSenderInterface $smsSender,
-        DbInterface $db,
-        CreditSystemInterface $creditSystem,
-        User $user,
-        Auth $auth,
-        EventDispatcherInterface $eventDispatcher,
-        AdminNotifier $adminNotifier,
-        LoggerInterface $logger,
-        StandRepository $standRepository,
-        array $watchesConfig,
-        bool $isSmsSystemEnabled,
-        $forceStack = false
-    ) {
-        parent::__construct(
-            $db,
-            $creditSystem,
-            $user,
-            $auth,
-            $eventDispatcher,
-            $adminNotifier,
-            $logger,
-            $standRepository,
-            $watchesConfig,
-            $isSmsSystemEnabled,
-            $forceStack
-        );
-        $this->smsSender = $smsSender;
-    }
-
-
-    public function rentBike($number, $bikeId, $force = false)
-    {
-        $this->number = $number;
-        $userId = $this->user->findUserIdByNumber($number);
-        if (is_null($userId)) {
-            $this->logger->error("Invalid number", ["number" => $number]);
-            //currently do nothing
-            //return $this->response(_('Your number is not registered.'), ERROR);
-
-            return;
-        }
-
-        return parent::rentBike($userId, $bikeId, $force);
-    }
-
-    public function returnBike($number, $bikeId, $standName, $note = '', $force = false)
-    {
-        $this->number = $number;
-        $userId = $this->user->findUserIdByNumber($number);
-
-        if (is_null($userId)) {
-            $this->logger->error("Invalid number", ["number" => $number, 'sms' => $note]);
-            //currently do nothing
-            //return $this->response(_('Your number is not registered.'), ERROR);
-
-            return;
-        }
-
-        if (preg_match("/return[\s,\.]+[0-9]+[\s,\.]+[a-zA-Z0-9]+[\s,\.]+(.*)/i", $note, $matches)) {
-            $note = $this->db->escape(trim($matches[1]));
-        } else {
-            $note = '';
-        }
-
-        return parent::returnBike($userId, $bikeId, $standName, $note, $force);
-    }
-
-    public function revertBike($number, $bikeId)
-    {
-        $this->number = $number;
-        $userId = $this->user->findUserIdByNumber($number);
-
-        if (is_null($userId)) {
-            $this->logger->error("Invalid number", ["number" => $number]);
-            //currently do nothing
-            //return $this->response(_('Your number is not registered.'), ERROR);
-
-            return;
-        }
-
-        return parent::revertBike($userId, $bikeId);
-    }
-
     public static function getType(): string
     {
         return 'sms';
     }
 
-    protected function response($message, $error = 0)
+    protected function response($message, $error = 0): string
     {
-        $this->smsSender->send($this->number, strip_tags($message));
+        return strip_tags($message);
     }
 }
