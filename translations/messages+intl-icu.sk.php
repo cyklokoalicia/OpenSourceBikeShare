@@ -221,7 +221,7 @@ return [
     'registration' => '',
     'Registration' => '',
     'Step 1 - Confirm your phone number' => '',
-    'You will receive SMS code to this phone number.' => '',
+    'You will receive SMS code to this phone number +{phoneNumber}.' => '',
     'Validate this phone number' => '',
     'Step 2 - Create account' => '',
     'SMS code (received to your phone):' => '',

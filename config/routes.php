@@ -23,9 +23,12 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\SmsRequestController::class, 'index']);
     $routes->add('sms_request', '/receive.php')
         ->controller([\BikeShare\Controller\SmsRequestController::class, 'index']);
-    $routes->add('user_confirm', '/user/confirm/{key}')
+    $routes->add('user_confirm_email', '/user/confirm/email/{key}')
         ->defaults(['key' => ''])
         ->controller([\BikeShare\Controller\EmailConfirmController::class, 'index']);
+    $routes->add('user_confirm_phone', '/user/confirm/phone/{key}')
+        ->defaults(['key' => ''])
+        ->controller([\BikeShare\Controller\PhoneConfirmController::class, 'index']);
     $routes->add('login', '/login')
         ->controller([\BikeShare\Controller\SecurityController::class, 'login']);
     $routes->add('logout', '/logout')

@@ -52,7 +52,7 @@ class ReconfirmationEventListener
             [
                 'name' => $firstName,
                 'emailConfirmURL' => $this->urlGenerator->generate(
-                    'user_confirm',
+                    'user_confirm_email',
                     ['key' => $userKey],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 )

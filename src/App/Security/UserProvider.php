@@ -47,7 +47,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     {
         $identifier = $this->phonePurifier->purify($identifier);
         $result = $this->db->query(
-            'SELECT userId, number, mail, password, city, userName, privileges 
+            'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed
              FROM users 
              WHERE number = :identifier',
             [
@@ -68,6 +68,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $row['city'],
             $row['userName'],
             (int)$row['privileges'],
+            (bool)$row['isNumberConfirmed'],
         );
     }
 
@@ -123,7 +124,8 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $newHashedPassword,
             $user->getCity(),
             $user->getUsername(),
-            $user->getPrivileges()
+            $user->getPrivileges(),
+            $user->isNumberConfirmed()
         );
     }
 
@@ -133,11 +135,12 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
         string $plainPassword,
         string $city,
         string $userName,
-        int $privileges
+        int $privileges,
+        bool $isNumberConfirmed = false
     ): User {
         $this->db->query(
-            'INSERT INTO users (number, mail, password, city, userName, privileges) 
-               VALUES (:number, :mail, :plainPassword, :city, :userName, :privileges)',
+            'INSERT INTO users (number, mail, password, city, userName, privileges, isNumberConfirmed) 
+               VALUES (:number, :mail, :plainPassword, :city, :userName, :privileges, :isNumberConfirmed)',
             [
                 'number' => $number,
                 'mail' => $mail,
@@ -145,6 +148,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
                 'city' => $city,
                 'userName' => $userName,
                 'privileges' => $privileges,
+                'isNumberConfirmed' => (int)$isNumberConfirmed,
             ]
         );
 
@@ -155,7 +159,8 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $plainPassword,
             $city,
             $userName,
-            $privileges
+            $privileges,
+            $isNumberConfirmed
         );
     }
 }

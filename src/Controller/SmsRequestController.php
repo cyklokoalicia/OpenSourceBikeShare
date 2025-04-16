@@ -11,7 +11,7 @@ use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 class SmsRequestController extends AbstractController
 {
@@ -37,20 +37,21 @@ class SmsRequestController extends AbstractController
 
     /**
      * @Route("/receive.php", name="sms_request")
-     * @Route("/sms/receive.php", name="sms_request")
+     * @Route("/sms/receive.php", name="sms_request_old")
      */
     public function index(): Response
     {
         $this->smsConnector->receive();
 
-        $user = $this->userProvider->loadUserByIdentifier($this->smsConnector->getNumber());
-        if (is_null($user)) {
+        try {
+            $user = $this->userProvider->loadUserByIdentifier($this->smsConnector->getNumber());
+        } catch (UserNotFoundException $e) {
             $this->logger->error(
-                "Invalid number",
+                "User not found",
                 ["number" => $this->smsConnector->getNumber(), 'sms' => $this->smsConnector]
             );
 
-            return new Response("Invalid number");
+            return new Response("User not found");
         }
 
         $message = $this->commandExecutor->execute($this->smsConnector->getProcessedMessage(), $user);

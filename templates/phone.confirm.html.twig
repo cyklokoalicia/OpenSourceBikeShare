@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Phone confirmation'|trans }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="page-header">
+        <h1>{{ 'Phone confirmation' | trans }}</h1>
+        <div id="console"></div>
+    </div>
+
+    {% if verificationStep == 1 %}
+        <div class="alert alert-info">{{ 'You will receive SMS code to this phone number +{phoneNumber}.' | trans({'{phoneNumber}': app.user.number}) }}</div>
+    {% else %}
+        <div class="alert alert-info">{{ 'SMS code has been sent to your phone +{phoneNumber}.' | trans({'{phoneNumber}': app.user.number}) }}</div>
+    {% endif %}
+
+    {{ form_start(form, {'attr': {'class': 'container'}}) }}
+
+    {{ form_widget(form) }}
+
+    <button type="submit" class="btn btn-primary">
+        {{ verificationStep == 1 ? 'Send confirmation'|trans : 'Confirm'|trans }}
+    </button>
+    {{ form_end(form) }}
+
+</div>
+{% endblock %}

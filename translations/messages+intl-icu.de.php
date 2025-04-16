@@ -243,7 +243,7 @@ return [
     'registration' => 'Anmelden',
     'Registration' => 'Registrieren',
     'Step 1 - Confirm your phone number' => 'Schritt 1 - Bestätige deine Telefonnummer',
-    'You will receive SMS code to this phone number.' => 'Du bekommst einen Code per SMS an diese Nummer geschickt.',
+    'You will receive SMS code to this phone number +{phoneNumber}.' => 'Du bekommst einen Code per SMS an diese Nummer geschickt +{phoneNumber}.',
     'Validate this phone number' => 'Überprüfe diese Telefonnummer',
     'Step 2 - Create account' => 'Schritt 2 - Account anlegen',
     'SMS code (received to your phone):' => 'SMS Code (zugeschickt an dein Handy)',

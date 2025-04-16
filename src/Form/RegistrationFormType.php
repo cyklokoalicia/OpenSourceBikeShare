@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Form;
 
 use BikeShare\App\Configuration;
-use BikeShare\Repository\HistoryRepository;
+use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -13,45 +13,36 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationFormType extends AbstractType
 {
-    private bool $isSmsSystemEnabled;
     private TranslatorInterface $translator;
     private Configuration $configuration;
-    private SessionInterface $session;
-    private HistoryRepository $historyRepository;
+    private PhonePurifier $phonePurifier;
     private UserRepository $userRepository;
 
     public function __construct(
-        bool $isSmsSystemEnabled,
         TranslatorInterface $translator,
         Configuration $configuration,
-        SessionInterface $session,
-        HistoryRepository $historyRepository,
+        PhonePurifier $phonePurifier,
         UserRepository $userRepository
     ) {
-        $this->isSmsSystemEnabled = $isSmsSystemEnabled;
         $this->translator = $translator;
         $this->configuration = $configuration;
-        $this->session = $session;
-        $this->historyRepository = $historyRepository;
+        $this->phonePurifier = $phonePurifier;
         $this->userRepository = $userRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $isSmsSystemEnabled = $this->isSmsSystemEnabled;
-
         $builder
             ->add('fullname', TextType::class, [
                 'label' => $this->translator->trans('Fullname:'),
@@ -84,11 +75,12 @@ class RegistrationFormType extends AbstractType
             ->add('password2', PasswordType::class, [
                 'label' => $this->translator->trans('Password confirmation:')
             ]);
-        if ($isSmsSystemEnabled) {
-            $builder->add('smscode', TextType::class, [
-                'label' => $this->translator->trans('SMS code (received to your phone):')
-            ]);
-        }
+
+        $builder->add('number', TelType::class, [
+            'label' => $this->translator->trans('Phone number:'),
+            'attr' => ['placeholder' => 'e.g., +1234567890']
+        ]);
+
         $builder->add('agree', CheckboxType::class, [
             'label' => $this->translator->trans(
                 'By registering I confirm that I have read: {systemRules} and agree with the terms and conditions.',
@@ -102,7 +94,7 @@ class RegistrationFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event) use ($isSmsSystemEnabled) {
+            function (FormEvent $event) {
                 $form = $event->getForm();
                 $data = $form->getData();
                 $data['fullname'] = trim(preg_replace('/\s+/', ' ', $data['fullname'] ?? ''));
@@ -120,7 +112,7 @@ class RegistrationFormType extends AbstractType
                             $this->translator->trans('Email address is incorrect.')
                         )
                     );
-                } elseif (filter_var($data['useremail'], FILTER_VALIDATE_EMAIL)) {
+                } else {
                     $registeredUser = $this->userRepository->findItemByEmail($data['useremail']);
                     if (!is_null($registeredUser)) {
                         $form->get('useremail')->addError(
@@ -162,37 +154,32 @@ class RegistrationFormType extends AbstractType
                     }
                 }
 
-                if ($isSmsSystemEnabled) {
-                    if (empty($data['smscode'])) {
-                        $form->get('smscode')->addError(
+                $phoneNumber = $this->phonePurifier->purify($data['number'] ?? '');
+                if (empty($phoneNumber) || strlen($phoneNumber) < 5) {
+                    $form->get('number')->addError(
+                        new FormError(
+                            $this->translator->trans('Invalid phone number.')
+                        )
+                    );
+                } else {
+                    $user = $this->userRepository->findItemByPhoneNumber($phoneNumber);
+                    if (!is_null($user)) {
+                        $form->get('number')->addError(
                             new FormError(
-                                $this->translator->trans('Please, enter SMS code received to your phone.')
-                            )
-                        );
-                    } else {
-                        $number = $this->session->get('validatedNumber');
-                        $checkCode = $this->session->get('checkCode');
-                        $parameter = $number . ';' . str_replace(' ', '', $data['smscode']) . ';' . $checkCode;
-                        $history = $this->historyRepository->findRegistration($parameter);
-                        if (is_null($history)) {
-                            $form->get('smscode')->addError(
-                                new FormError(
-                                    $this->translator->trans(
-                                        'Problem with the SMS code entered. Please check and try again.'
-                                    )
-                                )
-                            );
-                        }
-                    }
-                    if (empty($data['agree'])) {
-                        $form->get('agree')->addError(
-                            new FormError(
-                                $this->translator->trans(
-                                    'You must agree with the terms and conditions to register.'
-                                )
+                                $this->translator->trans('User with this phone number already registered.')
                             )
                         );
                     }
+                }
+
+                if (empty($data['agree'])) {
+                    $form->get('agree')->addError(
+                        new FormError(
+                            $this->translator->trans(
+                                'You must agree with the terms and conditions to register.'
+                            )
+                        )
+                    );
                 }
             }
         );

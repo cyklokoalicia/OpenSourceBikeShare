@@ -11,10 +11,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     private int $userId;
     private string $number;
+    private string $email;
     private string $password;
     private string $city;
     private string $userName;
     private int $privileges;
+    private bool $isNumberConfirmed;
 
     public function __construct(
         int $userId,
@@ -23,7 +25,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         string $password,
         string $city,
         string $userName,
-        int $privileges
+        int $privileges,
+        bool $isNumberConfirmed
     ) {
         $this->userId = $userId;
         $this->number = $number;
@@ -32,6 +35,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->city = $city;
         $this->userName = $userName;
         $this->privileges = $privileges;
+        $this->isNumberConfirmed = $isNumberConfirmed;
     }
 
     public function getCity(): string
@@ -85,6 +89,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return array_unique($roles);
+    }
+
+    public function isNumberConfirmed(): bool
+    {
+        return $this->isNumberConfirmed;
     }
 
     public function getSalt(): ?string

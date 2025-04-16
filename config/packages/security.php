@@ -9,6 +9,9 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Config\SecurityConfig;
 
 return function (SecurityConfig $security) {
+
+    $security->enableAuthenticatorManager(true);
+
     $security
         ->passwordHasher(PasswordAuthenticatedUserInterface::class)
         ->algorithm('sha512')
@@ -25,7 +28,6 @@ return function (SecurityConfig $security) {
         ->security(false);
 
     $mainFirewall = $security->firewall('main');
-    $mainFirewall->anonymous();
     $mainFirewall
         ->formLogin()
         ->usernameParameter('number')

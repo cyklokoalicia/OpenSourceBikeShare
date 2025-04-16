@@ -33,11 +33,10 @@ class PhonePurifierTest extends TestCase
             'countryCode' => '421',
             'expectedPhoneNumber' => '4211234567890'
         ];
-        #is it correct??? maybe we should left only numbers???
         yield 'letters symbols do not remove' => [
             'phoneNumber' => '+421 123-456-78/90abcdefghijklmnopqrstuvwxyz',
             'countryCode' => '421',
-            'expectedPhoneNumber' => '4211234567890abcdefghijklmnopqrstuvwxyz'
+            'expectedPhoneNumber' => '4211234567890'
         ];
         yield 'without code' => [
             'phoneNumber' => '0123-456-78/90',

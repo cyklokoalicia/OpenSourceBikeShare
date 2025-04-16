@@ -34,22 +34,22 @@ class RegisterControllerTest extends WebTestCase
         yield 'smsSystemEnabledStep1' => [
             'smsConnector' => 'euroSms',
             'registrationStep' => 1,
-            'expectedTitle' => 'Step 1 - Confirm your phone number',
+            'expectedTitle' => 'Create account',
         ];
         yield 'smsSystemEnabledStep2' => [
             'smsConnector' => 'euroSms',
             'registrationStep' => 2,
-            'expectedTitle' => 'Step 2 - Create account',
+            'expectedTitle' => 'Create account',
         ];
         yield 'smsSystemDisabledStep1' => [
             'smsConnector' => '',
             'registrationStep' => 1,
-            'expectedTitle' => 'Step 1 - Create account',
+            'expectedTitle' => 'Create account',
         ];
         yield 'smsSystemDisabledStep2' => [
             'smsConnector' => '',
             'registrationStep' => 2,
-            'expectedTitle' => 'Step 1 - Create account',
+            'expectedTitle' => 'Create account',
         ];
     }
 }

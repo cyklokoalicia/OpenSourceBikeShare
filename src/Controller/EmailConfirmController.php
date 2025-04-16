@@ -16,7 +16,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class EmailConfirmController extends AbstractController
 {
     /**
-     * @Route("/user/confirm/{key}", name="user_confirm", defaults={"key"=""})
+     * @Route("/user/confirm/email/{key}", name="user_confirm_email", defaults={"key"=""})
      */
     public function index(
         string $key,
