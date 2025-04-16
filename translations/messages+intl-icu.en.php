@@ -1,6 +1,6 @@
 <?php
 
-return array (
+return [
   'Admin' => 'Admin',
   'Remaining credit' => 'Remaining credit',
   'Add credit' => 'Add credit',
@@ -480,4 +480,4 @@ By clicking the following link you will confirm your email: {emailConfirmURL}',
   'Confirm' => 'Confirm',
   'Select Year' => 'Select Year',
   'Log in' => 'Log in',
-);
+];

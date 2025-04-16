@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
-use BikeShare\Form\PhoneValidationFormType;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\SmsSenderInterface;
@@ -38,7 +37,7 @@ class PhoneConfirmController extends AbstractController
 
         if ($verificationStep === 1) {
             // Step 1: Get phone number
-            $form = $this->createForm(PhoneValidationFormType::class);
+            $form = $this->createFormBuilder()->getForm();
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
@@ -97,10 +96,13 @@ class PhoneConfirmController extends AbstractController
                 }
             }
         }
-        
-        return $this->render('phone.confirm.html.twig', [
-            'form' => $form->createView(),
-            'verificationStep' => $verificationStep
-        ]);
+
+        return $this->render(
+            'phone.confirm.html.twig',
+            [
+                'form' => $form->createView(),
+                'verificationStep' => $verificationStep
+            ]
+        );
     }
 }
