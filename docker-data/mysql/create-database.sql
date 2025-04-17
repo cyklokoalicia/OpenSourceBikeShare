@@ -53,7 +53,7 @@ CREATE TABLE `history` (
   `userId` int(11) NOT NULL,
   `bikeNum` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `action` varchar(20) NOT NULL,
+  `action` varchar(25) NOT NULL,
   `parameter` text NOT NULL,
   `standId` int(11) DEFAULT NULL,
   `pairAction` timestamp NULL DEFAULT NULL
@@ -137,6 +137,7 @@ CREATE TABLE `users` (
   `number` varchar(30) NOT NULL,
   `privileges` int(11) NOT NULL DEFAULT '0',
   `city` varchar(45) NOT NULL DEFAULT 'Bratisalva',
+  `isNumberConfirmed` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

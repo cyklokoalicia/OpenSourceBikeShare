@@ -57,7 +57,7 @@ class RegistrationEventListener
                 'systemName' => $this->appName,
                 'systemRulesPageUrl' => $this->configuration->get('systemrules'),
                 'emailConfirmURL' => $this->urlGenerator->generate(
-                    'user_confirm',
+                    'user_confirm_email',
                     ['key' => $userKey],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 )

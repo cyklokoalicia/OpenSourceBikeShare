@@ -116,7 +116,7 @@ class HistoryRepository
         return (int)($result['rentCount'] ?? 0);
     }
 
-    public function findRegistration($checkCode): ?array
+    public function findConfirmationRequest(string $checkCode, int $userId): ?array
     {
         $result = $this->db->query(
             "SELECT
@@ -127,11 +127,15 @@ class HistoryRepository
               parameter,
               standId
             FROM history 
-            WHERE action = 'REGISTER' 
-              AND parameter = :checkCode 
+            WHERE action = 'PHONE_CONFIRM_REQUEST' 
+              AND parameter = :checkCode
+              AND userId = :userId
             ORDER BY time DESC 
             LIMIT 1",
-            ['checkCode' => $checkCode]
+            [
+                'checkCode' => $checkCode,
+                'userId' => $userId,
+            ]
         )->fetchAssoc();
 
         return $result;

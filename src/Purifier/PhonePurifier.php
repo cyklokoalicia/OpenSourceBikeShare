@@ -17,11 +17,7 @@ class PhonePurifier implements PhonePurifierInterface
 
     public function purify($phoneNumber)
     {
-        $phoneNumber = str_replace('+', '', $phoneNumber);
-        $phoneNumber = str_replace(' ', '', $phoneNumber);
-        $phoneNumber = str_replace('-', '', $phoneNumber);
-        $phoneNumber = str_replace('/', '', $phoneNumber);
-        $phoneNumber = str_replace('.', '', $phoneNumber);
+        $phoneNumber = preg_replace('/[^\d]/', '', $phoneNumber);
         if (substr($phoneNumber, 0, 1) == '0') {
             $phoneNumber = substr($phoneNumber, 1);
         }

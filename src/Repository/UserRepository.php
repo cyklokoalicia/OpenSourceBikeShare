@@ -154,4 +154,16 @@ class UserRepository
             ]
         );
     }
+
+    public function confirmUserNumber(int $userId): void
+    {
+        $this->db->query(
+            'UPDATE users 
+              SET isNumberConfirmed = 1 
+              WHERE userId = :userId',
+            [
+                'userId' => $userId,
+            ]
+        );
+    }
 }
