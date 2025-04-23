@@ -76,7 +76,7 @@ return function (SecurityConfig $security) {
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
-        ->path('^/user/confirm(/\w*)?$')
+        ->path('^/user/confirm/email(/\w*)?$')
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
