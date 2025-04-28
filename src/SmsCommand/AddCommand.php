@@ -45,7 +45,7 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
             || $phone > ($this->configuration->get('countrycode') + 1) . "000000000"
         ) {
             throw new ValidationException(
-                $this->translator->trans('User with this phone number already registered.')
+                $this->translator->trans('Invalid phone number.')
             );
         }
 
@@ -58,7 +58,7 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
         $registeredUser = $this->userRepository->findItemByPhoneNumber($phone);
         if (!is_null($registeredUser)) {
             throw new ValidationException(
-                $this->translator->trans('Invalid phone number.')
+                $this->translator->trans('User with this phone number already registered.')
             );
         }
         $registeredUser = $this->userRepository->findItemByEmail($email);
