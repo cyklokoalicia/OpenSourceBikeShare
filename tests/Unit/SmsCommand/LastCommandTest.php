@@ -9,14 +9,15 @@ use BikeShare\Repository\BikeRepository;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\SmsCommand\LastCommand;
 use Generator;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class LastCommandTest extends TestCase
 {
-    /** @var TranslatorInterface */
+    /** @var TranslatorInterface|MockObject */
     private $translatorMock;
-    /** @var BikeRepository */
+    /** @var BikeRepository|MockObject */
     private $bikeRepositoryMock;
 
     private LastCommand $command;

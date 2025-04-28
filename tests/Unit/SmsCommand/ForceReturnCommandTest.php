@@ -13,9 +13,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ForceReturnCommandTest extends TestCase
 {
-    /** @var TranslatorInterface|MockObject translatorMock */
+    /** @var TranslatorInterface|MockObject */
     private $translatorMock;
-    /** @var RentSystemInterface|MockObject translatorMock */
+    /** @var RentSystemInterface|MockObject */
     private $rentSystemMock;
 
     private ForceReturnCommand $command;

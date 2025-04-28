@@ -12,20 +12,21 @@ use BikeShare\SmsCommand\AddCommand;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\User\UserRegistration;
 use Generator;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AddCommandTest extends TestCase
 {
-    /** @var TranslatorInterface */
+    /** @var TranslatorInterface|MockObject */
     private $translatorMock;
-    /** @var Configuration */
+    /** @var Configuration|MockObject */
     private $configurationMock;
-    /** @var UserRegistration */
+    /** @var UserRegistration|MockObject */
     private $userRegistrationMock;
-    /** @var UserRepository */
+    /** @var UserRepository|MockObject */
     private $userRepositoryMock;
-    /** @var PhonePurifier */
+    /** @var PhonePurifier|MockObject */
     private $phonePurifierMock;
 
     private AddCommand $command;

@@ -11,18 +11,19 @@ use BikeShare\Repository\StandRepository;
 use BikeShare\SmsCommand\DelNoteCommand;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use Generator;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DelNoteCommandTest extends TestCase
 {
-    /** @var TranslatorInterface */
+    /** @var TranslatorInterface|MockObject */
     private $translatorMock;
-    /** @var BikeRepository */
+    /** @var BikeRepository|MockObject */
     private $bikeRepositoryMock;
-    /** @var StandRepository */
+    /** @var StandRepository|MockObject */
     private $standRepositoryMock;
-    /** @var NoteRepository */
+    /** @var NoteRepository|MockObject */
     private $noteRepositoryMock;
 
     private DelNoteCommand $command;
