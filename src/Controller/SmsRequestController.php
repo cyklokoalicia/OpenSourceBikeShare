@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\App\Security\UserProvider;
+use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsCommand\CommandExecutor;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SmsRequestController extends AbstractController
 {
@@ -19,6 +22,8 @@ class SmsRequestController extends AbstractController
     private SmsSenderInterface $smsSender;
     private UserProvider $userProvider;
     private LoggerInterface $logger;
+    private AdminNotifier $adminNotifier;
+    private TranslatorInterface $translator;
     private CommandExecutor $commandExecutor;
 
     public function __construct(
@@ -26,12 +31,16 @@ class SmsRequestController extends AbstractController
         SmsSenderInterface $smsSender,
         UserProvider $userProvider,
         LoggerInterface $logger,
+        AdminNotifier $adminNotifier,
+        TranslatorInterface $translator,
         CommandExecutor $commandExecutor
     ) {
         $this->smsConnector = $smsConnector;
         $this->smsSender = $smsSender;
         $this->userProvider = $userProvider;
         $this->logger = $logger;
+        $this->adminNotifier = $adminNotifier;
+        $this->translator = $translator;
         $this->commandExecutor = $commandExecutor;
     }
 
@@ -54,8 +63,24 @@ class SmsRequestController extends AbstractController
             return new Response("User not found");
         }
 
-        $message = $this->commandExecutor->execute($this->smsConnector->getProcessedMessage(), $user);
-        $this->smsSender->send($this->smsConnector->getNumber(), $message);
+        try {
+            $message = $this->commandExecutor->execute($this->smsConnector->getProcessedMessage(), $user);
+            $this->smsSender->send($this->smsConnector->getNumber(), $message);
+        } catch (\Throwable $exception) {
+            $this->logger->error(
+                "Error processing SMS",
+                [
+                    "number" => $this->smsConnector->getNumber(),
+                    'sms' => $this->smsConnector->getProcessedMessage(),
+                    'exception' => $exception
+                ]
+            );
+            $this->adminNotifier->notify(
+                $this->translator->trans('Problem with SMS') . ': '
+                    . $this->smsConnector->getNumber() . '-' . $this->smsConnector->getProcessedMessage(),
+                false
+            );
+        }
 
         return new Response($this->smsConnector->respond());
     }
