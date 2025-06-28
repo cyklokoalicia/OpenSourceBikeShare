@@ -9,7 +9,6 @@ CREATE TABLE `bikes` (
   `currentUser` int(11) DEFAULT NULL,
   `currentStand` int(11) DEFAULT NULL,
   `currentCode` int(11) NOT NULL,
-  `note` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`bikeNum`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -123,6 +122,7 @@ CREATE TABLE `stands` (
   `placeName` varchar(50) NOT NULL,
   `longitude` double(20,17),
   `latitude` double(20,17),
+  `city` varchar(45) NOT NULL DEFAULT 'Bratislava',
   PRIMARY KEY (`standId`),
   UNIQUE KEY `standName` (`standName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
