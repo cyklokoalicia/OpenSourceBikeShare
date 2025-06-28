@@ -25,6 +25,7 @@ jobs:
     steps:
       - run: |
           sudo /etc/init.d/mysql start
+          mysql -e "SET GLOBAL sql_mode='NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';" -u$DB_USER -p$DB_PASSWORD
           mysql -e "CREATE DATABASE $DB_DATABASE;" -u$DB_USER -p$DB_PASSWORD
           mysql -e 'SHOW DATABASES;' -u$DB_USER -p$DB_PASSWORD
       - name: Checkout code
