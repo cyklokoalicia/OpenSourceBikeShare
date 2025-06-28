@@ -64,6 +64,7 @@ class LoadFixturesCommand extends Command
                 }, $values)) . '"';
 
             $sql = "INSERT INTO `{$tableName}` ({$fieldsStr}) VALUES ({$valuesStr});";
+            dump($sql);
             $this->db->query($sql);
         }
 
