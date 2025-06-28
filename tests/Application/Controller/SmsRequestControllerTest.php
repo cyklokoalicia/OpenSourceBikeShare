@@ -133,7 +133,6 @@ class SmsRequestControllerTest extends WebTestCase
         $this->assertSame('', $client->getResponse()->getContent());
         $smsConnector = $client->getContainer()->get(SmsConnectorInterface::class);
 
-        dump($client->getContainer()->get('monolog.handler.test')->getRecords());
         $this->assertCount(1, $smsConnector->getSentMessages());
         $sentMessage = $smsConnector->getSentMessages()[0];
         foreach ($expectedCommands as $command) {
@@ -144,6 +143,9 @@ class SmsRequestControllerTest extends WebTestCase
         }
     }
 
+    /**
+     * @phpcs:disable Generic.Files.LineLength
+     */
     public function smsHelpDataProvider(): iterable
     {
         yield 'user help' => [
