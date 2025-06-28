@@ -59,12 +59,11 @@ class LoadFixturesCommand extends Command
             $values = array_values((array)$object);
 
             $fieldsStr = '`' . implode('`, `', $fields) . '`';
-            $valuesStr = '"' . implode('", "', array_map(function ($val) {
-                    return $val === null ? 'NULL' : addslashes((string)$val);
-                }, $values)) . '"';
+            $valuesStr = implode(', ', array_map(function ($val) {
+                return $val === null ? 'NULL' : '"' . addslashes((string)$val) . '"';
+            }, $values));
 
             $sql = "INSERT INTO `{$tableName}` ({$fieldsStr}) VALUES ({$valuesStr});";
-            dump($sql);
             $this->db->query($sql);
         }
 
