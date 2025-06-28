@@ -133,8 +133,8 @@ class SmsRequestControllerTest extends WebTestCase
         $this->assertSame('', $client->getResponse()->getContent());
         $smsConnector = $client->getContainer()->get(SmsConnectorInterface::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages());
         dump($client->getContainer()->get('monolog.handler.test')->getRecords());
+        $this->assertCount(1, $smsConnector->getSentMessages());
         $sentMessage = $smsConnector->getSentMessages()[0];
         foreach ($expectedCommands as $command) {
             $this->assertStringContainsString($command, $sentMessage);

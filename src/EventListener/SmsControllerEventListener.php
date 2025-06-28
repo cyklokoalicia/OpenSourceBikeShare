@@ -46,7 +46,10 @@ class SmsControllerEventListener
         }
 
         //temp logger just for case if something will goes wrong
-        $this->logger->info('SMS received', ['request' => $_REQUEST]);
+        $this->logger->info(
+            'SMS received',
+            ['request' => array_merge($event->getRequest()->request->all(), $event->getRequest()->query->all())]
+        );
         $this->smsConnector->receive();
 
         $sms_uuid = $this->smsConnector->getUUID();
