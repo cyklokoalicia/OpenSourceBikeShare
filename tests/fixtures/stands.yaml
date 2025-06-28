@@ -5,7 +5,7 @@ stdClass:
     standName (unique): 'Default Stand'
     standDescription: 'Default Stand Description'
     standPhoto: ''
-    serviceTag: ''
+    serviceTag: '0'
     placeName: 'Default Place'
     longitude (unique): '<latitude(17.05, 17.15)>'
     latitude (unique): '<longitude(48.10, 48.20)>'
