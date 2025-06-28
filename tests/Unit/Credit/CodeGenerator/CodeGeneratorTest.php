@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\Unit\Credit\CodeGenerator;
+namespace BikeShare\Test\Unit\Credit\CodeGenerator;
 
 use BikeShare\Credit\CodeGenerator\CodeGenerator;
 use PHPUnit\Framework\TestCase;

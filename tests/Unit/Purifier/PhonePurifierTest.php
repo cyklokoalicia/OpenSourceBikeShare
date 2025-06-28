@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\Unit\Purifier;
+namespace BikeShare\Test\Unit\Purifier;
 
 use BikeShare\Purifier\PhonePurifier;
 use PHPUnit\Framework\TestCase;

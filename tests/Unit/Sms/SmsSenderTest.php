@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\Unit\Sms;
+namespace BikeShare\Test\Unit\Sms;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Sms\SmsSender;
@@ -34,6 +34,7 @@ class SmsSenderTest extends TestCase
         $number,
         $message,
         $smsConnectorCallParams,
+        $smsConnectorMaxMessageLength,
         $dbEscapeCallParams,
         $dbEscapeCallResult,
         $dbCallParams
@@ -42,6 +43,10 @@ class SmsSenderTest extends TestCase
             ->expects($this->exactly(count($smsConnectorCallParams)))
             ->method('send')
             ->withConsecutive(...$smsConnectorCallParams);
+        $this->smsConnector
+            ->expects($this->once())
+            ->method('getMaxMessageLength')
+            ->willReturn($smsConnectorMaxMessageLength);
         $this->db
             ->expects($this->exactly(count($dbEscapeCallParams)))
             ->method('escape')
@@ -63,6 +68,7 @@ class SmsSenderTest extends TestCase
             'smsConnectorCallParams' => [
                 ['123456789', 'Hello, World!']
             ],
+            'smsConnectorMaxMessageLength' => 160,
             'dbEscapeCallParams' => [['Hello, World!']],
             'dbEscapeCallResult' => ['Hello, World!'],
             'dbCallParams' => [
@@ -78,6 +84,7 @@ class SmsSenderTest extends TestCase
             'smsConnectorCallParams' => [
                 ['123456789', 'Hello, "World"!']
             ],
+            'smsConnectorMaxMessageLength' => 160,
             'dbEscapeCallParams' => [['Hello, "World"!']],
             'dbEscapeCallResult' => ['Hello, \"World\"!'],
             'dbCallParams' => [
@@ -89,55 +96,43 @@ class SmsSenderTest extends TestCase
         ];
         yield 'long message' => [
             'number' => '123456789',
-            'message' => 'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus '
-                . 'euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod       ultricies, justo risus '
-                . 'luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut '
-                . 'mauris tincidunt tincidunt. ',
+            'message' => 'Hello, World! Lorem ipsum dolor sit amet',
             'smsConnectorCallParams' => [
                 [
                     '123456789',
-                    'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus '
-                    . 'euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod'
+                    'Hello, World! Lorem'
                 ],
                 [
                     '123456789',
-                    'ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. '
-                    . 'Nullam id orci ut mauris tincidunt tincidunt.'
+                    'ipsum dolor sit amet'
                 ]
             ],
+            'smsConnectorMaxMessageLength' => 20,
             'dbEscapeCallParams' => [
                 [
-                    'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus '
-                    . 'euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod'
+                    'Hello, World! Lorem'
                 ],
                 [
-                    'ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. '
-                    . 'Nullam id orci ut mauris tincidunt tincidunt.'
+                    'ipsum dolor sit amet'
                 ]
             ],
             'dbEscapeCallResult' => [
-                'Hello, World! Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec purus '
-                . 'euismod mi fermentum sollicitudin. Vivamus euismod, tellus ac euismod',
-                'ultricies, justo risus luctus ipsum, quis condimentum orci lacus id tellus. Sed ut ultrices mi. '
-                . 'Nullam id orci ut mauris tincidunt tincidunt.'
+                'Hello, World! Lorem ',
+                'ipsum dolor sit amet',
             ],
             'dbCallParams' => [
                 [
                     "INSERT INTO sent SET number = :number, text = :message",
                     [
                         'number' => '123456789',
-                        'message' => 'Hello, World! Lorem ipsum dolor sit amet, '
-                            . 'consectetur adipiscing elit. Nulla nec purus euismod mi fermentum sollicitudin. '
-                            . 'Vivamus euismod, tellus ac euismod'
+                        'message' => 'Hello, World! Lorem ',
                     ]
                 ],
                 [
                     "INSERT INTO sent SET number = :number, text = :message",
                     [
                         'number' => '123456789',
-                        'message' => 'ultricies, justo risus luctus ipsum, quis '
-                            . 'condimentum orci lacus id tellus. Sed ut ultrices mi. Nullam id orci ut mauris '
-                            . 'tincidunt tincidunt.'
+                        'message' => 'ipsum dolor sit amet'
                     ]
                 ],
             ]

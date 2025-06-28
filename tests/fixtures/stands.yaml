@@ -1,0 +1,17 @@
+stdClass:
+  defaultStand (template):
+    tableName: 'stands'
+    standId: 0
+    standName (unique): 'Default Stand'
+    standDescription: 'Default Stand Description'
+    standPhoto: ''
+    serviceTag: '0'
+    placeName: 'Default Place'
+    longitude (unique): '<latitude(17.05, 17.15)>'
+    latitude (unique): '<longitude(48.10, 48.20)>'
+    city: 'Default City'
+
+  stand_{1..5} (extends defaultStand):
+    standId: '<($current)>'
+    standName: 'Stand <($current)>'
+    standDescription: '<streetName()>'

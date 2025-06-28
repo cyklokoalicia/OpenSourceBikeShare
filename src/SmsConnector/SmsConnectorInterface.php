@@ -27,4 +27,6 @@ interface SmsConnectorInterface
     public function getIPAddress(): string;
 
     public static function getType(): string;
+
+    public function getMaxMessageLength(): int;
 }

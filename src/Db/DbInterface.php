@@ -12,6 +12,12 @@ interface DbInterface
     public function query($query, $params = []);
 
     /**
+     * @param $query
+     * @return int|bool
+     */
+    public function exec($query);
+
+    /**
      * @param $string
      * @return string
      */

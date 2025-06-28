@@ -1,7 +1,7 @@
 -- Adminer 4.1.0 MySQL dump
 
-SET NAMES utf8;
-SET time_zone = '+00:00';
+-- SET NAMES utf8;
+-- SET time_zone = '+00:00';
 
 DROP TABLE IF EXISTS `bikes`;
 CREATE TABLE `bikes` (
@@ -9,7 +9,6 @@ CREATE TABLE `bikes` (
   `currentUser` int(11) DEFAULT NULL,
   `currentStand` int(11) DEFAULT NULL,
   `currentCode` int(11) NOT NULL,
-  `note` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`bikeNum`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -31,6 +30,7 @@ CREATE TABLE `coupons` (
 
 DROP TABLE IF EXISTS `notes`;
 CREATE TABLE `notes` (
+  `noteId` int(11) NOT NULL,
   `bikeNum` int(11) NOT NULL,
   `userId` int(11) NOT NULL,
   `note` varchar(100),
@@ -82,7 +82,7 @@ CREATE TABLE `received` (
   `sms_uuid` varchar(60) NOT NULL,
   `sender` varchar(20) NOT NULL,
   `receive_time` varchar(20) NOT NULL,
-  `sms_text` varchar(200) NOT NULL,
+  `sms_text` varchar(1024) NOT NULL,
   `IP` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -98,7 +98,7 @@ DROP TABLE IF EXISTS `sent`;
 CREATE TABLE `sent` (
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `number` varchar(20) NOT NULL,
-  `text` varchar(200) NOT NULL
+  `text` varchar(1024) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -123,6 +123,7 @@ CREATE TABLE `stands` (
   `placeName` varchar(50) NOT NULL,
   `longitude` double(20,17),
   `latitude` double(20,17),
+  `city` varchar(45) NOT NULL DEFAULT 'Bratislava',
   PRIMARY KEY (`standId`),
   UNIQUE KEY `standName` (`standName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

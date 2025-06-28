@@ -62,4 +62,9 @@ abstract class AbstractConnector implements SmsConnectorInterface
     abstract public function respond();
 
     abstract public static function getType(): string;
+
+    public function getMaxMessageLength(): int
+    {
+        return PHP_INT_MAX;
+    }
 }

@@ -6,11 +6,13 @@ namespace BikeShare\SmsConnector;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\Service\ResetInterface;
 
-class DebugConnector extends AbstractConnector
+class DebugConnector extends AbstractConnector implements ResetInterface
 {
     private ?Request $request;
     private LoggerInterface $logger;
+    private array $sentMessages = [];
 
     public function __construct(
         ?Request $request,
@@ -34,6 +36,7 @@ class DebugConnector extends AbstractConnector
     public function send($number, $text): void
     {
         $this->logger->debug($number . ' -&gt ' . $text);
+        $this->sentMessages[] = $text;
     }
 
     public function receive(): void
@@ -53,5 +56,15 @@ class DebugConnector extends AbstractConnector
     public static function getType(): string
     {
         return 'debug';
+    }
+
+    public function getSentMessages(): array
+    {
+        return $this->sentMessages;
+    }
+
+    public function reset()
+    {
+        $this->sentMessages = [];
     }
 }

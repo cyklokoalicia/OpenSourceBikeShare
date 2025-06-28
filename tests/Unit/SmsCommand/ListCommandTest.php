@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\Unit\SmsCommand;
+namespace BikeShare\Test\Unit\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Repository\StandRepository;

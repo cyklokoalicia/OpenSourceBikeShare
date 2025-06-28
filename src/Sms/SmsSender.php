@@ -26,8 +26,9 @@ class SmsSender implements SmsSenderInterface
 
     public function send($number, $message)
     {
-        if (strlen($message) > 160) {
-            $messageParts = str_split($message, 160);
+        $maxMessageLength = $this->smsConnector->getMaxMessageLength();
+        if (strlen($message) > $maxMessageLength) {
+            $messageParts = str_split($message, $maxMessageLength);
             foreach ($messageParts as $text) {
                 $text = trim($text);
                 if ($text) {

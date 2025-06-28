@@ -16,7 +16,18 @@ jobs:
         php-version: [7.4]
       fail-fast: false
 
+    env:
+      DB_DATABASE: bikesharing_test
+      DB_USER: root
+      DB_PASSWORD: 'root'
+      DB_HOST: localhost
+
     steps:
+      - run: |
+          sudo /etc/init.d/mysql start
+          mysql -e "CREATE DATABASE $DB_DATABASE;" -u$DB_USER -p$DB_PASSWORD
+          mysql -e 'SHOW DATABASES;' -u$DB_USER -p$DB_PASSWORD
+          mysql -e 'SELECT @@sql_mode;' -u$DB_USER -p$DB_PASSWORD
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -29,7 +40,7 @@ jobs:
         run: composer install
 
       - name: Run PHP Unit Tests
-        run: vendor/bin/phpunit --configuration phpunit.xml.dist
+        run: composer test
 
       - name: Run PHP CodeSniffer
         run: vendor/bin/phpcs ./src ./tests

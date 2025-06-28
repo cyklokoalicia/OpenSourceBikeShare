@@ -68,11 +68,20 @@ return static function (ContainerConfigurator $container): void {
             '../src/App/Kernel.php',
             '../src/App/Entity',
             '../src/Event',
+            '../src/Command/LoadFixturesCommand.php',
         ]);
 
     $services->get(\BikeShare\Command\LongRentalCheckCommand::class)
         ->bind('$notifyUser', env('bool:NOTIFY_USER_ABOUT_LONG_RENTAL'))
         ->bind('$longRentalHours', env('int:WATCHES_LONG_RENTAL'));
+
+    if (in_array($container->env(), ['test'], true)) {
+        $services->set(\BikeShare\Command\LoadFixturesCommand::class)
+            ->bind('$appEnvironment', env('APP_ENV'))
+            ->bind('$projectDir', param('kernel.project_dir'))
+            ->bind('$dbDatabase', env('DB_DATABASE'))
+            ->bind('$fixturesLoader', service('nelmio_alice.file_loader.simple'));
+    }
 
     $services->get(\BikeShare\Controller\SmsRequestController::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
@@ -91,7 +100,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->get(PdoDb::class)
         ->args([
-            env('DB_DSN'),
+            env('resolve:DB_DSN'),
             env('DB_USER'),
             env('DB_PASSWORD'),
         ]);
