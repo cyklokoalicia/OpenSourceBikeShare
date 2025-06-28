@@ -43,7 +43,7 @@ class LoadFixturesCommand extends Command
             return Command::FAILURE;
         }
 
-        $this->db->query('DROP DATABASE IF EXISTS `' . $this->dbDatabase .'`;');
+        $this->db->query('DROP DATABASE IF EXISTS `' . $this->dbDatabase . '`;');
         $this->db->query('CREATE DATABASE `' . $this->dbDatabase . '` CHARACTER SET utf8 COLLATE utf8_general_ci;');
         $this->db->query('USE `' . $this->dbDatabase . '`');
         $initSql = file_get_contents($this->projectDir . '/docker-data/mysql/create-database.sql');
