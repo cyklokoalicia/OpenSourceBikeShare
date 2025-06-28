@@ -83,7 +83,7 @@ CREATE TABLE `received` (
   `sender` varchar(20) NOT NULL,
   `receive_time` varchar(20) NOT NULL,
   `sms_text` varchar(1024) NOT NULL,
-  `IP` varchar(20) NOT NULL
+  `IP` varchar(39) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

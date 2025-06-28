@@ -4,7 +4,7 @@ stdClass:
     userId: 0
     userName (unique): <firstName()> <lastName()>
     password: '<sha256(<password()>)>'
-    mail (unique): <email()>
+    mail (unique): test_<email()>
     number (unique): 421<randomNumber(9, true)>
     privileges: 0
     city: 'Default City'
