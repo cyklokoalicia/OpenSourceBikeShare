@@ -4,7 +4,7 @@ stdClass:
     bikeNum: 0
     currentUser: null
     currentStand: null
-    currentCode: null
+    currentCode: <randomNumber(4, true)>
 
   bike_{1..10} (extends defaultBike):
     bikeNum: '<($current)>'
