@@ -35,6 +35,13 @@ class PdoDb implements DbInterface
         return new PdoDbResult($result);
     }
 
+    public function exec($query)
+    {
+        $result = $this->conn->exec($query);
+
+        return $result;
+    }
+
     public function getAffectedRows(): int
     {
         throw new \RuntimeException('Not implemented');

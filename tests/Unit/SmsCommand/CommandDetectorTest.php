@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\Unit\SmsCommand;
+namespace BikeShare\Test\Unit\SmsCommand;
 
 use BikeShare\SmsCommand\CommandDetector;
 use PHPUnit\Framework\TestCase;

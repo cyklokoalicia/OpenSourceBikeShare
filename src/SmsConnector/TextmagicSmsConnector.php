@@ -95,4 +95,9 @@ class TextmagicSmsConnector extends AbstractConnector
     {
         return 'textmagic';
     }
+
+    public function getMaxMessageLength(): int
+    {
+        return 160;
+    }
 }

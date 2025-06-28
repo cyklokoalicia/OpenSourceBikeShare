@@ -1,0 +1,11 @@
+stdClass:
+  defaultBike (template):
+    tableName: 'bikes'
+    bikeNum: 0
+    currentUser: null
+    currentStand: null
+    currentCode: null
+
+  bike_{1..10} (extends defaultBike):
+    bikeNum: '<($current)>'
+    currentStand: '@stand_<numberBetween(1, 5)>->standId'

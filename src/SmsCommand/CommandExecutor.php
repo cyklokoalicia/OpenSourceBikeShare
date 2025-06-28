@@ -8,7 +8,6 @@ use BikeShare\App\Entity\User;
 use BikeShare\Event\SmsProcessedEvent;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -77,15 +76,6 @@ class CommandExecutor
 
             $this->eventDispatcher->dispatch(
                 new SmsProcessedEvent($user, $commandName, $commandInfo['arguments'], $message)
-            );
-        } catch (ServiceNotFoundException $e) {
-            $this->logger->warning('Unknown command', ['user' => $user, 'command' => $commandName]);
-            $message = $this->translator->trans(
-                'Error. The command {badCommand} does not exist. If you need help, send: {helpCommand}',
-                [
-                    'badCommand' => $commandName,
-                    'helpCommand' => 'HELP'
-                ]
             );
         } catch (ValidationException $e) {
             $this->logger->warning(

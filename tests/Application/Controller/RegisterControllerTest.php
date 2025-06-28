@@ -2,13 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\Integration\Controller;
+namespace BikeShare\Test\Application\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 class RegisterControllerTest extends WebTestCase
 {
+    private string $smsConnector;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->smsConnector = $_ENV['SMS_CONNECTOR'] ?? '';
+    }
+
+    protected function tearDown(): void
+    {
+        $_ENV['SMS_CONNECTOR'] = $this->smsConnector;
+        parent::tearDown();
+    }
+
     /**
      * @dataProvider provideRegistrationSteps
      */
@@ -23,7 +37,7 @@ class RegisterControllerTest extends WebTestCase
 
         $client->catchExceptions(false);
 
-        $crawler = $client->request(Request::METHOD_GET, '/register');
+        $client->request(Request::METHOD_GET, '/register');
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', $expectedTitle);

@@ -226,7 +226,7 @@ return [
   'Contact information is in incorrect format. Use:' => '',
   'User' => 'User',
   'added. They need to read email and agree to rules before using the system.' => '',
-  'Sorry, this command is only available for the privileged users.' => '',
+  'Sorry, this command is only available for the privileged users.' => 'Sorry, this command is only available for the privileged users.',
   'account activation' => '',
   'Account activation' => 'Account activation',
   'By registering I confirm that I have read: {systemRules} and agree with the terms and conditions.' => 'By registering I confirm that I have read: {systemRules} and agree with the terms and conditions.',

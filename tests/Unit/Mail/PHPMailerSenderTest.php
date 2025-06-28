@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\Unit\Mail;
+namespace BikeShare\Test\Unit\Mail;
 
 use BikeShare\Mail\PHPMailerMailSender;
 use PHPMailer\PHPMailer\PHPMailer;

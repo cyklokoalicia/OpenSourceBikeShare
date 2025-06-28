@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\BikeShare\Unit\SmsConnector;
+namespace BikeShare\Test\Unit\SmsConnector;
 
 use BikeShare\SmsConnector\EuroSmsConnector;
 use phpmock\phpunit\PHPMock;

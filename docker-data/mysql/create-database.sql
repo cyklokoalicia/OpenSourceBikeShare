@@ -1,7 +1,7 @@
 -- Adminer 4.1.0 MySQL dump
 
-SET NAMES utf8;
-SET time_zone = '+00:00';
+-- SET NAMES utf8;
+-- SET time_zone = '+00:00';
 
 DROP TABLE IF EXISTS `bikes`;
 CREATE TABLE `bikes` (
@@ -30,6 +30,7 @@ CREATE TABLE `coupons` (
 
 DROP TABLE IF EXISTS `notes`;
 CREATE TABLE `notes` (
+  `noteId` int(11) NOT NULL,
   `bikeNum` int(11) NOT NULL,
   `userId` int(11) NOT NULL,
   `note` varchar(100),

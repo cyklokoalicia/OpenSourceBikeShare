@@ -39,7 +39,7 @@ jobs:
         run: composer install
 
       - name: Run PHP Unit Tests
-        run: vendor/bin/phpunit --configuration phpunit.xml.dist
+        run: composer test
 
       - name: Run PHP CodeSniffer
         run: vendor/bin/phpcs ./src ./tests
