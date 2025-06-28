@@ -82,7 +82,7 @@ CREATE TABLE `received` (
   `sms_uuid` varchar(60) NOT NULL,
   `sender` varchar(20) NOT NULL,
   `receive_time` varchar(20) NOT NULL,
-  `sms_text` varchar(200) NOT NULL,
+  `sms_text` varchar(1024) NOT NULL,
   `IP` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -98,7 +98,7 @@ DROP TABLE IF EXISTS `sent`;
 CREATE TABLE `sent` (
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `number` varchar(20) NOT NULL,
-  `text` varchar(200) NOT NULL
+  `text` varchar(1024) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
