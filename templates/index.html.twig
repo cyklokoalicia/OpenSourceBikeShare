@@ -34,9 +34,9 @@
         var loggedin = 1;
         var priv = {{ app.user.privileges }};
         {% set usercity = app.user.city %}
-        {% if configuration.cities and configuration.citiesGPS %}
-        var maplat = {{ configuration.citiesGPS[usercity][0] }};
-        var maplon = {{ configuration.citiesGPS[usercity][1] }};
+        {% if cities %}
+        var maplat = {{ cities[usercity][0] }};
+        var maplon = {{ cities[usercity][1] }};
         {% endif %}
         {% else %}
         var loggedin = 0;
@@ -103,12 +103,12 @@
                             </span>
                         </li>
                     {% endif %}
-                    {% if configuration.cities and configuration.cities|length > 1 %}
+                    {% if cities and cities|length > 1 %}
                         <li>
                             <select class="form-control input-sm" id="citychange" title="{{ 'My City'|trans }}">
-                                {% for city in configuration.cities %}
-                                <option value="{{ city }}" {% if usercity == city %}selected{% endif %}>
-                                    {% endfor %}
+                                {% for city in cities|keys %}
+                                    <option value="{{ city }}" {% if usercity == city %}selected{% endif %}>{{ city }}</option>
+                                {% endfor %}
                             </select>
                         </li>
                     {% endif %}

@@ -17,11 +17,6 @@ $limits["increase"]=0; // allow more bike rentals in addition to user limit: 0 =
 /*** SMS related ***/
 $countrycode=""; // international dialing code (country code prefix), no plus sign
 
-$cities = ['Bratislava']; //avalible in cities
-$citiesGPS = [
-    'Bratislava' => ['48.148154', '17.117232']
-];
-
 /*** geoJSON files - uncomment line below to use, any number of geoJSON files can be included ***/
 // $geojson[]="http://example.com/poi.json"; // example geojson file with points of interests to be displayed on the map
 

@@ -13,9 +13,7 @@ class Configuration
 
     public function __construct(string $filePath)
     {
-        if ($_ENV['APP_ENV'] !== 'test') {
-            require $filePath;
-        }
+        require_once $filePath;
 
         foreach (get_defined_vars() as $configKey => $configValue) {
             $this->params[$configKey] = $configValue;

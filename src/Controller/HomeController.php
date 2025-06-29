@@ -4,6 +4,7 @@ namespace BikeShare\Controller;
 
 use BikeShare\App\Configuration;
 use BikeShare\Credit\CreditSystemInterface;
+use BikeShare\Repository\CityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +19,7 @@ class HomeController extends AbstractController
         Request $request,
         int $freeTimeHours,
         CreditSystemInterface $creditSystem,
+        CityRepository $cityRepository,
         Configuration $configuration
     ): Response {
 
@@ -39,6 +41,7 @@ class HomeController extends AbstractController
 
         return $this->render('index.html.twig', [
             'configuration' => $configuration,
+            'cities' => $cityRepository->findAvailableCities(),
             'personalStatsYearUrl' => $personalStatsYearUrl,
             'freeTime' => $freeTimeHours,
             'creditSystem' => $creditSystem,

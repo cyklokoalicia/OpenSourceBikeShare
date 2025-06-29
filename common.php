@@ -11,6 +11,7 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Rent\RentSystemFactory;
+use BikeShare\Repository\CityRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsConnector\SmsConnectorInterface;
@@ -34,6 +35,7 @@ global $configuration,
        $rentSystemFactory,
        $translator,
        $standRepository,
+       $cityRepository,
        $logger;
 
 if (empty($kernel)) {
@@ -73,6 +75,7 @@ $auth = $kernel->getContainer()->get(Auth::class);
 $rentSystemFactory = $kernel->getContainer()->get(RentSystemFactory::class);
 $translator = $kernel->getContainer()->get('translator');
 $standRepository = $kernel->getContainer()->get(StandRepository::class);
+$cityRepository = $kernel->getContainer()->get(CityRepository::class);
 
 $locale = $configuration->get('systemlang') . ".utf8";
 setlocale(LC_ALL, $locale);

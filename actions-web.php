@@ -151,9 +151,9 @@ function validatecoupon($userid, $coupon)
 
 function changecity($userid, $city)
 {
-    global $db, $configuration;
+    global $db, $cityRepository;
 
-    if (in_array($city, $configuration->get('cities'))) {
+    if (isset($cityRepository->findAvailableCities()[$city])) {
         $result = $db->query("UPDATE users SET city='$city' WHERE userId=" . $userid);
         response('City changed');
     }
@@ -163,17 +163,13 @@ function changecity($userid, $city)
 
 function mapgetmarkers($userId)
 {
-    global $db, $configuration, $user;
-	$filtercity = '';
-    if ($configuration->get('cities')) {
-        if ($userId != 0) {
-            $filtercity = ' AND city = "' . $user->findCity($userId) . '" ';
-        } else {
-            $filtercity = "";
-        }
+    global $db, $cityRepository, $user;
+	$filterCity = '';
+    if (!empty($cityRepository->findAvailableCities()) && !empty($userId)) {
+        $filterCity = ' AND city = "' . $user->findCity($userId) . '" ';
     }
     $jsoncontent = array();
-    $result = $db->query('SELECT standId,count(bikeNum) AS bikecount,standDescription,standName,standPhoto,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.standId WHERE stands.serviceTag=0 '.$filtercity.' GROUP BY standName ORDER BY standName');
+    $result = $db->query('SELECT standId,count(bikeNum) AS bikecount,standDescription,standName,standPhoto,longitude AS lon, latitude AS lat FROM stands LEFT JOIN bikes on bikes.currentStand=stands.standId WHERE stands.serviceTag=0 '.$filterCity.' GROUP BY standName ORDER BY standName');
     while ($row = $result->fetch_assoc()) {
         $jsoncontent[] = $row;
     }

@@ -107,6 +107,9 @@ return static function (ContainerConfigurator $container): void {
 
     $services->alias(DbInterface::class, PdoDb::class);
 
+    $services->get(\BikeShare\Repository\CityRepository::class)
+        ->bind('$cities', env('json:CITIES'));
+
     $services->get(\BikeShare\Mail\MailSenderFactory::class)
         ->bind('$smtpHost', env('SMTP_HOST'));
     $services->get(PHPMailerMailSender::class)
