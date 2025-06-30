@@ -154,7 +154,13 @@ function changecity($userid, $city)
     global $db, $cityRepository;
 
     if (isset($cityRepository->findAvailableCities()[$city])) {
-        $result = $db->query("UPDATE users SET city='$city' WHERE userId=" . $userid);
+        $db->query(
+            'UPDATE users SET city = :city WHERE userId = :userId',
+            [
+                'city' => $city,
+                'userId' => (int)$userid
+            ]
+        );
         response('City changed');
     }
     response(_('Invalid City.'), 1);
