@@ -10,8 +10,7 @@ class CityRepository
 
     public function __construct(
         array $cities
-    )
-    {
+    ) {
         $this->cities = $cities;
     }
 

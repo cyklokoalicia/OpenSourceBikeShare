@@ -15,8 +15,7 @@ class RegistrationFormTypeTest extends KernelTestCase
     public function testSubmitInvalidData(
         array $formData,
         array $expectedErrors = []
-    ): void
-    {
+    ): void {
         $form = static::getContainer()->get('form.factory')->create(RegistrationFormType::class);
 
         $form->submit($formData);
