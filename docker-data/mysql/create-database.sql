@@ -134,7 +134,7 @@ CREATE TABLE `users` (
   `userId` int(11) NOT NULL AUTO_INCREMENT,
   `userName` varchar(50) NOT NULL,
   `password` text NOT NULL,
-  `mail` varchar(30) NOT NULL,
+  `mail` varchar(255) NOT NULL,
   `number` varchar(30) NOT NULL,
   `privileges` int(11) NOT NULL DEFAULT '0',
   `city` varchar(45) NOT NULL DEFAULT 'Bratisalva',

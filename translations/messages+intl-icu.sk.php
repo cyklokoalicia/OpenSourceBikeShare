@@ -195,7 +195,6 @@ return [
     'Bicycle' => '',
     'reverted to' => '',
     'No last stand or code for bicycle' => '',
-    'Password do not match. Please correct and try again.' => '',
     'You have been successfully registered. Please, check your email and read the instructions to finish your registration.' => '',
     'Password successfully changed. Your username is your phone number. Continue to' => '',
     'login' => '',

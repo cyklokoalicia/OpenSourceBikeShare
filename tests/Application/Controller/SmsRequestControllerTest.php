@@ -8,6 +8,7 @@ use BikeShare\Db\DbInterface;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use PHPUnit\Framework\Constraint\Callback;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 
 class SmsRequestControllerTest extends WebTestCase
 {
@@ -38,12 +39,16 @@ class SmsRequestControllerTest extends WebTestCase
     ): void {
         $smsUuid = md5((string)microtime(true));
         $client = static::createClient();
-        $client->request('GET', '/receive.php', [
-            'number' => $phoneNumber,
-            'message' => $message,
-            'uuid' => $smsUuid,
-            'time' => time(),
-        ]);
+        $client->request(
+            Request::METHOD_GET,
+            '/receive.php',
+            [
+                'number' => $phoneNumber,
+                'message' => $message,
+                'uuid' => $smsUuid,
+                'time' => time(),
+            ]
+        );
         $this->assertResponseIsSuccessful();
         $this->assertSame($expectedResponse, $client->getResponse()->getContent());
 
@@ -123,12 +128,16 @@ class SmsRequestControllerTest extends WebTestCase
     ): void {
         $_ENV['CREDIT_SYSTEM_ENABLED'] = $isCreditSystemEnabled ? '1' : '0';
         $client = static::createClient();
-        $client->request('GET', '/receive.php', [
-            'number' => $phoneNumber,
-            'message' => 'HELP',
-            'uuid' => md5((string)microtime(true)),
-            'time' => time(),
-        ]);
+        $client->request(
+            Request::METHOD_GET,
+            '/receive.php',
+            [
+                'number' => $phoneNumber,
+                'message' => 'HELP',
+                'uuid' => md5((string)microtime(true)),
+                'time' => time(),
+            ]
+        );
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $client->getResponse()->getContent());
         $smsConnector = $client->getContainer()->get(SmsConnectorInterface::class);
