@@ -920,7 +920,7 @@ msgid "No last stand or code for bicycle"
 msgstr "Kein letzter Fahrradständer oder Code für dieses Fahrrad"
 
 #: actions-web.php:489
-msgid "Password do not match. Please correct and try again."
+msgid "Passwords do not match."
 msgstr ""
 "Passwort stimmt nicht überein. Bitte korrigieren und noch mal versuchen."
 

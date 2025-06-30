@@ -17,20 +17,20 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
     protected const COMMAND_NAME = 'ADD';
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
-    private Configuration $configuration;
+    private string $countryCode;
     private UserRegistration $userRegistration;
     private UserRepository $userRepository;
     private PhonePurifier $phonePurifier;
 
     public function __construct(
         TranslatorInterface $translator,
-        Configuration $configuration,
+        string $countryCode,
         UserRegistration $userRegistration,
         UserRepository $userRepository,
         PhonePurifier $phonePurifier
     ) {
         parent::__construct($translator);
-        $this->configuration = $configuration;
+        $this->countryCode = $countryCode;
         $this->userRegistration = $userRegistration;
         $this->userRepository = $userRepository;
         $this->phonePurifier = $phonePurifier;
@@ -41,8 +41,8 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
         $phone = $this->phonePurifier->purify($phone);
 
         if (
-            $phone < $this->configuration->get('countrycode') . "000000000"
-            || $phone > ($this->configuration->get('countrycode') + 1) . "000000000"
+            $phone < $this->countryCode . "000000000"
+            || $phone > ((int)$this->countryCode + 1) . "000000000"
         ) {
             throw new ValidationException(
                 $this->translator->trans('Invalid phone number.')

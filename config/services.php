@@ -69,6 +69,7 @@ return static function (ContainerConfigurator $container): void {
             '../src/App/Entity',
             '../src/Event',
             '../src/Command/LoadFixturesCommand.php',
+            '../src/SmsCommand/*Command.php',
         ]);
 
     $services->get(\BikeShare\Command\LongRentalCheckCommand::class)
@@ -92,11 +93,11 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 
-    $services->get(\BikeShare\SmsCommand\ListCommand::class)
-        ->bind('$forceStack', env('bool:FORCE_STACK'));
-
     $services->load('BikeShare\\SmsCommand\\', '../src/SmsCommand/*Command.php')
-        ->bind(RentSystemInterface::class, expr('service("BikeShare\\\Rent\\\RentSystemFactory").getRentSystem("sms")'));
+        ->bind(RentSystemInterface::class, expr('service("BikeShare\\\Rent\\\RentSystemFactory").getRentSystem("sms")'))
+        ->bind('$forceStack', env('bool:FORCE_STACK'))
+        ->bind('$countryCode', env('COUNTRY_CODE'))
+    ;
 
     $services->get(PdoDb::class)
         ->args([
@@ -128,9 +129,7 @@ return static function (ContainerConfigurator $container): void {
         );
 
     $services->get(PhonePurifier::class)
-        ->args([
-            expr("service('BikeShare\\\App\\\Configuration').get('countrycode')"),
-        ]);
+        ->bind('$countryCode', env('COUNTRY_CODE'));
 
     $services->get(CreditSystemFactory::class)
         ->bind('$isEnabled', env('bool:CREDIT_SYSTEM_ENABLED'));

@@ -927,7 +927,7 @@ msgid "No last stand or code for bicycle"
 msgstr ""
 
 #: /www/OpenSourceBikeShare/actions-web.php:483
-msgid "Password do not match. Please correct and try again."
+msgid "Passwords do not match."
 msgstr ""
 
 #: /www/OpenSourceBikeShare/actions-web.php:495

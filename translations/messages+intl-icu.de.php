@@ -217,7 +217,6 @@ return [
     'Bicycle' => 'Fahrrad',
     'reverted to' => 'zurückgesetzt zu',
     'No last stand or code for bicycle' => 'Kein letzter Fahrradständer oder Code für dieses Fahrrad',
-    'Password do not match. Please correct and try again.' => 'Passwort stimmt nicht überein. Bitte korrigieren und noch mal versuchen.',
     'You have been successfully registered. Please, check your email and read the instructions to finish your registration.' => '',
     'Password successfully changed. Your username is your phone number. Continue to' => '',
     'login' => 'Login',
