@@ -155,4 +155,42 @@ class RegistrationFormTypeTest extends KernelTestCase
             'expectedPhone' => '421333333333',
         ];
     }
+
+    /**
+     * @dataProvider fullNamePurifyDataProvider
+     */
+    public function testFullNamePurify(
+        string $fullname,
+        string $expectedFullname
+    ) {
+        $form = static::getContainer()->get('form.factory')->create(RegistrationFormType::class);
+
+        $form->submit(
+            [
+                'fullname' => $fullname,
+            ]
+        );
+
+        // This check ensures there are no transformation failures
+        $this->assertTrue($form->isSynchronized());
+        $this->assertFalse($form->isValid());
+
+        $this->assertSame($expectedFullname, $form->get('fullname')->getData());
+    }
+
+    public function fullNamePurifyDataProvider(): iterable
+    {
+        yield 'default' => [
+            'fullname' => 'Test User',
+            'expectedFullname' => 'Test User',
+        ];
+        yield 'html code in name' => [
+            'fullname' => '<a href="#">Test User</a>',
+            'expectedFullname' => 'Test User',
+        ];
+        yield 'xss code in name' => [
+            'fullname' => '<script>alert(Test);</script> User',
+            'expectedfullname' => 'alert(Test); User',
+        ];
+    }
 }
