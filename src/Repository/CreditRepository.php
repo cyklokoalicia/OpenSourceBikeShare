@@ -29,4 +29,18 @@ class CreditRepository
             ]
         );
     }
+
+    public function findItem(int $userId): float
+    {
+        $result = $this->db->query(
+            "SELECT credit FROM credit WHERE userId = :userId",
+            ['userId' => $userId]
+        )->fetchAssoc();
+
+        if (empty($result)) {
+            return 0.0;
+        }
+
+        return (float)$result[0]['credit'];
+    }
 }

@@ -22,11 +22,13 @@ class UserRepository
             'SELECT 
                 users.userId,
                 username,
+                city,
                 mail,
                 number,
                 privileges,
                 credit,
-                userLimit 
+                userLimit,
+                isNumberConfirmed
             FROM users 
             LEFT JOIN credit ON users.userId=credit.userId 
             LEFT JOIN limits ON users.userId=limits.userId 
@@ -43,11 +45,13 @@ class UserRepository
             'SELECT 
                 users.userId,
                 username,
+                city,
                 mail,
                 number,
                 privileges,
                 credit,
-                userLimit 
+                userLimit,
+                isNumberConfirmed
               FROM users 
               LEFT JOIN credit ON users.userId=credit.userId 
               LEFT JOIN limits ON users.userId=limits.userId 
@@ -66,11 +70,13 @@ class UserRepository
             'SELECT 
                 users.userId,
                 username,
+                city,
                 mail,
                 number,
                 privileges,
                 credit,
-                userLimit 
+                userLimit,
+                isNumberConfirmed
               FROM users 
               LEFT JOIN credit ON users.userId=credit.userId 
               LEFT JOIN limits ON users.userId=limits.userId 
@@ -89,11 +95,13 @@ class UserRepository
             'SELECT 
                 users.userId,
                 username,
+                city,
                 mail,
                 number,
                 privileges,
                 credit,
-                userLimit 
+                userLimit,
+                isNumberConfirmed
               FROM users 
               LEFT JOIN credit ON users.userId=credit.userId 
               LEFT JOIN limits ON users.userId=limits.userId 

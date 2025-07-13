@@ -101,6 +101,7 @@ class RegistrationFormType extends AbstractType
             function (FormEvent $event) {
                 $data = $event->getData();
                 $data['number'] = $this->phonePurifier->purify($data['number'] ?? '');
+                $data['fullname'] = strip_tags($data['fullname'] ?? '');
                 $event->setData($data);
             }
         );

@@ -54,6 +54,7 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
                 $this->translator->trans('Email address is incorrect.')
             );
         }
+        $fullName = strip_tags($fullName);
 
         $registeredUser = $this->userRepository->findItemByPhoneNumber($phone);
         if (!is_null($registeredUser)) {
@@ -68,7 +69,6 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
             );
         }
 
-        //TODO what about user password?
         $user = $this->userRegistration->register(
             $phone,
             $email,
