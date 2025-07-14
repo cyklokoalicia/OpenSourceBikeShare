@@ -23,7 +23,7 @@ function response($message, $error = 0, $additional = '', $log = 1)
 
 function listbikes($stand)
 {
-    global $db, $configuration, $standRepository;
+    global $db, $standRepository;
 
     $stacktopbike = false;
     $stand = $db->escape($stand);

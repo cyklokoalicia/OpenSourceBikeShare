@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Form;
 
-use BikeShare\App\Configuration;
 use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Repository\CityRepository;
 use BikeShare\Repository\UserRepository;
@@ -25,22 +24,22 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationFormType extends AbstractType
 {
+    private string $systemRules;
     private CityRepository $cityRepository;
     private TranslatorInterface $translator;
-    private Configuration $configuration;
     private PhonePurifier $phonePurifier;
     private UserRepository $userRepository;
 
     public function __construct(
+        string $systemRules,
         CityRepository $cityRepository,
         TranslatorInterface $translator,
-        Configuration $configuration,
         PhonePurifier $phonePurifier,
         UserRepository $userRepository
     ) {
+        $this->systemRules = $systemRules;
         $this->cityRepository = $cityRepository;
         $this->translator = $translator;
-        $this->configuration = $configuration;
         $this->phonePurifier = $phonePurifier;
         $this->userRepository = $userRepository;
     }
@@ -89,7 +88,7 @@ class RegistrationFormType extends AbstractType
             'label' => $this->translator->trans(
                 'By registering I confirm that I have read: {systemRules} and agree with the terms and conditions.',
                 [
-                    'systemRules' => '<a href="' . $this->configuration->get('systemrules') . '" target="_blank">'
+                    'systemRules' => '<a href="' . $this->systemRules . '" target="_blank">'
                         . $this->translator->trans('User Guide') . '</a>'
                 ]
             ),

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller;
 
-use BikeShare\App\Configuration;
 use BikeShare\Db\DbInterface;
 use BikeShare\Event\UserRegistrationEvent;
 use BikeShare\Mail\MailSenderInterface;
@@ -226,7 +225,7 @@ class SmsRequestControllerTest extends WebTestCase
 
         $adminUser = $client->getContainer()->get(UserRepository::class)->findItemByPhoneNumber($adminPhoneNumber);
         $newUser = $client->getContainer()->get(UserRepository::class)->findItemByPhoneNumber($phoneNumber);
-        
+
         $this->assertNotEmpty($newUser, 'User was not added');
         $this->assertSame($email, $newUser['mail']);
         $this->assertSame($phoneNumber, $newUser['number']);
@@ -263,7 +262,7 @@ class SmsRequestControllerTest extends WebTestCase
         );
         # Assert that the email contains the link to the system rules page
         $this->assertStringContainsString(
-            $client->getContainer()->get(Configuration::class)->get('systemrules'),
+            $client->getServerParameter('SYSTEM_RULES'),
             $sentMessages[0]['message']
         );
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
-use BikeShare\App\Configuration;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
@@ -24,7 +23,7 @@ class EmailConfirmController extends AbstractController
         UserRepository $userRepository,
         HistoryRepository $historyRepository,
         TranslatorInterface $translator,
-        Configuration $configuration
+        int $userBikeLimitAfterRegistration = 0
     ): Response {
         if (!empty($key)) {
             $registration = $registrationRepository->findItem($key);
@@ -34,7 +33,7 @@ class EmailConfirmController extends AbstractController
                 if (empty($user['userLimit'])) {
                     $userRepository->updateUserLimit(
                         (int)$registration['userId'],
-                        $configuration->get('limits')['registration'] ?? 0
+                        $userBikeLimitAfterRegistration
                     );
                 }
 

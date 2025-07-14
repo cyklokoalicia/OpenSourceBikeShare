@@ -11,16 +11,15 @@ function t(?string $id, array $parameters = [], ?string $domain = null, ?string 
 
 function response($message,$error=0,$log=1)
 {
-    global $configuration, $db, $user, $auth;
+    global $user, $auth;
     if ($log == 1 and $message) {
         $userid = $auth->getUserId();
         $number = $user->findPhoneNumber($userid);
         logresult($number, $message);
     }
-   echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$configuration->get('systemname'),'</title>';
-   echo '<base href="' . $configuration->get('systemURL') . '" />';
-   echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';
-   echo '<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />';
+   echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' . $_ENV['APP_NAME'] . '</title>';
+   echo '<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />';
+   echo '<link rel="stylesheet" type="text/css" href="/css/bootstrap-theme.min.css" />';
    echo '<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />';
    echo '<link rel="icon" type="image/svg+xml" href="/favicon.svg" />';
    echo '<link rel="shortcut icon" href="/favicon.ico" />';
@@ -43,7 +42,7 @@ function response($message,$error=0,$log=1)
 
 function showrentform($userId,$bike)
 {
-    global $db, $configuration;
+    global $db;
 
     $stand = $db->query("SELECT s.* FROM bikes b JOIN stands s ON b.currentStand=s.standId WHERE bikeNum=$bike")->fetchAssoc();
 
@@ -58,10 +57,9 @@ function showrentform($userId,$bike)
     }
     $note = substr($note, 0, strlen($note) - 2);
 
-    echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>',$configuration->get('systemname'),'</title>';
-    echo '<base href="' . $configuration->get('systemURL') . '" />';
-    echo '<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />';
-    echo '<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css" />';
+    echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' . $_ENV['APP_NAME'] . '</title>';
+    echo '<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />';
+    echo '<link rel="stylesheet" type="text/css" href="/css/bootstrap-theme.min.css" />';
     echo '<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />';
     echo '<link rel="icon" type="image/svg+xml" href="/favicon.svg" />';
     echo '<link rel="shortcut icon" href="/favicon.ico" />';
@@ -74,7 +72,7 @@ function showrentform($userId,$bike)
     if (!empty($note)) {
         echo '<div class="alert alert-warning">' . $note . '</div>';
     }
-    echo '<form method="post" action="scan.php/rent/',$bike,'">';
+    echo '<form method="post" action="/scan.php/rent/'. $bike . '">';
     echo '<input type="hidden" name="rent" value="yes" />';
     echo '<div class="col-lg-12">
             <button class="btn btn-primary" type="submit" id="rent" title="'. t('Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'). '">'

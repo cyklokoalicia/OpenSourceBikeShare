@@ -32,9 +32,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - run: |
-          cp config.example.php config.php
-
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:

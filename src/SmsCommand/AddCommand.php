@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\SmsCommand;
 
-use BikeShare\App\Configuration;
 use BikeShare\App\Entity\User;
 use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Repository\UserRepository;

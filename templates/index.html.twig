@@ -28,7 +28,7 @@
     <meta name="theme-color" content="#ffffff">
     <script>
 
-        var mapzoom = {{ configuration.systemzoom }};
+        var mapzoom = {{ systemZoom }};
 
         {% if app.user %}
         var loggedin = 1;
@@ -41,8 +41,8 @@
         {% else %}
         var loggedin = 0;
         var priv = 0;
-        var maplat = {{ configuration.systemlat  }};
-        var maplon = {{ configuration.systemlong }};
+        var maplat = {{ cities|first[0] }};
+        var maplon = {{ cities|first[1] }};
         {% endif %}
 
         var standselected = 0;
@@ -60,7 +60,7 @@
         <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
             <ul class="list-inline">
                 <li>
-                    <a href="{{ configuration.systemrules }}" target="_blank">
+                    <a href="{{ systemRules }}" target="_blank">
                         <span class="glyphicon glyphicon-question-sign"></span>&nbsp;{{ 'Help'|trans }}
                     </a>
                 </li>

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-use BikeShare\App\Configuration;
 use BikeShare\App\EventListener\ErrorListener;
 use BikeShare\Credit\CodeGenerator\CodeGenerator;
 use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
@@ -33,7 +32,8 @@ return static function (ContainerConfigurator $container): void {
         ->autoconfigure()
         ->autowire()
         ->bind('$isSmsSystemEnabled', expr("container.getEnv('SMS_CONNECTOR') ? true : false"))
-        ->bind('$appName', env('APP_NAME'));
+        ->bind('$appName', env('APP_NAME'))
+        ->bind('$systemRules', env('SYSTEM_RULES'));
 
     $services->instanceof(CreditSystemInterface::class)->tag('creditSystem');
     $services->instanceof(RentSystemInterface::class)->tag('rentSystem');
@@ -56,9 +56,6 @@ return static function (ContainerConfigurator $container): void {
             param('kernel.debug'),
         ])
         ->tag('kernel.event_subscriber');
-
-    $services->set(Configuration::class)
-        ->args([__DIR__ . '/../config.php']);
 
     $services->load('BikeShare\\', '../src/')
         ->exclude([
@@ -88,7 +85,11 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 
     $services->get(\BikeShare\Controller\HomeController::class)
-        ->bind('$freeTimeHours', env('int:WATCHES_FREE_TIME'));
+        ->bind('$freeTimeHours', env('int:WATCHES_FREE_TIME'))
+        ->bind('$systemZoom', env('int:SYSTEM_ZOOM'));
+
+    $services->get(\BikeShare\Controller\EmailConfirmController::class)
+        ->bind('$userBikeLimitAfterRegistration', env('int:USER_BIKE_LIMIT_AFTER_REGISTRATION'));
 
     $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));

@@ -1,8 +1,8 @@
 <?php
 
 require_once 'vendor/autoload.php';
+define('ERROR', 1);
 
-use BikeShare\App\Configuration;
 use BikeShare\App\Kernel;
 use BikeShare\Authentication\Auth;
 use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
@@ -21,8 +21,7 @@ use Symfony\Component\Dotenv\Dotenv;
 /**
  * should be removed
  */
-global $configuration,
-       $sms,
+global $sms,
        $db,
        $db,
        $mailer,
@@ -61,7 +60,6 @@ if (empty($kernel)) {
 }
 
 $logger = $kernel->getContainer()->get('logger');
-$configuration = $kernel->getContainer()->get(Configuration::class);
 $sms = $kernel->getContainer()->get(SmsConnectorInterface::class);
 $db = $kernel->getContainer()->get(DbInterface::class);
 $db = $kernel->getContainer()->get(DbInterface::class);
@@ -77,7 +75,7 @@ $translator = $kernel->getContainer()->get('translator');
 $standRepository = $kernel->getContainer()->get(StandRepository::class);
 $cityRepository = $kernel->getContainer()->get(CityRepository::class);
 
-$locale = $configuration->get('systemlang') . ".utf8";
+$locale = $kernel->getContainer()->getParameter('kernel.default_locale') . ".utf8";
 setlocale(LC_ALL, $locale);
 putenv("LANG=" . $locale);
 bindtextdomain("messages", dirname(__FILE__) . '/languages');
