@@ -78,7 +78,9 @@ class CreditSystem implements CreditSystemInterface
         }
 
         $this->db->query(
-            'INSERT INTO credit (userId, credit) VALUES (:userId, :creditAmount) ON DUPLICATE KEY UPDATE credit = credit + :creditAmountUpdate',
+            'INSERT INTO credit (userId, credit) 
+                   VALUES (:userId, :creditAmount)
+                   ON DUPLICATE KEY UPDATE credit = credit + :creditAmountUpdate',
             [
                 'userId' => $userId,
                 'creditAmount' => $creditAmount,

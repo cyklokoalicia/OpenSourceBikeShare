@@ -87,7 +87,10 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            $this->assertSame($user['username'] . ': Note "' . $note . '" for bike ' . $bikeNumber . ' saved.', $sentMessage['message']);
+            $this->assertSame(
+                $user['username'] . ': Note "' . $note . '" for bike ' . $bikeNumber . ' saved.',
+                $sentMessage['message']
+            );
             $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }
@@ -152,7 +155,10 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            $this->assertSame($user['username'] . ': Note "' . $note . '" for stand ' . $standName . ' saved.', $sentMessage['message']);
+            $this->assertSame(
+                $user['username'] . ': Note "' . $note . '" for stand ' . $standName . ' saved.',
+                $sentMessage['message']
+            );
             $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }

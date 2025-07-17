@@ -55,10 +55,18 @@ class HelpCommandTest extends BikeSharingWebTestCase
         $this->assertCount(1, $smsConnector->getSentMessages());
         $sentMessage = $smsConnector->getSentMessages()[0];
         foreach ($expectedCommands as $command) {
-            $this->assertStringContainsString($command, $sentMessage['text'], 'Response sms text does not contain expected command');
+            $this->assertStringContainsString(
+                $command,
+                $sentMessage['text'],
+                'Response sms text does not contain expected command'
+            );
         }
         foreach ($notExpectedCommands as $command) {
-            $this->assertStringNotContainsString($command, $sentMessage['text'], 'Response sms text contains unexpected command');
+            $this->assertStringNotContainsString(
+                $command,
+                $sentMessage['text'],
+                'Response sms text contains unexpected command'
+            );
         }
         $this->assertStringContainsString($phoneNumber, $sentMessage['number'], 'Invalid response sms number');
     }

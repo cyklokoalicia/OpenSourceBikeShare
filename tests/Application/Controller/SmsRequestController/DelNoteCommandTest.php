@@ -52,16 +52,16 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         $standName = self::STAND_NAME;
         $user = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
-    
+
         $admins = $this->client->getContainer()->get(DbInterface::class)
             ->query('SELECT userId, number,mail FROM users where privileges & 2 != 0')
             ->fetchAllAssoc();
-    
+
         $message = 'DELNOTE ' . $standName;
         if ($pattern !== null) {
             $message .= ' ' . $pattern;
         }
-    
+
         $this->client->request(
             Request::METHOD_GET,
             '/receive.php',
@@ -74,11 +74,11 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
-    
+
         $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
         $this->assertCount($expectedSmsCount, $smsConnector->getSentMessages());
         $sentMessages = $smsConnector->getSentMessages();
-    
+
         if ($expectedSmsCount === 1) {
             $sentMessage = $sentMessages[0];
             $this->assertSame($expectedMessage, $sentMessage['text'], 'Invalid message text');
@@ -107,10 +107,10 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                 'Invalid notified numbers'
             );
         }
-    
+
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount($expectedMailCount, $mailSender->getSentMessages(), $expectedMailCount === 0 ? 'Unexpected admin email was send' : 'No admin email was send');
-        
+
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
                 $this->assertSame($user['username'] . ': ' . $expectedMessage, $sentMessage['message']);
@@ -118,7 +118,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
         }
-    
+
         $standNotes = $this->client->getContainer()->get(NoteRepository::class)->findStandNote(self::STAND_ID);
         $this->assertCount($expectedRemainingNotes, $standNotes);
 
@@ -126,7 +126,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
             $this->expectLog(Logger::WARNING, '/Validation error/');
         }
     }
-    
+
     public function standNotePatternDataProvider(): array
     {
         return [
@@ -156,7 +156,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
             ],
         ];
     }
-    
+
     /**
      * @dataProvider bikeNotePatternDataProvider
      */
@@ -171,16 +171,16 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         $bikeNumber = self::BIKE_NUMBER;
         $user = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
-    
+
         $admins = $this->client->getContainer()->get(DbInterface::class)
             ->query('SELECT userId, number,mail FROM users where privileges & 2 != 0')
             ->fetchAllAssoc();
-    
+
         $message = 'DELNOTE ' . $bikeNumber;
         if ($pattern !== null) {
             $message .= ' ' . $pattern;
         }
-    
+
         $this->client->request(
             Request::METHOD_GET,
             '/receive.php',
@@ -193,11 +193,11 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
-    
+
         $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
         $this->assertCount($expectedSmsCount, $smsConnector->getSentMessages());
         $sentMessages = $smsConnector->getSentMessages();
-    
+
         if ($expectedSmsCount === 1) {
             $sentMessage = $sentMessages[0];
             $this->assertSame($expectedMessage, $sentMessage['text'], 'Invalid message sent to user');
@@ -226,10 +226,10 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                 'Invalid notified numbers'
             );
         }
-    
+
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount($expectedMailCount, $mailSender->getSentMessages(), $expectedMailCount === 0 ? 'Unexpected admin email was send' : 'No admin email was send');
-        
+
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
                 $this->assertSame($user['username'] . ': ' . $expectedMessage, $sentMessage['message']);
@@ -237,7 +237,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
         }
-    
+
         $bikeNotes = $this->client->getContainer()->get(NoteRepository::class)->findBikeNote($bikeNumber);
         $this->assertCount($expectedRemainingNotes, $bikeNotes);
 
@@ -245,7 +245,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
             $this->expectLog(Logger::WARNING, '/Validation error/');
         }
     }
-    
+
     public function bikeNotePatternDataProvider(): array
     {
         return [

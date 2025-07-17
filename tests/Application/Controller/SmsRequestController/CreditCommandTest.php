@@ -52,7 +52,11 @@ class CreditCommandTest extends BikeSharingWebTestCase
         $creditSystem = $this->client->getContainer()->get(CreditSystemInterface::class);
 
         $this->assertSame('Your remaining credit: 0€', $sentMessage['text'], 'Invalid response sms text');
-        $this->assertStringEndsWith($creditSystem->getCreditCurrency(), $sentMessage['text'], 'Invalid response sms text currency');
+        $this->assertStringEndsWith(
+            $creditSystem->getCreditCurrency(),
+            $sentMessage['text'],
+            'Invalid response sms text currency'
+        );
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
     }
 
@@ -79,7 +83,11 @@ class CreditCommandTest extends BikeSharingWebTestCase
 
         $creditSystem = $this->client->getContainer()->get(CreditSystemInterface::class);
 
-        $this->assertSame('Error. The command CREDIT does not exist. If you need help, send: HELP', $sentMessage['text'], 'Invalid response sms text');
+        $this->assertSame(
+            'Error. The command CREDIT does not exist. If you need help, send: HELP',
+            $sentMessage['text'],
+            'Invalid response sms text'
+        );
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms recipient');
         $this->expectLog(Logger::WARNING, '/Validation error/');
     }

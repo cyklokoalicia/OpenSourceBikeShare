@@ -56,8 +56,9 @@ class AddCommandTest extends BikeSharingWebTestCase
             'Sms was not sent to the admin user'
         );
 
-        $adminUser = $this->client->getContainer()->get(UserRepository::class)->findItemByPhoneNumber($adminPhoneNumber);
-        $newUser = $this->client->getContainer()->get(UserRepository::class)->findItemByPhoneNumber($phoneNumber);
+        $userRepository = $this->client->getContainer()->get(UserRepository::class);
+        $adminUser = $userRepository->findItemByPhoneNumber($adminPhoneNumber);
+        $newUser = $userRepository->findItemByPhoneNumber($phoneNumber);
 
         $this->assertNotEmpty($newUser, 'User was not added');
         $this->assertSame($email, $newUser['mail']);
@@ -69,7 +70,8 @@ class AddCommandTest extends BikeSharingWebTestCase
         # Assert that the new user has the same city as the admin user who added them
         $this->assertSame($adminUser['city'], $newUser['city']);
 
-        $userCredits = $this->client->getContainer()->get(CreditSystemInterface::class)->getUserCredit($newUser['userId']);
+        $userCredits = $this->client->getContainer()
+            ->get(CreditSystemInterface::class)->getUserCredit($newUser['userId']);
         $this->assertSame(0.0, $userCredits, 'User credits were not initialized to 0.0');
 
         # Assert that the event UserRegistrationEvent was dispatched
