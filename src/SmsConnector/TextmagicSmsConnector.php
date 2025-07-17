@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\SmsConnector;
 
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * http://textmagic.com
@@ -16,15 +16,15 @@ class TextmagicSmsConnector extends AbstractConnector
     private string $gatewayUser = '';
     private string $gatewayPassword = '';
     private string $gatewaySenderNumber = '';
-    private ?Request $request;
+    private RequestStack $requestStack;
 
     public function __construct(
-        ?Request $request,
+        RequestStack $requestStack,
         array $configuration,
         $debugMode = false
     ) {
         parent::__construct($configuration, $debugMode);
-        $this->request = $request;
+        $this->requestStack = $requestStack;
     }
 
     public function checkConfig(array $config): void
@@ -71,23 +71,23 @@ class TextmagicSmsConnector extends AbstractConnector
 
     public function receive(): void
     {
-        if (is_null($this->request)) {
+        if (is_null($this->requestStack->getCurrentRequest())) {
             throw new \RuntimeException('Could not receive sms in cli');
         }
-        if ($this->request->request->has('text')) {
-            $this->message = $this->request->request->get('text', '');
+        if ($this->requestStack->getCurrentRequest()->request->has('text')) {
+            $this->message = $this->requestStack->getCurrentRequest()->request->get('text', '');
         }
-        if ($this->request->request->has('from')) {
-            $this->number = $this->request->request->get('from', '');
+        if ($this->requestStack->getCurrentRequest()->request->has('from')) {
+            $this->number = $this->requestStack->getCurrentRequest()->request->get('from', '');
         }
-        if ($this->request->request->has('message_id')) {
-            $this->uuid = $this->request->request->get('message_id', '');
+        if ($this->requestStack->getCurrentRequest()->request->has('message_id')) {
+            $this->uuid = $this->requestStack->getCurrentRequest()->request->get('message_id', '');
         }
-        if ($this->request->request->has('timestamp')) {
-            $this->time = date("Y-m-d H:i:s", $this->request->request->get('timestamp', ''));
+        if ($this->requestStack->getCurrentRequest()->request->has('timestamp')) {
+            $this->time = date("Y-m-d H:i:s", $this->requestStack->getCurrentRequest()->request->get('timestamp', ''));
         }
-        if ($this->request->server->has('REMOTE_ADDR')) {
-            $this->ipaddress = $this->request->server->get('REMOTE_ADDR');
+        if ($this->requestStack->getCurrentRequest()->server->has('REMOTE_ADDR')) {
+            $this->ipaddress = $this->requestStack->getCurrentRequest()->server->get('REMOTE_ADDR');
         }
     }
 

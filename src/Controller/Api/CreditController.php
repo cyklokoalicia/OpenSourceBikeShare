@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace BikeShare\Controller\Api;
 
 use BikeShare\Credit\CreditSystemInterface;
-use BikeShare\Repository\CreditRepository;
-use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,8 +20,6 @@ class CreditController extends AbstractController
     public function add(
         Request $request,
         CreditSystemInterface $creditSystem,
-        CreditRepository $creditRepository,
-        HistoryRepository $historyRepository,
         UserRepository $userRepository,
         LoggerInterface $logger
     ): Response {
@@ -55,13 +51,7 @@ class CreditController extends AbstractController
         $minRequiredCredit = $creditSystem->getMinRequiredCredit();
         $creditAmount = $minRequiredCredit * $multiplier;
 
-        $creditRepository->addCredits($userId, (float)$creditAmount);
-        $historyRepository->addItem(
-            $userId,
-            0, //BikeNum
-            'CREDITCHANGE', //action
-            $creditAmount . '|add+' . $creditAmount //parameter
-        );
+        $creditSystem->addCredit($userId, (float)$creditAmount);
 
         $user = $userRepository->findItem($userId);
 

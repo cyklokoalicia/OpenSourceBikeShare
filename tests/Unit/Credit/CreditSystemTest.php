@@ -7,6 +7,7 @@ namespace BikeShare\Test\Unit\Credit;
 use BikeShare\Credit\CreditSystem;
 use BikeShare\Db\DbInterface;
 use BikeShare\Db\DbResultInterface;
+use BikeShare\Repository\HistoryRepository;
 use PHPUnit\Framework\TestCase;
 
 class CreditSystemTest extends TestCase
@@ -38,7 +39,8 @@ class CreditSystemTest extends TestCase
             $longRentalFee,
             $limitIncreaseFee,
             $violationFee,
-            $this->createMock(DbInterface::class)
+            $this->createMock(DbInterface::class),
+            $this->createMock(HistoryRepository::class)
         );
         $this->assertEquals($isEnabled, $creditSystem->isEnabled());
         $this->assertEquals($creditCurrency, $creditSystem->getCreditCurrency());
@@ -141,7 +143,8 @@ class CreditSystemTest extends TestCase
             5, //longRentalFee
             10, //limitIncreaseFee
             5, //violationFee
-            $db
+            $db,
+            $this->createMock(HistoryRepository::class)
         );
 
         $this->assertEquals(5, $creditSystem->getUserCredit($userId));
@@ -171,7 +174,8 @@ class CreditSystemTest extends TestCase
             5, //longRentalFee
             10, //limitIncreaseFee
             5, //violationFee
-            $db
+            $db,
+            $this->createMock(HistoryRepository::class)
         );
 
         $this->assertEquals(0, $creditSystem->getUserCredit($userId));

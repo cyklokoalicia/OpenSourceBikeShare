@@ -7,7 +7,7 @@ namespace BikeShare\Test\Unit\SmsConnector;
 use BikeShare\SmsConnector\EuroSmsConnector;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class EuroSmsConnectorTest extends TestCase
 {
@@ -23,9 +23,9 @@ class EuroSmsConnectorTest extends TestCase
             ]
         ];
 
-        $request = $this->createMock(Request::class);
+        $requestStack = $this->createMock(RequestStack::class);
         $smsConnector = new EuroSmsConnector(
-            $request,
+            $requestStack,
             $configuration,
             false
         );
@@ -63,9 +63,9 @@ class EuroSmsConnectorTest extends TestCase
                 'gatewaySenderNumber' => $gatewaySenderNumber,
             ]
         ];
-        $request = $this->createMock(Request::class);
+        $requestStack = $this->createMock(RequestStack::class);
         $smsConnector = new EuroSmsConnector(
-            $request,
+            $requestStack,
             $configuration,
             false
         );
@@ -100,9 +100,9 @@ class EuroSmsConnectorTest extends TestCase
                 'gatewaySenderNumber' => 'SenderNumber',
             ]
         ];
-        $request = $this->createMock(Request::class);
+        $requestStack = $this->createMock(RequestStack::class);
         $smsConnector = new EuroSmsConnector(
-            $request,
+            $requestStack,
             $configuration,
             false
         );
@@ -125,9 +125,9 @@ class EuroSmsConnectorTest extends TestCase
                 'gatewaySenderNumber' => 'SenderNumber',
             ]
         ];
-        $request = $this->createMock(Request::class);
+        $requestStack = $this->createMock(RequestStack::class);
         $smsConnector = new EuroSmsConnector(
-            $request,
+            $requestStack,
             $configuration,
             false
         );

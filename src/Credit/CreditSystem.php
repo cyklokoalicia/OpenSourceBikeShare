@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Credit;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Repository\HistoryRepository;
 
 class CreditSystem implements CreditSystemInterface
 {
@@ -15,20 +16,21 @@ class CreditSystem implements CreditSystemInterface
     private string $creditCurrency;
     // minimum credit required to allow any bike operations
     private float $minBalanceCredit;
-    // rental fee (after $watches["freetime"])
+    // rental fee (after WATCHES_FREE_TIME)
     private float $rentalFee;
     // 0 = disabled,
-    // 1 = charge flat price $credit["rent"] every $watches["flatpricecycle"] minutes,
-    // 2 = charge doubled price $credit["rent"] every $watches["doublepricecycle"] minutes
+    // 1 = charge flat price CREDIT_SYSTEM_RENTAL_FEE every WATCHES_FLAT_PRICE_CYCLE minutes,
+    // 2 = charge doubled price CREDIT_SYSTEM_RENTAL_FEE every WATCHES_DOUBLE_PRICE_CYCLE minutes
     private int $priceCycle;
-    // long rental fee ($watches["longrental"] time)
+    // long rental fee (WATCHES_LONG_RENTAL time)
     private float $longRentalFee;
-    // credit needed to temporarily increase limit, applicable only when $limits["increase"]>0
+    // credit needed to temporarily increase limit, applicable only when USER_BIKE_LIMIT_INCREASE > 0
     private float $limitIncreaseFee;
     // credit deduction for rule violations (applied by admins)
     private float $violationFee;
 
     private DbInterface $db;
+    private HistoryRepository $historyRepository;
 
     public function __construct(
         bool $isEnabled,
@@ -39,7 +41,8 @@ class CreditSystem implements CreditSystemInterface
         float $longRentalFee,
         float $limitIncreaseFee,
         float $violationFee,
-        DbInterface $db
+        DbInterface $db,
+        HistoryRepository $historyRepository
     ) {
         if (!$isEnabled) {
             throw new \RuntimeException('Use DisabledCreditSystem instead');
@@ -65,6 +68,52 @@ class CreditSystem implements CreditSystemInterface
         $this->limitIncreaseFee = $limitIncreaseFee;
         $this->violationFee = $violationFee;
         $this->db = $db;
+        $this->historyRepository = $historyRepository;
+    }
+
+    public function addCredit(int $userId, float $creditAmount): void
+    {
+        if ($creditAmount < 0) {
+            throw new \InvalidArgumentException('Credit amount must be positive');
+        }
+
+        $this->db->query(
+            'INSERT INTO credit (userId, credit) VALUES (:userId, :creditAmount) ON DUPLICATE KEY UPDATE credit = credit + :creditAmountUpdate',
+            [
+                'userId' => $userId,
+                'creditAmount' => $creditAmount,
+                'creditAmountUpdate' => $creditAmount,
+            ]
+        );
+
+        if ($creditAmount !== 0) {
+            $this->historyRepository->addItem(
+                $userId,
+                0, //BikeNum
+                'CREDITCHANGE', //action
+                $creditAmount . '|add+' . $creditAmount //parameter
+            );
+        }
+    }
+
+    public function useCredit(int $userId, float $creditAmount): void
+    {
+        if ($creditAmount <= 0) {
+            throw new \InvalidArgumentException('Credit amount must be positive');
+        }
+
+        $currentCredit = $this->getUserCredit($userId);
+        if ($currentCredit < $creditAmount) {
+            throw new \RuntimeException('Insufficient credit for this operation');
+        }
+
+        $this->db->query(
+            'UPDATE credit SET credit = credit - :credit WHERE userId = :userId',
+            [
+                'userId' => $userId,
+                'credit' => $creditAmount
+            ]
+        );
     }
 
     public function getUserCredit($userId): float

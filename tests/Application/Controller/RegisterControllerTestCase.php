@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-class RegisterControllerTest extends WebTestCase
+class RegisterControllerTestCase extends BikeSharingWebTestCase
 {
     private string $smsConnector;
 
@@ -32,12 +32,12 @@ class RegisterControllerTest extends WebTestCase
         string $expectedTitle
     ): void {
         $_ENV['SMS_CONNECTOR'] = $smsConnector;
-        $client = static::createClient();
-        $client->getContainer()->get('session')->set('registrationStep', $registrationStep);
 
-        $client->catchExceptions(false);
+        $this->client->getContainer()->get('session')->set('registrationStep', $registrationStep);
 
-        $client->request(Request::METHOD_GET, '/register');
+        $this->client->catchExceptions(false);
+
+        $this->client->request(Request::METHOD_GET, '/register');
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', $expectedTitle);

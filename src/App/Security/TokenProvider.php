@@ -21,7 +21,7 @@ class TokenProvider implements TokenProviderInterface
         $this->db = $db;
     }
 
-    public function loadTokenBySeries(string $series)
+    public function loadTokenBySeries(string $series): PersistentTokenInterface
     {
         if (!isset($this->tokens[$series])) {
             $result = $this->db->query(

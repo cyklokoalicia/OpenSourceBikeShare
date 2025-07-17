@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace BikeShare\Test\Integration\Form;
 
 use BikeShare\Form\RegistrationFormType;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use BikeShare\Test\Integration\BikeSharingKernelTestCase;
 
-class RegistrationFormTypeTest extends KernelTestCase
+class RegistrationFormTypeTest extends BikeSharingKernelTestCase
 {
     /**
      * @dataProvider invalidDataProvider

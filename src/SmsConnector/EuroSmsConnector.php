@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace BikeShare\SmsConnector;
 
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class EuroSmsConnector extends AbstractConnector
 {
     private string $gatewayId = '';
     private string $gatewayKey = '';
     private string $gatewaySenderNumber = '';
-    private ?Request $request;
+    private RequestStack $requestStack;
 
     public function __construct(
-        ?Request $request,
+        RequestStack $requestStack,
         array $configuration,
         $debugMode = false
     ) {
         parent::__construct($configuration, $debugMode);
-        $this->request = $request;
+        $this->requestStack = $requestStack;
     }
 
     public function checkConfig(array $config): void
@@ -65,23 +65,23 @@ class EuroSmsConnector extends AbstractConnector
 
     public function receive(): void
     {
-        if (is_null($this->request)) {
+        if (is_null($this->requestStack->getCurrentRequest())) {
             throw new \RuntimeException('Could not receive sms in cli');
         }
-        if ($this->request->query->has('sms_text')) {
-            $this->message = $this->request->query->get('sms_text', '');
+        if ($this->requestStack->getCurrentRequest()->query->has('sms_text')) {
+            $this->message = $this->requestStack->getCurrentRequest()->query->get('sms_text', '');
         }
-        if ($this->request->query->has('sender')) {
-            $this->number = $this->request->query->get('sender', '');
+        if ($this->requestStack->getCurrentRequest()->query->has('sender')) {
+            $this->number = $this->requestStack->getCurrentRequest()->query->get('sender', '');
         }
-        if ($this->request->query->has('sms_uuid')) {
-            $this->uuid = $this->request->query->get('sms_uuid', '');
+        if ($this->requestStack->getCurrentRequest()->query->has('sms_uuid')) {
+            $this->uuid = $this->requestStack->getCurrentRequest()->query->get('sms_uuid', '');
         }
-        if ($this->request->query->has('receive_time')) {
-            $this->time = $this->request->query->get('receive_time', '');
+        if ($this->requestStack->getCurrentRequest()->query->has('receive_time')) {
+            $this->time = $this->requestStack->getCurrentRequest()->query->get('receive_time', '');
         }
-        if ($this->request->server->has('REMOTE_ADDR')) {
-            $this->ipaddress = $this->request->server->get('REMOTE_ADDR');
+        if ($this->requestStack->getCurrentRequest()->server->has('REMOTE_ADDR')) {
+            $this->ipaddress = $this->requestStack->getCurrentRequest()->server->get('REMOTE_ADDR');
         }
     }
 

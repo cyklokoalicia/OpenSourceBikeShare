@@ -84,7 +84,7 @@ class NoteRepository
         );
     }
 
-    public function deleteStandNote(int $standId, string $notePattern): int
+    public function deleteStandNote(int $standId, ?string $notePattern): int
     {
         $result = $this->db->query(
             'UPDATE notes

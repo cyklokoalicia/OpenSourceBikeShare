@@ -123,7 +123,7 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
             );
         }
 
-        $count = $this->noteRepository->deleteStandNote((int)$standInfo["standId"], (string)$pattern);
+        $count = $this->noteRepository->deleteStandNote((int)$standInfo["standId"], $pattern);
 
         if ($count === 0) {
             if (is_null($pattern)) {
