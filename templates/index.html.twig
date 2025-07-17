@@ -41,8 +41,8 @@
         {% else %}
         var loggedin = 0;
         var priv = 0;
-        var maplat = {{ cities|first[0] }};
-        var maplon = {{ cities|first[1] }};
+        var maplat = {{ (cities|first)[0] }};
+        var maplon = {{ (cities|first)[1] }};
         {% endif %}
 
         var standselected = 0;
