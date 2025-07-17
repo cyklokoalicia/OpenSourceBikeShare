@@ -12,7 +12,7 @@ use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-class NoteCommandTestCase extends BikeSharingWebTestCase
+class NoteCommandTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421111111111';
     private const ADMIN_PHONE_NUMBER = '421222222222';

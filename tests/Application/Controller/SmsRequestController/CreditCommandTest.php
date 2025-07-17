@@ -7,9 +7,10 @@ namespace BikeShare\Test\Application\Controller\SmsRequestController;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 
-class CreditCommandTestCase extends BikeSharingWebTestCase
+class CreditCommandTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421111111111';
 
@@ -17,7 +18,7 @@ class CreditCommandTestCase extends BikeSharingWebTestCase
 
     protected function setup(): void
     {
-        parent::tearDown();
+        parent::setup();
         $this->smsSystemEnabled = $_ENV['CREDIT_SYSTEM_ENABLED'];
     }
 
@@ -80,5 +81,6 @@ class CreditCommandTestCase extends BikeSharingWebTestCase
 
         $this->assertSame('Error. The command CREDIT does not exist. If you need help, send: HELP', $sentMessage['text'], 'Invalid response sms text');
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms recipient');
+        $this->expectLog(Logger::WARNING, '/Validation error/');
     }
 }

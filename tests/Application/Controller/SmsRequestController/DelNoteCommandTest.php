@@ -13,7 +13,7 @@ use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 
-class DelNoteCommandTestCase extends BikeSharingWebTestCase
+class DelNoteCommandTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421111111111';
     private const ADMIN_PHONE_NUMBER = '421222222222';
