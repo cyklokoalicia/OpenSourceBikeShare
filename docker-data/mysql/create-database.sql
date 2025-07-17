@@ -30,13 +30,16 @@ CREATE TABLE `coupons` (
 
 DROP TABLE IF EXISTS `notes`;
 CREATE TABLE `notes` (
-  `noteId` int(11) NOT NULL,
+  `noteId` int(11) UNSIGNED AUTO_INCREMENT NOT NULL,
   `bikeNum` int(11) DEFAULT NULL,
   `standId` int(11) DEFAULT NULL,
   `userId` int(11) NOT NULL,
   `note` varchar(100),
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted` timestamp NULL
+  `deleted` timestamp NULL,
+  PRIMARY KEY (`bikeNum`),
+  KEY `bikeNum` (`bikeNum`),
+  KEY `standId` (`standId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
