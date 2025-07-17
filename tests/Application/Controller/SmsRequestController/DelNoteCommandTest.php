@@ -109,7 +109,11 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         }
 
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
-        $this->assertCount($expectedMailCount, $mailSender->getSentMessages(), $expectedMailCount === 0 ? 'Unexpected admin email was send' : 'No admin email was send');
+        $this->assertCount(
+            $expectedMailCount,
+            $mailSender->getSentMessages(),
+            $expectedMailCount === 0 ? 'Unexpected admin email was send' : 'No admin email was send'
+        );
 
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
@@ -148,7 +152,8 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
             ],
             'Invalid pattern' => [
                 'pattern' => 'INVALID_PATTERN',
-                'expectedMessage' => 'No notes matching pattern INVALID_PATTERN found on stand ' . self::STAND_NAME . ' to delete.',
+                'expectedMessage' => 'No notes matching pattern INVALID_PATTERN found on stand '
+                    . self::STAND_NAME . ' to delete.',
                 'expectedSmsCount' => 1,
                 'expectedMailCount' => 0,
                 'expectedRemainingNotes' => 2,
@@ -228,7 +233,11 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         }
 
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
-        $this->assertCount($expectedMailCount, $mailSender->getSentMessages(), $expectedMailCount === 0 ? 'Unexpected admin email was send' : 'No admin email was send');
+        $this->assertCount(
+            $expectedMailCount,
+            $mailSender->getSentMessages(),
+            $expectedMailCount === 0 ? 'Unexpected admin email was send' : 'No admin email was send'
+        );
 
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
@@ -267,7 +276,8 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
             ],
             'Invalid pattern' => [
                 'pattern' => 'INVALID_PATTERN',
-                'expectedMessage' => 'No notes matching pattern INVALID_PATTERN found for bike ' . self::BIKE_NUMBER . ' to delete.',
+                'expectedMessage' => 'No notes matching pattern INVALID_PATTERN found for bike '
+                    . self::BIKE_NUMBER . ' to delete.',
                 'expectedSmsCount' => 1,
                 'expectedMailCount' => 0,
                 'expectedRemainingNotes' => 2,
