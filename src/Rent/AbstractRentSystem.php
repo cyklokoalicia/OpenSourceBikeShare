@@ -131,7 +131,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         while ($row = $result->fetchAssoc()) {
             $note .= $row['note'] . '; ';
         }
-        $note = substr($note, 0, strlen($note) - 2); // remove last two chars - comma and space
+        $note = substr($note, 0, strlen($note) - 2); // remove the last two chars - comma and space
 
         $newCode = sprintf('%04d', rand(100, 9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
 

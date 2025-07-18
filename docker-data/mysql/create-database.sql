@@ -55,14 +55,21 @@ CREATE TABLE `geolocation` (
 
 DROP TABLE IF EXISTS `history`;
 CREATE TABLE `history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
   `bikeNum` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `action` varchar(25) NOT NULL,
   `parameter` text NOT NULL,
   `standId` int(11) DEFAULT NULL,
-  `pairAction` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `pairActionId` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `bikeNum` (`bikeNum`),
+  KEY `userId` (`userId`),
+  KEY `action` (`action`),
+  KEY `standId` (`standId`),
+  KEY `pairActionId` (`pairActionId`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `limits`;

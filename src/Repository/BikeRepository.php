@@ -62,7 +62,7 @@ class BikeRepository
 
     public function findItem(int $bikeNumber): array
     {
-        $bikes = $this->db->query(
+        $bike = $this->db->query(
             'SELECT
                     bikes.bikeNum,
                     currentUser as userId,
@@ -80,33 +80,30 @@ class BikeRepository
             [
                 'bikeNumber' => $bikeNumber,
             ]
-        )->fetchAllAssoc();
+        )->fetchAssoc();
 
-        foreach ($bikes as &$bike) {
-            /**
-             * Should be optimized to one query
-             */
-            if (!empty($bike['userName'])) {
-                $historyInfo = $this->db->query(
-                    'SELECT time 
+        /**
+         * Should be optimized to one query
+         */
+        if (!empty($bike['userName'])) {
+            $historyInfo = $this->db->query(
+                'SELECT time 
                      FROM history 
                      WHERE bikeNum = :bikeNumber
                          AND userId = :userId 
-                         AND action = \'RENT\' 
+                         AND action IN (\'RENT\', \'FORCERENT\') 
                      ORDER BY time DESC 
                      LIMIT 1',
-                    [
-                        'bikeNumber' => $bike['bikeNum'],
-                        'userId' => $bike['userId'],
-                    ]
-                )->fetchAssoc();
+                [
+                    'bikeNumber' => $bike['bikeNum'],
+                    'userId' => $bike['userId'],
+                ]
+            )->fetchAssoc();
 
-                $bike['rentTime'] = date('d/m H:i', strtotime($historyInfo['time']));
-            }
+            $bike['rentTime'] = date('d/m H:i', strtotime($historyInfo['time']));
         }
-        unset($bike);
 
-        return $bikes;
+        return $bike;
     }
 
     public function findItemLastUsage(int $bikeNumber): array

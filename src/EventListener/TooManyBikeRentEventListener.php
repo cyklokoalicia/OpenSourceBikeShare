@@ -37,6 +37,11 @@ class TooManyBikeRentEventListener
 
     public function __invoke(BikeRentEvent $event): void
     {
+        if ($event->isForce()) {
+            // if force is true, then we don't need to check if user is over limit
+            return;
+        }
+
         $user = $this->userRepository->findItem($event->getUserId());
         $offsetTime = date(
             'Y-m-d H:i:s',

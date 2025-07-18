@@ -28,6 +28,15 @@ class AddCommandTest extends BikeSharingWebTestCase
         $phoneNumber = '42199999' . rand(1000, 9999);
         $fullName = 'Test User';
 
+        $this->client->getContainer()->get('event_dispatcher')->addListener(
+            UserRegistrationEvent::class,
+            function (UserRegistrationEvent $event) use ($email, $phoneNumber, $fullName) {
+                $this->assertSame($email, $event->getUser()->getEmail(), 'Invalid user email');
+                $this->assertSame($phoneNumber, $event->getUser()->getNumber(), 'Invalid user number');
+                $this->assertSame($fullName, $event->getUser()->getUsername(), 'Invalid user name');
+            }
+        );
+
         $this->client->request(
             Request::METHOD_GET,
             '/receive.php',
@@ -74,20 +83,9 @@ class AddCommandTest extends BikeSharingWebTestCase
             ->get(CreditSystemInterface::class)->getUserCredit($newUser['userId']);
         $this->assertSame(0.0, $userCredits, 'User credits were not initialized to 0.0');
 
-        # Assert that the event UserRegistrationEvent was dispatched
-        $calledListeners = $this->client->getContainer()->get('event_dispatcher')->getCalledListeners();
-        $userRegistrationEvent = null;
-        foreach ($calledListeners as $listener) {
-            if ($listener['event'] === UserRegistrationEvent::class) {
-                $userRegistrationEvent = $listener;
-                break;
-            }
-        }
-        $this->assertNotNull($userRegistrationEvent, 'UserRegistrationEvent was not dispatched.');
-
         # Assert that the confirmation email was sent with the correct content
         $sentMessages = $this->client->getContainer()->get(MailSenderInterface::class)->getSentMessages();
-        $this->assertCount(1, $sentMessages);
+        $this->assertCount(1, $sentMessages, 'Invalid number of sent messages');;
         $names = preg_split("/[\s,]+/", $fullName);
         $firstName = $names[0];
         # Assert that the email contains only the first name of the user
@@ -109,5 +107,12 @@ class AddCommandTest extends BikeSharingWebTestCase
             $registrationKey,
             $sentMessages[0]['message']
         );
+
+        $notCalledListeners = $this->client->getContainer()->get('event_dispatcher')->getNotCalledListeners();
+        foreach ($notCalledListeners as $listener) {
+            if ($listener['pretty'] === 'BikeShare\EventListener\RegistrationEventListener::__invoke') {
+                $this->fail('Registration event listener was not called');
+            }
+        };
     }
 }
