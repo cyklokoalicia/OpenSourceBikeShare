@@ -85,7 +85,7 @@ class AddCommandTest extends BikeSharingWebTestCase
 
         # Assert that the confirmation email was sent with the correct content
         $sentMessages = $this->client->getContainer()->get(MailSenderInterface::class)->getSentMessages();
-        $this->assertCount(1, $sentMessages, 'Invalid number of sent messages');;
+        $this->assertCount(1, $sentMessages, 'Invalid number of sent messages');
         $names = preg_split("/[\s,]+/", $fullName);
         $firstName = $names[0];
         # Assert that the email contains only the first name of the user

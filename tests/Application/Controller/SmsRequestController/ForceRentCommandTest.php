@@ -51,8 +51,8 @@ class ForceRentCommandTest extends BikeSharingWebTestCase
 
         $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
         $this->assertMatchesRegularExpression(
-            '/Bike '.self::BIKE_NUMBER.': Open with code \d{4}\.Change code immediately to \d{4}' .
-                    '\(open, rotate metal part, set new code, rotate metal part back\)\./',
+            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.Change code immediately to \d{4}' .
+                '\(open, rotate metal part, set new code, rotate metal part back\)\./',
             $sentMessage['text'],
             'Invalid response sms text'
         );
