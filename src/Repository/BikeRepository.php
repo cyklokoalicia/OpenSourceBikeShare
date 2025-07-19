@@ -191,8 +191,8 @@ class BikeRepository
             FROM bikes
             JOIN stands on bikes.currentStand=stands.standId 
             WHERE stands.serviceTag=0
-            GROUP BY placeName 
-            HAVING bikeCount>0 
+            GROUP BY standName 
+            HAVING bikeCount > 0 
             ORDER BY 2"
         )->fetchAllAssoc();
 

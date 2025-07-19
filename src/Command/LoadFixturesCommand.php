@@ -63,7 +63,7 @@ class LoadFixturesCommand extends Command
                 return $val === null ? 'NULL' : '"' . addslashes((string)$val) . '"';
             }, $values));
 
-            $sql = "INSERT INTO `{$tableName}` ({$fieldsStr}) VALUES ({$valuesStr});";
+            $sql = "INSERT INTO `{$tableName}` ({$fieldsStr}) VALUES ({$valuesStr})";
             $this->db->query($sql);
         }
 

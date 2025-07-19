@@ -42,7 +42,7 @@ class FreeCommand extends AbstractCommand implements SmsCommandInterface
         $freeStands = $this->standRepository->findFreeStands();
 
         if (!empty($freeStands)) {
-            $message .= PHP_EOL . PHP_EOL . $this->translator->trans('Empty stands') . ": ";
+            $message .= PHP_EOL . PHP_EOL . $this->translator->trans('Empty stands') . ":";
             foreach ($freeStands as $row) {
                 $message .= PHP_EOL . $row['standName'];
             }

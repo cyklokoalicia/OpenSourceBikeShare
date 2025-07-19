@@ -75,7 +75,7 @@ CREATE TABLE `history` (
 DROP TABLE IF EXISTS `limits`;
 CREATE TABLE `limits` (
   `userId` int(11) NOT NULL AUTO_INCREMENT,
-  `userLimit` int(11) NOT NULL DEFAULT '1',
+  `userLimit` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
