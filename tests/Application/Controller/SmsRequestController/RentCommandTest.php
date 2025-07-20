@@ -35,8 +35,6 @@ class RentCommandTest extends BikeSharingWebTestCase
                 'time' => time(),
             ]
         );
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        dump($smsConnector->getSentMessages());
     }
 
     protected function tearDown(): void

@@ -265,7 +265,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                    WHERE bikeNum=$bikeId 
                      AND action IN ('RENT','FORCERENT') 
                    ORDER BY time DESC
-                   LIMIT 1,1"
+                   LIMIT 1"
         );
         if ($result->rowCount() == 1) {
             $row = $result->fetchAssoc();
@@ -281,7 +281,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
             );
 
-            return $this->response('<h3>' . _('Bicycle') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
+            return $this->response('<h3>' . _('Bike') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
         } else {
             return $this->response(_('No last stand or code for bicycle') . ' ' . $bikeId . ' ' . _('found. Revert not successful!'), ERROR);
         }

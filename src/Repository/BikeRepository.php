@@ -132,7 +132,7 @@ class BikeRepository
              LEFT JOIN stands ON stands.standid=history.parameter 
              WHERE bikenum = :bikeNumber
                AND action NOT LIKE \'%CREDIT%\'
-             ORDER BY time DESC 
+             ORDER BY time DESC, id DESC
              LIMIT 10',
             [
                 'bikeNumber' => $bikeNumber,
