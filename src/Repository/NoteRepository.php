@@ -133,7 +133,7 @@ class NoteRepository
         );
     }
 
-    public function deleteNotesForAllBikesOnStand(int $standId, string $note): int
+    public function deleteNotesForAllBikesOnStand(int $standId, ?string $notePattern): int
     {
         $result = $this->db->query(
             "UPDATE notes 
@@ -144,7 +144,7 @@ class NoteRepository
               AND deleted IS NULL",
             [
                 'standId' => $standId,
-                'note' => '%' . $note . '%',
+                'note' => '%' . $notePattern . '%',
             ]
         );
 

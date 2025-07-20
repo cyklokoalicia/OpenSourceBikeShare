@@ -16,7 +16,8 @@
     </coverage>
     <testsuites>
         <testsuite name="BikeShare Test Suite">
-            <directory>./tests</directory>
+            <directory>./tests/Application</directory>
+            <directory>./tests/Integration</directory>
         </testsuite>
     </testsuites>
     <php>

@@ -9,7 +9,7 @@ on:
       - "*"
 
 jobs:
-  phpcs:
+  phpcs_phpunit:
     runs-on: ubuntu-latest
     strategy:
       matrix:
