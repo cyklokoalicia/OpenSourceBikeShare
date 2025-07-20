@@ -39,6 +39,26 @@ class ListCommandTest extends BikeSharingWebTestCase
             '/receive.php',
             [
                 'number' => self::ADMIN_PHONE_NUMBER,
+                'message' => 'FORCERETURN 1 ' . self::STAND_NAME,
+                'uuid' => md5((string)microtime(true)),
+                'time' => time(),
+            ]
+        );
+        $this->client->request(
+            Request::METHOD_GET,
+            '/receive.php',
+            [
+                'number' => self::ADMIN_PHONE_NUMBER,
+                'message' => 'FORCERETURN 2 ' . self::STAND_NAME,
+                'uuid' => md5((string)microtime(true)),
+                'time' => time(),
+            ]
+        );
+        $this->client->request(
+            Request::METHOD_GET,
+            '/receive.php',
+            [
+                'number' => self::ADMIN_PHONE_NUMBER,
                 'message' => 'LIST ' . self::STAND_NAME,
                 'uuid' => md5((string)microtime(true)),
                 'time' => time(),

@@ -111,24 +111,22 @@ class StandRepository
         )->fetchAllAssoc();
 
         if (count($bikesOnStand)) {
-            $bikesOnStand = array_map(
-                function ($bike) {
-                    return $bike['bikeNum'];
-                },
-                $bikesOnStand
-            );
+            $bikeQueryParams = [];
+            foreach ($bikesOnStand as $num => $bike) {
+                $bikeQueryParams[':bikeNum' . $num] = $bike['bikeNum'];
+            }
 
             $result = $this->db->query(
                 "SELECT bikeNum FROM history 
                 WHERE action IN ('RETURN','FORCERETURN')
                     AND parameter=:standId 
-                    AND bikeNum IN (:bikesOnStand)
-                ORDER BY time DESC 
+                    AND bikeNum IN (" . implode(',', array_keys($bikeQueryParams)) . ")
+                ORDER BY `time` DESC, id DESC
                 LIMIT 1",
-                [
-                    'standId' => $standId,
-                    'bikesOnStand' => implode(',', $bikesOnStand),
-                ]
+                array_merge(
+                    ['standId' => $standId],
+                    $bikeQueryParams,
+                )
             )->fetchAssoc();
 
             return $result['bikeNum'] ?? null;
