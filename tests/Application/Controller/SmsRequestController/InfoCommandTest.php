@@ -35,7 +35,7 @@ class InfoCommandTest extends BikeSharingWebTestCase
 
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
         $this->assertMatchesRegularExpression(
-            '/'.self::STAND_NAME.' - .*, GPS: (\d+\.\d+),(\d+\.\d+)/',
+            '/' . self::STAND_NAME . ' - .*, GPS: (\d+\.\d+),(\d+\.\d+)/',
             $sentMessage['text'],
             'Invalid response sms text'
         );

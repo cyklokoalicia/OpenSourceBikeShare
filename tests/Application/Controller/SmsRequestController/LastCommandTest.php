@@ -34,6 +34,6 @@ class LastCommandTest extends BikeSharingWebTestCase
         $sentMessage = $smsConnector->getSentMessages()[0];
 
         $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $this->assertStringStartsWith('B.1:', $sentMessage['text'], 'Invalid response sms text');;
+        $this->assertStringStartsWith('B.1:', $sentMessage['text'], 'Invalid response sms text');
     }
 }

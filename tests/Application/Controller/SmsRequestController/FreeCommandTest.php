@@ -74,7 +74,7 @@ class FreeCommandTest extends BikeSharingWebTestCase
                 ],
             ],
             'findFreeStandsResult' => [],
-            'expectedMessage' => 'Free bikes counts:'.PHP_EOL.
+            'expectedMessage' => 'Free bikes counts:' . PHP_EOL .
                 'STAND1: 1',
         ];
         yield 'two stand with free bikes' => [
