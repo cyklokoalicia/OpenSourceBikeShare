@@ -23,7 +23,8 @@ jobs:
       DB_HOST: localhost
 
     steps:
-      - run: |
+      - name: Init mysql
+        run: |
           sudo /etc/init.d/mysql start
           mysql -e "CREATE DATABASE $DB_DATABASE;" -u$DB_USER -p$DB_PASSWORD
           mysql -e 'SHOW DATABASES;' -u$DB_USER -p$DB_PASSWORD

@@ -11,6 +11,10 @@ use PHPUnit\Framework\TestCase;
 
 class SmsSenderTest extends TestCase
 {
+    private SmsConnectorInterface $smsConnector;
+    private DbInterface $db;
+    private SmsSender $smsSender;
+
     protected function setUp(): void
     {
         $this->smsConnector = $this->createMock(SmsConnectorInterface::class);
