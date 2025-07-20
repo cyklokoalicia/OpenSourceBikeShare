@@ -178,7 +178,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $standId = $row["standId"];
 
         if ($force == false) {
-            $result = $this->db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
+            $result = $this->db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId AND bikeNum=$bikeId ORDER BY bikeNum");
             $bikenumber = $result->rowCount();
 
             if ($bikenumber == 0) {
