@@ -13,7 +13,7 @@ class LastCommandTest extends BikeSharingWebTestCase
     private const ADMIN_PHONE_NUMBER = '421222222222';
     private const BIKE_NUMBER = 1;
 
-    public function testFreeCommand(): void
+    public function testLastCommand(): void
     {
         $this->client->request(
             Request::METHOD_GET,

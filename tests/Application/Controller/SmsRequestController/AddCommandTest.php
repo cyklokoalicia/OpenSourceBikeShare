@@ -21,7 +21,7 @@ class AddCommandTest extends BikeSharingWebTestCase
      * This test generates a new user on each run, so be careful with running it multiple times.
      * Better to run a command `php bin/console load:fixtures` before running this test.
      */
-    public function testSuccessAddCommand(): void
+    public function testAddCommand(): void
     {
         $adminPhoneNumber = self::ADMIN_PHONE_NUMBER;
         $email = 'testAddUser' . rand(1000, 9999) . '@net.net';

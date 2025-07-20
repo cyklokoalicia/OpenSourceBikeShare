@@ -13,7 +13,7 @@ class InfoCommandTest extends BikeSharingWebTestCase
     private const USER_PHONE_NUMBER = '421111111111';
     private const STAND_NAME = 'STAND1';
 
-    public function testFreeCommand(): void
+    public function testInfoCommand(): void
     {
         $this->client->request(
             Request::METHOD_GET,
