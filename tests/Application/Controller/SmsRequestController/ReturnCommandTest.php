@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Controller\SmsRequestController;
+namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Event\BikeReturnEvent;
