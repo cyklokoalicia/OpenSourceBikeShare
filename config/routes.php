@@ -8,11 +8,11 @@ return function (RoutingConfigurator $routes) {
     $routes->add('command', '/command.php')
         ->controller([\BikeShare\Controller\CommandController::class, 'index']);
     $routes->add('scan_bike', '/scan.php/rent/{bikeNumber}')
-        ->requirements(['id' => '\d+'])
-        ->controller([\BikeShare\Controller\ScanController::class, 'index']);
+        ->requirements(['bikeNumber' => '\d+'])
+        ->controller([\BikeShare\Controller\ScanController::class, 'rentBike']);
     $routes->add('scan_stand', '/scan.php/return/{standName}')
         ->requirements(['standName' => '\w+'])
-        ->controller([\BikeShare\Controller\ScanController::class, 'index']);
+        ->controller([\BikeShare\Controller\ScanController::class, 'returnBike']);
     $routes->add('admin', '/admin')
         ->controller([\BikeShare\Controller\AdminController::class, 'index']);
     $routes->add('register_old', '/register.php')

@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ siteName }}|{{ 'Rent'|trans }}{% endblock %}
+
+{% block body %}
+    <div class="page-header">&nbsp;</div>
+    {% if message %}
+        <div class="alert alert-success">
+            {{ message|raw }}
+        </div>
+    {% elseif error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% else %}
+        <div class="text-center">
+            <h3>{{ 'Rent bike {bikeNum} on stand {standName}'|trans({'bikeNum': bikeNumber, 'standName': standName}) }}</h3>
+            {% if notes %}
+                <div class="alert alert-warning">{{ notes }}</div>
+            {% endif %}
+            <form method="POST" action="{{ path('scan_bike', {'bikeNumber': bikeNumber}) }}" class="container">
+                <input type="hidden" name="rent" value="yes" />
+                <button class="btn btn-primary" type="submit" id="rentButton" title="{{ 'Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.' |trans }}">
+                    <span class="glyphicon glyphicon-log-out"></span>{{ 'Rent'|trans }}
+                </button>
+            </form>
+        </div>
+    {% endif %}
+{% endblock %}

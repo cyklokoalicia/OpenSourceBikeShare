@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ siteName }}|{{ 'Return'|trans }}{% endblock %}
+
+{% block body %}
+    <div class="page-header">&nbsp;</div>
+    {% if message %}
+        <div class="alert alert-success">
+            {{ message|raw }}
+        </div>
+    {% elseif error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+{% endblock %}
