@@ -20,26 +20,28 @@ class ScanController extends AbstractController
     private BikeRepository $bikeRepository;
     private StandRepository $standRepository;
     private TranslatorInterface $translator;
+    private DbInterface $db;
 
     public function __construct(
         RentSystemFactory $rentSystemFactory,
         BikeRepository $bikeRepository,
         StandRepository $standRepository,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        DbInterface $db
     ) {
         $this->rentSystemFactory = $rentSystemFactory;
         $this->bikeRepository = $bikeRepository;
         $this->standRepository = $standRepository;
         $this->translator = $translator;
+        $this->db = $db;
     }
 
     /**
      * @Route("/scan.php/rent/{bikeNumber}", name="scan_bike", requirements: {"bikeNumber"="\d+"})
      */
-    public function rent(
+    public function rentBike(
         string $bikeNumber,
-        Request $request,
-        DbInterface $db
+        Request $request
     ): Response {
         $bikeNumber = (int)$bikeNumber;
         $bike = $this->bikeRepository->findItem($bikeNumber);
@@ -61,15 +63,7 @@ class ScanController extends AbstractController
                 $message = $result['message'];
             }
 
-            $db->query(
-                'INSERT INTO sent 
-                SET number = :number,
-                text = :text',
-                [
-                    'number' => $this->getUser()->getUserIdentifier(),
-                    'text' => strip_tags($result['message'])
-                ]
-            );
+            $this->logResponse($result['message']);
         }
 
         return $this->render('scan/rent.html.twig', [
@@ -84,9 +78,8 @@ class ScanController extends AbstractController
     /**
      * @Route("/scan.php/return/{standName}", name="scan_stand", requirements: {"standName"="\w+"})
      */
-    public function return(
-        string $standName,
-        DbInterface $db
+    public function returnBike(
+        string $standName
     ): Response {
         $stand = $this->standRepository->findItemByName($standName);
 
@@ -101,11 +94,7 @@ class ScanController extends AbstractController
                 $message = $result['message'];
             }
 
-            $this->logToDatabase(
-                $db,
-                $this->getUser()->getUserIdentifier(),
-                strip_tags($result['message'])
-            );
+            $this->logResponse($result['message']);
         }
 
         return $this->render('scan/return.html.twig', [
@@ -113,5 +102,18 @@ class ScanController extends AbstractController
             'error' => $error ?? null,
             'message' => $message ?? false,
         ]);
+    }
+
+    private function logResponse(string $response)
+    {
+        $this->db->query(
+            'INSERT INTO sent 
+                SET number = :number,
+                text = :text',
+            [
+                'number' => $this->getUser()->getUserIdentifier(),
+                'text' => strip_tags($response)
+            ]
+        );
     }
 }
