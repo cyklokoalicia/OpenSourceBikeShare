@@ -44,8 +44,8 @@ class CreditCommandTest extends BikeSharingWebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
 
+        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
         $this->assertCount(1, $smsConnector->getSentMessages());
         $sentMessage = $smsConnector->getSentMessages()[0];
 
@@ -76,12 +76,10 @@ class CreditCommandTest extends BikeSharingWebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
 
+        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
         $this->assertCount(1, $smsConnector->getSentMessages());
         $sentMessage = $smsConnector->getSentMessages()[0];
-
-        $creditSystem = $this->client->getContainer()->get(CreditSystemInterface::class);
 
         $this->assertSame(
             'Error. The command CREDIT does not exist. If you need help, send: HELP',

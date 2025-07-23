@@ -106,6 +106,8 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                 $notifiedNumbers,
                 'Invalid notified numbers'
             );
+        } else {
+            $this->fail('Unexpected number of SMS messages sent: ' . $expectedSmsCount);
         }
 
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);

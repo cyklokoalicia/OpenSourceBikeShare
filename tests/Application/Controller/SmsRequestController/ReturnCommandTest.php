@@ -6,6 +6,7 @@ namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Event\BikeReturnEvent;
+use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
@@ -24,31 +25,31 @@ class ReturnCommandTest extends BikeSharingWebTestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
         $this->watchesTooMany = $_ENV['WATCHES_NUMBER_TOO_MANY'];
+        $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999; // Disable watches for this test
+        parent::setUp();
+
+        $admin = $this->client->getContainer()->get(UserRepository::class)
+            ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
 
         #force return bike by admin
-        $this->client->request(
-            Request::METHOD_GET,
-            '/receive.php',
-            [
-                'number' => self::ADMIN_PHONE_NUMBER,
-                'message' => 'FORCERETURN ' . self::BIKE_NUMBER . ' ' . self::STAND_NAME,
-                'uuid' => md5((string)microtime(true)),
-                'time' => time(),
-            ]
-        );
+        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('sms')
+            ->returnBike(
+                $admin['userId'],
+                self::BIKE_NUMBER,
+                self::STAND_NAME,
+                '',
+                true
+            );
+
         #rent bike by user
-        $this->client->request(
-            Request::METHOD_GET,
-            '/receive.php',
-            [
-                'number' => self::USER_PHONE_NUMBER,
-                'message' => 'RENT ' . self::BIKE_NUMBER,
-                'uuid' => md5((string)microtime(true)),
-                'time' => time(),
-            ]
-        );
+        $user = $this->client->getContainer()->get(UserRepository::class)
+            ->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('sms')
+            ->rentBike(
+                $user['userId'],
+                self::BIKE_NUMBER,
+            );
     }
 
     protected function tearDown(): void
@@ -59,9 +60,6 @@ class ReturnCommandTest extends BikeSharingWebTestCase
 
     public function testReturnCommand(): void
     {
-        //We should not notify admin about too many rents in this testsuite
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999;
-
         $user = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
 
@@ -88,7 +86,6 @@ class ReturnCommandTest extends BikeSharingWebTestCase
         $this->assertSame('', $this->client->getResponse()->getContent());
 
         $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-
         $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
         $sentMessage = $smsConnector->getSentMessages()[0];
 

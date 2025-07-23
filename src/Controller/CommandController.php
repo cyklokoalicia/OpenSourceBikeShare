@@ -40,7 +40,8 @@ class CommandController extends AbstractController
         }
 
         ob_start();
-        require_once $this->getParameter('kernel.project_dir') . '/command.php';
+        require $this->getParameter('kernel.project_dir') . '/kernel.php';
+        require $this->getParameter('kernel.project_dir') . '/command.php';
         $content = ob_get_clean();
 
         return new Response($content);

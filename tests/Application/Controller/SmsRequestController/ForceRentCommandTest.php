@@ -83,6 +83,9 @@ class ForceRentCommandTest extends BikeSharingWebTestCase
             if ($listener['pretty'] === 'BikeShare\EventListener\TooManyBikeRentEventListener::__invoke') {
                 $this->fail('TooManyBikeRentEventListener was not called');
             }
-        };
+            if ($listener['stub'] === 'closure(BikeRentEvent $event)') {
+                $this->fail('TestEventListener was not called');
+            }
+        }
     }
 }

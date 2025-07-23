@@ -37,7 +37,6 @@ function response($message,$error=0,$log=1)
       echo '<div class="alert alert-success" role="alert">',$message,'</div>';
       }
    echo '</div></body></html>';
-   exit;
 }
 
 function showrentform($userId,$bike)
@@ -75,14 +74,13 @@ function showrentform($userId,$bike)
     echo '<form method="post" action="/scan.php/rent/'. $bike . '">';
     echo '<input type="hidden" name="rent" value="yes" />';
     echo '<div class="col-lg-12">
-            <button class="btn btn-primary" type="submit" id="rent" title="'. t('Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'). '">'
+            <button class="btn btn-primary" type="submit" id="rentButton" title="'. t('Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'). '">'
                 .'<span class="glyphicon glyphicon-log-out"></span>' . t('Rent') .' <span class="bikenumber"> </span>
             </button>
          </div>
     ';
     echo '</form>';
     echo '</div></body></html>';
-    exit;
 }
 
 function unrecognizedqrcode()

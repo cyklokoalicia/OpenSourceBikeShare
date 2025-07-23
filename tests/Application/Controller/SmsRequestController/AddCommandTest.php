@@ -91,12 +91,14 @@ class AddCommandTest extends BikeSharingWebTestCase
         # Assert that the email contains only the first name of the user
         $this->assertStringContainsString(
             'Hello ' . $firstName . PHP_EOL,
-            $sentMessages[0]['message']
+            $sentMessages[0]['message'],
+            'Email does not contain the user\'s first name'
         );
         # Assert that the email contains the link to the system rules page
         $this->assertStringContainsString(
             $this->client->getServerParameter('SYSTEM_RULES'),
-            $sentMessages[0]['message']
+            $sentMessages[0]['message'],
+            'Email does not contain the system rules link'
         );
 
         $registrationKey = $this->client->getContainer()
@@ -105,13 +107,17 @@ class AddCommandTest extends BikeSharingWebTestCase
         # Assert that the email contains the registration key for the user
         $this->assertStringContainsString(
             $registrationKey,
-            $sentMessages[0]['message']
+            $sentMessages[0]['message'],
+            'Email does not contain the registration key'
         );
 
         $notCalledListeners = $this->client->getContainer()->get('event_dispatcher')->getNotCalledListeners();
         foreach ($notCalledListeners as $listener) {
             if ($listener['pretty'] === 'BikeShare\EventListener\RegistrationEventListener::__invoke') {
                 $this->fail('Registration event listener was not called');
+            }
+            if ($listener['stub'] === 'closure(UserRegistrationEvent $event)') {
+                $this->fail('TestEventListener was not called');
             }
         };
     }
