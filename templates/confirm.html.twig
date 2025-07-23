@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ 'Account activation'|trans }}{% endblock %}
+{% block title %}{{ siteName }}|{{ 'Account activation'|trans }}{% endblock %}
 
 {% block body %}
     {% for message in app.flashes('error') %}

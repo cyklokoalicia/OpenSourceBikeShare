@@ -24,6 +24,8 @@ class ControllerEventListener
         'api_credit_add',
         'api_report_daily',
         'api_report_user',
+        'scan_bike',
+        'scan_stand',
     ];
 
     private DbInterface $db;

@@ -9,10 +9,10 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\CommandController::class, 'index']);
     $routes->add('scan_bike', '/scan.php/rent/{bikeNumber}')
         ->requirements(['id' => '\d+'])
-        ->controller([\BikeShare\Controller\ScanController::class, 'index']);
+        ->controller([\BikeShare\Controller\ScanController::class, 'rent']);
     $routes->add('scan_stand', '/scan.php/return/{standName}')
         ->requirements(['standName' => '\w+'])
-        ->controller([\BikeShare\Controller\ScanController::class, 'index']);
+        ->controller([\BikeShare\Controller\ScanController::class, 'return']);
     $routes->add('admin', '/admin')
         ->controller([\BikeShare\Controller\AdminController::class, 'index']);
     $routes->add('register_old', '/register.php')

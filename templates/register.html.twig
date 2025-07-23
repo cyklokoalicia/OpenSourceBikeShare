@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ 'Registration'|trans }}{% endblock %}
+{% block title %}{{ siteName }}|{{ 'Registration'|trans }}{% endblock %}
 
 {% block body %}
     {% for message in app.flashes('success') %}

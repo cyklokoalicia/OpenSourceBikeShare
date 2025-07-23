@@ -144,7 +144,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
             }
         }
 
-        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ': <span class="label label-primary">' . _('Open with code') . ' ' . $currentCode . '.</span></h3><h3>' . _('Change code immediately to') . ' <span class="label label-default" style="font-size: 16px;">' . $newCode . '</span></h3>' . _('(open, rotate metal part, set new code, rotate metal part back)') . '.';
+        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ': <span class="badge badge-primary">' . _('Open with code') . ' ' . $currentCode . '.</span></h3>'
+            .'<h3>' . _('Change code immediately to') . ' <span class="badge badge-primary">' . $newCode . '</span></h3>'
+            . _('(open, rotate metal part, set new code, rotate metal part back)') . '.';
         if ($note) {
             $message .= '<br />' . _('Reported issue') . ': <em>' . $note . '</em>';
         }
@@ -208,8 +210,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $note = $row["note"] ?? '';
         }
 
-        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand . ' : <span class="label label-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>';
-        $message .= '<br />' . _('Please') . ', <strong>' . _('rotate the lockpad to') . ' <span class="label label-default">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
+        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand
+            . ' : <span class="badge badge-primary label label-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>'
+            . '<br />' . _('Please') . ', <strong>' . _('rotate the lockpad to')
+            . ' <span class="badge badge-primary label label-primary">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
         if ($note) {
             $message .= '<br />' . _('You have also reported this problem:') . ' ' . $note . '.';
         }
@@ -291,6 +295,11 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
     protected function response($message, $error = 0)
     {
+        if ($this->getType() == 'web') {
+            //temp solution before full migration to new bootstrap
+            $message = str_replace('badge badge-', 'label label-', $message);
+        }
+
         $userid = $this->auth->getUserId();
         $number = $this->user->findPhoneNumber($userid);
         $this->logResult($number, $message);

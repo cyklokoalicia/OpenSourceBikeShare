@@ -80,6 +80,7 @@ return [
   'was on the top of the stack at' => '',
   'is not rentable now, you have to rent bike' => '',
   'from this stand' => '',
+  'Bike {bikeNumber} already rented.' => 'Bike {bikeNumber} already rented.',
   'You have already rented the bike' => '',
   'Code is' => '',
   'Return bike by scanning QR code on a stand' => '',
