@@ -145,7 +145,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ': <span class="badge badge-primary">' . _('Open with code') . ' ' . $currentCode . '.</span></h3>'
-            .'<h3>' . _('Change code immediately to') . ' <span class="badge badge-primary">' . $newCode . '</span></h3>'
+            . '<h3>' . _('Change code immediately to') . ' <span class="badge badge-primary">' . $newCode . '</span></h3>'
             . _('(open, rotate metal part, set new code, rotate metal part back)') . '.';
         if ($note) {
             $message .= '<br />' . _('Reported issue') . ': <em>' . $note . '</em>';
