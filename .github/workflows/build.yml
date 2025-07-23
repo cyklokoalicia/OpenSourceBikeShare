@@ -9,11 +9,11 @@ on:
       - "*"
 
 jobs:
-  phpcs:
+  phpcs_phpunit:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: [7.4]
+        php-version: [7.4, 8.0, 8.1, 8.2]
       fail-fast: false
 
     env:
@@ -23,11 +23,13 @@ jobs:
       DB_HOST: localhost
 
     steps:
-      - run: |
+      - name: Init mysql
+        run: |
           sudo /etc/init.d/mysql start
           mysql -e "CREATE DATABASE $DB_DATABASE;" -u$DB_USER -p$DB_PASSWORD
           mysql -e 'SHOW DATABASES;' -u$DB_USER -p$DB_PASSWORD
           mysql -e 'SELECT @@sql_mode;' -u$DB_USER -p$DB_PASSWORD
+
       - name: Checkout code
         uses: actions/checkout@v4
 

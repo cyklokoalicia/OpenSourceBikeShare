@@ -14,8 +14,9 @@ return static function (FrameworkConfig $framework): void {
         ->handlerId(null)
         ->cookieSecure('auto')
         ->cookieSamesite(Cookie::SAMESITE_LAX)
-        ->storageFactoryId('session.storage.factory.native')
-    ;
+        ->storageFactoryId('session.storage.factory.native');
+
+    $framework->router()->utf8(true);
 
     $framework->secret('%env(APP_SECRET)%');
 

@@ -2,8 +2,8 @@
 
 namespace BikeShare\Controller;
 
-use BikeShare\App\Configuration;
 use BikeShare\Credit\CreditSystemInterface;
+use BikeShare\Repository\CityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,8 +17,10 @@ class HomeController extends AbstractController
     public function index(
         Request $request,
         int $freeTimeHours,
+        int $systemZoom,
+        string $systemRules,
         CreditSystemInterface $creditSystem,
-        Configuration $configuration
+        CityRepository $cityRepository
     ): Response {
 
         //show stats for current year if it is end of the year
@@ -38,7 +40,9 @@ class HomeController extends AbstractController
         }
 
         return $this->render('index.html.twig', [
-            'configuration' => $configuration,
+            'systemZoom' => $systemZoom,
+            'systemRules' => $systemRules,
+            'cities' => $cityRepository->findAvailableCities(),
             'personalStatsYearUrl' => $personalStatsYearUrl,
             'freeTime' => $freeTimeHours,
             'creditSystem' => $creditSystem,

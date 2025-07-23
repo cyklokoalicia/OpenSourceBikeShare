@@ -113,7 +113,7 @@ class FreeCommandTest extends TestCase
                 'Free bikes counts:',
                 'Main: 3',
                 'Park: 1' . PHP_EOL,
-                'Empty stands: ',
+                'Empty stands:',
                 'Central',
                 'EastEnd'
             ]),

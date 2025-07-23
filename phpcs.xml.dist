@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PHP_CodeSniffer" xsi:noNamespaceSchemaLocation="phpcs.xsd">
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PHP_CodeSniffer"
+         xsi:noNamespaceSchemaLocation="phpcs.xsd">
     <description>The coding standard for Open Source Bike Sharing.</description>
 
     <config name="php_version" value="704000"/>
@@ -7,5 +8,14 @@
     <file>tests</file>
 
     <rule ref="PSR12"/>
+
+    <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
+        <properties>
+            <property name="rootNamespaces" type="array">
+                <element key="tests" value="BikeShare\Test"/>
+                <element key="src" value="BikeShare"/>
+            </property>
+        </properties>
+    </rule>
 
 </ruleset>

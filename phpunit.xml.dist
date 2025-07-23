@@ -12,11 +12,15 @@
     <coverage includeUncoveredFiles="true">
         <include>
             <directory suffix=".php">./src</directory>
+            <directory suffix=".php">./scan.php</directory>
+            <directory suffix=".php">./actions-qrcode.php</directory>
+            <directory suffix=".php">./common.php</directory>
+            <directory suffix=".php">./kernel.php</directory>
         </include>
     </coverage>
     <testsuites>
         <testsuite name="BikeShare Test Suite">
-            <directory>./tests</directory>
+            <directory>./tests/</directory>
         </testsuite>
     </testsuites>
     <php>

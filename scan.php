@@ -1,6 +1,7 @@
 <?php
 
 use BikeShare\Rent\RentSystemInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 require_once 'vendor/autoload.php';
 require_once 'actions-qrcode.php';
@@ -16,7 +17,9 @@ if (!$auth->isLoggedIn()) {
  */
 $rentSystem = $rentSystemFactory->getRentSystem('qr');
 
-$request = substr($_SERVER["REQUEST_URI"], strpos($_SERVER["REQUEST_URI"], ".php") + 5);
+$requestUri = $requestStack->getCurrentRequest()->server->get("REQUEST_URI");
+
+$request = substr($requestUri, strpos($requestUri, ".php") + 5);
 $request = explode("/", $request);
 $action = $request[0];
 if (isset($request[1])) {
@@ -31,7 +34,11 @@ switch ($action) {
         logrequest($userid, $action);
         $bikeno = $parameter;
         checkbikeno($bikeno);
-        if (!empty($_POST['rent']) && $_POST['rent'] == "yes") {
+        if (
+            $requestStack->getCurrentRequest()->isMethod(Request::METHOD_POST)
+            && $requestStack->getCurrentRequest()->request->has('rent')
+            && $requestStack->getCurrentRequest()->request->get('rent') === "yes"
+        ) {
             $result = $rentSystem->rentBike($userid, $bikeno);
             response($result['content'], $result['error'], 0);
         } else {

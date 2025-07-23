@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-use BikeShare\App\Configuration;
 use BikeShare\App\EventListener\ErrorListener;
 use BikeShare\Credit\CodeGenerator\CodeGenerator;
 use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
@@ -33,7 +32,8 @@ return static function (ContainerConfigurator $container): void {
         ->autoconfigure()
         ->autowire()
         ->bind('$isSmsSystemEnabled', expr("container.getEnv('SMS_CONNECTOR') ? true : false"))
-        ->bind('$appName', env('APP_NAME'));
+        ->bind('$appName', env('APP_NAME'))
+        ->bind('$systemRules', env('SYSTEM_RULES'));
 
     $services->instanceof(CreditSystemInterface::class)->tag('creditSystem');
     $services->instanceof(RentSystemInterface::class)->tag('rentSystem');
@@ -57,9 +57,6 @@ return static function (ContainerConfigurator $container): void {
         ])
         ->tag('kernel.event_subscriber');
 
-    $services->set(Configuration::class)
-        ->args([__DIR__ . '/../config.php']);
-
     $services->load('BikeShare\\', '../src/')
         ->exclude([
             '../src/Db/*DbResult.php',
@@ -69,6 +66,7 @@ return static function (ContainerConfigurator $container): void {
             '../src/App/Entity',
             '../src/Event',
             '../src/Command/LoadFixturesCommand.php',
+            '../src/SmsCommand/*Command.php',
         ]);
 
     $services->get(\BikeShare\Command\LongRentalCheckCommand::class)
@@ -87,16 +85,20 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 
     $services->get(\BikeShare\Controller\HomeController::class)
-        ->bind('$freeTimeHours', env('int:WATCHES_FREE_TIME'));
+        ->bind('$freeTimeHours', env('int:WATCHES_FREE_TIME'))
+        ->bind('$systemZoom', env('int:SYSTEM_ZOOM'));
+
+    $services->get(\BikeShare\Controller\EmailConfirmController::class)
+        ->bind('$userBikeLimitAfterRegistration', env('int:USER_BIKE_LIMIT_AFTER_REGISTRATION'));
 
     $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 
-    $services->get(\BikeShare\SmsCommand\ListCommand::class)
-        ->bind('$forceStack', env('bool:FORCE_STACK'));
-
     $services->load('BikeShare\\SmsCommand\\', '../src/SmsCommand/*Command.php')
-        ->bind(RentSystemInterface::class, expr('service("BikeShare\\\Rent\\\RentSystemFactory").getRentSystem("sms")'));
+        ->bind(RentSystemInterface::class, expr('service("BikeShare\\\Rent\\\RentSystemFactory").getRentSystem("sms")'))
+        ->bind('$forceStack', env('bool:FORCE_STACK'))
+        ->bind('$countryCode', env('COUNTRY_CODE'))
+    ;
 
     $services->get(PdoDb::class)
         ->args([
@@ -106,6 +108,9 @@ return static function (ContainerConfigurator $container): void {
         ]);
 
     $services->alias(DbInterface::class, PdoDb::class);
+
+    $services->get(\BikeShare\Repository\CityRepository::class)
+        ->bind('$cities', env('json:CITIES'));
 
     $services->get(\BikeShare\Mail\MailSenderFactory::class)
         ->bind('$smtpHost', env('SMTP_HOST'));
@@ -125,9 +130,7 @@ return static function (ContainerConfigurator $container): void {
         );
 
     $services->get(PhonePurifier::class)
-        ->args([
-            expr("service('BikeShare\\\App\\\Configuration').get('countrycode')"),
-        ]);
+        ->bind('$countryCode', env('COUNTRY_CODE'));
 
     $services->get(CreditSystemFactory::class)
         ->bind('$isEnabled', env('bool:CREDIT_SYSTEM_ENABLED'));

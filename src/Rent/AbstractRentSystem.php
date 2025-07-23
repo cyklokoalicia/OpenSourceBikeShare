@@ -131,7 +131,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         while ($row = $result->fetchAssoc()) {
             $note .= $row['note'] . '; ';
         }
-        $note = substr($note, 0, strlen($note) - 2); // remove last two chars - comma and space
+        $note = substr($note, 0, strlen($note) - 2); // remove the last two chars - comma and space
 
         $newCode = sprintf('%04d', rand(100, 9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
 
@@ -178,7 +178,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $standId = $row["standId"];
 
         if ($force == false) {
-            $result = $this->db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
+            $result = $this->db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId AND bikeNum=$bikeId ORDER BY bikeNum");
             $bikenumber = $result->rowCount();
 
             if ($bikenumber == 0) {
@@ -265,7 +265,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                    WHERE bikeNum=$bikeId 
                      AND action IN ('RENT','FORCERENT') 
                    ORDER BY time DESC
-                   LIMIT 1,1"
+                   LIMIT 1"
         );
         if ($result->rowCount() == 1) {
             $row = $result->fetchAssoc();
@@ -281,7 +281,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
             );
 
-            return $this->response('<h3>' . _('Bicycle') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
+            return $this->response('<h3>' . _('Bike') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
         } else {
             return $this->response(_('No last stand or code for bicycle') . ' ' . $bikeId . ' ' . _('found. Revert not successful!'), ERROR);
         }

@@ -27,7 +27,8 @@ class ScanController extends AbstractController
         $kernel = $this->kernel;
 
         ob_start();
-        require_once $this->getParameter('kernel.project_dir') . '/scan.php';
+        require $this->getParameter('kernel.project_dir') . '/kernel.php';
+        require $this->getParameter('kernel.project_dir') . '/scan.php';
         $content = ob_get_clean();
 
         return new Response($content);

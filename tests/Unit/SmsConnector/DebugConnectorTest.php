@@ -7,16 +7,16 @@ namespace BikeShare\Test\Unit\SmsConnector;
 use BikeShare\SmsConnector\DebugConnector;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class DebugConnectorTest extends TestCase
 {
     public function testSend()
     {
         $loggerMock = $this->createMock(LoggerInterface::class);
-        $requestMock = $this->createMock(Request::class);
+        $requestStack = $this->createMock(RequestStack::class);
         $debugConnector = new DebugConnector(
-            $requestMock,
+            $requestStack,
             $loggerMock,
             [], #$configuration
             true
@@ -25,7 +25,7 @@ class DebugConnectorTest extends TestCase
         $loggerMock
             ->expects($this->once())
             ->method('debug')
-            ->with('123456789 -&gt Hello, World!');
+            ->with('123456789 -> Hello, World!');
 
         $debugConnector->send('123456789', 'Hello, World!');
     }

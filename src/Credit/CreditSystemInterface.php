@@ -6,11 +6,15 @@ namespace BikeShare\Credit;
 
 interface CreditSystemInterface
 {
-    public function getUserCredit($userId): float;
+    public function addCredit(int $userId, float $creditAmount): void;
+
+    public function useCredit(int $userId, float $creditAmount): void;
+
+    public function getUserCredit(int $userId): float;
 
     public function getMinRequiredCredit(): float;
 
-    public function isEnoughCreditForRent($userid): bool;
+    public function isEnoughCreditForRent(int $userid): bool;
 
     public function isEnabled(): bool;
 

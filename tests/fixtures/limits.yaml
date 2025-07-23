@@ -1,0 +1,25 @@
+stdClass:
+  defaultLimit (template):
+    tableName: 'limits'
+    userId: 0
+    userLimit: 0
+
+  userLimit_{1..3} (extends defaultLimit):
+    userId: '@user_<($current)>->userId'
+    userLimit: 0
+
+  userLimitForSmsControllerTest (extends defaultLimit):
+    userId: '@userForSmsControllerTest->userId'
+    userLimit: 1
+
+  adminLimitForSmsControllerTest (extends defaultLimit):
+    userId: '@adminForSmsControllerTest->userId'
+    userLimit: 5
+
+  adminLimit (extends defaultLimit):
+    userId: '@admin->userId'
+    userLimit: 6
+
+  superAdminLimit (extends defaultLimit):
+    userId: '@superAdmin->userId'
+    userLimit: 7

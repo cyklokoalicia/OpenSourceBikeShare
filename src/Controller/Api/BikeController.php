@@ -58,7 +58,7 @@ class BikeController extends AbstractController
             return $this->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        $bikes = $bikeRepository->findItem((int)$bikeNumber);
+        $bikes = [$bikeRepository->findItem((int)$bikeNumber)];
 
         return $this->json($bikes);
     }

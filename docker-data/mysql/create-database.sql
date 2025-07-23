@@ -30,12 +30,17 @@ CREATE TABLE `coupons` (
 
 DROP TABLE IF EXISTS `notes`;
 CREATE TABLE `notes` (
-  `noteId` int(11) NOT NULL,
-  `bikeNum` int(11) NOT NULL,
+  `noteId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `bikeNum` int(11) DEFAULT NULL,
+  `standId` int(11) DEFAULT NULL,
   `userId` int(11) NOT NULL,
-  `note` varchar(100),
+  `note` varchar(255),
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted` timestamp NULL
+  `deleted` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`noteId`),
+  KEY `bikeNum` (`bikeNum`),
+  KEY `standId` (`standId`),
+  KEY `userId` (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -50,20 +55,27 @@ CREATE TABLE `geolocation` (
 
 DROP TABLE IF EXISTS `history`;
 CREATE TABLE `history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
   `bikeNum` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `action` varchar(25) NOT NULL,
   `parameter` text NOT NULL,
   `standId` int(11) DEFAULT NULL,
-  `pairAction` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `pairActionId` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `bikeNum` (`bikeNum`),
+  KEY `userId` (`userId`),
+  KEY `action` (`action`),
+  KEY `standId` (`standId`),
+  KEY `pairActionId` (`pairActionId`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `limits`;
 CREATE TABLE `limits` (
   `userId` int(11) NOT NULL AUTO_INCREMENT,
-  `userLimit` int(11) NOT NULL DEFAULT '1',
+  `userLimit` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -134,7 +146,7 @@ CREATE TABLE `users` (
   `userId` int(11) NOT NULL AUTO_INCREMENT,
   `userName` varchar(50) NOT NULL,
   `password` text NOT NULL,
-  `mail` varchar(30) NOT NULL,
+  `mail` varchar(255) NOT NULL,
   `number` varchar(30) NOT NULL,
   `privileges` int(11) NOT NULL DEFAULT '0',
   `city` varchar(45) NOT NULL DEFAULT 'Bratisalva',

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\EventListener;
 
-use BikeShare\App\Configuration;
 use BikeShare\Event\UserRegistrationEvent;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\RegistrationRepository;
@@ -14,23 +13,23 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class RegistrationEventListener
 {
     private string $appName;
+    private string $systemRules;
     private RegistrationRepository $registrationRepository;
-    private Configuration $configuration;
     private MailSenderInterface $mailSender;
     private TranslatorInterface $translator;
     private UrlGeneratorInterface $urlGenerator;
 
     public function __construct(
         string $appName,
+        string $systemRules,
         RegistrationRepository $registrationRepository,
-        Configuration $configuration,
         MailSenderInterface $mailSender,
         TranslatorInterface $translator,
         UrlGeneratorInterface $urlGenerator
     ) {
         $this->appName = $appName;
+        $this->systemRules = $systemRules;
         $this->registrationRepository = $registrationRepository;
-        $this->configuration = $configuration;
         $this->mailSender = $mailSender;
         $this->translator = $translator;
         $this->urlGenerator = $urlGenerator;
@@ -55,7 +54,7 @@ class RegistrationEventListener
             [
                 'name' => $firstName,
                 'systemName' => $this->appName,
-                'systemRulesPageUrl' => $this->configuration->get('systemrules'),
+                'systemRulesPageUrl' => $this->systemRules,
                 'emailConfirmURL' => $this->urlGenerator->generate(
                     'user_confirm_email',
                     ['key' => $userKey],

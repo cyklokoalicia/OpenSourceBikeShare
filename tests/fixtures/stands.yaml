@@ -13,5 +13,5 @@ stdClass:
 
   stand_{1..5} (extends defaultStand):
     standId: '<($current)>'
-    standName: 'Stand <($current)>'
+    standName: 'STAND<($current)>'
     standDescription: '<streetName()>'

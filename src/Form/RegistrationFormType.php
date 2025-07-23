@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace BikeShare\Form;
 
-use BikeShare\App\Configuration;
 use BikeShare\Purifier\PhonePurifier;
+use BikeShare\Repository\CityRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -24,19 +24,22 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationFormType extends AbstractType
 {
+    private string $systemRules;
+    private CityRepository $cityRepository;
     private TranslatorInterface $translator;
-    private Configuration $configuration;
     private PhonePurifier $phonePurifier;
     private UserRepository $userRepository;
 
     public function __construct(
+        string $systemRules,
+        CityRepository $cityRepository,
         TranslatorInterface $translator,
-        Configuration $configuration,
         PhonePurifier $phonePurifier,
         UserRepository $userRepository
     ) {
+        $this->systemRules = $systemRules;
+        $this->cityRepository = $cityRepository;
         $this->translator = $translator;
-        $this->configuration = $configuration;
         $this->phonePurifier = $phonePurifier;
         $this->userRepository = $userRepository;
     }
@@ -48,7 +51,7 @@ class RegistrationFormType extends AbstractType
                 'label' => $this->translator->trans('Fullname:'),
                 'attr' => ['placeholder' => $this->translator->trans('Firstname Lastname')]
             ]);
-        $cities = $this->configuration->get('cities');
+        $cities = array_keys($this->cityRepository->findAvailableCities());
         if (count($cities) > 1) {
             $choices = [
                 '' => $this->translator->trans('Select your city'),
@@ -85,12 +88,22 @@ class RegistrationFormType extends AbstractType
             'label' => $this->translator->trans(
                 'By registering I confirm that I have read: {systemRules} and agree with the terms and conditions.',
                 [
-                    'systemRules' => '<a href="' . $this->configuration->get('systemrules') . '" target="_blank">'
+                    'systemRules' => '<a href="' . $this->systemRules . '" target="_blank">'
                         . $this->translator->trans('User Guide') . '</a>'
                 ]
             ),
             'label_html' => true,
         ]);
+
+        $builder->addEventListener(
+            FormEvents::PRE_SUBMIT,
+            function (FormEvent $event) {
+                $data = $event->getData();
+                $data['number'] = $this->phonePurifier->purify($data['number'] ?? '');
+                $data['fullname'] = strip_tags($data['fullname'] ?? '');
+                $event->setData($data);
+            }
+        );
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
@@ -114,6 +127,7 @@ class RegistrationFormType extends AbstractType
                     );
                 } else {
                     $registeredUser = $this->userRepository->findItemByEmail($data['useremail']);
+                    //perhaps we should not allow to check mail address...
                     if (!is_null($registeredUser)) {
                         $form->get('useremail')->addError(
                             new FormError(
@@ -144,7 +158,7 @@ class RegistrationFormType extends AbstractType
                         )
                     );
                 } else {
-                    $cities = $this->configuration->get('cities');
+                    $cities = array_keys($this->cityRepository->findAvailableCities());
                     if (!in_array($data['city'], $cities)) {
                         $form->get('city')->addError(
                             new FormError(
@@ -154,15 +168,15 @@ class RegistrationFormType extends AbstractType
                     }
                 }
 
-                $phoneNumber = $this->phonePurifier->purify($data['number'] ?? '');
-                if (empty($phoneNumber) || strlen($phoneNumber) < 5) {
+                if (empty($data['number']) || strlen($data['number']) < 5) {
                     $form->get('number')->addError(
                         new FormError(
                             $this->translator->trans('Invalid phone number.')
                         )
                     );
                 } else {
-                    $user = $this->userRepository->findItemByPhoneNumber($phoneNumber);
+                    //perhaps we should not allow to check number...
+                    $user = $this->userRepository->findItemByPhoneNumber($data['number']);
                     if (!is_null($user)) {
                         $form->get('number')->addError(
                             new FormError(

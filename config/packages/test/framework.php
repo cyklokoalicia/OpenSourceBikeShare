@@ -10,4 +10,8 @@ return static function (FrameworkConfig $framework): void {
     $framework->session()
         ->storageFactoryId('session.storage.factory.mock_file')
     ;
+
+    $framework->csrfProtection()
+        ->enabled(false)
+    ;
 };

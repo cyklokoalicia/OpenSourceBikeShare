@@ -28,21 +28,21 @@
     <meta name="theme-color" content="#ffffff">
     <script>
 
-        var mapzoom = {{ configuration.systemzoom }};
+        var mapzoom = {{ systemZoom }};
 
         {% if app.user %}
         var loggedin = 1;
         var priv = {{ app.user.privileges }};
         {% set usercity = app.user.city %}
-        {% if configuration.cities and configuration.citiesGPS %}
-        var maplat = {{ configuration.citiesGPS[usercity][0] }};
-        var maplon = {{ configuration.citiesGPS[usercity][1] }};
+        {% if cities %}
+        var maplat = {{ cities[usercity][0] }};
+        var maplon = {{ cities[usercity][1] }};
         {% endif %}
         {% else %}
         var loggedin = 0;
         var priv = 0;
-        var maplat = {{ configuration.systemlat  }};
-        var maplon = {{ configuration.systemlong }};
+        var maplat = {{ (cities|first)[0] }};
+        var maplon = {{ (cities|first)[1] }};
         {% endif %}
 
         var standselected = 0;
@@ -60,7 +60,7 @@
         <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
             <ul class="list-inline">
                 <li>
-                    <a href="{{ configuration.systemrules }}" target="_blank">
+                    <a href="{{ systemRules }}" target="_blank">
                         <span class="glyphicon glyphicon-question-sign"></span>&nbsp;{{ 'Help'|trans }}
                     </a>
                 </li>
@@ -103,12 +103,12 @@
                             </span>
                         </li>
                     {% endif %}
-                    {% if configuration.cities and configuration.cities|length > 1 %}
+                    {% if cities and cities|length > 1 %}
                         <li>
                             <select class="form-control input-sm" id="citychange" title="{{ 'My City'|trans }}">
-                                {% for city in configuration.cities %}
-                                <option value="{{ city }}" {% if usercity == city %}selected{% endif %}>
-                                    {% endfor %}
+                                {% for city in cities|keys %}
+                                    <option value="{{ city }}" {% if usercity == city %}selected{% endif %}>{{ city }}</option>
+                                {% endfor %}
                             </select>
                         </li>
                     {% endif %}

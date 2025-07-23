@@ -6,6 +6,14 @@ namespace BikeShare\Credit;
 
 class DisabledCreditSystem implements CreditSystemInterface
 {
+    public function addCredit(int $userId, float $creditAmount): void
+    {
+    }
+
+    public function useCredit(int $userId, float $creditAmount): void
+    {
+    }
+
     public function getUserCredit($userId): float
     {
         return 0;
