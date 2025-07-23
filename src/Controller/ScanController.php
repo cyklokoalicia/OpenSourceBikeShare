@@ -68,8 +68,8 @@ class ScanController extends AbstractController
 
         return $this->render('scan/rent.html.twig', [
             'bikeNumber' => $bikeNumber,
-            'standName' => $bike['standName'],
-            'notes' => $bike['notes'],
+            'standName' => $bike['standName'] ?? null,
+            'notes' => $bike['notes'] ?? null,
             'error' => $error ?? null,
             'message' => $message ?? false,
         ]);
