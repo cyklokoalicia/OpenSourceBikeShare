@@ -101,14 +101,10 @@ class ScanController extends AbstractController
                 $message = $result['message'];
             }
 
-            $db->query(
-                'INSERT INTO sent 
-                SET number = :number,
-                text = :text',
-                [
-                    'number' => $this->getUser()->getUserIdentifier(),
-                    'text' => strip_tags($result['message'])
-                ]
+            $this->logToDatabase(
+                $db,
+                $this->getUser()->getUserIdentifier(),
+                strip_tags($result['message'])
             );
         }
 
