@@ -64,7 +64,7 @@ class BikeController extends AbstractController
     }
 
     /**
-     * @Route("/bikeLastUsage/{bikeNumber}", name="api_bike_last_usage", methods={"GET"})
+     * @Route("/api/bikeLastUsage/{bikeNumber}", name="api_bike_last_usage", methods={"GET"})
      */
     public function lastUsage(
         $bikeNumber,

@@ -64,7 +64,10 @@ class ScanControllerTest extends BikeSharingWebTestCase
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);
 
-        $crawler = $this->client->request(Request::METHOD_GET, '/scan.php/rent/' . self::BIKE_NUMBER);
+        $crawler = $this->client->request(
+            Request::METHOD_GET,
+            '/scan.php/rent/' . self::BIKE_NUMBER
+        );
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h3', 'Rent bike ' . self::BIKE_NUMBER . ' on stand ' . self::STAND_NAME);
         $this->assertFormValue('form', 'rent', 'yes');
@@ -117,7 +120,35 @@ class ScanControllerTest extends BikeSharingWebTestCase
             if ($listener['pretty'] === 'BikeShare\EventListener\TooManyBikeRentEventListener::__invoke') {
                 $this->fail('TooManyBikeRentEventListener was not called');
             }
-        };
+        }
+
+        $received = $this->client->getContainer()->get(DbInterface::class)->query(
+            'SELECT * FROM received WHERE sender = :sender ORDER BY receive_time DESC, id DESC LIMIT 1',
+            ['sender' => self::USER_PHONE_NUMBER]
+        )->fetchAssoc();
+
+        $this->assertSame(
+            '/scan.php/rent/' . self::BIKE_NUMBER,
+            $received['sms_text'],
+            'Received message is not logged'
+        );
+        $this->assertEmpty($received['sms_uuid'], 'Web request should not have sms_uuid');
+
+        $sent = $this->client->getContainer()->get(DbInterface::class)->query(
+            'SELECT * FROM sent WHERE number = :number ORDER BY time DESC, id DESC LIMIT 1',
+            ['number' => self::USER_PHONE_NUMBER]
+        )->fetchAssoc();
+        $this->assertMatchesRegularExpression(
+            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.Change code immediately to \d{4}' .
+            '\(open, rotate metal part, set new code, rotate metal part back\)\./',
+            $sent['text'],
+            'Send message is not logged'
+        );
+        $this->assertStringContainsString(
+            'Change code immediately to ' . str_pad($history['parameter'], 4, '0', STR_PAD_LEFT),
+            $sent['text'],
+            'Log record does not contain lock code'
+        );
     }
 
     public function testReturn(): void
@@ -176,5 +207,27 @@ class ScanControllerTest extends BikeSharingWebTestCase
                 $this->fail('TestEventListener was not called');
             }
         }
+
+        $received = $this->client->getContainer()->get(DbInterface::class)->query(
+            'SELECT * FROM received WHERE sender = :sender ORDER BY receive_time DESC, id DESC LIMIT 1',
+            ['sender' => self::USER_PHONE_NUMBER]
+        )->fetchAssoc();
+        $this->assertSame(
+            '/scan.php/return/' . self::STAND_NAME,
+            $received['sms_text'],
+            'Received message is not logged'
+        );
+        $this->assertEmpty($received['sms_uuid'], 'Web request should not have sms_uuid');
+
+        $sent = $this->client->getContainer()->get(DbInterface::class)->query(
+            'SELECT * FROM sent WHERE number = :number ORDER BY time DESC, id DESC LIMIT 1',
+            ['number' => self::USER_PHONE_NUMBER]
+        )->fetchAssoc();
+        $this->assertMatchesRegularExpression(
+            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . ' : Lock with code \d{4}\.' .
+                'Please, rotate the lockpad to 0000 when leaving\.Wipe the bike clean if it is dirty, please\./',
+            $sent['text'],
+            'Send message is not logged'
+        );
     }
 }
