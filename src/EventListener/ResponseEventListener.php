@@ -51,7 +51,7 @@ class ResponseEventListener
                  text = :text',
             [
                 'number' => $number,
-                'text' => $response
+                'text' => (string)$response
             ]
         );
     }

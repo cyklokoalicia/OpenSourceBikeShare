@@ -5,17 +5,17 @@
 
 DROP TABLE IF EXISTS `bikes`;
 CREATE TABLE `bikes` (
-  `bikeNum` int(11) NOT NULL,
-  `currentUser` int(11) DEFAULT NULL,
-  `currentStand` int(11) DEFAULT NULL,
-  `currentCode` int(11) NOT NULL,
+  `bikeNum` int(11) UNSIGNED NOT NULL,
+  `currentUser` int(11) UNSIGNED DEFAULT NULL,
+  `currentStand` int(11) UNSIGNED DEFAULT NULL,
+  `currentCode` int(11) UNSIGNED NOT NULL,
   PRIMARY KEY (`bikeNum`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `credit`;
 CREATE TABLE `credit` (
-  `userId` int(11) NOT NULL,
+  `userId` int(11) UNSIGNED NOT NULL,
   `credit` float(5,2) DEFAULT NULL,
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -24,16 +24,16 @@ DROP TABLE IF EXISTS `coupons`;
 CREATE TABLE `coupons` (
   `coupon` varchar(6) NOT NULL,
   `value` float(5,2),
-  `status` int(11) DEFAULT '0',
+  `status` int(11) UNSIGNED DEFAULT '0',
   UNIQUE KEY `coupon` (`coupon`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `notes`;
 CREATE TABLE `notes` (
   `noteId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `bikeNum` int(11) DEFAULT NULL,
-  `standId` int(11) DEFAULT NULL,
-  `userId` int(11) NOT NULL,
+  `bikeNum` int(11) UNSIGNED DEFAULT NULL,
+  `standId` int(11) UNSIGNED DEFAULT NULL,
+  `userId` int(11) UNSIGNED NOT NULL,
   `note` varchar(255),
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted` timestamp NULL DEFAULT NULL,
@@ -55,14 +55,14 @@ CREATE TABLE `geolocation` (
 
 DROP TABLE IF EXISTS `history`;
 CREATE TABLE `history` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userId` int(11) NOT NULL,
-  `bikeNum` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userId` int(11) UNSIGNED NOT NULL,
+  `bikeNum` int(11) UNSIGNED NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `action` varchar(25) NOT NULL,
   `parameter` text NOT NULL,
-  `standId` int(11) DEFAULT NULL,
-  `pairActionId` int(11) DEFAULT NULL,
+  `standId` int(11) UNSIGNED DEFAULT NULL,
+  `pairActionId` int(11) UNSIGNED DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `bikeNum` (`bikeNum`),
   KEY `userId` (`userId`),
@@ -74,8 +74,8 @@ CREATE TABLE `history` (
 
 DROP TABLE IF EXISTS `limits`;
 CREATE TABLE `limits` (
-  `userId` int(11) NOT NULL AUTO_INCREMENT,
-  `userLimit` int(11) NOT NULL DEFAULT '0',
+  `userId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userLimit` int(11) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -84,33 +84,40 @@ CREATE TABLE `limits` (
 DROP TABLE IF EXISTS `pairing`;
 CREATE TABLE `pairing` (
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `standid` int(11) DEFAULT NULL
+  `standid` int(11) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `received`;
 CREATE TABLE `received` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `sms_uuid` varchar(60) NOT NULL,
   `sender` varchar(20) NOT NULL,
   `receive_time` varchar(20) NOT NULL,
   `sms_text` varchar(1024) NOT NULL,
-  `IP` varchar(39) NOT NULL
+  `IP` varchar(39) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `sender` (`sender`),
+  KEY `IP` (`IP`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `registration`;
 CREATE TABLE `registration` (
-  `userId` int(11) NOT NULL,
+  `userId` int(11) UNSIGNED NOT NULL,
   `userKey` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `sent`;
 CREATE TABLE `sent` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `number` varchar(20) NOT NULL,
-  `text` varchar(1024) NOT NULL
+  `text` varchar(1024) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `number` (`number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -127,7 +134,7 @@ CREATE TABLE `remember_me_token` (
 
 DROP TABLE IF EXISTS `stands`;
 CREATE TABLE `stands` (
-  `standId` int(11) NOT NULL AUTO_INCREMENT,
+  `standId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `standName` varchar(50) NOT NULL,
   `standDescription` varchar(255),
   `standPhoto` varchar(255),
@@ -143,12 +150,12 @@ CREATE TABLE `stands` (
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `userId` int(11) NOT NULL AUTO_INCREMENT,
+  `userId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `userName` varchar(50) NOT NULL,
   `password` text NOT NULL,
   `mail` varchar(255) NOT NULL,
   `number` varchar(30) NOT NULL,
-  `privileges` int(11) NOT NULL DEFAULT '0',
+  `privileges` int(11) UNSIGNED NOT NULL DEFAULT '0',
   `city` varchar(45) NOT NULL DEFAULT 'Bratisalva',
   `isNumberConfirmed` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`userId`)
