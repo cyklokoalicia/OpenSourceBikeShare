@@ -30,7 +30,7 @@ class RoutesAccessTest extends BikeSharingKernelTestCase
         '/receive.php' => [],
         '/register.php' => [],
         '/register' => [],
-        '/user/confirm/email/aaaa' => [],
+        '/user/confirm/email/' => [],
         '/resetPassword' => [],
         '/command.php' => [],
     ];

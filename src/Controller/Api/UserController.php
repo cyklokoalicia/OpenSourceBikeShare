@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace BikeShare\Controller\Api;
 
 use BikeShare\Repository\UserRepository;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,19 +16,9 @@ class UserController extends AbstractController
      * @Route("/api/user", name="api_user_index", methods={"GET"})
      */
     public function index(
-        UserRepository $userRepository,
-        LoggerInterface $logger
+        UserRepository $userRepository
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
-
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $bikes = $userRepository->findAll();
 
@@ -41,19 +30,9 @@ class UserController extends AbstractController
      */
     public function item(
         $userId,
-        UserRepository $userRepository,
-        LoggerInterface $logger
+        UserRepository $userRepository
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
-
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         if (empty($userId) || !is_numeric($userId)) {
             return $this->json([], Response::HTTP_BAD_REQUEST);
@@ -71,19 +50,9 @@ class UserController extends AbstractController
         $userId,
         bool $isSmsSystemEnabled,
         Request $request,
-        UserRepository $userRepository,
-        LoggerInterface $logger
+        UserRepository $userRepository
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
-
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         if (empty($userId) || !is_numeric($userId)) {
             return $this->json([], Response::HTTP_BAD_REQUEST);

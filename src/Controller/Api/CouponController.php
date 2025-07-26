@@ -34,16 +34,8 @@ class CouponController extends AbstractController
      */
     public function index(): Response
     {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $this->logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
         if ($this->creditSystem->isEnabled() === false) {
             $this->logger->notice('Credit system is disabled', [
                 'user' => $this->getUser()->getUserIdentifier(),
@@ -62,16 +54,8 @@ class CouponController extends AbstractController
     public function sell(
         Request $request
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $this->logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
         $coupon = $request->request->get('coupon');
         if ($this->creditSystem->isEnabled() === false) {
             $this->logger->notice('Credit system is disabled', [

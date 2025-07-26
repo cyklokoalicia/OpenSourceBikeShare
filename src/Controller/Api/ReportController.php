@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace BikeShare\Controller\Api;
 
 use BikeShare\Repository\HistoryRepository;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,19 +15,9 @@ class ReportController extends AbstractController
      * @Route("/api/report/daily", name="api_report_daily", methods={"GET"})
      */
     public function daily(
-        HistoryRepository $historyRepository,
-        LoggerInterface $logger
+        HistoryRepository $historyRepository
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
-
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $stats = $historyRepository->dailyStats();
 
@@ -39,19 +28,10 @@ class ReportController extends AbstractController
      */
     public function user(
         HistoryRepository $historyRepository,
-        LoggerInterface $logger,
         $year = null
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
         if (is_null($year)) {
             $year = (int)date('Y');
         } elseif (
