@@ -6,7 +6,6 @@ namespace BikeShare\Controller\Api;
 
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Repository\UserRepository;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,19 +19,9 @@ class CreditController extends AbstractController
     public function add(
         Request $request,
         CreditSystemInterface $creditSystem,
-        UserRepository $userRepository,
-        LoggerInterface $logger
+        UserRepository $userRepository
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
-
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $userId = $request->request->getInt('userId');
         $multiplier = $request->request->getInt('multiplier');

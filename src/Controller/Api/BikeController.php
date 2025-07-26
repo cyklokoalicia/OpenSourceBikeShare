@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace BikeShare\Controller\Api;
 
 use BikeShare\Repository\BikeRepository;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,19 +15,9 @@ class BikeController extends AbstractController
      * @Route("/api/bike", name="api_bike_index", methods={"GET"})
      */
     public function index(
-        BikeRepository $bikeRepository,
-        LoggerInterface $logger
+        BikeRepository $bikeRepository
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
-
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $bikes = $bikeRepository->findAll();
 
@@ -40,19 +29,9 @@ class BikeController extends AbstractController
      */
     public function item(
         $bikeNumber,
-        BikeRepository $bikeRepository,
-        LoggerInterface $logger
+        BikeRepository $bikeRepository
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
-
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
             return $this->json([], Response::HTTP_BAD_REQUEST);
@@ -68,19 +47,9 @@ class BikeController extends AbstractController
      */
     public function lastUsage(
         $bikeNumber,
-        BikeRepository $bikeRepository,
-        LoggerInterface $logger
+        BikeRepository $bikeRepository
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
-
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
             return $this->json([], Response::HTTP_BAD_REQUEST);
