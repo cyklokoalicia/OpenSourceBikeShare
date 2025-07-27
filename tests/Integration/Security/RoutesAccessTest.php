@@ -12,7 +12,7 @@ class RoutesAccessTest extends BikeSharingKernelTestCase
     private const ADMIN_ROUTES = [
         '/api/bike' => 'GET',
         '/api/bike/1' => 'GET',
-        '/api/bikeLastUsage/1' => 'GET',
+        '/api/bike/1/lastUsage' => 'GET',
         '/api/coupon' => 'GET',
         '/api/coupon/sell/1' => 'POST',
         '/api/coupon/generate' => 'POST',

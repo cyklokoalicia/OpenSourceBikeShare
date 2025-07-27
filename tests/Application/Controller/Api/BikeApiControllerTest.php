@@ -2,24 +2,23 @@
 
 declare(strict_types=1);
 
-namespace BikeShare\Test\Application\Controller\SmsRequestController;
+namespace Application\Controller\Api;
 
+use BikeShare\App\Security\UserProvider;
 use BikeShare\Db\DbInterface;
 use BikeShare\Event\BikeRentEvent;
 use BikeShare\Rent\RentSystemFactory;
-use BikeShare\Rent\RentSystemInterface;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-class RentCommandTest extends BikeSharingWebTestCase
+class BikeApiControllerTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421111111111';
     private const ADMIN_PHONE_NUMBER = '421222222222';
-    private const BIKE_NUMBER = 5;
-    private const STAND_NAME = 'STAND5';
+    private const BIKE_NUMBER = 6;
+    private const STAND_NAME = 'STAND1';
 
     private $watchesTooMany;
 
@@ -31,7 +30,7 @@ class RentCommandTest extends BikeSharingWebTestCase
         $admin = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
 
-        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('sms')
+        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('web')
             ->returnBike(
                 $admin['userId'],
                 self::BIKE_NUMBER,
@@ -45,7 +44,7 @@ class RentCommandTest extends BikeSharingWebTestCase
     {
         $admin = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
-        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('sms')
+        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('web')
             ->returnBike(
                 $admin['userId'],
                 self::BIKE_NUMBER,
@@ -58,7 +57,7 @@ class RentCommandTest extends BikeSharingWebTestCase
         parent::tearDown();
     }
 
-    public function testRentCommand(): void
+    public function testRentBike(): void
     {
         //We should not notify admin about too many rents in this testsuite
         $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999;
@@ -75,41 +74,35 @@ class RentCommandTest extends BikeSharingWebTestCase
             }
         );
 
-        $this->client->request(
-            Request::METHOD_GET,
-            '/receive.php',
-            [
-                'number' => self::USER_PHONE_NUMBER,
-                'message' => 'RENT ' . self::BIKE_NUMBER,
-                'uuid' => md5((string)microtime(true)),
-                'time' => time(),
-            ],
-        );
+        $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
+        $this->client->loginUser($user);
+
+        $this->client->request(Request::METHOD_POST, '/api/bike/' . self::BIKE_NUMBER . '/rent');
         $this->assertResponseIsSuccessful();
-        $this->assertSame('', $this->client->getResponse()->getContent());
+        $response = $this->client->getResponse()->getContent();
+        $this->assertJson($response, 'Response is not JSON');
+        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
+        $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
+        $this->assertSame(0, $response['error'], 'Response with error');
+        $response = strip_tags($response['message']);
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
-
-        $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
         $this->assertMatchesRegularExpression(
             '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.Change code immediately to \d{4}' .
-                '\(open, rotate metal part, set new code, rotate metal part back\)\./',
-            $sentMessage['text'],
-            'Invalid response sms text'
+            '\(open, rotate metal part, set new code, rotate metal part back\)\./',
+            $response,
+            'Invalid response text'
         );
 
         $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
 
-        $this->assertEquals($user['userId'], $bike['userId'], 'Bike rented by another user');
+        $this->assertEquals($user->getUserId(), $bike['userId'], 'Bike rented by another user');
         $this->assertNull($bike['standName'], 'Bike is still on stand');
 
         $history = $this->client->getContainer()->get(DbInterface::class)->query(
             'SELECT * FROM history WHERE userId = :userId AND bikeNum = :bikeNum ORDER BY id DESC LIMIT 1',
             [
-                'userId' => $user['userId'],
+                'userId' => $user->getUserId(),
                 'bikeNum' => self::BIKE_NUMBER,
             ]
         )->fetchAssoc();
@@ -118,7 +111,7 @@ class RentCommandTest extends BikeSharingWebTestCase
         $this->assertNotEmpty($history['parameter'], 'Missed lock code');
         $this->assertStringContainsString(
             'Change code immediately to ' . str_pad($history['parameter'], 4, '0', STR_PAD_LEFT),
-            $sentMessage['text'],
+            $response,
             'Response sms does not contain lock code'
         );
 
@@ -128,5 +121,32 @@ class RentCommandTest extends BikeSharingWebTestCase
                 $this->fail('TooManyBikeRentEventListener was not called');
             }
         }
+
+        $received = $this->client->getContainer()->get(DbInterface::class)->query(
+            'SELECT * FROM received WHERE sender = :sender ORDER BY receive_time DESC, id DESC LIMIT 1',
+            ['sender' => self::USER_PHONE_NUMBER]
+        )->fetchAssoc();
+        $this->assertSame(
+            '/api/bike/' . self::BIKE_NUMBER . '/rent',
+            $received['sms_text'],
+            'Received message is not logged'
+        );
+        $this->assertEmpty($received['sms_uuid'], 'Web request should not have sms_uuid');
+
+        $sent = $this->client->getContainer()->get(DbInterface::class)->query(
+            'SELECT * FROM sent WHERE number = :number ORDER BY time DESC, id DESC LIMIT 1',
+            ['number' => self::USER_PHONE_NUMBER]
+        )->fetchAssoc();
+        $this->assertMatchesRegularExpression(
+            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.Change code immediately to \d{4}' .
+            '\(open, rotate metal part, set new code, rotate metal part back\)\./',
+            $sent['text'],
+            'Send message is not logged'
+        );
+        $this->assertStringContainsString(
+            'Change code immediately to ' . str_pad($history['parameter'], 4, '0', STR_PAD_LEFT),
+            $sent['text'],
+            'Log record does not contain lock code'
+        );
     }
 }

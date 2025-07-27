@@ -154,7 +154,7 @@ function bikeInfo(bikeNumber) {
 
 function last(bikeNumber) {
     $.ajax({
-        url: "/api/bikeLastUsage/" + bikeNumber,
+        url: "/api/bike/" + bikeNumber + "/lastUsage",
         method: "GET",
         dataType: "json",
         success: function(data) {

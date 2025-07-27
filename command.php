@@ -20,12 +20,6 @@ $request = $requestStack->getCurrentRequest();
 $action = $request->query->get('action', '');
 
 switch ($action) {
-    case "rent":
-        logrequest($userid, $action);
-        $bikeno = trim($request->query->get("bikeno", ''));
-        checkbikeno($bikeno);
-        $rentSystem->rentBike($userid, $bikeno);
-        break;
     case "return":
         logrequest($userid, $action);
         $bikeno = trim($request->query->get("bikeno", ''));

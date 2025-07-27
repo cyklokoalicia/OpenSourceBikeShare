@@ -50,10 +50,14 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['bikeNumber' => '\d+'])
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'item']);
-    $routes->add('api_bike_last_usage', '/api/bikeLastUsage/{bikeNumber}')
+    $routes->add('api_bike_last_usage', '/api/bike/{bikeNumber}/lastUsage')
         ->methods(['GET'])
         ->requirements(['bikeNumber' => '\d+'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'lastUsage']);
+    $routes->add('api_bike_rent', '/api/bike/{bikeNumber}/rent')
+        ->methods(['POST'])
+        ->requirements(['bikeNumber' => '\d+'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'rentBike']);
     $routes->add('api_coupon_index', '/api/coupon')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\CouponController::class, 'index']);

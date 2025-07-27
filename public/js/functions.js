@@ -395,9 +395,10 @@ function rent() {
     if ($('#rent .bikenumber').html() == "") return false;
     if (window.ga) ga('send', 'event', 'bikes', 'rent', $('#rent .bikenumber').html());
     $.ajax({
-        url: "command.php?action=rent&bikeno=" + $('#rent .bikenumber').html()
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
+        url: "/api/bike/" + $('#rent .bikenumber').html() + "/rent",
+        method: "POST",
+        dataType: "json"
+    }).done(function (jsonobject) {
         handleresponse(jsonobject);
         resetbutton("rent");
         $('body').data("limit", $('body').data("limit") - 1);
@@ -516,9 +517,9 @@ function checkonebikeattach() {
 function handleresponse(jsonobject, display) {
     if (display == undefined) {
         if (jsonobject.error == 1) {
-            $('#console').html('<div class="alert alert-danger" role="alert">' + jsonobject.content + '</div>').fadeIn();
+            $('#console').html('<div class="alert alert-danger" role="alert">' + jsonobject.message + '</div>').fadeIn();
         } else {
-            $('#console').html('<div class="alert alert-success" role="alert">' + jsonobject.content + '</div>');
+            $('#console').html('<div class="alert alert-success" role="alert">' + jsonobject.message + '</div>');
         }
     }
     if (jsonobject.limit) {

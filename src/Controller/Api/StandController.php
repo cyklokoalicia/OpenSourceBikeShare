@@ -50,7 +50,7 @@ class StandController extends AbstractController
         $standInfo = $this->standRepository->findItemByName($standName);
 
         if (empty($standInfo)) {
-            return $this->json([]);
+            return $this->json([], Response::HTTP_BAD_REQUEST);
         }
 
         $stackTopBike = false;
