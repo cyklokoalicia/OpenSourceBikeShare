@@ -226,44 +226,45 @@ function showstand(e, clear) {
         }
         $.ajax({
             global: false,
-            url: "command.php?action=list&stand=" + markerdata[standid].name
-        }).done(function (jsonresponse) {
-            jsonobject = $.parseJSON(jsonresponse);
-            handleresponse(jsonobject, 0);
-            bikelist = "";
-            if (jsonobject.content != "") {
-                for (var i = 0, len = jsonobject.content.length; i < len; i++) {
-                    bikeissue = 0;
-                    if (jsonobject.content[i][0] == "*") {
-                        bikeissue = 1;
-                        jsonobject.content[i] = jsonobject.content[i].replace("*", "");
-                    }
-                    if (jsonobject.stacktopbike == false) // bike stack is disabled, allow renting any bike
+            url: "/api/stand/" + markerdata[standid].name + "/bike",
+            dataType: "json"
+        }).done(function (jsonobject) {
+            let bikeList = '';
+            let bikes = jsonobject.bikesOnStand || [];
+            let stackTopBike = jsonobject.stackTopBike;
+            if (bikes.length > 0) {
+                for (var i = 0, len = bikes.length; i < len; i++) {
+                    let bikeNum = bikes[i].bikeNum;
+                    let note = bikes[i].notes ? bikes[i].notes : '';
+                    let bikeIssue = note !== '';
+                    if (stackTopBike === false) // bike stack is disabled, allow renting any bike
                     {
-                        if (bikeissue == 1 && $("body").data("limit") > 0) {
-                            bikelist = bikelist + ' <button type="button" class="btn btn-warning bikeid" data-id="' + jsonobject.content[i] + '" data-note="' + jsonobject.notes[i] + '">' + jsonobject.content[i] + '</button>';
-                        } else if (bikeissue == 1 && $("body").data("limit") == 0) {
-                            bikelist = bikelist + ' <button type="button" class="btn btn-default bikeid" data-id="' + jsonobject.content[i] + '">' + jsonobject.content[i] + '</button>';
-                        } else if ($("body").data("limit") > 0) bikelist = bikelist + ' <button type="button" class="btn btn-success bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '">' + jsonobject.content[i] + '</button>';
-                        else bikelist = bikelist + ' <button type="button" class="btn btn-default bikeid">' + jsonobject.content[i] + '</button>';
+                        if (bikeIssue && $("body").data("limit") > 0) {
+                            bikeList += ' <button type="button" class="btn btn-warning bikeid" data-id="' + bikeNum + '" data-note="' + note + '">' + bikeNum + '</button>';
+                        } else if (bikeIssue && $("body").data("limit") == 0) {
+                            bikeList += ' <button type="button" class="btn btn-default bikeid" data-id="' + bikeNum + '">' + bikeNum + '</button>';
+                        } else if ($("body").data("limit") > 0) bikeList = bikeList + ' <button type="button" class="btn btn-success bikeid b' + bikeNum + '" data-id="' + bikeNum + '">' + bikeNum + '</button>';
+                        else {
+                            bikeList += ' <button type="button" class="btn btn-default bikeid">' + bikeNum + '</button>';
+                        }
                     } else // bike stack is enabled, allow renting top of the stack bike only
                     {
-                        if (jsonobject.stacktopbike == jsonobject.content[i] && bikeissue == 1 && $("body").data("limit") > 0) {
-                            bikelist = bikelist + ' <button type="button" class="btn btn-warning bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '" data-note="' + jsonobject.notes[i] + '">' + jsonobject.content[i] + '</button>';
-                        } else if (jsonobject.stacktopbike == jsonobject.content[i] && bikeissue == 1 && $("body").data("limit") == 0) {
-                            bikelist = bikelist + ' <button type="button" class="btn btn-default bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '">' + jsonobject.content[i] + '</button>';
-                        } else if (jsonobject.stacktopbike == jsonobject.content[i] && $("body").data("limit") > 0) bikelist = bikelist + ' <button type="button" class="btn btn-success bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '">' + jsonobject.content[i] + '</button>';
-                        else bikelist = bikelist + ' <button type="button" class="btn btn-default bikeid">' + jsonobject.content[i] + '</button>';
+                        if (stackTopBike == bikeNum && bikeIssue && $("body").data("limit") > 0) {
+                            bikeList += ' <button type="button" class="btn btn-warning bikeid b' + bikeNum + '" data-id="' + bikeNum + '" data-note="' + note + '">' + bikeNum + '</button>';
+                        } else if (stackTopBike == bikeNum && bikeIssue && $("body").data("limit") == 0) {
+                            bikeList += ' <button type="button" class="btn btn-default bikeid b' + bikeNum + '" data-id="' + bikeNum + '">' + bikeNum + '</button>';
+                        } else if (stackTopBike == bikeNum && $("body").data("limit") > 0) bikeList = bikeList + ' <button type="button" class="btn btn-success bikeid b' + bikeNum + '" data-id="' + bikeNum + '">' + bikeNum + '</button>';
+                        else bikeList += ' <button type="button" class="btn btn-default bikeid">' + bikeNum + '</button>';
                     }
                 }
-                $('#standbikes').html('<div class="btn-group">' + bikelist + '</div>');
-                if (jsonobject.stacktopbike != false) // bike stack is enabled, allow renting top of the stack bike only
+                $('#standbikes').html('<div class="btn-group">' + bikeList + '</div>');
+                if (stackTopBike !== false) // bike stack is enabled, allow renting top of the stack bike only
                 {
-                    $('.b' + jsonobject.stacktopbike).click(function () {
+                    $('.b' + stackTopBike).click(function () {
                         if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-number');
                         attachbicycleinfo(this, "rent");
                     });
-                    $('body').data('stacktopbike', jsonobject.stacktopbike);
+                    $('body').data('stackTopBike', stackTopBike);
                 } else // bike stack is disabled, allow renting any bike
                 {
                     $('#standbikes .bikeid').click(function () {
@@ -317,7 +318,7 @@ function rentedbikes() {
     }).done(function (jsonresponse) {
         jsonobject = $.parseJSON(jsonresponse);
         handleresponse(jsonobject, 0);
-        bikelist = "";
+        bikeList = "";
         if (jsonobject.content != "") {
             for (var i = 0, len = jsonobject.content.length; i < len; i++) {
                 // time of rent calculation -v
@@ -348,9 +349,9 @@ function rentedbikes() {
                     }
                 }
                 // time of rent calculation -^
-                bikelist = bikelist + ' <button type="button" class="btn btn-info bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '" title="' + _currently_rented + '">' + jsonobject.content[i] + '<br /><span class="label label-primary">(' + jsonobject.codes[i] + ')</span><br /><span class="label"><s>(' + jsonobject.oldcodes[i] + ')</s></span>' + leftTimeText + '</button> ';
+                bikeList = bikeList + ' <button type="button" class="btn btn-info bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '" title="' + _currently_rented + '">' + jsonobject.content[i] + '<br /><span class="label label-primary">(' + jsonobject.codes[i] + ')</span><br /><span class="label"><s>(' + jsonobject.oldcodes[i] + ')</s></span>' + leftTimeText + '</button> ';
             }
-            $('#rentedbikes').html('<div class="btn-group">' + bikelist + '</div>');
+            $('#rentedbikes').html('<div class="btn-group">' + bikeList + '</div>');
             $('#rentedbikes .bikeid').click(function () {
                 attachbicycleinfo(this, "return");
             });
@@ -534,7 +535,7 @@ function resetbutton(attachto) {
 }
 
 function resetstandbikes() {
-    $('body').data('stacktopbike', false);
+    $('body').data('stackTopBike', false);
     $('#standbikes').html('');
 }
 

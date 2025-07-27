@@ -31,7 +31,7 @@ return function (SecurityConfig $security) {
     $apiFirewall = $security->firewall('api');
     $apiFirewall
         ->pattern('^/api')
-        ->context('bike_sharing')
+        ->context('main')
         ->accessDeniedHandler(ApiAccessDeniedHandler::class);
     $apiFirewall
         ->security(true)
@@ -50,7 +50,6 @@ return function (SecurityConfig $security) {
         ->path('logout')
         ->target('/');
     $mainFirewall
-        ->context('bike_sharing')
         ->rememberMe()
         ->secret('%kernel.secret%')
         ->lifetime(604800) // 1 week in seconds

@@ -39,6 +39,10 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_stand_index', '/api/stand')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\StandController::class, 'index']);
+    $routes->add('api_stand_item', '/api/stand/{standName}/bike')
+        ->requirements(['standName' => '\w+'])
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\StandController::class, 'bike']);
     $routes->add('api_bike_index', '/api/bike')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'index']);
