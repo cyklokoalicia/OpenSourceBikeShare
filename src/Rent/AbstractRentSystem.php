@@ -291,11 +291,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
     protected function response($message, $error = 0)
     {
-        if ($this->getType() == 'web') {
-            //temp solution before full migration to new bootstrap
-            $message = str_replace('badge badge-', 'label label-', $message);
-        }
-
         return [
             'error' => $error,
             'message' => $message,
