@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Controller\Api;
+namespace BikeShare\Test\Application\Controller\Api\Bike;
 
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Db\DbInterface;
@@ -13,7 +13,7 @@ use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-class BikeApiControllerTest extends BikeSharingWebTestCase
+class BikeRentTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421111111111';
     private const ADMIN_PHONE_NUMBER = '421222222222';
@@ -84,7 +84,7 @@ class BikeApiControllerTest extends BikeSharingWebTestCase
         $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
-        $this->assertSame(0, $response['error'], 'Response with error');
+        $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
         $response = strip_tags($response['message']);
 
         $this->assertMatchesRegularExpression(

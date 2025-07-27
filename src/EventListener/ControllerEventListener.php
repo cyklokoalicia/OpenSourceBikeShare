@@ -27,6 +27,7 @@ class ControllerEventListener
         'scan_bike',
         'scan_stand',
         'api_bike_rent',
+        'api_bike_return',
     ];
 
     private DbInterface $db;

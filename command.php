@@ -20,18 +20,6 @@ $request = $requestStack->getCurrentRequest();
 $action = $request->query->get('action', '');
 
 switch ($action) {
-    case "return":
-        logrequest($userid, $action);
-        $bikeno = trim($request->query->get("bikeno", ''));
-        $stand = trim($request->query->get("stand", ''));
-        $note = "";
-        if ($request->query->has("note")) {
-            $note = trim($request->query->get("note", ''));  
-        } 
-        checkbikeno($bikeno);
-        checkstandname($stand);
-        $rentSystem->returnBike($userid, $bikeno, $stand, $note);
-        break;
     case "validatecoupon":
         logrequest($userid, $action);
         $coupon = trim($request->query->get("coupon", ''));

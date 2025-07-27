@@ -431,11 +431,14 @@ function returnbike() {
     standid = $('#stands').val();
     if (window.ga) ga('send', 'event', 'bikes', 'return', $('#return .bikenumber').html());
     if (window.ga) ga('send', 'event', 'stands', 'return', standname);
-    if ($('#notetext').val()) note = "&note=" + $('#notetext').val();
     $.ajax({
-        url: "command.php?action=return&bikeno=" + $('#return .bikenumber').html() + "&stand=" + standname + note
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
+        url: "/api/bike/" + $('#return .bikenumber').html() + "/return/" + standname,
+        method: "POST",
+        dataType: "json",
+        data: {
+            'note': $('#notetext').val()
+        }
+    }).done(function (jsonobject) {
         handleresponse(jsonobject);
         $('.b' + $('#return .bikenumber').html()).remove();
         resetbutton("return");

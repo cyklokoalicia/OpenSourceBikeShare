@@ -7,6 +7,7 @@ namespace BikeShare\Controller\Api;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -49,7 +50,7 @@ class BikeController extends AbstractController
     }
 
     /**
-     * @Route("/api/bike/{bikeNumber}/lastUsage", name="api_bike_last_usage", methods={"GET"})
+     * @Route("/api/bike/{bikeNumber}/lastUsage", name="api_bike_last_usage", methods={"GET"}, requirements: {"bikeNumber"="\d+"})
      */
     public function lastUsage(
         $bikeNumber
@@ -66,7 +67,7 @@ class BikeController extends AbstractController
     }
 
     /**
-     * @Route("/api/bike/{bikeNumber}/rent", name="api_bike_rent", methods={"POST"})
+     * @Route("/api/bike/{bikeNumber}/rent", name="api_bike_rent", methods={"POST"}, requirements: {"bikeNumber"="\d+"})
      */
     public function rentBike(
         $bikeNumber,
@@ -81,6 +82,31 @@ class BikeController extends AbstractController
         $response = $rentSystemFactory->getRentSystem('web')->rentBike(
             $this->getUser()->getUserId(),
             (int)$bikeNumber
+        );
+
+        return $this->json($response);
+    }
+
+    /**
+     * @Route("/api/bike/{bikeNumber}/rent", name="api_bike_return", methods={"POST"}, requirements: {"standName"="\w+", "bikeNumber"="\d+"})
+     */
+    public function returnBike(
+        $bikeNumber,
+        $standName,
+        Request $request,
+        RentSystemFactory $rentSystemFactory
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $response = $rentSystemFactory->getRentSystem('web')->returnBike(
+            $this->getUser()->getUserId(),
+            (int)$bikeNumber,
+            $standName,
+            $request->request->get('note', ''),
         );
 
         return $this->json($response);
