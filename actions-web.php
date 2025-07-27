@@ -93,25 +93,6 @@ function trips($userId, $bike = 0)
     echo json_encode($jsoncontent); // TODO change to response function
 }
 
-function validatecoupon($userid, $coupon)
-{
-    global $db, $creditSystem;
-    if ($creditSystem->isEnabled() == false) {
-        return;
-    }
-    // if credit system disabled, exit
-    $result = $db->query("SELECT coupon,value FROM coupons WHERE coupon='" . $coupon . "' AND status<'2'");
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        $value = $row['value'];
-        $result = $db->query("UPDATE credit SET credit=credit+'" . $value . "' WHERE userId='" . $userid . "'");
-        $result = $db->query("INSERT INTO history SET userId=$userid,bikeNum=0,action='CREDITCHANGE',parameter='" . $value . '|add+' . $value . '|' . $coupon . "'");
-        $result = $db->query("UPDATE coupons SET status='2' WHERE coupon='" . $coupon . "'");
-        response('+' . $value . ' ' . $creditSystem->getCreditCurrency() . '. ' . _('Coupon') . ' ' . $coupon . ' ' . _('has been redeemed') . '.');
-    }
-    response(_('Invalid coupon, try again.'), 1);
-}
-
 function changecity($userid, $city)
 {
     global $db, $cityRepository;

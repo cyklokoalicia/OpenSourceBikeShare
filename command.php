@@ -20,11 +20,6 @@ $request = $requestStack->getCurrentRequest();
 $action = $request->query->get('action', '');
 
 switch ($action) {
-    case "validatecoupon":
-        logrequest($userid, $action);
-        $coupon = trim($request->query->get("coupon", ''));
-        validatecoupon($userid, $coupon);
-        break;
     case "changecity":
         logrequest($userid, $action);
         $city = trim($request->query->get("city", ''));

@@ -473,12 +473,17 @@ function changecity() {
 
 function validatecoupon() {
     $.ajax({
-        url: "command.php?action=validatecoupon&coupon=" + $('#coupon').val()
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
+        url: "/api/coupon/use",
+        method: "POST",
+        dataType: "json",
+        data: {
+            coupon: $('#coupon').val(),
+        }
+    }).always(function (xhr, status, error) {
+        jsonobject = xhr.responseJSON
         temp = $('#couponblock').html();
         if (jsonobject.error == 1) {
-            $('#couponblock').html('<div class="alert alert-danger" role="alert">' + jsonobject.content + '</div>');
+            $('#couponblock').html('<div class="alert alert-danger" role="alert">' + jsonobject.message + '</div>');
             setTimeout(function () {
                 $('#couponblock').html(temp);
                 $("#validatecoupon").click(function () {
@@ -487,7 +492,7 @@ function validatecoupon() {
                 });
             }, 2500);
         } else {
-            $('#couponblock').html('<div class="alert alert-success" role="alert">' + jsonobject.content + '</div>');
+            $('#couponblock').html('<div class="alert alert-success" role="alert">' + jsonobject.message + '</div>');
             getuserstatus();
             setTimeout(function () {
                 $('#couponblock').html(temp);

@@ -41,7 +41,7 @@ class CouponController extends AbstractController
                 'user' => $this->getUser()->getUserIdentifier(),
             ]);
 
-            return new Response('', Response::HTTP_FORBIDDEN);
+            return $this->json([], Response::HTTP_BAD_REQUEST);
         }
         $coupons = $this->couponRepository->findAllActive();
 
@@ -51,7 +51,7 @@ class CouponController extends AbstractController
     /**
      * @Route("/api/coupon/sell", name="api_coupon_sell", methods={"POST"})
      */
-    public function sell(
+    public function sellCoupon(
         Request $request
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -62,9 +62,9 @@ class CouponController extends AbstractController
                 'user' => $this->getUser()->getUserIdentifier(),
             ]);
 
-            return new Response('', Response::HTTP_FORBIDDEN);
+            return $this->json([], Response::HTTP_BAD_REQUEST);
         }
-        $this->couponRepository->sell($coupon);
+        $this->couponRepository->updateStatus($coupon, 1); // Mark as sold
 
         return $this->json(
             [
@@ -80,19 +80,11 @@ class CouponController extends AbstractController
         Request $request,
         CodeGeneratorInterface $codeGenerator
     ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $this->logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-            return $this->json([], Response::HTTP_FORBIDDEN);
-        }
         $multiplier = $request->request->get('multiplier');
         if (!is_numeric($multiplier) || $multiplier <= 0 || $multiplier > 5) {
-            return new Response('Invalid multiplier value', Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Invalid multiplier value', 'error' => 1], Response::HTTP_BAD_REQUEST);
         }
         $multiplier = (int) $multiplier;
         if ($this->creditSystem->isEnabled() === false) {
@@ -100,7 +92,7 @@ class CouponController extends AbstractController
                 'user' => $this->getUser()->getUserIdentifier(),
             ]);
 
-            return new Response('', Response::HTTP_FORBIDDEN);
+            return $this->json([], Response::HTTP_BAD_REQUEST);
         }
 
         $minRequiredCredit = $this->creditSystem->getMinRequiredCredit();
@@ -113,7 +105,49 @@ class CouponController extends AbstractController
         return $this->json(
             [
                 'message' => 'Generated 10 new ' . $value . ' '
-                    . $this->creditSystem->getCreditCurrency() . ' coupons.'
+                    . $this->creditSystem->getCreditCurrency() . ' coupons.',
+                'error' => 0,
+            ]
+        );
+    }
+
+    /**
+     * @Route("/api/coupon/use", name="api_coupon_use", methods={"POST"})
+     */
+    public function useCoupon(
+        Request $request
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if ($this->creditSystem->isEnabled() === false) {
+            $this->logger->notice('Credit system is disabled', [
+                'user' => $this->getUser()->getUserIdentifier(),
+            ]);
+
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $coupon = $request->request->get('coupon', '');
+        $couponData = $this->couponRepository->findActiveItem($coupon);
+        if (is_null($couponData))
+        {
+            return $this->json(
+                [
+                    'message' => 'Invalid coupon, try again.',
+                    'error' => 1,
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $this->couponRepository->updateStatus($coupon, 2);// Mark as used
+        $this->creditSystem->addCredit($this->getUser()->getUserId(), (float)$couponData['value'], $coupon);
+
+        return $this->json(
+            [
+                'message' => '+' . $couponData['value'] . ' ' . $this->creditSystem->getCreditCurrency()
+                    . '. Coupon ' . $coupon . ' has been redeemed.',
+                'error' => 0,
             ]
         );
     }

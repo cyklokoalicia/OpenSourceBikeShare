@@ -14,17 +14,17 @@ class CreditCommandTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421111111111';
 
-    private $smsSystemEnabled;
+    private $creditSystemEnabled;
 
     protected function setup(): void
     {
         parent::setup();
-        $this->smsSystemEnabled = $_ENV['CREDIT_SYSTEM_ENABLED'];
+        $this->creditSystemEnabled = $_ENV['CREDIT_SYSTEM_ENABLED'];
     }
 
     protected function tearDown(): void
     {
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = $this->smsSystemEnabled;
+        $_ENV['CREDIT_SYSTEM_ENABLED'] = $this->creditSystemEnabled;
         parent::tearDown();
     }
 

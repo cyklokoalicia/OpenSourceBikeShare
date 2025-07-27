@@ -484,6 +484,7 @@ function generatecoupons(multiplier) {
     $.ajax({
         url: "/api/coupon/generate",
         method: "POST",
+        dataType: "json",
         data: {multiplier: multiplier},
         success: function() {
             couponlist();
@@ -498,6 +499,7 @@ function sellcoupon(coupon) {
     $.ajax({
         url: "/api/coupon/sell",
         method: "POST",
+        dataType: "json",
         data: {coupon: coupon},
         success: function() {
             couponlist();

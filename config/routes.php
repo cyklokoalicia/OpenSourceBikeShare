@@ -68,7 +68,10 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\Api\CouponController::class, 'index']);
     $routes->add('api_coupon_sell', '/api/coupon/sell')
         ->methods(['POST'])
-        ->controller([\BikeShare\Controller\Api\CouponController::class, 'sell']);
+        ->controller([\BikeShare\Controller\Api\CouponController::class, 'sellCoupon']);
+    $routes->add('api_coupon_use', '/api/coupon/use')
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\Api\CouponController::class, 'useCoupon']);
     $routes->add('api_coupon_generate', '/api/coupon/generate')
         ->methods(['POST'])
         ->controller([\BikeShare\Controller\Api\CouponController::class, 'generate']);

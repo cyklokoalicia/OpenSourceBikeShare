@@ -71,7 +71,7 @@ class CreditSystem implements CreditSystemInterface
         $this->historyRepository = $historyRepository;
     }
 
-    public function addCredit(int $userId, float $creditAmount): void
+    public function addCredit(int $userId, float $creditAmount, ?string $coupon): void
     {
         if ($creditAmount < 0) {
             throw new \InvalidArgumentException('Credit amount must be positive');
@@ -93,7 +93,7 @@ class CreditSystem implements CreditSystemInterface
                 $userId,
                 0, //BikeNum
                 'CREDITCHANGE', //action
-                $creditAmount . '|add+' . $creditAmount //parameter
+                $creditAmount . '|add+' . $creditAmount . ($coupon ? '|'. $coupon : '') //parameter
             );
         }
     }

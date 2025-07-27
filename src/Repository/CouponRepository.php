@@ -6,6 +6,7 @@ namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
 
+#TODO ADD ENUM and check logic for status
 class CouponRepository
 {
     private DbInterface $db;
@@ -19,17 +20,22 @@ class CouponRepository
     public function findAllActive(): array
     {
         $coupons = $this->db->query(
-            'SELECT coupon, value, status FROM coupons WHERE status=0 ORDER BY status,value,coupon'
+            'SELECT coupon, value, status FROM coupons WHERE status=0 ORDER BY status, value, coupon'
         )->fetchAllAssoc();
 
         return $coupons;
     }
 
-    public function sell(string $coupon): void
+    public function updateStatus(string $coupon, int $status): void
     {
+        if (!in_array($status, [0, 1, 2], true)) {
+            throw new \InvalidArgumentException('Invalid status value. Must be 0, 1, or 2.');
+        }
+
         $this->db->query(
-            'UPDATE coupons SET status=1 WHERE coupon = :coupon LIMIT 1',
+            'UPDATE coupons SET status = :status WHERE coupon = :coupon LIMIT 1',
             [
+                'status' => $status,
                 'coupon' => $coupon,
             ]
         );
@@ -37,8 +43,6 @@ class CouponRepository
 
     public function addItem(string $coupon, float $value): void
     {
-        $coupon = $this->db->escape($coupon);
-        $value = $this->db->escape($value);
         $this->db->query(
             'INSERT INTO coupons (coupon, value, status) VALUES (:coupon, :value, 0)',
             [
@@ -46,5 +50,17 @@ class CouponRepository
                 'value' => $value,
             ]
         );
+    }
+
+    public function findActiveItem(string $coupon): ?array
+    {
+        $result = $this->db->query(
+            'SELECT coupon, value, status FROM coupons WHERE coupon = :coupon AND status < 2 LIMIT 1',
+            [
+                'coupon' => $coupon,
+            ]
+        );
+
+        return $result->fetchAssoc();
     }
 }
