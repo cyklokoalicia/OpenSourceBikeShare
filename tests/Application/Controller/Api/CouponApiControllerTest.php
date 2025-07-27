@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\Test\Application\Controller\Api;
 
 use BikeShare\App\Security\UserProvider;
+use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
 use BikeShare\Repository\CouponRepository;
+use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 
 class CouponApiControllerTest extends BikeSharingWebTestCase
@@ -24,6 +26,14 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
 
     protected function tearDown(): void
     {
+        $user = $this->client->getContainer()->get(UserRepository::class)
+            ->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $creditSystem = $this->client->getContainer()->get(CreditSystemInterface::class);
+        $userCredit = $creditSystem->getUserCredit($user['userId']);
+        if ($userCredit > 0) {
+            $creditSystem->useCredit($user['userId'], $userCredit);
+        }
+
         $_ENV['CREDIT_SYSTEM_ENABLED'] = $this->creditSystemEnabled;
         parent::tearDown();
     }
