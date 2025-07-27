@@ -20,14 +20,6 @@ function response($message, $error = 0, $additional = '', $log = 1)
     echo $json;
 }
 
-function removenote($userId, $bikeNum)
-{
-    global $db;
-
-    $result = $db->query("DELETE FROM notes WHERE bikeNum=$bikeNum LIMIT XXXX");
-    response(_('Note for bike') . ' ' . $bikeNum . ' ' . _('deleted') . '.');
-}
-
 function checkprivileges($userid)
 {
     global $db, $user;

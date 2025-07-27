@@ -43,6 +43,10 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['standName' => '\w+'])
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\StandController::class, 'bike']);
+    $routes->add('api_stand_remove_note', '/api/stand/{standName}/removeNote')
+        ->requirements(['standName' => '\w+'])
+        ->methods(['DELETE'])
+        ->controller([\BikeShare\Controller\Api\StandController::class, 'removeNote']);
     $routes->add('api_bike_index', '/api/bike')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'index']);
@@ -68,6 +72,10 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['standName' => '\w+'])
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'revertBike']);
+    $routes->add('api_bike_remove_note', '/api/bike/{bikeNumber}/removeNote')
+        ->requirements(['bikeNumber' => '\d+'])
+        ->methods(['DELETE'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'removeNote']);
     $routes->add('api_coupon_index', '/api/coupon')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\CouponController::class, 'index']);

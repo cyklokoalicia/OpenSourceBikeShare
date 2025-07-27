@@ -6,6 +6,7 @@ namespace BikeShare\Controller\Api;
 
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
+use BikeShare\Repository\NoteRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -129,6 +130,32 @@ class BikeController extends AbstractController
             $this->getUser()->getUserId(),
             (int)$bikeNumber,
         );
+
+        return $this->json($response);
+    }
+
+    /**
+     * @Route("/api/bike/{bikeNumber}/removeNote", name="api_bike_remove_note", methods={"DELETE"}, requirements: {"bikeNumber"="\d+"})
+     */
+    public function removeNote(
+        $bikeNumber,
+        NoteRepository $noteRepository,
+        Request $request
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $pattern = $request->request->get('pattern');
+
+        $deletedNotesCount = $noteRepository->deleteBikeNote((int)$bikeNumber, $pattern);
+
+        $response = [
+            'message' => $deletedNotesCount . ' note(s) removed successfully',
+            'error' => 0,
+        ];
 
         return $this->json($response);
     }
