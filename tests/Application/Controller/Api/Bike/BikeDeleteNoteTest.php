@@ -17,7 +17,8 @@ class BikeDeleteNoteTest extends BikeSharingWebTestCase
 
     public function testDeleteNote(): void
     {
-        $admin = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
+        $admin = $this->client->getContainer()->get(UserProvider::class)
+            ->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
         $this->client->loginUser($admin);
 
         $this->client->request(Request::METHOD_DELETE, '/api/bike/' . self::BIKE_NUMBER . '/removeNote');

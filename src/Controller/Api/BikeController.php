@@ -15,12 +15,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class BikeController extends AbstractController
 {
     private BikeRepository $bikeRepository;
-    
+
     public function __construct(BikeRepository $bikeRepository)
     {
         $this->bikeRepository = $bikeRepository;
     }
-    
+
     /**
      * @Route("/api/bike", name="api_bike_index", methods={"GET"})
      */
@@ -68,7 +68,7 @@ class BikeController extends AbstractController
     }
 
     /**
-     * @Route("/api/bike/{bikeNumber}/rent", name="api_bike_rent", methods={"POST"}, requirements: {"bikeNumber"="\d+"})
+     * @Route("/api/bike/{bikeNumber}/rent", name="api_bike_rent", methods={"PUT"}, requirements: {"bikeNumber"="\d+"})
      */
     public function rentBike(
         $bikeNumber,
@@ -89,7 +89,7 @@ class BikeController extends AbstractController
     }
 
     /**
-     * @Route("/api/bike/{bikeNumber}/rent", name="api_bike_return", methods={"POST"}, requirements: {"standName"="\w+", "bikeNumber"="\d+"})
+     * @Route("/api/bike/{bikeNumber}/return", name="api_bike_return", methods={"PUT"}, requirements: {"standName"="\w+", "bikeNumber"="\d+"})
      */
     public function returnBike(
         $bikeNumber,
@@ -108,6 +108,54 @@ class BikeController extends AbstractController
             (int)$bikeNumber,
             $standName,
             $request->request->get('note', ''),
+        );
+
+        return $this->json($response);
+    }
+
+    /**
+     * @Route("/api/bike/{bikeNumber}/forceRent", name="api_bike_force_rent", methods={"PUT"}, requirements: {"bikeNumber"="\d+"})
+     */
+    public function forceRentBike(
+        $bikeNumber,
+        RentSystemFactory $rentSystemFactory
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');;
+
+        if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $response = $rentSystemFactory->getRentSystem('web')->rentBike(
+            $this->getUser()->getUserId(),
+            (int)$bikeNumber,
+            true // Force rent
+        );
+
+        return $this->json($response);
+    }
+
+    /**
+     * @Route("/api/bike/{bikeNumber}/forceReturn", name="api_bike_force_return", methods={"PUT"}, requirements: {"standName"="\w+", "bikeNumber"="\d+"})
+     */
+    public function forceReturnBike(
+        $bikeNumber,
+        $standName,
+        Request $request,
+        RentSystemFactory $rentSystemFactory
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $response = $rentSystemFactory->getRentSystem('web')->returnBike(
+            $this->getUser()->getUserId(),
+            (int)$bikeNumber,
+            $standName,
+            $request->request->get('note', ''),
+            true // Force return
         );
 
         return $this->json($response);

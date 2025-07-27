@@ -20,26 +20,6 @@ $request = $requestStack->getCurrentRequest();
 $action = $request->query->get('action', '');
 
 switch ($action) {
-    case "forcerent":
-        logrequest($userid, $action);
-        checkprivileges($userid);
-        $bikeno = trim($request->query->get("bikeno", ''));
-        checkbikeno($bikeno);
-        $rentSystem->rentBike($userid, $bikeno, true);
-        break;
-    case "forcereturn":
-        logrequest($userid, $action);
-        checkprivileges($userid);
-        $bikeno = trim($request->query->get("bikeno", ''));
-        $stand = trim($request->query->get("stand", ''));
-        $note = "";
-        if ($request->query->has("note")) {
-            $note = trim($request->query->get("note", ''));
-        }
-        checkbikeno($bikeno);
-        checkstandname($stand);
-        $rentSystem->returnBike($userid, $bikeno, $stand, $note, TRUE);
-        break;
     case "trips":
         logrequest($userid, $action);
         checkprivileges($userid);

@@ -18,7 +18,8 @@ class StandDeleteNoteTest extends BikeSharingWebTestCase
 
     public function testDeleteNote(): void
     {
-        $admin = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
+        $admin = $this->client->getContainer()->get(UserProvider::class)
+            ->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
         $this->client->loginUser($admin);
 
         $this->client->request(Request::METHOD_DELETE, '/api/stand/' . self::STAND_NAME . '/removeNote');

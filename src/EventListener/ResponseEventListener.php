@@ -16,6 +16,8 @@ class ResponseEventListener
         'api_coupon_generate',
         'api_user_item_update',
         'api_credit_add',
+        'api_bike_force_rent',
+        'api_bike_force_return',
         'api_bike_rent',
         'api_bike_return',
         'api_bike_revert',

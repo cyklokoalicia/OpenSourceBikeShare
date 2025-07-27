@@ -27,6 +27,8 @@ class ControllerEventListener
         'api_report_user',
         'scan_bike',
         'scan_stand',
+        'api_bike_force_rent',
+        'api_bike_force_return',
         'api_bike_rent',
         'api_bike_return',
         'api_bike_revert',
