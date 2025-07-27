@@ -47,13 +47,6 @@ switch ($action) {
         checkbikeno($bikeno);
         removenote($userid, $bikeno);
         break;
-    case "revert":
-        logrequest($userid, $action);
-        $bikeno = trim($request->query->get("bikeno", ''));
-        checkprivileges($userid);
-        checkbikeno($bikeno);
-        $rentSystem->revertBike($userid, $bikeno);
-        break;
     case "trips":
         logrequest($userid, $action);
         checkprivileges($userid);

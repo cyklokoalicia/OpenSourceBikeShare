@@ -28,6 +28,7 @@ class ControllerEventListener
         'scan_stand',
         'api_bike_rent',
         'api_bike_return',
+        'api_bike_revert',
         'api_coupon_use',
         'api_user_change_city',
     ];

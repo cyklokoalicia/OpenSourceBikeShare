@@ -77,7 +77,7 @@ class BikeRentTest extends BikeSharingWebTestCase
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);
 
-        $this->client->request(Request::METHOD_POST, '/api/bike/' . self::BIKE_NUMBER . '/rent');
+        $this->client->request(Request::METHOD_PUT, '/api/bike/' . self::BIKE_NUMBER . '/rent');
         $this->assertResponseIsSuccessful();
         $response = $this->client->getResponse()->getContent();
         $this->assertJson($response, 'Response is not JSON');

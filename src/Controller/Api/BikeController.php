@@ -111,4 +111,25 @@ class BikeController extends AbstractController
 
         return $this->json($response);
     }
+
+    /**
+     * @Route("/api/bike/{bikeNumber}/revert", name="api_bike_revert", methods={"PUT"}, requirements: {"bikeNumber"="\d+"})
+     */
+    public function revertBike(
+        $bikeNumber,
+        RentSystemFactory $rentSystemFactory
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $response = $rentSystemFactory->getRentSystem('web')->revertBike(
+            $this->getUser()->getUserId(),
+            (int)$bikeNumber,
+        );
+
+        return $this->json($response);
+    }
 }

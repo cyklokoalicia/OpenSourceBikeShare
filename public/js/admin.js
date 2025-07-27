@@ -84,7 +84,7 @@ $(document).ready(function () {
 function handleresponse(elementid, jsonobject, display) {
     if (typeof display === 'undefined') {
         const alertType = jsonobject.error === 1 ? 'danger' : 'success';
-        $('#' + elementid).html(`<div class="alert alert-${alertType}" role="alert">${jsonobject.content}</div>`).fadeIn();
+        $('#' + elementid).html(`<div class="alert alert-${alertType}" role="alert">${jsonobject.message}</div>`).fadeIn();
     }
 }
 
@@ -549,9 +549,10 @@ function trips() {
 function revert(bikeNumber) {
     if (window.ga) ga('send', 'event', 'bikes', 'revert', bikeNumber);
     $.ajax({
-        url: "command.php?action=revert&bikeno=" + bikeNumber
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
+        url: "/api/bike/" + bikeNumber + "/revert",
+        method: "PUT",
+        dataType: "json",
+    }).done(function (jsonobject) {
         handleresponse("fleetconsole", jsonobject);
     });
 }

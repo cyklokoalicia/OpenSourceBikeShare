@@ -396,7 +396,7 @@ function rent() {
     if (window.ga) ga('send', 'event', 'bikes', 'rent', $('#rent .bikenumber').html());
     $.ajax({
         url: "/api/bike/" + $('#rent .bikenumber').html() + "/rent",
-        method: "POST",
+        method: "PUT",
         dataType: "json"
     }).done(function (jsonobject) {
         handleresponse(jsonobject);
@@ -433,7 +433,7 @@ function returnbike() {
     if (window.ga) ga('send', 'event', 'stands', 'return', standname);
     $.ajax({
         url: "/api/bike/" + $('#return .bikenumber').html() + "/return/" + standname,
-        method: "POST",
+        method: "PUT",
         dataType: "json",
         data: {
             'note': $('#notetext').val()
