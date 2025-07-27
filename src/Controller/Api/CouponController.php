@@ -129,8 +129,7 @@ class CouponController extends AbstractController
 
         $coupon = $request->request->get('coupon', '');
         $couponData = $this->couponRepository->findActiveItem($coupon);
-        if (is_null($couponData))
-        {
+        if (is_null($couponData)) {
             return $this->json(
                 [
                     'message' => 'Invalid coupon, try again.',

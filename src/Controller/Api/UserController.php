@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api;
 
+use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\CityRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -124,5 +125,20 @@ class UserController extends AbstractController
                 'error' => 0,
             ]
         );
+    }
+
+    /**
+     * @Route("/api/user/bike", name="api_user_bike", methods={"GET"})
+     */
+    public function userBike(
+        BikeRepository $bikeRepository
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $userId = $this->getUser()->getUserId();
+
+        $userBikes = $bikeRepository->findRentedBikesByUserId($userId);
+
+        return $this->json($userBikes);
     }
 }

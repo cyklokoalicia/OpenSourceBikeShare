@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace BikeShare\Test\Application\Controller\Api;
+namespace BikeShare\Test\Application\Controller\Api\User;
 
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Db\DbInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 
-class UserApiControllerTest extends BikeSharingWebTestCase
+class ChangeCityTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421111111111';
 

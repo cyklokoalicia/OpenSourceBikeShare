@@ -94,6 +94,9 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_user_change_city', '/api/user/changeCity')
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\UserController::class, 'changeCity']);
+    $routes->add('api_user_bike', '/api/user/bike')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\UserController::class, 'userBike']);
     $routes->add('api_credit_add', '/api/credit')
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\CreditController::class, 'add']);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Controller\Api\Bike;
+namespace BikeShare\Test\Application\Controller\Api\Bike;
 
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Db\DbInterface;

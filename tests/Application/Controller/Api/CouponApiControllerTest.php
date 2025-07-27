@@ -43,7 +43,8 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
         $_ENV['CREDIT_SYSTEM_ENABLED'] = '1';
 
         #generate coupons
-        $admin = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
+        $admin = $this->client->getContainer()->get(UserProvider::class)
+            ->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
         $this->client->loginUser($admin);
         $this->client->request('POST', '/api/coupon/generate', ['multiplier' => 1]);
         $this->assertResponseIsSuccessful();

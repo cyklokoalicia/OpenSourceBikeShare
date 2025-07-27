@@ -42,7 +42,7 @@ class StandApiControllerTest extends BikeSharingWebTestCase
         #add bike to stand with note
         $admin = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
-        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('sms')
+        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('web')
             ->returnBike(
                 $admin['userId'],
                 self::BIKE_NUMBER,

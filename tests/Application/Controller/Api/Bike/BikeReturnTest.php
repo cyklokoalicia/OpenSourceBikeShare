@@ -132,7 +132,7 @@ class BikeReturnTest extends BikeSharingWebTestCase
             ['sender' => self::USER_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/bike/'.self::BIKE_NUMBER.'/return/' . self::STAND_NAME,
+            '/api/bike/' . self::BIKE_NUMBER . '/return/' . self::STAND_NAME,
             $received['sms_text'],
             'Received message is not logged'
         );

@@ -28,41 +28,6 @@ function removenote($userId, $bikeNum)
     response(_('Note for bike') . ' ' . $bikeNum . ' ' . _('deleted') . '.');
 }
 
-function userbikes($userId)
-{
-    global $db, $auth;
-    if (!$auth->isLoggedIn()) {
-        response('');
-    }
-
-    $result = $db->query("SELECT bikeNum,currentCode FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
-    while ($row = $result->fetch_assoc()) {
-        $bikenum = $row['bikeNum'];
-        $bicycles[] = $bikenum;
-        $codes[] = str_pad($row['currentCode'], 4, '0', STR_PAD_LEFT);
-        // get rented seconds and the old code
-        $result2 = $db->query("SELECT TIMESTAMPDIFF(SECOND, time, NOW()) as rentedSeconds, parameter FROM history WHERE bikeNum=$bikenum AND action IN ('RENT','FORCERENT') ORDER BY time DESC LIMIT 2");
-
-        $row2 = $result2->fetchAssoc();
-        $rentedseconds[] = $row2['rentedSeconds'];
-
-        $row2 = $result2->fetchAssoc();
-        $oldcodes[] = str_pad($row2['parameter'], 4, '0', STR_PAD_LEFT);
-    }
-
-    if (!$result->num_rows) {
-        $bicycles = '';
-    }
-
-    if (!isset($codes)) {
-        $codes = '';
-    } else {
-        $codes = array('codes' => $codes, 'oldcodes' => $oldcodes, 'rentedseconds' => $rentedseconds);
-    }
-
-    response($bicycles, 0, $codes, 0);
-}
-
 function checkprivileges($userid)
 {
     global $db, $user;

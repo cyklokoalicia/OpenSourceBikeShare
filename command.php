@@ -56,9 +56,6 @@ switch ($action) {
             trips($userid, $bikeno);
         } else trips($userid);
         break;
-    case "userbikes":
-        userbikes($userid);
-        break;
     case "map:markers":
         mapgetmarkers($userid);
         break;

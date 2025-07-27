@@ -314,33 +314,37 @@ function showstand(e, clear) {
 function rentedbikes() {
     $.ajax({
         global: false,
-        url: "command.php?action=userbikes"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        handleresponse(jsonobject, 0);
-        bikeList = "";
-        if (jsonobject.content != "") {
-            for (var i = 0, len = jsonobject.content.length; i < len; i++) {
-                // time of rent calculation -v
-                leftTimeText = '';
-                rentedSeconds = jsonobject.rentedseconds[i];
+        url: "/api/user/bike",
+        dataType: "json"
+    }).done(function (jsonArray) {
+        handleresponse(jsonArray, 0);
+        var bikeList = "";
+        if (jsonArray.length > 0) {
+            for (var i = 0, len = jsonArray.length; i < len; i++) {
+                var bike = jsonArray[i];
+                var leftTimeText = '';
+                var rentedSeconds = bike.rentedSeconds;
+
                 if (rentedSeconds) {
-                    if (rentedSeconds < 0) { // if servertime and rent time are not in sync
+                    var timeDiff = 0;
+                    if (rentedSeconds < 0) {
                         timeDiff = freeTimeSeconds;
                     } else {
-                        timeDiff = Math.abs(freeTimeSeconds - rentedSeconds); // convert to a positive number
+                        timeDiff = Math.abs(freeTimeSeconds - rentedSeconds);
                     }
-                    units = _secs;
-                    if (timeDiff > (60 * 59)) { // convert to hours after 59 minutes
+
+                    var units = _secs;
+                    if (timeDiff > (60 * 59)) {
                         timeDiff = Math.round(timeDiff / 60 / 59);
                         units = _hour_s;
-                    } else if (timeDiff > 59) { // convert to minutes after 59 seconds
+                    } else if (timeDiff > 59) {
                         timeDiff = Math.round(timeDiff / 60);
                         units = _mins;
                     }
+
                     if (!isNaN(timeDiff)) {
                         leftTimeText += '<br/><span class=\'label\'>';
-                        if (rentedSeconds >= freeTimeSeconds) { // free time over
+                        if (rentedSeconds >= freeTimeSeconds) {
                             leftTimeText += '<span style=\'text-align: center; display: inline-flex\' class=\'text-danger\'>' + timeDiff + ' ' + units + '<br/>' + _over + '</span>';
                         } else {
                             leftTimeText += '<span style=\'text-align: center; display: inline-flex\'>' + timeDiff + ' ' + units + '<br/>' + _left + '</span>';
@@ -348,9 +352,10 @@ function rentedbikes() {
                         leftTimeText += '</span>';
                     }
                 }
-                // time of rent calculation -^
-                bikeList = bikeList + ' <button type="button" class="btn btn-info bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '" title="' + _currently_rented + '">' + jsonobject.content[i] + '<br /><span class="label label-primary">(' + jsonobject.codes[i] + ')</span><br /><span class="label"><s>(' + jsonobject.oldcodes[i] + ')</s></span>' + leftTimeText + '</button> ';
+
+                bikeList += ' <button type="button" class="btn btn-info bikeid b' + bike.bikeNum + '" data-id="' + bike.bikeNum + '" title="' + _currently_rented + '">' + bike.bikeNum + '<br /><span class="label label-primary">(' + bike.currentCode + ')</span><br /><span class="label"><s>(' + bike.oldCode + ')</s></span>' + leftTimeText + '</button> ';
             }
+
             $('#rentedbikes').html('<div class="btn-group">' + bikeList + '</div>');
             $('#rentedbikes .bikeid').click(function () {
                 attachbicycleinfo(this, "return");

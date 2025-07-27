@@ -62,20 +62,17 @@ class BikeRentTest extends BikeSharingWebTestCase
         //We should not notify admin about too many rents in this testsuite
         $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999;
 
-        $user = $this->client->getContainer()->get(UserRepository::class)
-            ->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
+        $this->client->loginUser($user);
 
         $this->client->getContainer()->get('event_dispatcher')->addListener(
             BikeRentEvent::class,
             function (BikeRentEvent $event) use ($user) {
                 $this->assertSame(self::BIKE_NUMBER, $event->getBikeNumber(), 'Invalid bike number');
                 $this->assertSame(false, $event->isForce());
-                $this->assertSame($user['userId'], $event->getUserId());
+                $this->assertSame($user->getUserId(), $event->getUserId());
             }
         );
-
-        $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
-        $this->client->loginUser($user);
 
         $this->client->request(Request::METHOD_PUT, '/api/bike/' . self::BIKE_NUMBER . '/rent');
         $this->assertResponseIsSuccessful();
