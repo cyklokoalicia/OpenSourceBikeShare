@@ -93,24 +93,6 @@ function trips($userId, $bike = 0)
     echo json_encode($jsoncontent); // TODO change to response function
 }
 
-function changecity($userid, $city)
-{
-    global $db, $cityRepository;
-
-    if (isset($cityRepository->findAvailableCities()[$city])) {
-        $db->query(
-            'UPDATE users SET city = :city WHERE userId = :userId',
-            [
-                'city' => $city,
-                'userId' => (int)$userid
-            ]
-        );
-        response('City changed');
-    }
-    response(_('Invalid City.'), 1);
-}
-
-
 function mapgetmarkers($userId)
 {
     global $db, $cityRepository, $user;

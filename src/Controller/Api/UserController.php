@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api;
 
+use BikeShare\Repository\CityRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -85,6 +86,42 @@ class UserController extends AbstractController
         return $this->json(
             [
                 'message' => 'Details of user ' . $userName . ' updated.'
+            ]
+        );
+    }
+
+    /**
+     * @Route("/api/user/changeCity", name="api_user_change_city", methods={"PUT"})
+     */
+    public function changeCity(
+        UserRepository $userRepository,
+        CityRepository $cityRepository,
+        Request $request
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $userId = $this->getUser()->getUserId();
+        $city = $request->request->get('city', '');
+        if (
+            empty($city) ||
+            !isset($cityRepository->findAvailableCities()[$city])
+        ) {
+            return $this->json(
+                [
+                    'message' => 'Invalid city',
+                    'error' => 1,
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $userRepository->updateUserCity($userId, $city);
+
+
+        return $this->json(
+            [
+                'message' => 'City changed successfully',
+                'error' => 0,
             ]
         );
     }

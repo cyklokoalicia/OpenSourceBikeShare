@@ -463,10 +463,14 @@ function returnbike() {
 
 function changecity() {
     $.ajax({
-        url: "command.php?action=changecity&city=" + $('#citychange').val()
-    }).done(function (jsonresponse) {
-        var jsonobject = $.parseJSON(jsonresponse);
-        console.log(jsonobject);
+        url: "/api/user/changecity",
+        method: "PUT",
+        dataType: "json",
+        data: {
+            city: $('#citychange').val(),
+        }
+    }).done(function (jsonObject) {
+        concole.log(jsonObject);
         location.reload();
     });
 }

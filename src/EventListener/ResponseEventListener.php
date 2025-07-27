@@ -19,6 +19,7 @@ class ResponseEventListener
         'api_bike_rent',
         'api_bike_return',
         'api_coupon_use',
+        'api_user_change_city',
     ];
 
     private DbInterface $db;

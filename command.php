@@ -20,11 +20,6 @@ $request = $requestStack->getCurrentRequest();
 $action = $request->query->get('action', '');
 
 switch ($action) {
-    case "changecity":
-        logrequest($userid, $action);
-        $city = trim($request->query->get("city", ''));
-        changecity($userid, $city);
-        break;
     case "forcerent":
         logrequest($userid, $action);
         checkprivileges($userid);
