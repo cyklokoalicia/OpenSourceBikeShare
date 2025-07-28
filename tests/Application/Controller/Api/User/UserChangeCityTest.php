@@ -9,7 +9,7 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 
-class ChangeCityTest extends BikeSharingWebTestCase
+class UserChangeCityTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421111111111';
 
@@ -30,6 +30,12 @@ class ChangeCityTest extends BikeSharingWebTestCase
     protected function tearDown(): void
     {
         $_ENV['CITIES'] = $this->cities;
+        $userRepository = $this->client->getContainer()->get(UserRepository::class);
+        $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $userRepository->updateUserCity(
+            $user['userId'],
+            'Default City'
+        );
         parent::tearDown();
     }
 

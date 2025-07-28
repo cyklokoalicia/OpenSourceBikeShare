@@ -111,45 +111,60 @@ function mapinit() {
 function getmarkers() {
     $.ajax({
         global: false,
-        url: "command.php?action=map:markers"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        for (var i = 0, len = jsonobject.length; i < len; i++) {
-            // ugly hack 2015-11-06 repair stand exception - special icon
-            if (jsonobject[i].standName.indexOf('SERVIS') > -1) {
-                tempicon = L.divIcon({
-                    iconSize: [iconsize, iconsize],
-                    iconAnchor: [iconsize / 2, 0],
-                    html: '<dl class="icondesc special" id="stand-' + jsonobject[i].standName + '"><dt class="bikecount">' + jsonobject[i].bikecount + '</dt><dd class="standname">' + jsonobject[i].standName + '</dd></dl>',
-                    standid: jsonobject[i].standId
-                });
-            } else if (jsonobject[i].bikecount == 0) {
-                tempicon = L.divIcon({
-                    iconSize: [iconsize, iconsize],
-                    iconAnchor: [iconsize / 2, 0],
-                    html: '<dl class="icondesc none" id="stand-' + jsonobject[i].standName + '"><dt class="bikecount">' + jsonobject[i].bikecount + '</dt><dd class="standname">' + jsonobject[i].standName + '</dd></dl>',
-                    standid: jsonobject[i].standId
-                });
-            } else {
-                tempicon = L.divIcon({
-                    iconSize: [iconsize, iconsize],
-                    iconAnchor: [iconsize / 2, 0],
-                    html: '<dl class="icondesc" id="stand-' + jsonobject[i].standName + '"><dt class="bikecount">' + jsonobject[i].bikecount + '</dt><dd class="standname">' + jsonobject[i].standName + '</dd></dl>',
-                    standid: jsonobject[i].standId
-                });
+        url: "/api/stand/markers",
+        method: "GET",
+        dataType: "json"
+    }).done(function (jsonObject) {
+        const body = $('body');
+        const iconSizeArr = [iconsize, iconsize];
+        const iconAnchorArr = [iconsize / 2, 0];
+
+        for (let i = 0, len = jsonObject.length; i < len; i++) {
+            const {
+                standId,
+                standName,
+                standDescription,
+                standPhoto,
+                bikeCount,
+                longitude,
+                latitude
+            } = jsonObject[i];
+
+            let iconClass = 'icondesc';
+            if (standName.includes('SERVIS')) {
+                iconClass += ' special';
+            } else if (bikeCount === 0) {
+                iconClass += ' none';
             }
-            markerdata[jsonobject[i].standId] = {
-                name: jsonobject[i].standName,
-                desc: jsonobject[i].standDescription,
-                photo: jsonobject[i].standPhoto,
-                count: jsonobject[i].bikecount
+
+            const iconHTML = `
+                <dl class="${iconClass}" id="stand-${standName}">
+                    <dt class="bikecount">${bikeCount}</dt>
+                    <dd class="standname">${standName}</dd>
+                </dl>`;
+
+            const tempIcon = L.divIcon({
+                iconSize: iconSizeArr,
+                iconAnchor: iconAnchorArr,
+                html: iconHTML,
+                standid: standId
+            });
+
+            markerdata[standId] = {
+                name: standName,
+                desc: standDescription,
+                photo: standPhoto,
+                count: bikeCount
             };
-            markers[jsonobject[i].standId] = L.marker([jsonobject[i].lat, jsonobject[i].lon], {
-                icon: tempicon
+
+            markers[standId] = L.marker([latitude, longitude], {
+                icon: tempIcon
             }).addTo(map).on("click", showstand);
-            $('body').data('markerdata', markerdata);
         }
-        if (firstrun == 1) {
+
+        body.data('markerdata', markerdata);
+
+        if (firstrun === 1) {
             createstandselector();
             firstrun = 0;
         }

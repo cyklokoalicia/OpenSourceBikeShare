@@ -79,7 +79,7 @@ class StandController extends AbstractController
     }
 
     /**
-     * @Route("/api/stand/{standName}/removeNote", name="api_bike_remove_note", methods={"DELETE"}, requirements: {"standName"="\w+"})
+     * @Route("/api/stand/{standName}/removeNote", name="api_stand_remove_note", methods={"DELETE"}, requirements: {"standName"="\w+"})
      */
     public function removeNote(
         $standName,
@@ -104,5 +104,16 @@ class StandController extends AbstractController
         ];
 
         return $this->json($response);
+    }
+
+    /**
+     * @Route("/api/stand/markers", name="api_stand_markers", methods={"GET"})
+     */
+    public function markers(): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $stands = $this->standRepository->findAllExtended($this->getUser()->getCity());
+
+        return $this->json($stands);
     }
 }

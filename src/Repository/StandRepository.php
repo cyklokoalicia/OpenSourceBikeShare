@@ -40,6 +40,31 @@ class StandRepository
         return $stands;
     }
 
+    public function findAllExtended($city = null): array
+    {
+        $result = $this->db->query(
+            'SELECT
+                    standId,
+                    count(bikeNum) AS bikeCount,
+                    standName,
+                    standDescription,
+                    standPhoto,
+                    longitude,
+                    latitude
+                FROM stands 
+                LEFT JOIN bikes ON bikes.currentStand=stands.standId
+                WHERE stands.serviceTag = 0 '.
+                (!is_null($city) ? ' AND city = :city ' : '') .
+                'GROUP BY standName 
+                ORDER BY standName',
+                [
+                    'city' => $city,
+                ]
+        )->fetchAllAssoc();
+
+        return $result;
+    }
+
     public function findItem(int $standId): ?array
     {
         $stand = $this->db->query(
