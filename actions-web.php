@@ -34,12 +34,3 @@ function mapgetmarkers($userId)
     }
     echo json_encode($jsoncontent); // TODO proper response function
 }
-
-function mapgeolocation($userid, $lat, $long)
-{
-    global $db;
-
-    $result = $db->query("INSERT INTO geolocation SET userId='$userid',latitude='$lat',longitude='$long'");
-
-    response('');
-}; // TODO for admins: show bikes position on map depending on the user (allowed) geolocation, do not display user bikes without geoloc

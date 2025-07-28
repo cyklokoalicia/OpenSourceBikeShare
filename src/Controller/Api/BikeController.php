@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api;
 
+use BikeShare\Db\DbInterface;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
@@ -228,5 +229,40 @@ class BikeController extends AbstractController
         );
 
         return $this->json($userTrip);
+    }
+
+    /**
+     * For using this endpoint, bikes should have geolocation devices. Perhaps it should be some authorization for it
+     * @Route("/api/bike/{bikeNumber}/geoLocation", name="api_bike_geo_location", methods={"POST"}, requirements: {"bikeNumber"="\d+"})
+     */
+    public function bikeGeoLocation(
+        $bikeNumber,
+        Request $request,
+        DbInterface $db
+    ): Response {
+        //Currently does not work
+        return $this->json([]);
+
+        $this->denyAccessUnlessGranted('PUBLIC_ACCESS');
+
+        if (
+            !$request->request->has('lat')
+            || !$request->request->has('long')
+            || !is_numeric($request->request->get('lat'))
+            || !is_numeric($request->request->get('long'))
+        ) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $db->query(
+            "INSERT INTO geolocation SET bikeNum = :bikeNumber, latitude = :latitude, longitude= :longitude",
+            [
+                'bikeNumber' => $bikeNumber,
+                'latitude' => (float)$request->request->get('lat'),
+                'longitude' => (float)$request->request->get('long'),
+            ]
+        );
+
+        return $this->json([]);
     }
 }

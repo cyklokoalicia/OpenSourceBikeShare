@@ -56,10 +56,8 @@ $(document).ready(function () {
     });
 
     mapinit();
-    geolocate();
     setInterval(getmarkers, 60000); // refresh map every 60 seconds
     setInterval(getuserstatus, 60000); // refresh map every 60 seconds
-    setInterval(geolocate, 300000); // refresh map every 5 min
 });
 
 function mapinit() {
@@ -599,27 +597,4 @@ function changelocation(location) {
         if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat") + "," + $("body").data("mapcenterlong"));
         savegeolocation();
     }
-}
-
-function geolocate() {
-    return;
-    //if ("geolocation" in navigator) {
-    //navigator.geolocation.getCurrentPosition(showlocation);
-    /*, function() {
-        return;
-    }, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 300000 // refresh interval set to 5 min
-    });
-    /*
-    watchID = navigator.geolocation.watchPosition(changelocation, function() {
-        return;
-    }, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 5000
-    });
-    */
-    //}
 }

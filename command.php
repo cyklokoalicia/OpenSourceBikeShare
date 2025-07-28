@@ -23,9 +23,4 @@ switch ($action) {
     case "map:markers":
         mapgetmarkers($userid);
         break;
-    case "map:geolocation":
-        $lat = floatval(trim($request->query->get("lat", '')));
-        $long = floatval(trim($request->query->get("long", '')));
-        mapgeolocation($userid, $lat, $long);
-        break;
 }

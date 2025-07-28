@@ -89,6 +89,10 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['bikeNumber' => '\d+'])
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'bikeTrip']);
+    $routes->add('api_bike_geo_location', '/api/bike/{bikeNumber}/geoLocation')
+        ->requirements(['bikeNumber' => '\d+'])
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'bikeGeoLocation']);
     $routes->add('api_coupon_index', '/api/coupon')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\CouponController::class, 'index']);
