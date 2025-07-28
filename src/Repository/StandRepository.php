@@ -44,22 +44,22 @@ class StandRepository
     {
         $result = $this->db->query(
             'SELECT
-                    standId,
-                    count(bikeNum) AS bikeCount,
-                    standName,
-                    standDescription,
-                    standPhoto,
-                    longitude,
-                    latitude
-                FROM stands 
-                LEFT JOIN bikes ON bikes.currentStand=stands.standId
-                WHERE stands.serviceTag = 0 ' .
-                (!is_null($city) ? ' AND city = :city ' : '') .
-                'GROUP BY standName 
+                 standId,
+                 count(bikeNum) AS bikeCount,
+                 standName,
+                 standDescription,
+                 standPhoto,
+                 longitude,
+                 latitude
+             FROM stands 
+             LEFT JOIN bikes ON bikes.currentStand=stands.standId
+             WHERE stands.serviceTag = 0 ' .
+            (!is_null($city) ? ' AND city = :city ' : '') .
+            'GROUP BY standName 
                  ORDER BY standName',
-                [
-                    'city' => $city,
-                ]
+            [
+                'city' => $city,
+            ]
         )->fetchAllAssoc();
 
         return $result;
