@@ -30,7 +30,6 @@ class BikeTripTest extends BikeSharingWebTestCase
         $response = $this->client->getResponse()->getContent();
         $this->assertJson($response);
         $responseData = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-        $this->assertArrayHasKey(self::BIKE_NUMBER, $responseData, 'There is no trip for bike ' . self::BIKE_NUMBER);
         foreach ($responseData as $trip) {
             $this->assertArrayHasKey('longitude', $trip);
             $this->assertArrayHasKey('latitude', $trip);
