@@ -122,7 +122,7 @@ class BikeController extends AbstractController
         $bikeNumber,
         RentSystemFactory $rentSystemFactory
     ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');;
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
             return $this->json([], Response::HTTP_BAD_REQUEST);
