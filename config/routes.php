@@ -66,8 +66,7 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['bikeNumber' => '\d+'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'rentBike']);
     $routes->add('api_bike_return', '/api/bike/{bikeNumber}/return/{standName}')
-        ->requirements(['bikeNumber' => '\d+'])
-        ->requirements(['standName' => '\w+'])
+        ->requirements(['bikeNumber' => '\d+', 'standName' => '\w+'])
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'returnBike']);
     $routes->add('api_bike_force_rent', '/api/bike/{bikeNumber}/forceRent')
@@ -75,13 +74,11 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['bikeNumber' => '\d+'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'forceRentBike']);
     $routes->add('api_bike_force_return', '/api/bike/{bikeNumber}/forceReturn/{standName}')
-        ->requirements(['bikeNumber' => '\d+'])
-        ->requirements(['standName' => '\w+'])
+        ->requirements(['bikeNumber' => '\d+', 'standName' => '\w+'])
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'forceReturnBike']);
     $routes->add('api_bike_revert', '/api/bike/{bikeNumber}/revert')
-        ->requirements(['bikeNumber' => '\d+'])
-        ->requirements(['standName' => '\w+'])
+        ->requirements(['bikeNumber' => '\d+', 'standName' => '\w+'])
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'revertBike']);
     $routes->add('api_bike_remove_note', '/api/bike/{bikeNumber}/removeNote')

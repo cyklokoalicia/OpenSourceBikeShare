@@ -491,7 +491,7 @@ function changecity() {
             city: $('#citychange').val(),
         }
     }).done(function (jsonObject) {
-        concole.log(jsonObject);
+        console.log(jsonObject);
         location.reload();
     });
 }

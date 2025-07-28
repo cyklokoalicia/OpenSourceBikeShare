@@ -147,12 +147,12 @@ class HistoryRepository
             "SELECT time, longitude, latitude
                  FROM `history`
                  LEFT JOIN stands ON stands.standid=history.parameter
-                 WHERE bikenum = :bikeNUmber
+                 WHERE bikenum = :bikeNumber
                    AND time > :startTime
                    AND action IN ('RETURN', 'FORCERETURN')
                  ORDER BY history.time DESC, history.id DESC",
             [
-                'bikeNUmber' => $bikeNumber,
+                'bikeNumber' => $bikeNumber,
                 'startTime' => $startTime->format('Y-m-d H:i:s'),
             ]
         )->fetchAllAssoc();

@@ -6,7 +6,7 @@ namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
 
-#TODO ADD ENUM and check logic for status
+#@TODO: Refactor the status field to use an enum for better type safety and clarity.
 class CouponRepository
 {
     private DbInterface $db;
