@@ -91,6 +91,9 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\Controller\EmailConfirmController::class)
         ->bind('$userBikeLimitAfterRegistration', env('int:USER_BIKE_LIMIT_AFTER_REGISTRATION'));
 
+    $services->get(\BikeShare\Controller\Api\StandController::class)
+        ->bind('$forceStack', env('bool:FORCE_STACK'));
+
     $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 

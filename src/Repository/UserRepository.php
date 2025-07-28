@@ -174,4 +174,17 @@ class UserRepository
             ]
         );
     }
+
+    public function updateUserCity(int $userId, string $city): void
+    {
+        $this->db->query(
+            'UPDATE users 
+              SET city = :city 
+              WHERE userId = :userId',
+            [
+                'userId' => $userId,
+                'city' => $city,
+            ]
+        );
+    }
 }

@@ -4,18 +4,16 @@ namespace BikeShare\Rent;
 
 class RentSystemWeb extends AbstractRentSystem implements RentSystemInterface
 {
+    protected function response($message, $error = 0)
+    {
+        //temp solution before full migration to new bootstrap
+        $message = str_replace('badge badge-', 'label label-', $message);
+
+        return parent::response($message, $error);
+    }
+
     public static function getType(): string
     {
         return 'web';
-    }
-
-    protected function response($message, $error = 0)
-    {
-        $response = parent::response($message, $error);
-
-        $json = json_encode($response);
-
-        echo $json;
-        exit;
     }
 }

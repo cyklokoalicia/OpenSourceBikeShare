@@ -2,48 +2,42 @@
 
 namespace BikeShare\Controller;
 
-use BikeShare\App\Kernel;
+use BikeShare\Repository\StandRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class CommandController extends AbstractController
 {
-    private Kernel $kernel;
-
-    public function __construct(Kernel $kernel)
-    {
-        $this->kernel = $kernel;
-    }
-
     /**
+     * @deprecated PyBikes should use another entry point
      * @Route("/command.php", name="command")
      */
     public function index(
+        StandRepository $standRepository,
         Request $request,
         LoggerInterface $logger
     ): Response {
-        $kernel = $this->kernel;
-
         if (
-            is_null($this->getUser())
-            && $request->get('action') !== 'map:markers'
-            && $request->headers->get('User-Agent') !== 'PyBikes'
+            !is_null($this->getUser())
+            || $request->get('action') !== 'map:markers'
         ) {
-            $logger->notice('Access to command.php without authentication', [
-                'ip' => $request->getClientIp(),
-                'uri' => $request->getRequestUri(),
-                'request' => $request->request->all(),
-            ]);
+            return $this->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        ob_start();
-        require $this->getParameter('kernel.project_dir') . '/kernel.php';
-        require $this->getParameter('kernel.project_dir') . '/command.php';
-        $content = ob_get_clean();
+        $logger->notice(
+            'Access to command.php map:markers',
+            [
+            'ip' => $request->getClientIp(),
+            'uri' => $request->getRequestUri(),
+            'request' => $request->request->all(),
+            ]
+        );
 
-        return new Response($content);
+        $stands = $standRepository->findAllExtended();
+
+        return $this->json($stands);
     }
 }

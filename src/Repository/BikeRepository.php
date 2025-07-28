@@ -218,4 +218,42 @@ class BikeRepository
 
         return $result;
     }
+
+    public function findRentedBikesByUserId(int $userId): array
+    {
+        $bikes = $this->db->query(
+            "SELECT
+              bikeNum,
+              currentCode
+            FROM bikes WHERE currentUser = :userId
+            ORDER BY bikeNum",
+            [
+                'userId' => $userId,
+            ]
+        )->fetchAllAssoc();
+
+        foreach ($bikes as &$bike) {
+            $bike['currentCode'] = str_pad($bike['currentCode'], 4, '0', STR_PAD_LEFT);
+            $historyInfo = $this->db->query(
+                "SELECT TIMESTAMPDIFF(SECOND, time, NOW()) as rentedSeconds, parameter 
+                FROM history 
+                WHERE bikeNum = :bikeNumber 
+                    AND action IN ('RENT','FORCERENT')
+                ORDER BY time DESC, id DESC LIMIT 2",
+                [
+                    'bikeNumber' => $bike['bikeNum'],
+                ]
+            )->fetchAllAssoc();
+            foreach ($historyInfo as $index => $row) {
+                if ($index === 0) {
+                    $bike['rentedSeconds'] = $row['rentedSeconds'];
+                } else {
+                    $bike['oldCode'] = str_pad($row['parameter'], 4, '0', STR_PAD_LEFT);
+                }
+            }
+        }
+        unset($bike);
+
+        return $bikes;
+    }
 }

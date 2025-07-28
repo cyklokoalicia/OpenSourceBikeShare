@@ -50,12 +50,4 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
     {
         return 'qr';
     }
-
-    protected function response($message, $error = 0)
-    {
-        return [
-            'error' => $error,
-            'message' => $message,
-        ];
-    }
 }

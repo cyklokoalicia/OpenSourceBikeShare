@@ -2,7 +2,6 @@
 
 namespace BikeShare\Rent;
 
-use BikeShare\Authentication\Auth;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Db\DbInterface;
 use BikeShare\Event\BikeRentEvent;
@@ -25,7 +24,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
     protected DbInterface $db;
     protected CreditSystemInterface $creditSystem;
     protected User $user;
-    protected Auth $auth;
     protected EventDispatcherInterface $eventDispatcher;
     protected AdminNotifier $adminNotifier;
     protected LoggerInterface $logger;
@@ -38,7 +36,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
         DbInterface $db,
         CreditSystemInterface $creditSystem,
         User $user,
-        Auth $auth,
         EventDispatcherInterface $eventDispatcher,
         AdminNotifier $adminNotifier,
         LoggerInterface $logger,
@@ -50,7 +47,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $this->db = $db;
         $this->creditSystem = $creditSystem;
         $this->user = $user;
-        $this->auth = $auth;
         $this->eventDispatcher = $eventDispatcher;
         $this->adminNotifier = $adminNotifier;
         $this->logger = $logger;
@@ -295,18 +291,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
     protected function response($message, $error = 0)
     {
-        if ($this->getType() == 'web') {
-            //temp solution before full migration to new bootstrap
-            $message = str_replace('badge badge-', 'label label-', $message);
-        }
-
-        $userid = $this->auth->getUserId();
-        $number = $this->user->findPhoneNumber($userid);
-        $this->logResult($number, $message);
-
         return [
             'error' => $error,
-            'content' => $message,
+            'message' => $message,
         ];
     }
 
@@ -409,10 +396,5 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             return $creditchange;
         }
-    }
-
-    private function logResult($number, $message)
-    {
-        logresult($number, $message);
     }
 }

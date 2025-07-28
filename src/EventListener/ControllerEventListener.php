@@ -12,6 +12,7 @@ class ControllerEventListener
 {
     private const LOGGED_ROUTES = [
         'api_stand_index',
+        'api_stand_remove_note',
         'api_bike_index',
         'api_bike_item',
         'api_bike_last_usage',
@@ -26,6 +27,15 @@ class ControllerEventListener
         'api_report_user',
         'scan_bike',
         'scan_stand',
+        'api_bike_force_rent',
+        'api_bike_force_return',
+        'api_bike_rent',
+        'api_bike_return',
+        'api_bike_revert',
+        'api_bike_remove_note',
+        'api_coupon_use',
+        'api_user_change_city',
+        'api_bike_trip',
     ];
 
     private DbInterface $db;

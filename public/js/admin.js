@@ -84,7 +84,7 @@ $(document).ready(function () {
 function handleresponse(elementid, jsonobject, display) {
     if (typeof display === 'undefined') {
         const alertType = jsonobject.error === 1 ? 'danger' : 'success';
-        $('#' + elementid).html(`<div class="alert alert-${alertType}" role="alert">${jsonobject.content}</div>`).fadeIn();
+        $('#' + elementid).html(`<div class="alert alert-${alertType}" role="alert">${jsonobject.message}</div>`).fadeIn();
     }
 }
 
@@ -154,7 +154,7 @@ function bikeInfo(bikeNumber) {
 
 function last(bikeNumber) {
     $.ajax({
-        url: "/api/bikeLastUsage/" + bikeNumber,
+        url: "/api/bike/" + bikeNumber + "/lastUsage",
         method: "GET",
         dataType: "json",
         success: function(data) {
@@ -484,6 +484,7 @@ function generatecoupons(multiplier) {
     $.ajax({
         url: "/api/coupon/generate",
         method: "POST",
+        dataType: "json",
         data: {multiplier: multiplier},
         success: function() {
             couponlist();
@@ -498,6 +499,7 @@ function sellcoupon(coupon) {
     $.ajax({
         url: "/api/coupon/sell",
         method: "POST",
+        dataType: "json",
         data: {coupon: coupon},
         success: function() {
             couponlist();
@@ -511,35 +513,31 @@ function sellcoupon(coupon) {
 function trips() {
     if (window.ga) ga('send', 'event', 'bikes', 'trips', $('#bikeNumber').val());
     $.ajax({
-        url: "command.php?action=trips&bikeno=" + $('#bikeNumber').val()
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        if (jsonobject.error == 1) {
-            handleresponse(elementid, jsonobject);
+        url: "/api/bike/" + $('#bikeNumber').val() + "/trip" ,
+        method: "GET",
+        dataType: "json"
+    }).done(function (jsonObject) {
+        if (jsonObject.error == 1) {
+            handleresponse(elementid, jsonObject);
         } else {
-            if (jsonobject[0]) // concrete bike requested
-            {
-                if (polyline != undefined) map.removeLayer(polyline);
-                polyline = L.polyline([[jsonobject[0].latitude * 1, jsonobject[0].longitude * 1], [jsonobject[1].latitude * 1, jsonobject[1].longitude * 1]], {color: 'red'}).addTo(map);
-                for (var i = 2, len = jsonobject.length; i < len; i++) {
-                    if (jsonobject[i].longitude * 1 && jsonobject[i].latitude * 1) {
-                        polyline.addLatLng([jsonobject[i].latitude * 1, jsonobject[i].longitude * 1]);
+            var polylines = [];
+            for (const bikeNumber in jsonObject) {
+                const points = jsonObject[bikeNumber];
+                const path = [];
+
+                for (let i = 0, len = points.length; i < len; i++) {
+                    const lat = Number(points[i].latitude);
+                    const lng = Number(points[i].longitude);
+                    if (lat && lng) {
+                        path.push([lat, lng]);
                     }
                 }
-            } else // all bikes requested
-            {
-                var polylines = [];
-                for (var bikenumber in jsonobject) {
-                    var bikecolor = '#' + ('00000' + (Math.random() * 16777216 << 0).toString(16)).substr(-6);
-                    polylines[bikenumber] = L.polyline([[jsonobject[bikenumber][0].latitude * 1, jsonobject[bikenumber][0].longitude * 1], [jsonobject[bikenumber][1].latitude * 1, jsonobject[bikenumber][1].longitude * 1]], {color: bikecolor}).addTo(map);
-                    for (var i = 2, len = jsonobject[bikenumber].length; i < len; i++) {
-                        if (jsonobject[bikenumber][i].longitude * 1 && jsonobject[bikenumber][i].latitude * 1) {
-                            polylines[bikenumber].addLatLng([jsonobject[bikenumber][i].latitude * 1, jsonobject[bikenumber][i].longitude * 1]);
-                        }
-                    }
+
+                if (path.length > 1) {
+                    const bikeColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+                    polylines[bikeNumber] = L.polyline(path, { color: bikeColor }).addTo(map);
                 }
             }
-
         }
     });
 }
@@ -547,9 +545,10 @@ function trips() {
 function revert(bikeNumber) {
     if (window.ga) ga('send', 'event', 'bikes', 'revert', bikeNumber);
     $.ajax({
-        url: "command.php?action=revert&bikeno=" + bikeNumber
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
+        url: "/api/bike/" + bikeNumber + "/revert",
+        method: "PUT",
+        dataType: "json",
+    }).done(function (jsonobject) {
         handleresponse("fleetconsole", jsonobject);
     });
 }

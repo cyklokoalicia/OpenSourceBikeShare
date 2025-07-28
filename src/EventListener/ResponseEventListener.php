@@ -16,6 +16,15 @@ class ResponseEventListener
         'api_coupon_generate',
         'api_user_item_update',
         'api_credit_add',
+        'api_bike_force_rent',
+        'api_bike_force_return',
+        'api_bike_rent',
+        'api_bike_return',
+        'api_bike_revert',
+        'api_bike_remove_note',
+        'api_coupon_use',
+        'api_user_change_city',
+        'api_stand_remove_note',
     ];
 
     private DbInterface $db;
@@ -38,9 +47,10 @@ class ResponseEventListener
             return;
         }
 
-        $number = $this->security->getUser()->getUserIdentifier();
+        $user = $this->security->getUser();
+        $number = is_object($user) ? $user->getUserIdentifier() : 'guest';
         if ($event->getResponse() instanceof JsonResponse) {
-            $response = json_decode($event->getResponse()->getContent(), true)['message'];
+            $response = json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['message'];
         } else {
             $response = $event->getResponse()->getContent();
         }
@@ -51,7 +61,7 @@ class ResponseEventListener
                  text = :text',
             [
                 'number' => $number,
-                'text' => (string)$response
+                'text' => strip_tags((string)$response)
             ]
         );
     }

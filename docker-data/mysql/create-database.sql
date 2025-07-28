@@ -46,7 +46,7 @@ CREATE TABLE `notes` (
 
 DROP TABLE IF EXISTS `geolocation`;
 CREATE TABLE `geolocation` (
-  `userId` int(10) unsigned NOT NULL,
+  `bikeNum` int(10) unsigned NOT NULL,
   `longitude` double(20,17) NOT NULL,
   `latitude` double(20,17) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP

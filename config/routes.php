@@ -39,6 +39,17 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_stand_index', '/api/stand')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\StandController::class, 'index']);
+    $routes->add('api_stand_item', '/api/stand/{standName}/bike')
+        ->requirements(['standName' => '\w+'])
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\StandController::class, 'bike']);
+    $routes->add('api_stand_remove_note', '/api/stand/{standName}/removeNote')
+        ->requirements(['standName' => '\w+'])
+        ->methods(['DELETE'])
+        ->controller([\BikeShare\Controller\Api\StandController::class, 'removeNote']);
+    $routes->add('api_stand_markers', '/api/stand/markers')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\StandController::class, 'markers']);
     $routes->add('api_bike_index', '/api/bike')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'index']);
@@ -46,16 +57,51 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['bikeNumber' => '\d+'])
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'item']);
-    $routes->add('api_bike_last_usage', '/api/bikeLastUsage/{bikeNumber}')
+    $routes->add('api_bike_last_usage', '/api/bike/{bikeNumber}/lastUsage')
         ->methods(['GET'])
         ->requirements(['bikeNumber' => '\d+'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'lastUsage']);
+    $routes->add('api_bike_rent', '/api/bike/{bikeNumber}/rent')
+        ->methods(['PUT'])
+        ->requirements(['bikeNumber' => '\d+'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'rentBike']);
+    $routes->add('api_bike_return', '/api/bike/{bikeNumber}/return/{standName}')
+        ->requirements(['bikeNumber' => '\d+', 'standName' => '\w+'])
+        ->methods(['PUT'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'returnBike']);
+    $routes->add('api_bike_force_rent', '/api/bike/{bikeNumber}/forceRent')
+        ->methods(['PUT'])
+        ->requirements(['bikeNumber' => '\d+'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'forceRentBike']);
+    $routes->add('api_bike_force_return', '/api/bike/{bikeNumber}/forceReturn/{standName}')
+        ->requirements(['bikeNumber' => '\d+', 'standName' => '\w+'])
+        ->methods(['PUT'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'forceReturnBike']);
+    $routes->add('api_bike_revert', '/api/bike/{bikeNumber}/revert')
+        ->requirements(['bikeNumber' => '\d+', 'standName' => '\w+'])
+        ->methods(['PUT'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'revertBike']);
+    $routes->add('api_bike_remove_note', '/api/bike/{bikeNumber}/removeNote')
+        ->requirements(['bikeNumber' => '\d+'])
+        ->methods(['DELETE'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'removeNote']);
+    $routes->add('api_bike_trip', '/api/bike/{bikeNumber}/trip')
+        ->requirements(['bikeNumber' => '\d+'])
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'bikeTrip']);
+    $routes->add('api_bike_geo_location', '/api/bike/{bikeNumber}/geoLocation')
+        ->requirements(['bikeNumber' => '\d+'])
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'bikeGeoLocation']);
     $routes->add('api_coupon_index', '/api/coupon')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\CouponController::class, 'index']);
     $routes->add('api_coupon_sell', '/api/coupon/sell')
         ->methods(['POST'])
-        ->controller([\BikeShare\Controller\Api\CouponController::class, 'sell']);
+        ->controller([\BikeShare\Controller\Api\CouponController::class, 'sellCoupon']);
+    $routes->add('api_coupon_use', '/api/coupon/use')
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\Api\CouponController::class, 'useCoupon']);
     $routes->add('api_coupon_generate', '/api/coupon/generate')
         ->methods(['POST'])
         ->controller([\BikeShare\Controller\Api\CouponController::class, 'generate']);
@@ -70,6 +116,15 @@ return function (RoutingConfigurator $routes) {
         ->methods(['PUT'])
         ->requirements(['userId' => '\d+'])
         ->controller([\BikeShare\Controller\Api\UserController::class, 'update']);
+    $routes->add('api_user_change_city', '/api/user/changeCity')
+        ->methods(['PUT'])
+        ->controller([\BikeShare\Controller\Api\UserController::class, 'changeCity']);
+    $routes->add('api_user_bike', '/api/user/bike')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\UserController::class, 'userBike']);
+    $routes->add('api_user_limit', '/api/user/limit')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\UserController::class, 'userLimit']);
     $routes->add('api_credit_add', '/api/credit')
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\CreditController::class, 'add']);

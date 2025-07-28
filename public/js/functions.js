@@ -56,10 +56,10 @@ $(document).ready(function () {
     });
 
     mapinit();
-    geolocate();
+    // geolocate();
     setInterval(getmarkers, 60000); // refresh map every 60 seconds
     setInterval(getuserstatus, 60000); // refresh map every 60 seconds
-    setInterval(geolocate, 300000); // refresh map every 5 min
+    // setInterval(geolocate, 300000); // refresh map every 5 min
 });
 
 function mapinit() {
@@ -113,45 +113,60 @@ function mapinit() {
 function getmarkers() {
     $.ajax({
         global: false,
-        url: "command.php?action=map:markers"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        for (var i = 0, len = jsonobject.length; i < len; i++) {
-            // ugly hack 2015-11-06 repair stand exception - special icon
-            if (jsonobject[i].standName.indexOf('SERVIS') > -1) {
-                tempicon = L.divIcon({
-                    iconSize: [iconsize, iconsize],
-                    iconAnchor: [iconsize / 2, 0],
-                    html: '<dl class="icondesc special" id="stand-' + jsonobject[i].standName + '"><dt class="bikecount">' + jsonobject[i].bikecount + '</dt><dd class="standname">' + jsonobject[i].standName + '</dd></dl>',
-                    standid: jsonobject[i].standId
-                });
-            } else if (jsonobject[i].bikecount == 0) {
-                tempicon = L.divIcon({
-                    iconSize: [iconsize, iconsize],
-                    iconAnchor: [iconsize / 2, 0],
-                    html: '<dl class="icondesc none" id="stand-' + jsonobject[i].standName + '"><dt class="bikecount">' + jsonobject[i].bikecount + '</dt><dd class="standname">' + jsonobject[i].standName + '</dd></dl>',
-                    standid: jsonobject[i].standId
-                });
-            } else {
-                tempicon = L.divIcon({
-                    iconSize: [iconsize, iconsize],
-                    iconAnchor: [iconsize / 2, 0],
-                    html: '<dl class="icondesc" id="stand-' + jsonobject[i].standName + '"><dt class="bikecount">' + jsonobject[i].bikecount + '</dt><dd class="standname">' + jsonobject[i].standName + '</dd></dl>',
-                    standid: jsonobject[i].standId
-                });
+        url: "/api/stand/markers",
+        method: "GET",
+        dataType: "json"
+    }).done(function (jsonObject) {
+        const body = $('body');
+        const iconSizeArr = [iconsize, iconsize];
+        const iconAnchorArr = [iconsize / 2, 0];
+
+        for (let i = 0, len = jsonObject.length; i < len; i++) {
+            const {
+                standId,
+                standName,
+                standDescription,
+                standPhoto,
+                bikeCount,
+                longitude,
+                latitude
+            } = jsonObject[i];
+
+            let iconClass = 'icondesc';
+            if (standName.includes('SERVIS')) {
+                iconClass += ' special';
+            } else if (bikeCount === 0) {
+                iconClass += ' none';
             }
-            markerdata[jsonobject[i].standId] = {
-                name: jsonobject[i].standName,
-                desc: jsonobject[i].standDescription,
-                photo: jsonobject[i].standPhoto,
-                count: jsonobject[i].bikecount
+
+            const iconHTML = `
+                <dl class="${iconClass}" id="stand-${standName}">
+                    <dt class="bikecount">${bikeCount}</dt>
+                    <dd class="standname">${standName}</dd>
+                </dl>`;
+
+            const tempIcon = L.divIcon({
+                iconSize: iconSizeArr,
+                iconAnchor: iconAnchorArr,
+                html: iconHTML,
+                standid: standId
+            });
+
+            markerdata[standId] = {
+                name: standName,
+                desc: standDescription,
+                photo: standPhoto,
+                count: bikeCount
             };
-            markers[jsonobject[i].standId] = L.marker([jsonobject[i].lat, jsonobject[i].lon], {
-                icon: tempicon
+
+            markers[standId] = L.marker([latitude, longitude], {
+                icon: tempIcon
             }).addTo(map).on("click", showstand);
-            $('body').data('markerdata', markerdata);
         }
-        if (firstrun == 1) {
+
+        body.data('markerdata', markerdata);
+
+        if (firstrun === 1) {
             createstandselector();
             firstrun = 0;
         }
@@ -161,12 +176,13 @@ function getmarkers() {
 function getuserstatus() {
     $.ajax({
         global: false,
-        url: "command.php?action=map:status"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        $('body').data('limit', jsonobject.limit);
-        $('body').data('rented', jsonobject.rented);
-        if ($('usercredit')) $('#usercredit').html(jsonobject.usercredit);
+        url: "/api/user/limit",
+        method: "GET",
+        dataType: "json"
+    }).done(function (jsonObject) {
+        $('body').data('limit', jsonObject.limit);
+        $('body').data('rented', jsonObject.rented);
+        if ($('usercredit')) $('#usercredit').html(jsonObject.userCredit);
         togglebikeactions();
     });
 }
@@ -226,44 +242,45 @@ function showstand(e, clear) {
         }
         $.ajax({
             global: false,
-            url: "command.php?action=list&stand=" + markerdata[standid].name
-        }).done(function (jsonresponse) {
-            jsonobject = $.parseJSON(jsonresponse);
-            handleresponse(jsonobject, 0);
-            bikelist = "";
-            if (jsonobject.content != "") {
-                for (var i = 0, len = jsonobject.content.length; i < len; i++) {
-                    bikeissue = 0;
-                    if (jsonobject.content[i][0] == "*") {
-                        bikeissue = 1;
-                        jsonobject.content[i] = jsonobject.content[i].replace("*", "");
-                    }
-                    if (jsonobject.stacktopbike == false) // bike stack is disabled, allow renting any bike
+            url: "/api/stand/" + markerdata[standid].name + "/bike",
+            dataType: "json"
+        }).done(function (jsonobject) {
+            let bikeList = '';
+            let bikes = jsonobject.bikesOnStand || [];
+            let stackTopBike = jsonobject.stackTopBike;
+            if (bikes.length > 0) {
+                for (var i = 0, len = bikes.length; i < len; i++) {
+                    let bikeNum = bikes[i].bikeNum;
+                    let note = bikes[i].notes ? bikes[i].notes : '';
+                    let bikeIssue = note !== '';
+                    if (stackTopBike === false) // bike stack is disabled, allow renting any bike
                     {
-                        if (bikeissue == 1 && $("body").data("limit") > 0) {
-                            bikelist = bikelist + ' <button type="button" class="btn btn-warning bikeid" data-id="' + jsonobject.content[i] + '" data-note="' + jsonobject.notes[i] + '">' + jsonobject.content[i] + '</button>';
-                        } else if (bikeissue == 1 && $("body").data("limit") == 0) {
-                            bikelist = bikelist + ' <button type="button" class="btn btn-default bikeid" data-id="' + jsonobject.content[i] + '">' + jsonobject.content[i] + '</button>';
-                        } else if ($("body").data("limit") > 0) bikelist = bikelist + ' <button type="button" class="btn btn-success bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '">' + jsonobject.content[i] + '</button>';
-                        else bikelist = bikelist + ' <button type="button" class="btn btn-default bikeid">' + jsonobject.content[i] + '</button>';
+                        if (bikeIssue && $("body").data("limit") > 0) {
+                            bikeList += ' <button type="button" class="btn btn-warning bikeid" data-id="' + bikeNum + '" data-note="' + note + '">' + bikeNum + '</button>';
+                        } else if (bikeIssue && $("body").data("limit") == 0) {
+                            bikeList += ' <button type="button" class="btn btn-default bikeid" data-id="' + bikeNum + '">' + bikeNum + '</button>';
+                        } else if ($("body").data("limit") > 0) bikeList = bikeList + ' <button type="button" class="btn btn-success bikeid b' + bikeNum + '" data-id="' + bikeNum + '">' + bikeNum + '</button>';
+                        else {
+                            bikeList += ' <button type="button" class="btn btn-default bikeid">' + bikeNum + '</button>';
+                        }
                     } else // bike stack is enabled, allow renting top of the stack bike only
                     {
-                        if (jsonobject.stacktopbike == jsonobject.content[i] && bikeissue == 1 && $("body").data("limit") > 0) {
-                            bikelist = bikelist + ' <button type="button" class="btn btn-warning bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '" data-note="' + jsonobject.notes[i] + '">' + jsonobject.content[i] + '</button>';
-                        } else if (jsonobject.stacktopbike == jsonobject.content[i] && bikeissue == 1 && $("body").data("limit") == 0) {
-                            bikelist = bikelist + ' <button type="button" class="btn btn-default bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '">' + jsonobject.content[i] + '</button>';
-                        } else if (jsonobject.stacktopbike == jsonobject.content[i] && $("body").data("limit") > 0) bikelist = bikelist + ' <button type="button" class="btn btn-success bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '">' + jsonobject.content[i] + '</button>';
-                        else bikelist = bikelist + ' <button type="button" class="btn btn-default bikeid">' + jsonobject.content[i] + '</button>';
+                        if (stackTopBike == bikeNum && bikeIssue && $("body").data("limit") > 0) {
+                            bikeList += ' <button type="button" class="btn btn-warning bikeid b' + bikeNum + '" data-id="' + bikeNum + '" data-note="' + note + '">' + bikeNum + '</button>';
+                        } else if (stackTopBike == bikeNum && bikeIssue && $("body").data("limit") == 0) {
+                            bikeList += ' <button type="button" class="btn btn-default bikeid b' + bikeNum + '" data-id="' + bikeNum + '">' + bikeNum + '</button>';
+                        } else if (stackTopBike == bikeNum && $("body").data("limit") > 0) bikeList = bikeList + ' <button type="button" class="btn btn-success bikeid b' + bikeNum + '" data-id="' + bikeNum + '">' + bikeNum + '</button>';
+                        else bikeList += ' <button type="button" class="btn btn-default bikeid">' + bikeNum + '</button>';
                     }
                 }
-                $('#standbikes').html('<div class="btn-group">' + bikelist + '</div>');
-                if (jsonobject.stacktopbike != false) // bike stack is enabled, allow renting top of the stack bike only
+                $('#standbikes').html('<div class="btn-group">' + bikeList + '</div>');
+                if (stackTopBike !== false) // bike stack is enabled, allow renting top of the stack bike only
                 {
-                    $('.b' + jsonobject.stacktopbike).click(function () {
+                    $('.b' + stackTopBike).click(function () {
                         if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-number');
                         attachbicycleinfo(this, "rent");
                     });
-                    $('body').data('stacktopbike', jsonobject.stacktopbike);
+                    $('body').data('stackTopBike', stackTopBike);
                 } else // bike stack is disabled, allow renting any bike
                 {
                     $('#standbikes .bikeid').click(function () {
@@ -313,33 +330,37 @@ function showstand(e, clear) {
 function rentedbikes() {
     $.ajax({
         global: false,
-        url: "command.php?action=userbikes"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        handleresponse(jsonobject, 0);
-        bikelist = "";
-        if (jsonobject.content != "") {
-            for (var i = 0, len = jsonobject.content.length; i < len; i++) {
-                // time of rent calculation -v
-                leftTimeText = '';
-                rentedSeconds = jsonobject.rentedseconds[i];
+        url: "/api/user/bike",
+        dataType: "json"
+    }).done(function (jsonArray) {
+        handleresponse(jsonArray, 0);
+        var bikeList = "";
+        if (jsonArray.length > 0) {
+            for (var i = 0, len = jsonArray.length; i < len; i++) {
+                var bike = jsonArray[i];
+                var leftTimeText = '';
+                var rentedSeconds = bike.rentedSeconds;
+
                 if (rentedSeconds) {
-                    if (rentedSeconds < 0) { // if servertime and rent time are not in sync
+                    var timeDiff = 0;
+                    if (rentedSeconds < 0) {
                         timeDiff = freeTimeSeconds;
                     } else {
-                        timeDiff = Math.abs(freeTimeSeconds - rentedSeconds); // convert to a positive number
+                        timeDiff = Math.abs(freeTimeSeconds - rentedSeconds);
                     }
-                    units = _secs;
-                    if (timeDiff > (60 * 59)) { // convert to hours after 59 minutes
+
+                    var units = _secs;
+                    if (timeDiff > (60 * 59)) {
                         timeDiff = Math.round(timeDiff / 60 / 59);
                         units = _hour_s;
-                    } else if (timeDiff > 59) { // convert to minutes after 59 seconds
+                    } else if (timeDiff > 59) {
                         timeDiff = Math.round(timeDiff / 60);
                         units = _mins;
                     }
+
                     if (!isNaN(timeDiff)) {
                         leftTimeText += '<br/><span class=\'label\'>';
-                        if (rentedSeconds >= freeTimeSeconds) { // free time over
+                        if (rentedSeconds >= freeTimeSeconds) {
                             leftTimeText += '<span style=\'text-align: center; display: inline-flex\' class=\'text-danger\'>' + timeDiff + ' ' + units + '<br/>' + _over + '</span>';
                         } else {
                             leftTimeText += '<span style=\'text-align: center; display: inline-flex\'>' + timeDiff + ' ' + units + '<br/>' + _left + '</span>';
@@ -347,10 +368,11 @@ function rentedbikes() {
                         leftTimeText += '</span>';
                     }
                 }
-                // time of rent calculation -^
-                bikelist = bikelist + ' <button type="button" class="btn btn-info bikeid b' + jsonobject.content[i] + '" data-id="' + jsonobject.content[i] + '" title="' + _currently_rented + '">' + jsonobject.content[i] + '<br /><span class="label label-primary">(' + jsonobject.codes[i] + ')</span><br /><span class="label"><s>(' + jsonobject.oldcodes[i] + ')</s></span>' + leftTimeText + '</button> ';
+
+                bikeList += ' <button type="button" class="btn btn-info bikeid b' + bike.bikeNum + '" data-id="' + bike.bikeNum + '" title="' + _currently_rented + '">' + bike.bikeNum + '<br /><span class="label label-primary">(' + bike.currentCode + ')</span><br /><span class="label"><s>(' + bike.oldCode + ')</s></span>' + leftTimeText + '</button> ';
             }
-            $('#rentedbikes').html('<div class="btn-group">' + bikelist + '</div>');
+
+            $('#rentedbikes').html('<div class="btn-group">' + bikeList + '</div>');
             $('#rentedbikes .bikeid').click(function () {
                 attachbicycleinfo(this, "return");
             });
@@ -394,9 +416,10 @@ function rent() {
     if ($('#rent .bikenumber').html() == "") return false;
     if (window.ga) ga('send', 'event', 'bikes', 'rent', $('#rent .bikenumber').html());
     $.ajax({
-        url: "command.php?action=rent&bikeno=" + $('#rent .bikenumber').html()
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
+        url: "/api/bike/" + $('#rent .bikenumber').html() + "/rent",
+        method: "PUT",
+        dataType: "json"
+    }).done(function (jsonobject) {
         handleresponse(jsonobject);
         resetbutton("rent");
         $('body').data("limit", $('body').data("limit") - 1);
@@ -429,11 +452,14 @@ function returnbike() {
     standid = $('#stands').val();
     if (window.ga) ga('send', 'event', 'bikes', 'return', $('#return .bikenumber').html());
     if (window.ga) ga('send', 'event', 'stands', 'return', standname);
-    if ($('#notetext').val()) note = "&note=" + $('#notetext').val();
     $.ajax({
-        url: "command.php?action=return&bikeno=" + $('#return .bikenumber').html() + "&stand=" + standname + note
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
+        url: "/api/bike/" + $('#return .bikenumber').html() + "/return/" + standname,
+        method: "PUT",
+        dataType: "json",
+        data: {
+            'note': $('#notetext').val()
+        }
+    }).done(function (jsonobject) {
         handleresponse(jsonobject);
         $('.b' + $('#return .bikenumber').html()).remove();
         resetbutton("return");
@@ -458,22 +484,31 @@ function returnbike() {
 
 function changecity() {
     $.ajax({
-        url: "command.php?action=changecity&city=" + $('#citychange').val()
-    }).done(function (jsonresponse) {
-        var jsonobject = $.parseJSON(jsonresponse);
-        console.log(jsonobject);
+        url: "/api/user/changecity",
+        method: "PUT",
+        dataType: "json",
+        data: {
+            city: $('#citychange').val(),
+        }
+    }).done(function (jsonObject) {
+        console.log(jsonObject);
         location.reload();
     });
 }
 
 function validatecoupon() {
     $.ajax({
-        url: "command.php?action=validatecoupon&coupon=" + $('#coupon').val()
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
+        url: "/api/coupon/use",
+        method: "POST",
+        dataType: "json",
+        data: {
+            coupon: $('#coupon').val(),
+        }
+    }).always(function (xhr, status, error) {
+        jsonobject = xhr.responseJSON
         temp = $('#couponblock').html();
         if (jsonobject.error == 1) {
-            $('#couponblock').html('<div class="alert alert-danger" role="alert">' + jsonobject.content + '</div>');
+            $('#couponblock').html('<div class="alert alert-danger" role="alert">' + jsonobject.message + '</div>');
             setTimeout(function () {
                 $('#couponblock').html(temp);
                 $("#validatecoupon").click(function () {
@@ -482,7 +517,7 @@ function validatecoupon() {
                 });
             }, 2500);
         } else {
-            $('#couponblock').html('<div class="alert alert-success" role="alert">' + jsonobject.content + '</div>');
+            $('#couponblock').html('<div class="alert alert-success" role="alert">' + jsonobject.message + '</div>');
             getuserstatus();
             setTimeout(function () {
                 $('#couponblock').html(temp);
@@ -515,9 +550,9 @@ function checkonebikeattach() {
 function handleresponse(jsonobject, display) {
     if (display == undefined) {
         if (jsonobject.error == 1) {
-            $('#console').html('<div class="alert alert-danger" role="alert">' + jsonobject.content + '</div>').fadeIn();
+            $('#console').html('<div class="alert alert-danger" role="alert">' + jsonobject.message + '</div>').fadeIn();
         } else {
-            $('#console').html('<div class="alert alert-success" role="alert">' + jsonobject.content + '</div>');
+            $('#console').html('<div class="alert alert-success" role="alert">' + jsonobject.message + '</div>');
         }
     }
     if (jsonobject.limit) {
@@ -534,7 +569,7 @@ function resetbutton(attachto) {
 }
 
 function resetstandbikes() {
-    $('body').data('stacktopbike', false);
+    $('body').data('stackTopBike', false);
     $('#standbikes').html('');
 }
 
@@ -542,64 +577,64 @@ function resetrentedbikes() {
     $('#rentedbikes').html('');
 }
 
-function savegeolocation() {
-    $.ajax({
-        url: "command.php?action=map:geolocation&lat=" + $("body").data("mapcenterlat") + "&long=" + $("body").data("mapcenterlong")
-    }).done(function (jsonresponse) {
-        return;
-    });
-}
-
-function showlocation(location) {
-    $("body").data("mapcenterlat", location.coords.latitude);
-    $("body").data("mapcenterlong", location.coords.longitude);
-    $("body").data("mapzoom", $("body").data("mapzoom") + 1);
-    // 80 m x 5 mins walking distance
-    circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")], 80 * 5, {
-        color: 'green',
-        fillColor: '#0f0',
-        fillOpacity: 0.1
-    }).addTo(map);
-    map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
-    if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat") + "," + $("body").data("mapcenterlong"));
-    savegeolocation();
-}
-
-function changelocation(location) {
-    if (location.coords.latitude != $("body").data("mapcenterlat") || location.coords.longitude != $("body").data("mapcenterlong")) {
-        $("body").data("mapcenterlat", location.coords.latitude);
-        $("body").data("mapcenterlong", location.coords.longitude);
-        map.removeLayer(circle);
-        circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")], 80 * 5, {
-            color: 'green',
-            fillColor: '#0f0',
-            fillOpacity: 0.1
-        }).addTo(map);
-        map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
-        if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat") + "," + $("body").data("mapcenterlong"));
-        savegeolocation();
-    }
-}
-
-function geolocate() {
-    return;
-    //if ("geolocation" in navigator) {
-    //navigator.geolocation.getCurrentPosition(showlocation);
-    /*, function() {
-        return;
-    }, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 300000 // refresh interval set to 5 min
-    });
-    /*
-    watchID = navigator.geolocation.watchPosition(changelocation, function() {
-        return;
-    }, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 5000
-    });
-    */
-    //}
-}
+// function savegeolocation() {
+//     $.ajax({
+//         url: "command.php?action=map:geolocation&lat=" + $("body").data("mapcenterlat") + "&long=" + $("body").data("mapcenterlong")
+//     }).done(function (jsonresponse) {
+//         return;
+//     });
+// }
+//
+// function showlocation(location) {
+//     $("body").data("mapcenterlat", location.coords.latitude);
+//     $("body").data("mapcenterlong", location.coords.longitude);
+//     $("body").data("mapzoom", $("body").data("mapzoom") + 1);
+//     // 80 m x 5 mins walking distance
+//     circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")], 80 * 5, {
+//         color: 'green',
+//         fillColor: '#0f0',
+//         fillOpacity: 0.1
+//     }).addTo(map);
+//     map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
+//     if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat") + "," + $("body").data("mapcenterlong"));
+//     savegeolocation();
+// }
+//
+// function changelocation(location) {
+//     if (location.coords.latitude != $("body").data("mapcenterlat") || location.coords.longitude != $("body").data("mapcenterlong")) {
+//         $("body").data("mapcenterlat", location.coords.latitude);
+//         $("body").data("mapcenterlong", location.coords.longitude);
+//         map.removeLayer(circle);
+//         circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")], 80 * 5, {
+//             color: 'green',
+//             fillColor: '#0f0',
+//             fillOpacity: 0.1
+//         }).addTo(map);
+//         map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
+//         if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat") + "," + $("body").data("mapcenterlong"));
+//         savegeolocation();
+//     }
+// }
+//
+// function geolocate() {
+//     return;
+//     //if ("geolocation" in navigator) {
+//     //navigator.geolocation.getCurrentPosition(showlocation);
+//     /*, function() {
+//         return;
+//     }, {
+//         enableHighAccuracy: true,
+//         maximumAge: 0,
+//         timeout: 300000 // refresh interval set to 5 min
+//     });
+//     /*
+//     watchID = navigator.geolocation.watchPosition(changelocation, function() {
+//         return;
+//     }, {
+//         enableHighAccuracy: true,
+//         maximumAge: 0,
+//         timeout: 5000
+//     });
+//     */
+//     //}
+// }

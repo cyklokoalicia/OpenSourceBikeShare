@@ -6,6 +6,7 @@ namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Event\BikeRevertEvent;
+use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
@@ -28,16 +29,17 @@ class RevertCommandTest extends BikeSharingWebTestCase
         $this->watchesTooMany = $_ENV['WATCHES_NUMBER_TOO_MANY'];
 
         #force return bike
-        $this->client->request(
-            Request::METHOD_GET,
-            '/receive.php',
-            [
-                'number' => self::ADMIN_PHONE_NUMBER,
-                'message' => 'FORCERETURN ' . self::BIKE_NUMBER . ' ' . self::STAND_NAME,
-                'uuid' => md5((string)microtime(true)),
-                'time' => time(),
-            ]
-        );
+        $admin = $this->client->getContainer()->get(UserRepository::class)
+            ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+
+        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('sms')
+            ->returnBike(
+                $admin['userId'],
+                self::BIKE_NUMBER,
+                self::STAND_NAME,
+                '',
+                true
+            );
     }
 
     protected function tearDown(): void

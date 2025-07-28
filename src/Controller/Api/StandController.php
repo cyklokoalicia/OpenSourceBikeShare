@@ -4,34 +4,117 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api;
 
+use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class StandController extends AbstractController
 {
+    private StandRepository $standRepository;
+    private NoteRepository $noteRepository;
+    private bool $forceStack;
+
+    public function __construct(
+        StandRepository $standRepository,
+        NoteRepository $noteRepository,
+        bool $forceStack
+    ) {
+        $this->standRepository = $standRepository;
+        $this->noteRepository = $noteRepository;
+        $this->forceStack = $forceStack;
+    }
+
+
     /**
      * @Route("/api/stand", name="api_stand_index", methods={"GET"})
      */
-    public function index(
-        StandRepository $standRepository,
-        LoggerInterface $logger
-    ): Response {
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            $logger->info(
-                'User tried to access admin page without permission',
-                [
-                    'user' => $this->getUser()->getUserIdentifier(),
-                ]
-            );
+    public function index(): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-            return $this->json([], Response::HTTP_FORBIDDEN);
+        $stands = $this->standRepository->findAll();
+
+        return $this->json($stands);
+    }
+
+    /**
+     * @Route("/api/stand/{standName}/bike", name="api_stand_item", methods={"GET"}, requirements: {"standName"="\w+"})
+     */
+    public function bike(
+        string $standName
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $standInfo = $this->standRepository->findItemByName($standName);
+
+        if (empty($standInfo)) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        $bikes = $standRepository->findAll();
+        $stackTopBike = false;
+        if ($this->forceStack) {
+            $stackTopBike = $this->standRepository->findLastReturnedBikeOnStand((int)$standInfo['standId']);
+        }
 
-        return $this->json($bikes);
+        $bikesOnStand = $this->standRepository->findBikesOnStand((int)$standInfo['standId']);
+        foreach ($bikesOnStand as &$bike) {
+            $notes = $this->noteRepository->findBikeNote((int)$bike['bikeNum']);
+            $notes = array_map(
+                static fn(array $note) => $note['note'],
+                $notes
+            );
+            $bike['notes'] = implode('; ', $notes);
+        }
+        unset($bike);
+
+        return $this->json(
+            [
+                'stackTopBike' => $stackTopBike,
+                'bikesOnStand' => $bikesOnStand,
+            ]
+        );
+    }
+
+    /**
+     * @Route("/api/stand/{standName}/removeNote", name="api_stand_remove_note", methods={"DELETE"}, requirements: {"standName"="\w+"})
+     */
+    public function removeNote(
+        $standName,
+        NoteRepository $noteRepository,
+        Request $request
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $stand = $this->standRepository->findItemByName($standName);
+
+        if (empty($stand)) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $pattern = $request->request->get('pattern');
+
+        $deletedNotesCount = $noteRepository->deleteStandNote((int)$stand['standId'], $pattern);
+
+        $response = [
+            'message' => $deletedNotesCount . ' note(s) removed successfully',
+            'error' => 0,
+        ];
+
+        return $this->json($response);
+    }
+
+    /**
+     * @Route("/api/stand/markers", name="api_stand_markers", methods={"GET"})
+     */
+    public function markers(): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $stands = $this->standRepository->findAllExtended($this->getUser()->getCity());
+
+        return $this->json($stands);
     }
 }

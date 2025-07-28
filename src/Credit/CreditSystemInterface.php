@@ -6,7 +6,7 @@ namespace BikeShare\Credit;
 
 interface CreditSystemInterface
 {
-    public function addCredit(int $userId, float $creditAmount): void;
+    public function addCredit(int $userId, float $creditAmount, ?string $coupon = null): void;
 
     public function useCredit(int $userId, float $creditAmount): void;
 

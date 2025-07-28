@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use BikeShare\App\Security\ApiAccessDeniedHandler;
 use BikeShare\App\Security\TokenProvider;
 use BikeShare\App\Security\UserConfirmedEmailChecker;
 use BikeShare\App\Security\UserProvider;
@@ -26,6 +27,16 @@ return function (SecurityConfig $security) {
         ->firewall('dev')
         ->pattern('^/(_(profiler|wdt)|css|images|js)/')
         ->security(false);
+
+    $apiFirewall = $security->firewall('api');
+    $apiFirewall
+        ->pattern('^/api')
+        ->context('main')
+        ->accessDeniedHandler(ApiAccessDeniedHandler::class);
+    $apiFirewall
+        ->security(true)
+        ->httpBasic()
+        ->realm('Bike Sharing API');
 
     $mainFirewall = $security->firewall('main');
     $mainFirewall
@@ -56,7 +67,7 @@ return function (SecurityConfig $security) {
 
     $security->accessControl()
         ->path('^/admin')
-        ->roles(['ROLE_ADMIN']);
+        ->roles(['ROLE_SUPER_ADMIN']);
 
     $security->accessControl()
         ->path('^/admin/qrCodeGenerator')
