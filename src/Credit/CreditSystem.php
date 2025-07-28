@@ -93,7 +93,7 @@ class CreditSystem implements CreditSystemInterface
                 $userId,
                 0, //BikeNum
                 'CREDITCHANGE', //action
-                $creditAmount . '|add+' . $creditAmount . ($coupon ? '|'. $coupon : '') //parameter
+                $creditAmount . '|add+' . $creditAmount . ($coupon ? '|' . $coupon : '') //parameter
             );
         }
     }

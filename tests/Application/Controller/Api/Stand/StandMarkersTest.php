@@ -31,7 +31,6 @@ class StandMarkersTest extends BikeSharingWebTestCase
             $this->assertArrayHasKey('standPhoto', $marker, 'Marker does not contain standPhoto');
             $this->assertArrayHasKey('longitude', $marker, 'Marker does not contain longitude');
             $this->assertArrayHasKey('latitude', $marker, 'Marker does not contain latitude');
-
         }
     }
 }

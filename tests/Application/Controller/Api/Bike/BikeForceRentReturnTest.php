@@ -37,7 +37,8 @@ class BikeForceRentReturnTest extends BikeSharingWebTestCase
         //We should not notify admin about too many rents in this testsuite
         $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999;
 
-        $admin = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
+        $admin = $this->client->getContainer()->get(UserProvider::class)
+            ->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
         $this->client->loginUser($admin);
 
         //ForceRent
