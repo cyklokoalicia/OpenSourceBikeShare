@@ -20,36 +20,6 @@ function response($message, $error = 0, $additional = '', $log = 1)
     echo $json;
 }
 
-function checkprivileges($userid)
-{
-    global $db, $user;
-    $privileges = $user->findPrivileges($userid);
-    if ($privileges < 1) {
-        response(_('Sorry, this command is only available for the privileged users.'), ERROR);
-        exit;
-    }
-}
-
-function trips($userId, $bike = 0)
-{
-    global $db;
-    $bikeNum = intval($bike);
-    if ($bikeNum) {
-        $result = $db->query("SELECT longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE bikenum=$bikeNum AND action='RETURN' ORDER BY time DESC");
-        while ($row = $result->fetch_assoc()) {
-            $jsoncontent[] = array('longitude' => $row['longitude'], 'latitude' => $row['latitude']);
-        }
-    } else {
-        $result = $db->query("SELECT bikeNum,longitude,latitude FROM `history` LEFT JOIN stands ON stands.standid=history.parameter WHERE action='RETURN' ORDER BY bikeNum,time DESC");
-        $i = 0;
-        while ($row = $result->fetch_assoc()) {
-            $bikenum = $row['bikeNum'];
-            $jsoncontent[$bikenum][] = array('longitude' => $row['longitude'], 'latitude' => $row['latitude']);
-        }
-    }
-    echo json_encode($jsoncontent); // TODO change to response function
-}
-
 function mapgetmarkers($userId)
 {
     global $db, $cityRepository, $user;

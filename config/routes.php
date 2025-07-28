@@ -85,6 +85,10 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['bikeNumber' => '\d+'])
         ->methods(['DELETE'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'removeNote']);
+    $routes->add('api_bike_trip', '/api/bike/{bikeNumber}/trip')
+        ->requirements(['bikeNumber' => '\d+'])
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'bikeTrip']);
     $routes->add('api_coupon_index', '/api/coupon')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\CouponController::class, 'index']);

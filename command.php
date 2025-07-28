@@ -20,15 +20,6 @@ $request = $requestStack->getCurrentRequest();
 $action = $request->query->get('action', '');
 
 switch ($action) {
-    case "trips":
-        logrequest($userid, $action);
-        checkprivileges($userid);
-        if ($request->query->get("bikeno", '')) {
-            $bikeno = trim($request->query->get("bikeno", ''));
-            checkbikeno($bikeno);
-            trips($userid, $bikeno);
-        } else trips($userid);
-        break;
     case "map:markers":
         mapgetmarkers($userid);
         break;

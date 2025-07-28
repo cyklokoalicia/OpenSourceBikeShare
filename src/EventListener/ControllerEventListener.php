@@ -35,6 +35,7 @@ class ControllerEventListener
         'api_bike_remove_note',
         'api_coupon_use',
         'api_user_change_city',
+        'api_bike_trip',
     ];
 
     private DbInterface $db;

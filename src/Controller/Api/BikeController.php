@@ -6,6 +6,7 @@ namespace BikeShare\Controller\Api;
 
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
+use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\NoteRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -206,5 +207,26 @@ class BikeController extends AbstractController
         ];
 
         return $this->json($response);
+    }
+
+    /**
+     * @Route("/api/bike/{bikeNumber}/trip", name="api_bike_trip", methods={"GET"}, requirements: {"bikeNumber"="\d+"})
+     */
+    public function bikeTrip(
+        $bikeNumber,
+        HistoryRepository $historyRepository
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $userTrip = $historyRepository->findBikeTrip(
+            (int)$bikeNumber,
+            new \DateTimeImmutable('-1 month')
+        );
+
+        return $this->json($userTrip);
     }
 }

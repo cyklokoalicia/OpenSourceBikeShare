@@ -140,4 +140,23 @@ class HistoryRepository
 
         return $result;
     }
+
+    public function findBikeTrip(int $bikeNumber, \DateTimeImmutable $startTime): array
+    {
+        $result = $this->db->query(
+            "SELECT time, longitude, latitude
+                 FROM `history`
+                 LEFT JOIN stands ON stands.standid=history.parameter
+                 WHERE bikenum = :bikeNUmber
+                   AND time > :startTime
+                   AND action IN ('RETURN', 'FORCERETURN')
+                 ORDER BY history.time DESC, history.id DESC",
+            [
+                'bikeNUmber' => $bikeNumber,
+                'startTime' => $startTime->format('Y-m-d H:i:s'),
+            ]
+        )->fetchAllAssoc();
+
+        return $result;
+    }
 }
