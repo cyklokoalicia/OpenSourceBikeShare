@@ -56,8 +56,10 @@ $(document).ready(function () {
     });
 
     mapinit();
+    // geolocate();
     setInterval(getmarkers, 60000); // refresh map every 60 seconds
     setInterval(getuserstatus, 60000); // refresh map every 60 seconds
+    // setInterval(geolocate, 300000); // refresh map every 5 min
 });
 
 function mapinit() {
@@ -575,41 +577,64 @@ function resetrentedbikes() {
     $('#rentedbikes').html('');
 }
 
-function savegeolocation() {
-    $.ajax({
-        url: "command.php?action=map:geolocation&lat=" + $("body").data("mapcenterlat") + "&long=" + $("body").data("mapcenterlong")
-    }).done(function (jsonresponse) {
-        return;
-    });
-}
-
-function showlocation(location) {
-    $("body").data("mapcenterlat", location.coords.latitude);
-    $("body").data("mapcenterlong", location.coords.longitude);
-    $("body").data("mapzoom", $("body").data("mapzoom") + 1);
-    // 80 m x 5 mins walking distance
-    circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")], 80 * 5, {
-        color: 'green',
-        fillColor: '#0f0',
-        fillOpacity: 0.1
-    }).addTo(map);
-    map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
-    if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat") + "," + $("body").data("mapcenterlong"));
-    savegeolocation();
-}
-
-function changelocation(location) {
-    if (location.coords.latitude != $("body").data("mapcenterlat") || location.coords.longitude != $("body").data("mapcenterlong")) {
-        $("body").data("mapcenterlat", location.coords.latitude);
-        $("body").data("mapcenterlong", location.coords.longitude);
-        map.removeLayer(circle);
-        circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")], 80 * 5, {
-            color: 'green',
-            fillColor: '#0f0',
-            fillOpacity: 0.1
-        }).addTo(map);
-        map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
-        if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat") + "," + $("body").data("mapcenterlong"));
-        savegeolocation();
-    }
-}
+// function savegeolocation() {
+//     $.ajax({
+//         url: "command.php?action=map:geolocation&lat=" + $("body").data("mapcenterlat") + "&long=" + $("body").data("mapcenterlong")
+//     }).done(function (jsonresponse) {
+//         return;
+//     });
+// }
+//
+// function showlocation(location) {
+//     $("body").data("mapcenterlat", location.coords.latitude);
+//     $("body").data("mapcenterlong", location.coords.longitude);
+//     $("body").data("mapzoom", $("body").data("mapzoom") + 1);
+//     // 80 m x 5 mins walking distance
+//     circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")], 80 * 5, {
+//         color: 'green',
+//         fillColor: '#0f0',
+//         fillOpacity: 0.1
+//     }).addTo(map);
+//     map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
+//     if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat") + "," + $("body").data("mapcenterlong"));
+//     savegeolocation();
+// }
+//
+// function changelocation(location) {
+//     if (location.coords.latitude != $("body").data("mapcenterlat") || location.coords.longitude != $("body").data("mapcenterlong")) {
+//         $("body").data("mapcenterlat", location.coords.latitude);
+//         $("body").data("mapcenterlong", location.coords.longitude);
+//         map.removeLayer(circle);
+//         circle = L.circle([$("body").data("mapcenterlat"), $("body").data("mapcenterlong")], 80 * 5, {
+//             color: 'green',
+//             fillColor: '#0f0',
+//             fillOpacity: 0.1
+//         }).addTo(map);
+//         map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
+//         if (window.ga) ga('send', 'event', 'geolocation', 'latlong', $("body").data("mapcenterlat") + "," + $("body").data("mapcenterlong"));
+//         savegeolocation();
+//     }
+// }
+//
+// function geolocate() {
+//     return;
+//     //if ("geolocation" in navigator) {
+//     //navigator.geolocation.getCurrentPosition(showlocation);
+//     /*, function() {
+//         return;
+//     }, {
+//         enableHighAccuracy: true,
+//         maximumAge: 0,
+//         timeout: 300000 // refresh interval set to 5 min
+//     });
+//     /*
+//     watchID = navigator.geolocation.watchPosition(changelocation, function() {
+//         return;
+//     }, {
+//         enableHighAccuracy: true,
+//         maximumAge: 0,
+//         timeout: 5000
+//     });
+//     */
+//     //}
+// }
