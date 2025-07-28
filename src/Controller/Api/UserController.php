@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api;
 
+use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\CityRepository;
 use BikeShare\Repository\UserRepository;
@@ -140,5 +141,29 @@ class UserController extends AbstractController
         $userBikes = $bikeRepository->findRentedBikesByUserId($userId);
 
         return $this->json($userBikes);
+    }
+
+    /**
+     * @Route("/api/user/limit", name="api_user_limit", methods={"GET"})
+     */
+    public function userLimit(
+        BikeRepository $bikeRepository,
+        UserRepository $userRepository,
+        CreditSystemInterface $creditSystem
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $userId = $this->getUser()->getUserId();
+        $userBikes = $bikeRepository->findRentedBikesByUserId($userId);
+        $userInfo = $userRepository->findItem($userId);
+        $userCredit = $creditSystem->getUserCredit($userId);
+
+        $result = [
+            'limit' => $userInfo['userLimit'] - count($userBikes),
+            'rented' => count($userBikes),
+            'userCredit' => $userCredit,
+        ];
+
+        return $this->json($result);
     }
 }

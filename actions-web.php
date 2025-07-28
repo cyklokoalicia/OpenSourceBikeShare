@@ -35,29 +35,6 @@ function mapgetmarkers($userId)
     echo json_encode($jsoncontent); // TODO proper response function
 }
 
-function mapgetlimit($userId)
-{
-    global $db, $auth, $creditSystem;
-
-    if (!$auth->isLoggedIn()) {
-        response('');
-    }
-
-    $result = $db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
-    $row = $result->fetch_assoc();
-    $rented = $row['countRented'];
-
-    $result = $db->query("SELECT userLimit FROM limits where userId=$userId");
-    $row = $result->fetch_assoc();
-    $limit = $row['userLimit'];
-
-    $currentlimit = $limit - $rented;
-
-    $userCredit = $creditSystem->getUserCredit($userId);
-
-    echo json_encode(array('limit' => $currentlimit, 'rented' => $rented, 'usercredit' => $userCredit));
-}
-
 function mapgeolocation($userid, $lat, $long)
 {
     global $db;

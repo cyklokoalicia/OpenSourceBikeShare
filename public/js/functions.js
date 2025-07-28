@@ -161,12 +161,13 @@ function getmarkers() {
 function getuserstatus() {
     $.ajax({
         global: false,
-        url: "command.php?action=map:status"
-    }).done(function (jsonresponse) {
-        jsonobject = $.parseJSON(jsonresponse);
-        $('body').data('limit', jsonobject.limit);
-        $('body').data('rented', jsonobject.rented);
-        if ($('usercredit')) $('#usercredit').html(jsonobject.usercredit);
+        url: "/api/user/limit",
+        method: "GET",
+        dataType: "json"
+    }).done(function (jsonObject) {
+        $('body').data('limit', jsonObject.limit);
+        $('body').data('rented', jsonObject.rented);
+        if ($('usercredit')) $('#usercredit').html(jsonObject.userCredit);
         togglebikeactions();
     });
 }
