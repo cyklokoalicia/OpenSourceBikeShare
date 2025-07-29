@@ -13,7 +13,7 @@ abstract class AbstractCommand implements SmsCommandInterface
     protected const COMMAND_NAME = '';
     protected const MIN_PRIVILEGES_LEVEL = 0;
 
-    public function __construct(protected TranslatorInterface $translator)
+    public function __construct(protected readonly TranslatorInterface $translator)
     {
     }
 
