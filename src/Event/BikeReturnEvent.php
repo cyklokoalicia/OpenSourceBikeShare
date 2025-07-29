@@ -7,10 +7,10 @@ namespace BikeShare\Event;
 class BikeReturnEvent
 {
     public function __construct(
-        private int $bikeNumber,
-        private string $standName,
-        private int $userId,
-        private bool $isForce,
+        private readonly int $bikeNumber,
+        private readonly string $standName,
+        private readonly int $userId,
+        private readonly bool $isForce,
     ) {
     }
 

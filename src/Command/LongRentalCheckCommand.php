@@ -19,14 +19,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class LongRentalCheckCommand extends Command
 {
     public function __construct(
-        private bool $notifyUser,
-        private int $longRentalHours,
-        private BikeRepository $bikeRepository,
-        private HistoryRepository $historyRepository,
-        private SmsSenderInterface $smsSender,
-        private TranslatorInterface $translator,
-        private AdminNotifier $adminNotifier,
-        private LoggerInterface $logger,
+        private readonly bool $notifyUser,
+        private readonly int $longRentalHours,
+        private readonly BikeRepository $bikeRepository,
+        private readonly HistoryRepository $historyRepository,
+        private readonly SmsSenderInterface $smsSender,
+        private readonly TranslatorInterface $translator,
+        private readonly AdminNotifier $adminNotifier,
+        private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
     }
@@ -49,7 +49,8 @@ class LongRentalCheckCommand extends Command
                 $this->logger->error('Last rent not found for bike', compact('bikeNumber', 'userId'));
                 continue;
             }
-            $time = strtotime($lastRent['time']);
+
+            $time = strtotime((string) $lastRent['time']);
             if ($time + ($this->longRentalHours * 3600) <= time()) {
                 $abusers[] = [
                     'userId' => $userId,

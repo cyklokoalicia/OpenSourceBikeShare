@@ -16,9 +16,9 @@ use Symfony\Component\Routing\Annotation\Route;
 class CouponController extends AbstractController
 {
     public function __construct(
-        private CreditSystemInterface $creditSystem,
-        private CouponRepository $couponRepository,
-        private LoggerInterface $logger,
+        private readonly CreditSystemInterface $creditSystem,
+        private readonly CouponRepository $couponRepository,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -36,6 +36,7 @@ class CouponController extends AbstractController
 
             return $this->json([], Response::HTTP_BAD_REQUEST);
         }
+
         $coupons = $this->couponRepository->findAllActive();
 
         return $this->json($coupons);
@@ -57,6 +58,7 @@ class CouponController extends AbstractController
 
             return $this->json([], Response::HTTP_BAD_REQUEST);
         }
+
         $this->couponRepository->updateStatus($coupon, 1); // Mark as sold
 
         return $this->json(
@@ -79,6 +81,7 @@ class CouponController extends AbstractController
         if (!is_numeric($multiplier) || $multiplier <= 0 || $multiplier > 5) {
             return $this->json(['message' => 'Invalid multiplier value', 'error' => 1], Response::HTTP_BAD_REQUEST);
         }
+
         $multiplier = (int) $multiplier;
         if ($this->creditSystem->isEnabled() === false) {
             $this->logger->notice('Credit system is disabled', [

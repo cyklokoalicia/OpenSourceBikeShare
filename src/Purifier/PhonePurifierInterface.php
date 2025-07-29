@@ -4,5 +4,5 @@ namespace BikeShare\Purifier;
 
 interface PhonePurifierInterface
 {
-    public function purify($phoneNumber);
+    public function purify(string $phoneNumber);
 }

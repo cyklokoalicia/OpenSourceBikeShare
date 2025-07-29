@@ -25,11 +25,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class RegistrationFormType extends AbstractType
 {
     public function __construct(
-        private string $systemRules,
-        private CityRepository $cityRepository,
-        private TranslatorInterface $translator,
-        private PhonePurifier $phonePurifier,
-        private UserRepository $userRepository,
+        private readonly string $systemRules,
+        private readonly CityRepository $cityRepository,
+        private readonly TranslatorInterface $translator,
+        private readonly PhonePurifier $phonePurifier,
+        private readonly UserRepository $userRepository,
     ) {
     }
 
@@ -48,6 +48,7 @@ class RegistrationFormType extends AbstractType
             foreach ($cities as $city) {
                 $choices[$city] = $this->translator->trans($city);
             }
+
             $builder->add('city', ChoiceType::class, [
                 'label' => $this->translator->trans('City:'),
                 'choices' => $choices,
@@ -57,6 +58,7 @@ class RegistrationFormType extends AbstractType
                 'data' => $cities[0]
             ]);
         }
+
         $builder->add('useremail', EmailType::class, [
                 'label' => $this->translator->trans('Email:'),
                 'attr' => ['placeholder' => 'email@domain.com']
@@ -108,6 +110,7 @@ class RegistrationFormType extends AbstractType
                         )
                     );
                 }
+
                 if (empty($data['useremail']) || !filter_var($data['useremail'], FILTER_VALIDATE_EMAIL)) {
                     $form->get('useremail')->addError(
                         new FormError(
@@ -126,7 +129,7 @@ class RegistrationFormType extends AbstractType
                     }
                 }
 
-                if (empty($data['password']) || strlen($data['password']) < 6) {
+                if (empty($data['password']) || strlen((string) $data['password']) < 6) {
                     $form->get('password')->addError(
                         new FormError(
                             $this->translator->trans('Password must be at least 6 characters long.')
@@ -157,7 +160,7 @@ class RegistrationFormType extends AbstractType
                     }
                 }
 
-                if (empty($data['number']) || strlen($data['number']) < 5) {
+                if (empty($data['number']) || strlen((string) $data['number']) < 5) {
                     $form->get('number')->addError(
                         new FormError(
                             $this->translator->trans('Invalid phone number.')

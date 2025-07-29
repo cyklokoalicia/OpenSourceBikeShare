@@ -8,7 +8,7 @@ use PDO;
 
 class PdoDb implements DbInterface
 {
-    private PDO $conn;
+    private readonly PDO $conn;
 
     public function __construct(
         string $dsn,

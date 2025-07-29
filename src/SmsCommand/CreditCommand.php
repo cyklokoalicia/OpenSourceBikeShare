@@ -15,7 +15,7 @@ class CreditCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private CreditSystemInterface $creditSystem
+        private readonly CreditSystemInterface $creditSystem
     ) {
         parent::__construct($translator);
     }

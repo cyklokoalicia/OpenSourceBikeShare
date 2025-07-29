@@ -19,13 +19,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class SmsRequestController extends AbstractController
 {
     public function __construct(
-        private SmsConnectorInterface $smsConnector,
-        private SmsSenderInterface $smsSender,
-        private UserProvider $userProvider,
-        private LoggerInterface $logger,
-        private AdminNotifier $adminNotifier,
-        private TranslatorInterface $translator,
-        private CommandExecutor $commandExecutor,
+        private readonly SmsConnectorInterface $smsConnector,
+        private readonly SmsSenderInterface $smsSender,
+        private readonly UserProvider $userProvider,
+        private readonly LoggerInterface $logger,
+        private readonly AdminNotifier $adminNotifier,
+        private readonly TranslatorInterface $translator,
+        private readonly CommandExecutor $commandExecutor,
     ) {
     }
 

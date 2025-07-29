@@ -17,8 +17,8 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
 {
     public function __construct(
-        private DbInterface $db,
-        private PhonePurifierInterface $phonePurifier,
+        private readonly DbInterface $db,
+        private readonly PhonePurifierInterface $phonePurifier,
     ) {
     }
 

@@ -6,7 +6,7 @@ use BikeShare\Db\DbInterface;
 
 class BikeRepository
 {
-    public function __construct(private DbInterface $db)
+    public function __construct(private readonly DbInterface $db)
     {
     }
 
@@ -48,9 +48,10 @@ class BikeRepository
                     ]
                 )->fetchAssoc();
 
-                $bike['rentTime'] = date('d/m H:i', strtotime($historyInfo['time']));
+                $bike['rentTime'] = date('d/m H:i', strtotime((string) $historyInfo['time']));
             }
         }
+
         unset($bike);
 
         return $bikes;
@@ -96,7 +97,7 @@ class BikeRepository
                 ]
             )->fetchAssoc();
 
-            $bike['rentTime'] = date('d/m H:i', strtotime($historyInfo['time']));
+            $bike['rentTime'] = date('d/m H:i', strtotime((string) $historyInfo['time']));
         }
 
         return $bike;
@@ -140,22 +141,24 @@ class BikeRepository
         $result['history'] = [];
         foreach ($history as $row) {
             $historyItem = [];
-            $historyItem['time'] = date('d/m H:i', strtotime($row['time']));
+            $historyItem['time'] = date('d/m H:i', strtotime((string) $row['time']));
             $historyItem['action'] = $row['action'];
 
             if ($row['standName'] != null) {
                 $historyItem['standName'] = $row['standName'];
-                if (strpos($row['parameter'], '|')) {
-                    $revertCode = explode('|', $row['parameter']);
+                if (strpos((string) $row['parameter'], '|')) {
+                    $revertCode = explode('|', (string) $row['parameter']);
                     $revertCode = $revertCode[1];
                 }
+
                 if ($row['action'] == 'REVERT') {
                     $historyItem['parameter'] = str_pad($revertCode, 4, '0', STR_PAD_LEFT);
                 }
             } else {
                 $historyItem['userName'] = $row['userName'];
-                $historyItem['parameter'] = str_pad($row['parameter'], 4, '0', STR_PAD_LEFT);
+                $historyItem['parameter'] = str_pad((string) $row['parameter'], 4, '0', STR_PAD_LEFT);
             }
+
             $result['history'][] = $historyItem;
         }
 
@@ -229,7 +232,7 @@ class BikeRepository
         )->fetchAllAssoc();
 
         foreach ($bikes as &$bike) {
-            $bike['currentCode'] = str_pad($bike['currentCode'], 4, '0', STR_PAD_LEFT);
+            $bike['currentCode'] = str_pad((string) $bike['currentCode'], 4, '0', STR_PAD_LEFT);
             $historyInfo = $this->db->query(
                 "SELECT TIMESTAMPDIFF(SECOND, time, NOW()) as rentedSeconds, parameter 
                 FROM history 
@@ -244,10 +247,11 @@ class BikeRepository
                 if ($index === 0) {
                     $bike['rentedSeconds'] = $row['rentedSeconds'];
                 } else {
-                    $bike['oldCode'] = str_pad($row['parameter'], 4, '0', STR_PAD_LEFT);
+                    $bike['oldCode'] = str_pad((string) $row['parameter'], 4, '0', STR_PAD_LEFT);
                 }
             }
         }
+
         unset($bike);
 
         return $bikes;

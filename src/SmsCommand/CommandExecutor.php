@@ -15,11 +15,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class CommandExecutor
 {
     public function __construct(
-        private CommandDetector $commandDetector,
-        private ServiceLocator $commandLocator,
-        private EventDispatcherInterface $eventDispatcher,
-        private TranslatorInterface $translator,
-        private LoggerInterface $logger,
+        private readonly CommandDetector $commandDetector,
+        private readonly ServiceLocator $commandLocator,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly TranslatorInterface $translator,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -58,6 +58,7 @@ class CommandExecutor
                     $arguments[] = $user;
                     continue;
                 }
+
                 $arguments[] = $commandInfo['arguments'][$param->getName()] ?? null;
             }
 

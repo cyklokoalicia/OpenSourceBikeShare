@@ -7,9 +7,9 @@ namespace BikeShare\Event;
 class BikeRentEvent
 {
     public function __construct(
-        private int $bikeNumber,
-        private int $userId,
-        private bool $isForce,
+        private readonly int $bikeNumber,
+        private readonly int $userId,
+        private readonly bool $isForce,
     ) {
     }
 

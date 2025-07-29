@@ -16,8 +16,8 @@ class UnTagCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private StandRepository $standRepository,
-        private NoteRepository $noteRepository
+        private readonly StandRepository $standRepository,
+        private readonly NoteRepository $noteRepository
     ) {
         parent::__construct($translator);
     }
@@ -63,18 +63,16 @@ class UnTagCommand extends AbstractCommand implements SmsCommandInterface
                     )
                 );
             }
+        } elseif (is_null($pattern)) {
+            $message = $this->translator->trans(
+                'All {count} notes for bikes on stand {standName} were deleted.',
+                ['standName' => $standName, 'count' => $count]
+            );
         } else {
-            if (is_null($pattern)) {
-                $message = $this->translator->trans(
-                    'All {count} notes for bikes on stand {standName} were deleted.',
-                    ['standName' => $standName, 'count' => $count]
-                );
-            } else {
-                $message = $this->translator->trans(
-                    '{count} notes matching pattern "{pattern}" for bikes on stand {standName} were deleted.',
-                    ['pattern' => $pattern, 'standName' => $standName, 'count' => $count]
-                );
-            }
+            $message = $this->translator->trans(
+                '{count} notes matching pattern "{pattern}" for bikes on stand {standName} were deleted.',
+                ['pattern' => $pattern, 'standName' => $standName, 'count' => $count]
+            );
         }
 
         return $message;

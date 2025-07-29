@@ -8,7 +8,7 @@ use BikeShare\Db\DbInterface;
 
 class StandRepository
 {
-    public function __construct(private DbInterface $db)
+    public function __construct(private readonly DbInterface $db)
     {
     }
 
@@ -50,7 +50,7 @@ class StandRepository
              FROM stands 
              LEFT JOIN bikes ON bikes.currentStand=stands.standId
              WHERE stands.serviceTag = 0 ' .
-            (!is_null($city) ? ' AND city = :city ' : '') .
+            (is_null($city) ? '' : ' AND city = :city ') .
             'GROUP BY standName 
                  ORDER BY standName',
             [

@@ -16,8 +16,8 @@ class ListCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private StandRepository $standRepository,
-        private bool $forceStack = false
+        private readonly StandRepository $standRepository,
+        private readonly bool $forceStack = false
     ) {
         parent::__construct($translator);
     }
@@ -62,6 +62,7 @@ class ListCommand extends AbstractCommand implements SmsCommandInterface
             if ($this->forceStack && $bike['bikeNum'] == $stackTopBike) {
                 continue;
             }
+
             $listBikes[] = $bike['bikeNum'];
         }
 

@@ -14,7 +14,7 @@ class TokenProvider implements TokenProviderInterface
 {
     private $tokens = [];
 
-    public function __construct(private DbInterface $db)
+    public function __construct(private readonly DbInterface $db)
     {
     }
 

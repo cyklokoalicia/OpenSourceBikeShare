@@ -13,12 +13,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class RegistrationEventListener
 {
     public function __construct(
-        private string $appName,
-        private string $systemRules,
-        private RegistrationRepository $registrationRepository,
-        private MailSenderInterface $mailSender,
-        private TranslatorInterface $translator,
-        private UrlGeneratorInterface $urlGenerator,
+        private readonly string $appName,
+        private readonly string $systemRules,
+        private readonly RegistrationRepository $registrationRepository,
+        private readonly MailSenderInterface $mailSender,
+        private readonly TranslatorInterface $translator,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 

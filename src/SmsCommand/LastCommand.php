@@ -16,7 +16,7 @@ class LastCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private BikeRepository $bikeRepository
+        private readonly BikeRepository $bikeRepository
     ) {
         parent::__construct($translator);
     }
@@ -38,10 +38,12 @@ class LastCommand extends AbstractCommand implements SmsCommandInterface
             if (!in_array($row['action'], ['RETURN','RENT','REVERT'])) {
                 continue;
             }
+
             if (!is_null($standName = $row["standName"])) {
                 if ($row["action"] == "REVERT") {
                     $historyInfo[] = "*";
                 }
+
                 $historyInfo[] = $standName;
             } else {
                 $historyInfo[] = $row["userName"] . "(" . $row["parameter"] . ")";

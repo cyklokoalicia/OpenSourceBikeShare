@@ -9,7 +9,7 @@ use BikeShare\Db\DbInterface;
 #@TODO: Refactor the status field to use an enum for better type safety and clarity.
 class CouponRepository
 {
-    public function __construct(private DbInterface $db)
+    public function __construct(private readonly DbInterface $db)
     {
     }
 

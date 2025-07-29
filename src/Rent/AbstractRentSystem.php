@@ -70,7 +70,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 }
             }
 
-            if ($this->forceStack or $this->watchesConfig['stack']) {
+            if ($this->forceStack || $this->watchesConfig['stack']) {
                 $result = $this->db->query("SELECT currentStand FROM bikes WHERE bikeNum='$bikeId'");
                 $row = $result->fetchAssoc();
                 $standid = $row['currentStand'];
@@ -84,14 +84,15 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     return $this->response(_('Renting from service stands is not allowed: The bike probably waits for a repair.'), self::ERROR);
                 }
 
-                if ($this->watchesConfig['stack'] and $stacktopbike != $bikeId) {
+                if ($this->watchesConfig['stack'] && $stacktopbike != $bikeId) {
                     $result = $this->db->query("SELECT standName FROM stands WHERE standId='$standid'");
                     $row = $result->fetchAssoc();
                     $stand = $row['standName'];
                     $userName = $this->user->findUserName($userId);
                     $this->notifyAdmins(_('Bike') . ' ' . $bikeId . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', false);
                 }
-                if ($this->forceStack and $stacktopbike != $bikeId) {
+
+                if ($this->forceStack && $stacktopbike != $bikeId) {
                     return $this->response(_('Bike') . ' ' . $bikeId . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', self::ERROR);
                 }
             }
@@ -106,6 +107,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         while ($row = $result->fetchAssoc()) {
             $note .= $row['note'] . '; ';
         }
+
         $note = substr($note, 0, strlen($note) - 2); // remove the last two chars - comma and space
 
         $newCode = sprintf('%04d', rand(100, 9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
@@ -114,6 +116,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             if ($currentUser == $userId) {
                 return $this->response(_('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '.', self::ERROR);
             }
+
             if ($currentUser != 0) {
                 return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('is already rented') . '.', self::ERROR);
             }
@@ -151,6 +154,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         if (!$result->rowCount()) {
             return $this->response(_('Stand name') . " '" . $stand . "' " . _('does not exist. Stands are marked by CAPITALLETTERS.'), self::ERROR);
         }
+
         $row = $result->fetchAssoc();
         $standId = $row["standId"];
 
@@ -168,6 +172,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         } else {
             $result = $this->db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
         }
+
         $row = $result->fetchAssoc();
         $currentCode = sprintf('%04d', $row['currentCode']);
 
@@ -224,11 +229,12 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $row = $result->fetchAssoc();
             $previousOwnerId = $row['currentUser'];
         }
+
         $result = $this->db->query(
             "SELECT parameter,standName 
                    FROM stands
                    LEFT JOIN history ON stands.standId=parameter
-                   WHERE bikeNum=$bikeId 
+                   WHERE bikeNum={$bikeId} 
                      AND action IN ('RETURN','FORCERETURN') 
                    ORDER BY time DESC
                    LIMIT 1"
@@ -238,10 +244,11 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $standId = $row['parameter'];
             $stand = $row['standName'];
         }
+
         $result = $this->db->query(
             "SELECT parameter 
                    FROM history 
-                   WHERE bikeNum=$bikeId 
+                   WHERE bikeNum={$bikeId} 
                      AND action IN ('RENT','FORCERENT') 
                    ORDER BY time DESC
                    LIMIT 1"
@@ -250,6 +257,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $row = $result->fetchAssoc();
             $code = str_pad($row['parameter'], 4, '0', STR_PAD_LEFT);
         }
+
         if ($standId && $code) {
             $this->db->query("UPDATE bikes SET currentUser=NULL,currentStand=$standId,currentCode=$code WHERE bikeNum=$bikeId");
             $this->db->query("INSERT INTO history SET userId=$userId,bikeNum=$bikeId,action='REVERT',parameter='$standId|$code'");
@@ -304,8 +312,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
     private function changecreditendrental($bike, $userid)
     {
         if ($this->creditSystem->isEnabled() == false) {
-            return;
+            return null;
         }
+
         // if credit system disabled, exit
 
         $userCredit = $this->creditSystem->getUserCredit($userid);
@@ -332,19 +341,21 @@ abstract class AbstractRentSystem implements RentSystemInterface
             //end
 
             if ($timediff > $this->watchesConfig['freetime'] * 60) {
-                $creditchange = $creditchange + $this->creditSystem->getRentalFee();
+                $creditchange += $this->creditSystem->getRentalFee();
                 $changelog .= 'overfree-' . $this->creditSystem->getRentalFee() . ';';
             }
+
             if ($this->watchesConfig['freetime'] == 0) {
                 $this->watchesConfig['freetime'] = 1;
             }
+
             // for further calculations
             if ($this->creditSystem->getPriceCycle() && $timediff > $this->watchesConfig['freetime'] * 60 * 2) {
                 // after first paid period, i.e. freetime*2; if pricecycle enabled
                 $temptimediff = $timediff - ($this->watchesConfig['freetime'] * 60 * 2);
                 if ($this->creditSystem->getPriceCycle() == 1) { // flat price per cycle
                     $cycles = ceil($temptimediff / ($this->watchesConfig['flatpricecycle'] * 60));
-                    $creditchange = $creditchange + ($this->creditSystem->getRentalFee() * $cycles);
+                    $creditchange += $this->creditSystem->getRentalFee() * $cycles;
                     $changelog .= 'flat-' . $this->creditSystem->getRentalFee() * $cycles . ';';
                 } elseif ($this->creditSystem->getPriceCycle() == 2) { // double price per cycle
                     $cycles = ceil($temptimediff / ($this->watchesConfig['doublepricecycle'] * 60));
@@ -354,26 +365,29 @@ abstract class AbstractRentSystem implements RentSystemInterface
                         if ($multiplier > $this->watchesConfig['doublepricecyclecap']) {
                             $multiplier = $this->watchesConfig['doublepricecyclecap'];
                         }
+
                         // exception for rent=1, otherwise square won't work:
                         if ($tempcreditrent == 1) {
                             $tempcreditrent = 2;
                         }
 
-                        $creditchange = $creditchange + pow($tempcreditrent, $multiplier);
+                        $creditchange += pow($tempcreditrent, $multiplier);
                         $changelog .= 'double-' . pow($tempcreditrent, $multiplier) . ';';
                     }
                 }
             }
+
             if ($timediff > $this->watchesConfig['longrental'] * 3600) {
-                $creditchange = $creditchange + $this->creditSystem->getLongRentalFee();
+                $creditchange += $this->creditSystem->getLongRentalFee();
                 $changelog .= 'longrent-' . $this->creditSystem->getLongRentalFee() . ';';
             }
-            $userCredit = $userCredit - $creditchange;
+            $userCredit -= $creditchange;
             $this->db->query("UPDATE credit SET credit=$userCredit WHERE userId=$userid");
             $this->db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDITCHANGE',parameter='" . $creditchange . '|' . $changelog . "'");
             $this->db->query("INSERT INTO history SET userId=$userid,bikeNum=$bike,action='CREDIT',parameter=$userCredit");
 
             return $creditchange;
         }
+        return null;
     }
 }

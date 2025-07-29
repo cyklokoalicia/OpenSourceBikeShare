@@ -9,8 +9,8 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 class MailSenderFactory
 {
     public function __construct(
-        private string $smtpHost,
-        private ServiceLocator $locator,
+        private readonly string $smtpHost,
+        private readonly ServiceLocator $locator,
     ) {
     }
 

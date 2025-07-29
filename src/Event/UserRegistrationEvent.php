@@ -8,7 +8,7 @@ use BikeShare\App\Entity\User;
 
 class UserRegistrationEvent
 {
-    public function __construct(private User $user)
+    public function __construct(private readonly User $user)
     {
     }
 

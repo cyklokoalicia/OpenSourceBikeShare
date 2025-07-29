@@ -16,8 +16,8 @@ class WhereCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private BikeRepository $bikeRepository,
-        private NoteRepository $noteRepository,
+        private readonly BikeRepository $bikeRepository,
+        private readonly NoteRepository $noteRepository,
     ) {
         parent::__construct($translator);
     }

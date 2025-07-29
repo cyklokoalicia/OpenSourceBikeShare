@@ -15,7 +15,7 @@ class InfoCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private StandRepository $standRepository
+        private readonly StandRepository $standRepository
     ) {
         parent::__construct($translator);
     }
@@ -48,6 +48,7 @@ class InfoCommand extends AbstractCommand implements SmsCommandInterface
         if ($standLong && $standLat) {
             $message .= ", GPS: " . $standLat . "," . $standLong;
         }
+
         if ($standPhoto) {
             $message .= ", " . $standPhoto;
         }

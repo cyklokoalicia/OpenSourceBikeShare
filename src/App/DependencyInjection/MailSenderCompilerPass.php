@@ -20,7 +20,7 @@ class MailSenderCompilerPass implements CompilerPassInterface
         $mailSenderServiceIds = $container->findTaggedServiceIds('mailSender');
 
         $mailSenders = [];
-        foreach ($mailSenderServiceIds as $id => $tags) {
+        foreach (array_keys($mailSenderServiceIds) as $id) {
             $mailSenders[$id] = new Reference($id);
         }
 

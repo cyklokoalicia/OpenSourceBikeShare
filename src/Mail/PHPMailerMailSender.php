@@ -12,12 +12,12 @@ class PHPMailerMailSender implements MailSenderInterface
     private array $sendLog = [];
 
     public function __construct(
-        private string $fromEmail,
-        private string $fromName,
-        private array $emailConfig,
-        private PHPMailer $mailer,
-        private int $debugLevel = 0,
-        private ?LoggerInterface $logger = null,
+        private readonly string $fromEmail,
+        private readonly string $fromName,
+        private readonly array $emailConfig,
+        private readonly PHPMailer $mailer,
+        private readonly int $debugLevel = 0,
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -28,8 +28,9 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->isSMTP(); // Set mailer to use SMTP
         $this->mailer->SMTPDebug  = $this->debugLevel;
         if ($this->debugLevel > 0 && $this->logger) {
-            $this->mailer->Debugoutput = [$this, "debugOutput"];
+            $this->mailer->Debugoutput = $this->debugOutput(...);
         }
+
         $this->mailer->Host = $this->emailConfig["smtp_host"]; // Specify main and backup SMTP servers
         $this->mailer->Port = $this->emailConfig["smtp_port"]; // TCP port to connect to
         $this->mailer->Username = $this->emailConfig["smtp_user"]; // SMTP username
@@ -42,9 +43,10 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->addAddress($recipient);     // Add a recipient
         $this->mailer->Subject = $subject;
         $this->mailer->Body = $message;
+
         $this->sendLog = [];
         $this->mailer->send();
-        if ($this->debugLevel > 0 && $this->logger && count($this->sendLog) > 0) {
+        if ($this->debugLevel > 0 && $this->logger && $this->sendLog !== []) {
             $this->saveSendLog();
         }
     }

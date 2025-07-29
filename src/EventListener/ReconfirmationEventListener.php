@@ -14,11 +14,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class ReconfirmationEventListener
 {
     public function __construct(
-        private RegistrationRepository $registrationRepository,
-        private MailSenderInterface $mailSender,
-        private TranslatorInterface $translator,
-        private UrlGeneratorInterface $urlGenerator,
-        private LoggerInterface $logger,
+        private readonly RegistrationRepository $registrationRepository,
+        private readonly MailSenderInterface $mailSender,
+        private readonly TranslatorInterface $translator,
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly LoggerInterface $logger,
     ) {
     }
 

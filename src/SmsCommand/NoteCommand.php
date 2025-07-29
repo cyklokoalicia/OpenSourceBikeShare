@@ -17,9 +17,9 @@ class NoteCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private BikeRepository $bikeRepository,
-        private StandRepository $standRepository,
-        private NoteRepository $noteRepository
+        private readonly BikeRepository $bikeRepository,
+        private readonly StandRepository $standRepository,
+        private readonly NoteRepository $noteRepository
     ) {
         parent::__construct($translator);
     }

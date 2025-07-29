@@ -15,7 +15,7 @@ class ForceReturnCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private RentSystemInterface $rentSystem
+        private readonly RentSystemInterface $rentSystem
     ) {
         parent::__construct($translator);
     }

@@ -12,11 +12,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class AdminNotifier
 {
     public function __construct(
-        private string $appName,
-        private DbInterface $db,
-        private MailSenderInterface $mailer,
-        private SmsSenderInterface $smsSender,
-        private TranslatorInterface $translator,
+        private readonly string $appName,
+        private readonly DbInterface $db,
+        private readonly MailSenderInterface $mailer,
+        private readonly SmsSenderInterface $smsSender,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -29,9 +29,11 @@ class AdminNotifier
             if (in_array($admin['userId'], $excludedAdminIds)) {
                 continue;
             }
+
             if ($bySms) {
                 $this->smsSender->send($admin['number'], $message);
             }
+
             $subject = $this->translator->trans('{appName} notification', ['appName' => $this->appName]);
             $this->mailer->sendMail($admin['mail'], $subject, $message);
         }

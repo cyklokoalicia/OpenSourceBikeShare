@@ -55,7 +55,7 @@ class PhoneConfirmController extends AbstractController
                     $user->getUserId(),
                     0,
                     'PHONE_CONFIRM_REQUEST',
-                    "$number;$sanitizedSmsCode;$checkCode"
+                    sprintf('%s;%s;%s', $number, $sanitizedSmsCode, $checkCode)
                 );
 
                 // Store for verification

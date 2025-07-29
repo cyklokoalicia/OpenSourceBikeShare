@@ -15,11 +15,11 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class UserRegistration
 {
     public function __construct(
-        private UserProvider $userProvider,
-        private CreditSystemInterface $creditSystem,
-        private UserRepository $userRepository,
-        private UserPasswordHasherInterface $passwordHasher,
-        private EventDispatcherInterface $eventDispatcher,
+        private readonly UserProvider $userProvider,
+        private readonly CreditSystemInterface $creditSystem,
+        private readonly UserRepository $userRepository,
+        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 

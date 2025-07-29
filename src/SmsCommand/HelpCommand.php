@@ -14,7 +14,7 @@ class HelpCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private CreditSystemInterface $creditSystem
+        private readonly CreditSystemInterface $creditSystem
     ) {
         parent::__construct($translator);
     }
@@ -35,6 +35,7 @@ class HelpCommand extends AbstractCommand implements SmsCommandInterface
         if (!$this->creditSystem->isEnabled()) {
             unset($availableCommands['CREDIT']);
         }
+
         $message = 'Commands:' . PHP_EOL;
         if ($user->getPrivileges() > 0) {
             $availableCommands = array_merge(
@@ -53,6 +54,7 @@ class HelpCommand extends AbstractCommand implements SmsCommandInterface
                 ]
             );
         }
+
         $message .= implode(PHP_EOL, array_keys($availableCommands));
 
         return $message;

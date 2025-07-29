@@ -14,11 +14,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class SmsControllerEventListener
 {
     public function __construct(
-        private DbInterface $db,
-        private SmsConnectorInterface $smsConnector,
-        private AdminNotifier $adminNotifier,
-        private TranslatorInterface $translator,
-        private LoggerInterface $logger,
+        private readonly DbInterface $db,
+        private readonly SmsConnectorInterface $smsConnector,
+        private readonly AdminNotifier $adminNotifier,
+        private readonly TranslatorInterface $translator,
+        private readonly LoggerInterface $logger,
     ) {
     }
 

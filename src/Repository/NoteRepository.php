@@ -8,7 +8,7 @@ use BikeShare\Db\DbInterface;
 
 class NoteRepository
 {
-    public function __construct(private DbInterface $db)
+    public function __construct(private readonly DbInterface $db)
     {
     }
 

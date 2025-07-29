@@ -18,9 +18,9 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private BikeRepository $bikeRepository,
-        private StandRepository $standRepository,
-        private NoteRepository $noteRepository
+        private readonly BikeRepository $bikeRepository,
+        private readonly StandRepository $standRepository,
+        private readonly NoteRepository $noteRepository
     ) {
         parent::__construct($translator);
         $this->translator = $translator;
@@ -79,18 +79,16 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
                     )
                 );
             }
+        } elseif (is_null($pattern)) {
+            $message = $this->translator->trans(
+                'All {count} notes for bike {bikeNumber} were deleted.',
+                ['bikeNumber' => $bikeNumber, 'count' => $count]
+            );
         } else {
-            if (is_null($pattern)) {
-                $message = $this->translator->trans(
-                    'All {count} notes for bike {bikeNumber} were deleted.',
-                    ['bikeNumber' => $bikeNumber, 'count' => $count]
-                );
-            } else {
-                $message = $this->translator->trans(
-                    '{count} notes matching pattern "{pattern}" for bike {bikeNumber} were deleted.',
-                    ['bikeNumber' => $bikeNumber, 'pattern' => $pattern, 'count' => $count]
-                );
-            }
+            $message = $this->translator->trans(
+                '{count} notes matching pattern "{pattern}" for bike {bikeNumber} were deleted.',
+                ['bikeNumber' => $bikeNumber, 'pattern' => $pattern, 'count' => $count]
+            );
         }
 
         return $message;
@@ -134,18 +132,16 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
                     )
                 );
             }
+        } elseif (is_null($pattern)) {
+            $message = $this->translator->trans(
+                'All {count} notes for stand {standName} were deleted.',
+                ['standName' => $standName, 'count' => $count]
+            );
         } else {
-            if (is_null($pattern)) {
-                $message = $this->translator->trans(
-                    'All {count} notes for stand {standName} were deleted.',
-                    ['standName' => $standName, 'count' => $count]
-                );
-            } else {
-                $message = $this->translator->trans(
-                    '{count} notes matching pattern "{pattern}" for stand {standName} were deleted.',
-                    ['standName' => $standName, 'pattern' => $pattern, 'count' => $count]
-                );
-            }
+            $message = $this->translator->trans(
+                '{count} notes matching pattern "{pattern}" for stand {standName} were deleted.',
+                ['standName' => $standName, 'pattern' => $pattern, 'count' => $count]
+            );
         }
 
         return $message;

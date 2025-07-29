@@ -12,9 +12,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class BikeRevertEventListener
 {
     public function __construct(
-        private User $user,
-        private SmsSenderInterface $smsSender,
-        private TranslatorInterface $translator,
+        private readonly User $user,
+        private readonly SmsSenderInterface $smsSender,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 

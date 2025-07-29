@@ -31,9 +31,9 @@ class PhoneConfirmedEventListener
     ];
 
     public function __construct(
-        private bool $isSmsSystemEnabled,
-        private Security $security,
-        private UrlGeneratorInterface $urlGenerator,
+        private readonly bool $isSmsSystemEnabled,
+        private readonly Security $security,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 

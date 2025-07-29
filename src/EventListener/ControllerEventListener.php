@@ -39,8 +39,8 @@ class ControllerEventListener
     ];
 
     public function __construct(
-        private DbInterface $db,
-        private Security $security,
+        private readonly DbInterface $db,
+        private readonly Security $security,
     ) {
     }
 
@@ -49,6 +49,7 @@ class ControllerEventListener
         if (!$event->isMainRequest()) {
             return;
         }
+
         if (!in_array($event->getRequest()->attributes->get('_route'), self::LOGGED_ROUTES)) {
             return;
         }

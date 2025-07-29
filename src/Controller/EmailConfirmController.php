@@ -54,6 +54,7 @@ class EmailConfirmController extends AbstractController
                 return $this->redirectToRoute('home');
             }
         }
+
         $this->addFlash(
             'error',
             $translator->trans('Registration key not found!')

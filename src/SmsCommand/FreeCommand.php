@@ -15,8 +15,8 @@ class FreeCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private BikeRepository $bikeRepository,
-        private StandRepository $standRepository
+        private readonly BikeRepository $bikeRepository,
+        private readonly StandRepository $standRepository
     ) {
         parent::__construct($translator);
     }

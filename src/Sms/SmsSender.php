@@ -8,8 +8,8 @@ use BikeShare\SmsConnector\SmsConnectorInterface;
 class SmsSender implements SmsSenderInterface
 {
     public function __construct(
-        private SmsConnectorInterface $smsConnector,
-        private DbInterface $db,
+        private readonly SmsConnectorInterface $smsConnector,
+        private readonly DbInterface $db,
     ) {
     }
 

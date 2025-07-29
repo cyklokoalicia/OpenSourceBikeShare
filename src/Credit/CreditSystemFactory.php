@@ -9,8 +9,8 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 class CreditSystemFactory
 {
     public function __construct(
-        private ServiceLocator $locator,
-        private bool $isEnabled,
+        private readonly ServiceLocator $locator,
+        private readonly bool $isEnabled,
     ) {
     }
 

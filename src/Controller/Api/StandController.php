@@ -14,9 +14,9 @@ use Symfony\Component\Routing\Annotation\Route;
 class StandController extends AbstractController
 {
     public function __construct(
-        private StandRepository $standRepository,
-        private NoteRepository $noteRepository,
-        private bool $forceStack,
+        private readonly StandRepository $standRepository,
+        private readonly NoteRepository $noteRepository,
+        private readonly bool $forceStack,
     ) {
     }
 

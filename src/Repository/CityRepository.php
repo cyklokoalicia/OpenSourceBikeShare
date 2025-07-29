@@ -6,7 +6,7 @@ namespace BikeShare\Repository;
 
 class CityRepository
 {
-    public function __construct(private array $cities)
+    public function __construct(private readonly array $cities)
     {
     }
 

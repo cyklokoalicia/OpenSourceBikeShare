@@ -23,6 +23,7 @@ class ReportController extends AbstractController
 
         return $this->json($stats);
     }
+
     /**
      * @Route("/api/report/user/{year}", name="api_report_user", requirements: {'year' => '\d+'}, methods={"GET"})
      */

@@ -20,7 +20,7 @@ class CreditSystemCompilerPass implements CompilerPassInterface
         $creditSystemServiceIds = $container->findTaggedServiceIds('creditSystem');
 
         $creditSystems = [];
-        foreach ($creditSystemServiceIds as $id => $tags) {
+        foreach (array_keys($creditSystemServiceIds) as $id) {
             $creditSystems[$id] = new Reference($id);
         }
 

@@ -70,6 +70,7 @@ class QrCodeGeneratorController extends AbstractController
             if ($stand["serviceTag"] != 0) {
                 continue;
             }
+
             $this->addPageQrCode(
                 $pdf,
                 $stand["standName"],

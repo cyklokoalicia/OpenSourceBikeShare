@@ -15,9 +15,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class UserConfirmedEmailChecker implements UserCheckerInterface
 {
     public function __construct(
-        private RegistrationRepository $registrationRepository,
-        private TranslatorInterface $translator,
-        private EventDispatcherInterface $eventDispatcher,
+        private readonly RegistrationRepository $registrationRepository,
+        private readonly TranslatorInterface $translator,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 

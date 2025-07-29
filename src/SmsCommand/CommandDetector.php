@@ -40,6 +40,7 @@ class CommandDetector
                 if (isset($namedMatches['bikeNumber'])) {
                     $namedMatches['bikeNumber'] = (int)$namedMatches['bikeNumber'];
                 }
+
                 if (isset($namedMatches['standName'])) {
                     $namedMatches['standName'] = strtoupper($namedMatches['standName']);
                 }

@@ -15,8 +15,8 @@ use Symfony\Component\Security\Http\Authorization\AccessDeniedHandlerInterface;
 class ApiAccessDeniedHandler implements AccessDeniedHandlerInterface
 {
     public function __construct(
-        private Security $security,
-        private LoggerInterface $logger
+        private readonly Security $security,
+        private readonly LoggerInterface $logger
     ) {
     }
 

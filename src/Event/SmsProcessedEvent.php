@@ -9,10 +9,10 @@ use BikeShare\App\Entity\User;
 class SmsProcessedEvent
 {
     public function __construct(
-        private User $user,
-        private string $commandName,
-        private array $commandArguments,
-        private string $resultMessage,
+        private readonly User $user,
+        private readonly string $commandName,
+        private readonly array $commandArguments,
+        private readonly string $resultMessage,
     ) {
     }
 

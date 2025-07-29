@@ -20,7 +20,7 @@ class SmsConnectorCompilerPass implements CompilerPassInterface
         $smsConnectorServiceIds = $container->findTaggedServiceIds('smsConnector');
 
         $smsConnectors = [];
-        foreach ($smsConnectorServiceIds as $id => $tags) {
+        foreach (array_keys($smsConnectorServiceIds) as $id) {
             $smsConnectors[$id::getType()] = new Reference($id);
         }
 

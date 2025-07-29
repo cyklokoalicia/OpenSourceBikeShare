@@ -18,10 +18,10 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private string $countryCode,
-        private UserRegistration $userRegistration,
-        private UserRepository $userRepository,
-        private PhonePurifier $phonePurifier
+        private readonly string $countryCode,
+        private readonly UserRegistration $userRegistration,
+        private readonly UserRepository $userRepository,
+        private readonly PhonePurifier $phonePurifier
     ) {
         parent::__construct($translator);
     }
@@ -44,6 +44,7 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
                 $this->translator->trans('Email address is incorrect.')
             );
         }
+
         $fullName = strip_tags($fullName);
 
         $registeredUser = $this->userRepository->findItemByPhoneNumber($phone);
@@ -52,6 +53,7 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
                 $this->translator->trans('User with this phone number already registered.')
             );
         }
+
         $registeredUser = $this->userRepository->findItemByEmail($email);
         if (!is_null($registeredUser)) {
             throw new ValidationException(
