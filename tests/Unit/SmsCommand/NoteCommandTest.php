@@ -233,7 +233,7 @@ class NoteCommandTest extends TestCase
                     $this->assertSame(['example' => 'NOTE 42 Flat tire on front wheel'], $parameters[1]);
                     return 'with bike number/stand name and problem description: NOTE 42 Flat tire on front wheel';
                 }
-        });
+            });
 
         $this->assertEquals(
             'with bike number/stand name and problem description: NOTE 42 Flat tire on front wheel',
