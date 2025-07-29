@@ -6,7 +6,7 @@ namespace BikeShare\EventListener;
 
 use BikeShare\Db\DbInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class ControllerEventListener
 {

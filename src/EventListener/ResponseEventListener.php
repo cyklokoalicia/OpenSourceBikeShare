@@ -7,7 +7,7 @@ namespace BikeShare\EventListener;
 use BikeShare\Db\DbInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class ResponseEventListener
 {

@@ -18,8 +18,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AsCommand(name: 'app:long_rental_check', description: 'Check user which have long rental')]
 class LongRentalCheckCommand extends Command
 {
-    protected static $defaultName = 'app:long_rental_check';
-
     public function __construct(
         private bool $notifyUser,
         private int $longRentalHours,

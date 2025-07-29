@@ -100,7 +100,7 @@ class PhoneConfirmController extends AbstractController
         return $this->render(
             'phone.confirm.html.twig',
             [
-                'form' => $form->createView(),
+                'form' => $form,
                 'verificationStep' => $verificationStep
             ]
         );

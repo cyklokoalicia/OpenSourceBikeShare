@@ -10,10 +10,14 @@ return RectorConfig::configure()
         __DIR__ . '/tests',
     ])
     // uncomment to reach your current PHP version
-    ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_74)
+    ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_80)
+    ->withoutParallel()
     ->withSets([
-        \Rector\Set\ValueObject\SetList::PHP_74,
-        \Rector\Symfony\Set\SymfonySetList::SYMFONY_54,
-        \Rector\Symfony\Set\SymfonySetList::SYMFONY_CODE_QUALITY,
-        \Rector\Symfony\Set\SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
-    ]);
+        \Rector\Set\ValueObject\SetList::PHP_80,
+        \Rector\Set\ValueObject\SetList::PHP_81,
+    ])->withComposerBased(
+        twig: true,
+        symfony: true,
+        phpunit: true,
+    )
+    ;
