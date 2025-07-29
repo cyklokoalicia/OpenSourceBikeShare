@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:8.1-apache
 
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 
@@ -10,7 +10,7 @@ RUN a2enmod rewrite
 
 RUN apt-get update && apt-get install -y zlib1g-dev libicu-dev g++ wget git zip
 
-RUN pecl install xdebug-3.1.6
+RUN pecl install xdebug
 RUN docker-php-ext-configure intl
 RUN docker-php-ext-install intl
 
