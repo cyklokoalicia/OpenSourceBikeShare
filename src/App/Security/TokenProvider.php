@@ -46,7 +46,7 @@ class TokenProvider implements TokenProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function updateToken(string $series, string $tokenValue, \DateTime $lastUsed)
+    public function updateToken(string $series, string $tokenValue, \DateTimeInterface $lastUsed)
     {
         $currentToken = $this->loadTokenBySeries($series);
 
