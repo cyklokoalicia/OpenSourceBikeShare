@@ -198,15 +198,20 @@ class NoteCommandTest extends TestCase
     public function testInvokeWithNoBikeOrStandThrows(): void
     {
         $user = $this->createMock(User::class);
+        $matcher = $this->exactly(2);
 
         $this->translatorMock
-            ->expects($this->exactly(2))
-            ->method('trans')
-            ->withConsecutive(
-                ['Flat tire on front wheel'],
-                ['with bike number/stand name and problem description: {example}']
-            )
-            ->willReturnOnConsecutiveCalls('Flat tire on front wheel', 'Help message');
+            ->expects($matcher)
+            ->method('trans')->willReturnCallback(function (...$parameters) use ($matcher) {
+            if ($matcher->getInvocationCount() === 1) {
+                $this->assertSame('Flat tire on front wheel', $parameters[0]);
+                return 'Flat tire on front wheel';
+            }
+            if ($matcher->getInvocationCount() === 2) {
+                $this->assertSame('with bike number/stand name and problem description: {example}', $parameters[0]);
+                return 'Help message';
+            }
+        });
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Help message');
 
@@ -215,20 +220,20 @@ class NoteCommandTest extends TestCase
 
     public function testGetHelpMessage(): void
     {
+        $matcher = $this->exactly(2);
         $this->translatorMock
-            ->expects($this->exactly(2))
-            ->method('trans')
-            ->withConsecutive(
-                ['Flat tire on front wheel'],
-                [
-                    'with bike number/stand name and problem description: {example}',
-                    ['example' => 'NOTE 42 Flat tire on front wheel']
-                ]
-            )
-            ->willReturnOnConsecutiveCalls(
-                'Flat tire on front wheel',
-                'with bike number/stand name and problem description: NOTE 42 Flat tire on front wheel'
-            );
+            ->expects($matcher)
+            ->method('trans')->willReturnCallback(function (...$parameters) use ($matcher) {
+            if ($matcher->getInvocationCount() === 1) {
+                $this->assertSame('Flat tire on front wheel', $parameters[0]);
+                return 'Flat tire on front wheel';
+            }
+            if ($matcher->getInvocationCount() === 2) {
+                $this->assertSame('with bike number/stand name and problem description: {example}', $parameters[0]);
+                $this->assertSame(['example' => 'NOTE 42 Flat tire on front wheel'], $parameters[1]);
+                return 'with bike number/stand name and problem description: NOTE 42 Flat tire on front wheel';
+            }
+        });
 
         $this->assertEquals(
             'with bike number/stand name and problem description: NOTE 42 Flat tire on front wheel',

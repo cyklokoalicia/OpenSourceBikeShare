@@ -52,11 +52,15 @@ class FreeCommandTest extends TestCase
             ->expects($this->once())
             ->method('findFreeBikes')
             ->willReturn($bikeRepositoryCallResult);
+        $matcher = $this->exactly(count($translatorCallParams));
         $this->translatorMock
-            ->expects($this->exactly(count($translatorCallParams)))
+            ->expects($matcher)
             ->method('trans')
-            ->withConsecutive(...$translatorCallParams)
-            ->willReturnOnConsecutiveCalls(...$translatorCallResult);
+            ->willReturnCallback(function (...$parameters) use ($matcher, $translatorCallParams, $translatorCallResult) {
+                $this->assertEquals($translatorCallParams[$matcher->getInvocationCount() - 1], $parameters);
+
+                return $translatorCallResult[$matcher->getInvocationCount() - 1];
+            });
         $this->standRepositoryMock
             ->expects($this->exactly($standRepositoryCallsCount))
             ->method('findFreeStands')
@@ -75,7 +79,7 @@ class FreeCommandTest extends TestCase
         yield 'empty free bikes' => [
             'bikeRepositoryCallResult' => [],
             'translatorCallParams' => [
-                ['No free bikes.'],
+                ['No free bikes.', [], null, null],
             ],
             'translatorCallResult' => ['No free bikes.'],
             'standRepositoryCallsCount' => 0,
@@ -88,7 +92,7 @@ class FreeCommandTest extends TestCase
                 ['standName' => 'Park', 'bikeCount' => 1],
             ],
             'translatorCallParams' => [
-                ['Free bikes counts'],
+                ['Free bikes counts', [], null, null],
             ],
             'translatorCallResult' => ['Free bikes counts'],
             'standRepositoryCallsCount' => 1,
@@ -101,8 +105,8 @@ class FreeCommandTest extends TestCase
                 ['standName' => 'Park', 'bikeCount' => 1],
             ],
             'translatorCallParams' => [
-                ['Free bikes counts'],
-                ['Empty stands'],
+                ['Free bikes counts', [], null, null],
+                ['Empty stands', [], null, null],
             ],
             'translatorCallResult' => ['Free bikes counts', 'Empty stands'],
             'standRepositoryCallsCount' => 1,

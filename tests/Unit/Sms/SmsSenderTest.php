@@ -43,23 +43,33 @@ class SmsSenderTest extends TestCase
         $dbEscapeCallResult,
         $dbCallParams
     ) {
+        $matcher = $this->exactly(count($smsConnectorCallParams));
         $this->smsConnector
-            ->expects($this->exactly(count($smsConnectorCallParams)))
+            ->expects($matcher)
             ->method('send')
-            ->withConsecutive(...$smsConnectorCallParams);
+            ->willReturnCallback(function (...$parameters) use ($matcher, $smsConnectorCallParams) {
+                $this->assertSame($smsConnectorCallParams[$matcher->getInvocationCount() - 1], $parameters);
+            });
         $this->smsConnector
             ->expects($this->once())
             ->method('getMaxMessageLength')
             ->willReturn($smsConnectorMaxMessageLength);
+        $matcher = $this->exactly(count($dbEscapeCallParams));
         $this->db
-            ->expects($this->exactly(count($dbEscapeCallParams)))
+            ->expects($matcher)
             ->method('escape')
-            ->withConsecutive(...$dbEscapeCallParams)
-            ->willReturnOnConsecutiveCalls(...$dbEscapeCallResult);
+            ->willReturnCallback(function (...$parameters) use ($matcher, $dbEscapeCallParams, $dbEscapeCallResult) {
+                $this->assertSame($dbEscapeCallParams[$matcher->getInvocationCount() - 1], $parameters);
+
+                return $dbEscapeCallResult[$matcher->getInvocationCount() - 1];
+            });
+        $matcher = $this->exactly(count($dbCallParams));
         $this->db
-            ->expects($this->exactly(count($dbCallParams)))
+            ->expects($matcher)
             ->method('query')
-            ->withConsecutive(...$dbCallParams);
+            ->willReturnCallback(function (...$parameters) use ($matcher, $dbCallParams) {
+                $this->assertSame($dbCallParams[$matcher->getInvocationCount() - 1], $parameters);
+            });
 
         $this->smsSender->send($number, $message);
     }
