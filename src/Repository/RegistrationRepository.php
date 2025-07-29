@@ -8,12 +8,8 @@ use BikeShare\Db\DbInterface;
 
 class RegistrationRepository
 {
-    private DbInterface $db;
-
-    public function __construct(
-        DbInterface $db
-    ) {
-        $this->db = $db;
+    public function __construct(private readonly DbInterface $db)
+    {
     }
 
     public function addItem(int $userId, string $userKey): void

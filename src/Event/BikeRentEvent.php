@@ -6,15 +6,11 @@ namespace BikeShare\Event;
 
 class BikeRentEvent
 {
-    private int $bikeNumber;
-    private int $userId;
-    private bool $isForce;
-
-    public function __construct(int $bikeNumber, int $userId, bool $isForce)
-    {
-        $this->bikeNumber = $bikeNumber;
-        $this->userId = $userId;
-        $this->isForce = $isForce;
+    public function __construct(
+        private readonly int $bikeNumber,
+        private readonly int $userId,
+        private readonly bool $isForce,
+    ) {
     }
 
     public function getBikeNumber(): int

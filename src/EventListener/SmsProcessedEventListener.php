@@ -9,12 +9,8 @@ use BikeShare\Notifier\AdminNotifier;
 
 class SmsProcessedEventListener
 {
-    private AdminNotifier $adminNotifier;
-
-    public function __construct(
-        AdminNotifier $adminNotifier
-    ) {
-        $this->adminNotifier = $adminNotifier;
+    public function __construct(private readonly AdminNotifier $adminNotifier)
+    {
     }
 
     public function __invoke(SmsProcessedEvent $event)

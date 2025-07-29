@@ -14,24 +14,13 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class UserRegistration
 {
-    private UserProvider $userProvider;
-    private CreditSystemInterface $creditSystem;
-    private UserRepository $userRepository;
-    private UserPasswordHasherInterface $passwordHasher;
-    private EventDispatcherInterface $eventDispatcher;
-
     public function __construct(
-        UserProvider $userProvider,
-        CreditSystemInterface $creditSystem,
-        UserRepository $userRepository,
-        UserPasswordHasherInterface $passwordHasher,
-        EventDispatcherInterface $eventDispatcher
+        private readonly UserProvider $userProvider,
+        private readonly CreditSystemInterface $creditSystem,
+        private readonly UserRepository $userRepository,
+        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
-        $this->userProvider = $userProvider;
-        $this->creditSystem = $creditSystem;
-        $this->userRepository = $userRepository;
-        $this->passwordHasher = $passwordHasher;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function register(

@@ -7,7 +7,7 @@ namespace BikeShare\EventListener;
 use BikeShare\Db\DbInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class ResponseEventListener
 {
@@ -27,15 +27,10 @@ class ResponseEventListener
         'api_stand_remove_note',
     ];
 
-    private DbInterface $db;
-    private Security $security;
-
     public function __construct(
-        DbInterface $db,
-        Security $security
+        private readonly DbInterface $db,
+        private readonly Security $security,
     ) {
-        $this->db = $db;
-        $this->security = $security;
     }
 
     public function __invoke(ResponseEvent $event): void
@@ -43,6 +38,7 @@ class ResponseEventListener
         if (!$event->isMainRequest()) {
             return;
         }
+
         if (!in_array($event->getRequest()->attributes->get('_route'), self::LOGGED_ROUTES)) {
             return;
         }

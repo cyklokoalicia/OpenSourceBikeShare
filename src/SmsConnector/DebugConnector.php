@@ -10,19 +10,15 @@ use Symfony\Contracts\Service\ResetInterface;
 
 class DebugConnector extends AbstractConnector implements ResetInterface
 {
-    private RequestStack $requestStack;
-    private LoggerInterface $logger;
     private array $sentMessages = [];
 
     public function __construct(
-        RequestStack $requestStack,
-        LoggerInterface $logger,
+        private readonly RequestStack $requestStack,
+        private readonly LoggerInterface $logger,
         array $configuration,
-        $debugMode = false
+        $debugMode = false,
     ) {
         parent::__construct($configuration, $debugMode);
-        $this->requestStack = $requestStack;
-        $this->logger = $logger;
     }
 
     public function checkConfig(array $config): void
@@ -47,6 +43,7 @@ class DebugConnector extends AbstractConnector implements ResetInterface
         if (is_null($this->requestStack->getCurrentRequest())) {
             throw new \RuntimeException('Could not receive sms in cli');
         }
+
         $this->message = $this->requestStack->getCurrentRequest()->get('message', '');
         $this->number = $this->requestStack->getCurrentRequest()->get('number', '');
         $this->uuid = $this->requestStack->getCurrentRequest()->get('uuid', '');

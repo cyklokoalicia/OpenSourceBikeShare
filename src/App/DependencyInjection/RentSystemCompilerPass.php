@@ -18,7 +18,7 @@ class RentSystemCompilerPass implements CompilerPassInterface
         $rentSystemServiceIds = $container->findTaggedServiceIds('rentSystem');
 
         $rentSystems = [];
-        foreach ($rentSystemServiceIds as $id => $tags) {
+        foreach (array_keys($rentSystemServiceIds) as $id) {
             $rentSystems[$id::getType()] = new Reference($id);
         }
 

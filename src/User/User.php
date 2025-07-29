@@ -6,15 +6,8 @@ use BikeShare\Db\DbInterface;
 
 class User
 {
-    /**
-     * @var DbInterface
-     */
-    private $db;
-
-    public function __construct(
-        DbInterface $db
-    ) {
-        $this->db = $db;
+    public function __construct(private readonly DbInterface $db)
+    {
     }
 
     public function findUserIdByNumber($number)

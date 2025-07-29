@@ -9,33 +9,16 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    private int $userId;
-    private string $number;
-    private string $email;
-    private string $password;
-    private string $city;
-    private string $userName;
-    private int $privileges;
-    private bool $isNumberConfirmed;
-
     public function __construct(
-        int $userId,
-        string $number,
-        string $email,
-        string $password,
-        string $city,
-        string $userName,
-        int $privileges,
-        bool $isNumberConfirmed
+        private readonly int $userId,
+        private readonly string $number,
+        private readonly string $email,
+        private readonly string $password,
+        private readonly string $city,
+        private readonly string $userName,
+        private readonly int $privileges,
+        private readonly bool $isNumberConfirmed,
     ) {
-        $this->userId = $userId;
-        $this->number = $number;
-        $this->email = $email;
-        $this->password = $password;
-        $this->city = $city;
-        $this->userName = $userName;
-        $this->privileges = $privileges;
-        $this->isNumberConfirmed = $isNumberConfirmed;
     }
 
     public function getCity(): string
@@ -84,6 +67,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->privileges >= 1) {
             $roles[] = 'ROLE_ADMIN';
         }
+
         if ($this->privileges >= 7) {
             $roles[] = 'ROLE_SUPER_ADMIN';
         }
@@ -101,7 +85,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return null;
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
     }

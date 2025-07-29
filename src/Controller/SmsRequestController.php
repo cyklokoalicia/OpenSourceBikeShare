@@ -18,30 +18,15 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SmsRequestController extends AbstractController
 {
-    private SmsConnectorInterface $smsConnector;
-    private SmsSenderInterface $smsSender;
-    private UserProvider $userProvider;
-    private LoggerInterface $logger;
-    private AdminNotifier $adminNotifier;
-    private TranslatorInterface $translator;
-    private CommandExecutor $commandExecutor;
-
     public function __construct(
-        SmsConnectorInterface $smsConnector,
-        SmsSenderInterface $smsSender,
-        UserProvider $userProvider,
-        LoggerInterface $logger,
-        AdminNotifier $adminNotifier,
-        TranslatorInterface $translator,
-        CommandExecutor $commandExecutor
+        private readonly SmsConnectorInterface $smsConnector,
+        private readonly SmsSenderInterface $smsSender,
+        private readonly UserProvider $userProvider,
+        private readonly LoggerInterface $logger,
+        private readonly AdminNotifier $adminNotifier,
+        private readonly TranslatorInterface $translator,
+        private readonly CommandExecutor $commandExecutor,
     ) {
-        $this->smsConnector = $smsConnector;
-        $this->smsSender = $smsSender;
-        $this->userProvider = $userProvider;
-        $this->logger = $logger;
-        $this->adminNotifier = $adminNotifier;
-        $this->translator = $translator;
-        $this->commandExecutor = $commandExecutor;
     }
 
     /**
@@ -54,7 +39,7 @@ class SmsRequestController extends AbstractController
 
         try {
             $user = $this->userProvider->loadUserByIdentifier($this->smsConnector->getNumber());
-        } catch (UserNotFoundException $e) {
+        } catch (UserNotFoundException) {
             $this->logger->error(
                 "User not found",
                 ["number" => $this->smsConnector->getNumber(), 'sms' => $this->smsConnector]

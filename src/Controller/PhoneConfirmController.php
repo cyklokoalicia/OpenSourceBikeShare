@@ -55,7 +55,7 @@ class PhoneConfirmController extends AbstractController
                     $user->getUserId(),
                     0,
                     'PHONE_CONFIRM_REQUEST',
-                    "$number;$sanitizedSmsCode;$checkCode"
+                    sprintf('%s;%s;%s', $number, $sanitizedSmsCode, $checkCode)
                 );
 
                 // Store for verification
@@ -100,7 +100,7 @@ class PhoneConfirmController extends AbstractController
         return $this->render(
             'phone.confirm.html.twig',
             [
-                'form' => $form->createView(),
+                'form' => $form,
                 'verificationStep' => $verificationStep
             ]
         );

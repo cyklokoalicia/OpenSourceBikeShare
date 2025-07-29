@@ -16,21 +16,13 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
     protected const COMMAND_NAME = 'DELNOTE';
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
-    private BikeRepository $bikeRepository;
-    private StandRepository $standRepository;
-    private NoteRepository $noteRepository;
-
     public function __construct(
         TranslatorInterface $translator,
-        BikeRepository $bikeRepository,
-        StandRepository $standRepository,
-        NoteRepository $noteRepository
+        private readonly BikeRepository $bikeRepository,
+        private readonly StandRepository $standRepository,
+        private readonly NoteRepository $noteRepository
     ) {
         parent::__construct($translator);
-        $this->translator = $translator;
-        $this->bikeRepository = $bikeRepository;
-        $this->standRepository = $standRepository;
-        $this->noteRepository = $noteRepository;
     }
 
     public function __invoke(
@@ -86,18 +78,16 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
                     )
                 );
             }
+        } elseif (is_null($pattern)) {
+            $message = $this->translator->trans(
+                'All {count} notes for bike {bikeNumber} were deleted.',
+                ['bikeNumber' => $bikeNumber, 'count' => $count]
+            );
         } else {
-            if (is_null($pattern)) {
-                $message = $this->translator->trans(
-                    'All {count} notes for bike {bikeNumber} were deleted.',
-                    ['bikeNumber' => $bikeNumber, 'count' => $count]
-                );
-            } else {
-                $message = $this->translator->trans(
-                    '{count} notes matching pattern "{pattern}" for bike {bikeNumber} were deleted.',
-                    ['bikeNumber' => $bikeNumber, 'pattern' => $pattern, 'count' => $count]
-                );
-            }
+            $message = $this->translator->trans(
+                '{count} notes matching pattern "{pattern}" for bike {bikeNumber} were deleted.',
+                ['bikeNumber' => $bikeNumber, 'pattern' => $pattern, 'count' => $count]
+            );
         }
 
         return $message;
@@ -141,18 +131,16 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
                     )
                 );
             }
+        } elseif (is_null($pattern)) {
+            $message = $this->translator->trans(
+                'All {count} notes for stand {standName} were deleted.',
+                ['standName' => $standName, 'count' => $count]
+            );
         } else {
-            if (is_null($pattern)) {
-                $message = $this->translator->trans(
-                    'All {count} notes for stand {standName} were deleted.',
-                    ['standName' => $standName, 'count' => $count]
-                );
-            } else {
-                $message = $this->translator->trans(
-                    '{count} notes matching pattern "{pattern}" for stand {standName} were deleted.',
-                    ['standName' => $standName, 'pattern' => $pattern, 'count' => $count]
-                );
-            }
+            $message = $this->translator->trans(
+                '{count} notes matching pattern "{pattern}" for stand {standName} were deleted.',
+                ['standName' => $standName, 'pattern' => $pattern, 'count' => $count]
+            );
         }
 
         return $message;

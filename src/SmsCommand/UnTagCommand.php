@@ -14,17 +14,12 @@ class UnTagCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'UNTAG';
 
-    private StandRepository $standRepository;
-    private NoteRepository $noteRepository;
-
     public function __construct(
         TranslatorInterface $translator,
-        StandRepository $standRepository,
-        NoteRepository $noteRepository
+        private readonly StandRepository $standRepository,
+        private readonly NoteRepository $noteRepository
     ) {
         parent::__construct($translator);
-        $this->standRepository = $standRepository;
-        $this->noteRepository = $noteRepository;
     }
 
     public function __invoke(User $user, string $standName, ?string $pattern = null): string
@@ -68,18 +63,16 @@ class UnTagCommand extends AbstractCommand implements SmsCommandInterface
                     )
                 );
             }
+        } elseif (is_null($pattern)) {
+            $message = $this->translator->trans(
+                'All {count} notes for bikes on stand {standName} were deleted.',
+                ['standName' => $standName, 'count' => $count]
+            );
         } else {
-            if (is_null($pattern)) {
-                $message = $this->translator->trans(
-                    'All {count} notes for bikes on stand {standName} were deleted.',
-                    ['standName' => $standName, 'count' => $count]
-                );
-            } else {
-                $message = $this->translator->trans(
-                    '{count} notes matching pattern "{pattern}" for bikes on stand {standName} were deleted.',
-                    ['pattern' => $pattern, 'standName' => $standName, 'count' => $count]
-                );
-            }
+            $message = $this->translator->trans(
+                '{count} notes matching pattern "{pattern}" for bikes on stand {standName} were deleted.',
+                ['pattern' => $pattern, 'standName' => $standName, 'count' => $count]
+            );
         }
 
         return $message;

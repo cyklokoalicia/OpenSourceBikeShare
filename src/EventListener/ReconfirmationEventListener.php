@@ -13,24 +13,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ReconfirmationEventListener
 {
-    private RegistrationRepository $registrationRepository;
-    private MailSenderInterface $mailSender;
-    private TranslatorInterface $translator;
-    private UrlGeneratorInterface $urlGenerator;
-    private LoggerInterface $logger;
-
     public function __construct(
-        RegistrationRepository $registrationRepository,
-        MailSenderInterface $mailSender,
-        TranslatorInterface $translator,
-        UrlGeneratorInterface $urlGenerator,
-        LoggerInterface $logger
+        private readonly RegistrationRepository $registrationRepository,
+        private readonly MailSenderInterface $mailSender,
+        private readonly TranslatorInterface $translator,
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->registrationRepository = $registrationRepository;
-        $this->mailSender = $mailSender;
-        $this->translator = $translator;
-        $this->urlGenerator = $urlGenerator;
-        $this->logger = $logger;
     }
 
     public function __invoke(UserReconfirmationEvent $event): void
@@ -64,7 +53,7 @@ class ReconfirmationEventListener
             [
                 'userId' => $userId,
                 'email' => $emailRecipient,
-                'mailSenderClass' => get_class($this->mailSender),
+                'mailSenderClass' => $this->mailSender::class,
             ]
         );
         $this->mailSender->sendMail($emailRecipient, $subject, $message);

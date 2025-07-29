@@ -8,12 +8,8 @@ use BikeShare\Db\DbInterface;
 
 class HistoryRepository
 {
-    private DbInterface $db;
-
-    public function __construct(
-        DbInterface $db
-    ) {
-        $this->db = $db;
+    public function __construct(private readonly DbInterface $db)
+    {
     }
 
     public function addItem(

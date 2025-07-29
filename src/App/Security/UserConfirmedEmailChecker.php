@@ -14,18 +14,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserConfirmedEmailChecker implements UserCheckerInterface
 {
-    private RegistrationRepository $registrationRepository;
-    private TranslatorInterface $translator;
-    private EventDispatcherInterface $eventDispatcher;
-
     public function __construct(
-        RegistrationRepository $registrationRepository,
-        TranslatorInterface $translator,
-        EventDispatcherInterface $eventDispatcher
+        private readonly RegistrationRepository $registrationRepository,
+        private readonly TranslatorInterface $translator,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
-        $this->registrationRepository = $registrationRepository;
-        $this->translator = $translator;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function checkPreAuth(UserInterface $user): void

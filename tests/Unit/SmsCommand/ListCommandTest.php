@@ -101,11 +101,15 @@ class ListCommandTest extends TestCase
             ->method('findBikesOnStand')
             ->with($standId)
             ->willReturn($standRepositoryFindBikesOnStandCallResult);
+        $matcher = $this->exactly(count($translatorCallParams));
         $this->translatorMock
-            ->expects($this->exactly(count($translatorCallParams)))
+            ->expects($matcher)
             ->method('trans')
-            ->withConsecutive(...$translatorCallParams)
-            ->willReturnOnConsecutiveCalls(...$translatorCallResult);
+            ->willReturnCallback(function (...$parameters) use ($matcher, $translatorCallParams, $translatorCallResult) {
+                $this->assertSame($translatorCallParams[$matcher->getInvocationCount() - 1], $parameters);
+
+                return $translatorCallResult[$matcher->getInvocationCount() - 1];
+            });
 
         $this->assertSame($message, ($command)($userMock, $standName));
     }
@@ -131,7 +135,7 @@ class ListCommandTest extends TestCase
             'standRepositoryFindLastReturnedCallAmount' => 1,
             'standRepositoryFindLastReturnedCallResult' => 456,
             'standRepositoryFindBikesOnStandCallResult' => [],
-            'translatorCallParams' => [['Stand {standName} is empty.', ['standName' => 'ABC123']]],
+            'translatorCallParams' => [['Stand {standName} is empty.', ['standName' => 'ABC123'], null, null]],
             'translatorCallResult' => ['Stand ABC123 is empty.'],
             'message' => 'Stand ABC123 is empty.',
         ];
@@ -146,10 +150,12 @@ class ListCommandTest extends TestCase
                 ['bikeNum' => 11],
             ],
             'translatorCallParams' => [
-                ['(first)'],
+                ['(first)', [], null, null],
                 [
                     'Bikes on stand {standName}: {bikes}',
                     ['standName' => 'ABC123', 'bikes' => '456 (first), 789, 10, 11'],
+                    null,
+                    null,
                 ],
             ],
             'translatorCallResult' => ['(first)', 'Bikes on stand ABC123: 456 (first), 789, 10, 11'],
@@ -169,6 +175,8 @@ class ListCommandTest extends TestCase
                 [
                     'Bikes on stand {standName}: {bikes}',
                     ['standName' => 'ABC123', 'bikes' => '456, 789, 10, 11'],
+                    null,
+                    null,
                 ],
             ],
             'translatorCallResult' => ['Bikes on stand ABC123: 456, 789, 10, 11'],
@@ -188,6 +196,8 @@ class ListCommandTest extends TestCase
                 [
                     'Bikes on stand {standName}: {bikes}',
                     ['standName' => 'ABC123', 'bikes' => '456, 789, 10, 11'],
+                    null,
+                    null,
                 ],
             ],
             'translatorCallResult' => ['Bikes on stand ABC123: 456, 789, 10, 11'],

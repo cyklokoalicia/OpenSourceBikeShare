@@ -14,24 +14,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class CommandExecutor
 {
-    private CommandDetector $commandDetector;
-    private ServiceLocator $commandLocator;
-    private EventDispatcherInterface $eventDispatcher;
-    private TranslatorInterface $translator;
-    private LoggerInterface $logger;
-
     public function __construct(
-        CommandDetector $commandDetector,
-        ServiceLocator $commandLocator,
-        EventDispatcherInterface $eventDispatcher,
-        TranslatorInterface $translator,
-        LoggerInterface $logger
+        private readonly CommandDetector $commandDetector,
+        private readonly ServiceLocator $commandLocator,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly TranslatorInterface $translator,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->commandDetector = $commandDetector;
-        $this->commandLocator = $commandLocator;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->translator = $translator;
-        $this->logger = $logger;
     }
 
     public function execute(string $message, User $user): string
@@ -69,6 +58,7 @@ class CommandExecutor
                     $arguments[] = $user;
                     continue;
                 }
+
                 $arguments[] = $commandInfo['arguments'][$param->getName()] ?? null;
             }
 

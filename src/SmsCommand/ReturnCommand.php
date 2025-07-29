@@ -12,14 +12,11 @@ class ReturnCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'RETURN';
 
-    private RentSystemInterface $rentSystem;
-
     public function __construct(
         TranslatorInterface $translator,
-        RentSystemInterface $rentSystem
+        private readonly RentSystemInterface $rentSystem
     ) {
         parent::__construct($translator);
-        $this->rentSystem = $rentSystem;
     }
 
     public function __invoke(User $user, int $bikeNumber, string $standName, ?string $note = null): string

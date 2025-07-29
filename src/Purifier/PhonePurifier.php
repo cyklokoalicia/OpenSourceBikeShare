@@ -1,28 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Purifier;
 
 class PhonePurifier implements PhonePurifierInterface
 {
-    /**
-     * @var string
-     */
-    private $countryCode;
-
-    public function __construct(
-        $countryCode
-    ) {
-        $this->countryCode = $countryCode;
+    public function __construct(private readonly string $countryCode)
+    {
     }
 
-    public function purify($phoneNumber)
+    public function purify(string $phoneNumber)
     {
         $phoneNumber = preg_replace('/[^\d]/', '', $phoneNumber);
-        if (substr($phoneNumber, 0, 1) == '0') {
+        if (str_starts_with($phoneNumber, '0')) {
             $phoneNumber = substr($phoneNumber, 1);
         }
 
-        if (substr($phoneNumber, 0, 3) != $this->countryCode) {
+        if (substr($phoneNumber, 0, 3) !== $this->countryCode) {
             $phoneNumber = $this->countryCode . $phoneNumber;
         }
 

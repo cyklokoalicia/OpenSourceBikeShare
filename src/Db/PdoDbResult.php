@@ -19,6 +19,7 @@ class PdoDbResult implements DbResultInterface
         if (!($result instanceof PDOStatement) && !is_bool($result)) {
             throw new \Exception("Invalid result type");
         }
+
         $this->result = $result;
     }
 
@@ -63,7 +64,7 @@ class PdoDbResult implements DbResultInterface
         if (method_exists($this->result, $name)) {
             return call_user_func_array([$this->result, $name], $arguments);
         } else {
-            throw new \Exception("Method $name not found");
+            throw new \Exception(sprintf('Method %s not found', $name));
         }
     }
 
@@ -79,7 +80,7 @@ class PdoDbResult implements DbResultInterface
         } elseif (property_exists($this, $name)) {
             return $this->$name;
         } else {
-            throw new \Exception("Property $name not found");
+            throw new \Exception(sprintf('Property %s not found', $name));
         }
     }
 }

@@ -6,15 +6,19 @@ use Rector\Config\RectorConfig;
 
 return RectorConfig::configure()
     ->withPaths([
-        __DIR__ . '/connectors',
+        __DIR__ . '/config',
         __DIR__ . '/src',
         __DIR__ . '/tests',
     ])
-    // uncomment to reach your current PHP version
-    ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_74)
+    ->withPhpVersion(\Rector\ValueObject\PhpVersion::PHP_81)
     ->withSets([
-        \Rector\Set\ValueObject\SetList::PHP_74,
-        \Rector\Symfony\Set\SymfonySetList::SYMFONY_54,
-        \Rector\Symfony\Set\SymfonySetList::SYMFONY_CODE_QUALITY,
-        \Rector\Symfony\Set\SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
-    ]);
+        \Rector\Set\ValueObject\SetList::PHP_81,
+        \Rector\Set\ValueObject\SetList::CODE_QUALITY,
+        \Rector\Set\ValueObject\SetList::CODING_STYLE,
+        \Rector\Set\ValueObject\SetList::PHP_POLYFILLS,
+    ])->withComposerBased(
+        twig: true,
+        symfony: true,
+        phpunit: true,
+    )
+    ;

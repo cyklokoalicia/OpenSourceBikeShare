@@ -110,11 +110,14 @@ class DelNoteCommandTest extends TestCase
             ->method('findItemByName')
             ->with(...$standRepositoryCallParams)
             ->willReturn($standRepositoryCallResult);
+        $matcher = $this->exactly(count($noteRepositoryCallParams));
         $this->noteRepositoryMock
-            ->expects($this->exactly(count($noteRepositoryCallParams)))
+            ->expects($matcher)
             ->method('deleteStandNote')
-            ->withConsecutive(...$noteRepositoryCallParams)
-            ->willReturn(0);
+            ->willReturnCallback(function (...$parameters) use ($matcher, $noteRepositoryCallParams) {
+                $this->assertSame($noteRepositoryCallParams[$matcher->getInvocationCount() - 1], $parameters);
+                return 0;
+            });
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage($message);
@@ -162,16 +165,22 @@ class DelNoteCommandTest extends TestCase
             ->method('findItem')
             ->with($bikeNumber)
             ->willReturn(['id' => 123]);
+        $matcher = $this->exactly(count($noteRepositoryDeleteBikeNoteCallParams));
         $this->noteRepositoryMock
-            ->expects($this->exactly(count($noteRepositoryDeleteBikeNoteCallParams)))
+            ->expects($matcher)
             ->method('deleteBikeNote')
-            ->withConsecutive(...$noteRepositoryDeleteBikeNoteCallParams)
-            ->willReturn(2);
+            ->willReturnCallback(function (...$parameters) use ($matcher, $noteRepositoryDeleteBikeNoteCallParams) {
+                $this->assertSame($noteRepositoryDeleteBikeNoteCallParams[$matcher->getInvocationCount() - 1], $parameters);
+                return 2;
+            });
+        $matcher = $this->exactly(count($noteRepositoryDeleteStandNoteCallParams));
         $this->noteRepositoryMock
-            ->expects($this->exactly(count($noteRepositoryDeleteStandNoteCallParams)))
+            ->expects($matcher)
             ->method('deleteStandNote')
-            ->withConsecutive(...$noteRepositoryDeleteStandNoteCallParams)
-            ->willReturn(2);
+            ->willReturnCallback(function (...$parameters) use ($matcher, $noteRepositoryDeleteStandNoteCallParams) {
+                $this->assertSame($noteRepositoryDeleteStandNoteCallParams[$matcher->getInvocationCount() - 1], $parameters);
+                return 2;
+            });
         $this->standRepositoryMock
             ->expects($this->exactly(count($standRepositoryCallParams)))
             ->method('findItemByName')
@@ -208,7 +217,7 @@ class DelNoteCommandTest extends TestCase
     {
         yield 'empty bikeInfo' => [
             'bikeRepositoryCallResult' => [],
-            'translatorCallParams' => ['Bike {bikeNumber} does not exist.', ['bikeNumber' => 123]],
+            'translatorCallParams' => ['Bike {bikeNumber} does not exist.', ['bikeNumber' => 123], null, null],
             'translatorCallResult' => 'Bike 123 does not exist.',
             'pattern' => null,
             'noteRepositoryCallParams' => [],
@@ -216,7 +225,7 @@ class DelNoteCommandTest extends TestCase
         ];
         yield 'count is zero and pattern is null' => [
             'bikeRepositoryCallResult' => ['id' => 123],
-            'translatorCallParams' => ['No notes found for bike {bikeNumber} to delete.', ['bikeNumber' => 123]],
+            'translatorCallParams' => ['No notes found for bike {bikeNumber} to delete.', ['bikeNumber' => 123], null, null],
             'translatorCallResult' => 'No notes found for bike 123 to delete.',
             'pattern' => null,
             'noteRepositoryCallParams' => [[123, null]],
@@ -227,6 +236,8 @@ class DelNoteCommandTest extends TestCase
             'translatorCallParams' => [
                 'No notes matching pattern {pattern} found for bike {bikeNumber} to delete.',
                 ['pattern' => 'abc', 'bikeNumber' => 123],
+                null,
+                null
             ],
             'translatorCallResult' => 'No notes matching pattern abc found for bike 123 to delete.',
             'pattern' => 'abc',
@@ -242,6 +253,8 @@ class DelNoteCommandTest extends TestCase
             'translatorCallParams' => [
                 'Stand name {standName} has not been recognized. Stands are marked by CAPITALLETTERS.',
                 ['standName' => 'SAFKO4ZRUSENY'],
+                null,
+                null,
             ],
             'translatorCallResult' => 'Stand name SAFKO4ZRUSENY has not been recognized. '
                 . 'Stands are marked by CAPITALLETTERS.',
@@ -253,7 +266,7 @@ class DelNoteCommandTest extends TestCase
         ];
         yield 'empty standInfo' => [
             'standName' => 'ABCD1234',
-            'translatorCallParams' => ['Stand {standName} does not exist.', ['standName' => 'ABCD1234']],
+            'translatorCallParams' => ['Stand {standName} does not exist.', ['standName' => 'ABCD1234'], null, null],
             'translatorCallResult' => 'Stand ABCD1234 does not exist.',
             'standRepositoryCallParams' => ['ABCD1234'],
             'standRepositoryCallResult' => [],
@@ -263,7 +276,7 @@ class DelNoteCommandTest extends TestCase
         ];
         yield 'count is zero and pattern is null' => [
             'standName' => 'ABCD1234',
-            'translatorCallParams' => ['No notes found for stand {standName} to delete.', ['standName' => 'ABCD1234']],
+            'translatorCallParams' => ['No notes found for stand {standName} to delete.', ['standName' => 'ABCD1234'], null, null],
             'translatorCallResult' => 'No notes found for stand ABCD1234 to delete.',
             'standRepositoryCallParams' => ['ABCD1234'],
             'standRepositoryCallResult' => ['standId' => '123'],
@@ -276,6 +289,8 @@ class DelNoteCommandTest extends TestCase
             'translatorCallParams' => [
                 'No notes matching pattern {pattern} found on stand {standName} to delete.',
                 ['pattern' => 'abc', 'standName' => 'ABCD1234'],
+                null,
+                null,
             ],
             'translatorCallResult' => 'No notes matching pattern abc found on stand ABCD1234 to delete.',
             'standRepositoryCallParams' => ['ABCD1234'],
@@ -297,6 +312,8 @@ class DelNoteCommandTest extends TestCase
             'translatorCallParams' => [
                 'All {count} notes for bike {bikeNumber} were deleted.',
                 ['bikeNumber' => 123, 'count' => 2],
+                null,
+                null,
             ],
             'pattern' => null,
             'message' => 'All 2 notes for bike 123 were deleted.',
@@ -310,6 +327,8 @@ class DelNoteCommandTest extends TestCase
             'translatorCallParams' => [
                 '{count} notes matching pattern "{pattern}" for bike {bikeNumber} were deleted.',
                 ['bikeNumber' => 123, 'pattern' => 'abc', 'count' => 2],
+                null,
+                null,
             ],
             'pattern' => 'abc',
             'message' => 'All 2 notes for bike 123 were deleted.',
@@ -323,6 +342,8 @@ class DelNoteCommandTest extends TestCase
             'translatorCallParams' => [
                 'All {count} notes for stand {standName} were deleted.',
                 ['standName' => 'ABC123', 'count' => 2],
+                null,
+                null,
             ],
             'pattern' => null,
             'message' => 'All 2 notes for stand ABC123 were deleted.',
@@ -336,6 +357,8 @@ class DelNoteCommandTest extends TestCase
             'translatorCallParams' => [
                 '{count} notes matching pattern "{pattern}" for stand {standName} were deleted.',
                 ['standName' => 'ABC123', 'pattern' => 'abc', 'count' => 2],
+                null,
+                null,
             ],
             'pattern' => 'abc',
             'message' => '2 notes matching pattern "{pattern}" for stand {standName} were deleted.',

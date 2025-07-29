@@ -16,15 +16,13 @@ class TextmagicSmsConnector extends AbstractConnector
     private string $gatewayUser = '';
     private string $gatewayPassword = '';
     private string $gatewaySenderNumber = '';
-    private RequestStack $requestStack;
 
     public function __construct(
-        RequestStack $requestStack,
+        private readonly RequestStack $requestStack,
         array $configuration,
-        $debugMode = false
+        $debugMode = false,
     ) {
         parent::__construct($configuration, $debugMode);
-        $this->requestStack = $requestStack;
     }
 
     public function checkConfig(array $config): void
@@ -32,6 +30,7 @@ class TextmagicSmsConnector extends AbstractConnector
         if ($this->debugMode) {
             return;
         }
+
         if (
             empty($config['gatewayUser'])
             || empty($config['gatewayPassword'])
@@ -39,6 +38,7 @@ class TextmagicSmsConnector extends AbstractConnector
         ) {
             throw new \RuntimeException('Invalid Textmagic configuration');
         }
+
         $this->gatewayUser = $config['gatewayUser'];
         $this->gatewayPassword = $config['gatewayPassword'];
         $this->gatewaySenderNumber = $config['gatewaySenderNumber'];
@@ -56,7 +56,8 @@ class TextmagicSmsConnector extends AbstractConnector
         if ($this->debugMode) {
             return;
         }
-        $um = urlencode($text);
+
+        $um = urlencode((string) $text);
         $url = sprintf(
             "https://www.textmagic.com/app/api?cmd=send&unicode=0&from=%s&username=%s&password=%s&phone=%s&text=%s",
             $this->gatewaySenderNumber,
@@ -74,18 +75,23 @@ class TextmagicSmsConnector extends AbstractConnector
         if (is_null($this->requestStack->getCurrentRequest())) {
             throw new \RuntimeException('Could not receive sms in cli');
         }
+
         if ($this->requestStack->getCurrentRequest()->request->has('text')) {
             $this->message = $this->requestStack->getCurrentRequest()->request->get('text', '');
         }
+
         if ($this->requestStack->getCurrentRequest()->request->has('from')) {
             $this->number = $this->requestStack->getCurrentRequest()->request->get('from', '');
         }
+
         if ($this->requestStack->getCurrentRequest()->request->has('message_id')) {
             $this->uuid = $this->requestStack->getCurrentRequest()->request->get('message_id', '');
         }
+
         if ($this->requestStack->getCurrentRequest()->request->has('timestamp')) {
             $this->time = date("Y-m-d H:i:s", $this->requestStack->getCurrentRequest()->request->get('timestamp', ''));
         }
+
         if ($this->requestStack->getCurrentRequest()->server->has('REMOTE_ADDR')) {
             $this->ipaddress = $this->requestStack->getCurrentRequest()->server->get('REMOTE_ADDR');
         }

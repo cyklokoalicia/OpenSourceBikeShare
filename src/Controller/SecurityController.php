@@ -43,7 +43,7 @@ class SecurityController extends AbstractController
     public function logout(): void
     {
         // controller can be blank: it will never be executed!
-        throw new \Exception('Don\'t forget to activate logout in security.php');
+        throw new \Exception("Don't forget to activate logout in security.php");
     }
 
     /**
@@ -62,13 +62,13 @@ class SecurityController extends AbstractController
 
             try {
                 $user = $userProvider->loadUserByIdentifier($number);
-            } catch (UserNotFoundException $e) {
+            } catch (UserNotFoundException) {
                 $user = null;
             }
 
             if (!is_null($user)) {
                 mt_srand(crc32(microtime()));
-                $plainPassword = substr(md5(mt_rand() . microtime() . $user->getUsername()), 0, 8);
+                $plainPassword = substr(md5(mt_rand() . microtime() . $user->getUserIdentifier()), 0, 8);
                 $hashedPassword = $passwordHasher->hashPassword(
                     $user,
                     $plainPassword
@@ -76,7 +76,7 @@ class SecurityController extends AbstractController
                 $userProvider->upgradePassword($user, $hashedPassword);
 
                 $subject = $translator->trans('Password reset');
-                $names = preg_split("/[\s,]+/", $user->getUsername());
+                $names = preg_split("/[\s,]+/", $user->getUserIdentifier());
                 $firstname = $names[0];
                 $message = $translator->trans('Hello') . ' ' . $firstname . ",\n\n" .
                     $translator->trans('Your password has been reset successfully.') . "\n\n" .

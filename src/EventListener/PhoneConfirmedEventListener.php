@@ -8,7 +8,7 @@ use BikeShare\App\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class PhoneConfirmedEventListener
 {
@@ -30,18 +30,11 @@ class PhoneConfirmedEventListener
         '_wdt',  // Web Debug Toolbar
     ];
 
-    private bool $isSmsSystemEnabled;
-    private Security $security;
-    private UrlGeneratorInterface $urlGenerator;
-
     public function __construct(
-        bool $isSmsSystemEnabled,
-        Security $security,
-        UrlGeneratorInterface $urlGenerator
+        private readonly bool $isSmsSystemEnabled,
+        private readonly Security $security,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
-        $this->isSmsSystemEnabled = $isSmsSystemEnabled;
-        $this->security = $security;
-        $this->urlGenerator = $urlGenerator;
     }
 
     public function __invoke(RequestEvent $event): void

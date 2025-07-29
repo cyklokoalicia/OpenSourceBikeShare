@@ -8,21 +8,12 @@ use BikeShare\App\Entity\User;
 
 class SmsProcessedEvent
 {
-    private User $user;
-    private string $commandName;
-    private array $commandArguments;
-    private string $resultMessage;
-
     public function __construct(
-        User $user,
-        string $commandName,
-        array $commandArguments,
-        string $resultMessage
+        private readonly User $user,
+        private readonly string $commandName,
+        private readonly array $commandArguments,
+        private readonly string $resultMessage,
     ) {
-        $this->user = $user;
-        $this->commandName = $commandName;
-        $this->commandArguments = $commandArguments;
-        $this->resultMessage = $resultMessage;
     }
 
     public function getUser(): User

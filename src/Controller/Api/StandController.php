@@ -13,18 +13,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class StandController extends AbstractController
 {
-    private StandRepository $standRepository;
-    private NoteRepository $noteRepository;
-    private bool $forceStack;
-
     public function __construct(
-        StandRepository $standRepository,
-        NoteRepository $noteRepository,
-        bool $forceStack
+        private readonly StandRepository $standRepository,
+        private readonly NoteRepository $noteRepository,
+        private readonly bool $forceStack,
     ) {
-        $this->standRepository = $standRepository;
-        $this->noteRepository = $noteRepository;
-        $this->forceStack = $forceStack;
     }
 
 

@@ -18,35 +18,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AsCommand(name: 'app:long_rental_check', description: 'Check user which have long rental')]
 class LongRentalCheckCommand extends Command
 {
-    protected static $defaultName = 'app:long_rental_check';
-
-    private bool $notifyUser;
-    private int $longRentalHours;
-    private BikeRepository $bikeRepository;
-    private HistoryRepository $historyRepository;
-    private SmsSenderInterface $smsSender;
-    private TranslatorInterface $translator;
-    private AdminNotifier $adminNotifier;
-    private LoggerInterface $logger;
-
     public function __construct(
-        bool $notifyUser,
-        int $longRentalHours,
-        BikeRepository $bikeRepository,
-        HistoryRepository $historyRepository,
-        SmsSenderInterface $smsSender,
-        TranslatorInterface $translator,
-        AdminNotifier $adminNotifier,
-        LoggerInterface $logger
+        private readonly bool $notifyUser,
+        private readonly int $longRentalHours,
+        private readonly BikeRepository $bikeRepository,
+        private readonly HistoryRepository $historyRepository,
+        private readonly SmsSenderInterface $smsSender,
+        private readonly TranslatorInterface $translator,
+        private readonly AdminNotifier $adminNotifier,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->notifyUser = $notifyUser;
-        $this->longRentalHours = $longRentalHours;
-        $this->bikeRepository = $bikeRepository;
-        $this->historyRepository = $historyRepository;
-        $this->smsSender = $smsSender;
-        $this->translator = $translator;
-        $this->adminNotifier = $adminNotifier;
-        $this->logger = $logger;
         parent::__construct();
     }
 
@@ -68,7 +49,8 @@ class LongRentalCheckCommand extends Command
                 $this->logger->error('Last rent not found for bike', compact('bikeNumber', 'userId'));
                 continue;
             }
-            $time = strtotime($lastRent['time']);
+
+            $time = strtotime((string) $lastRent['time']);
             if ($time + ($this->longRentalHours * 3600) <= time()) {
                 $abusers[] = [
                     'userId' => $userId,

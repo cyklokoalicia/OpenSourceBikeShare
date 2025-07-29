@@ -12,14 +12,11 @@ class HelpCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'HELP';
 
-    private CreditSystemInterface $creditSystem;
-
     public function __construct(
         TranslatorInterface $translator,
-        CreditSystemInterface $creditSystem
+        private readonly CreditSystemInterface $creditSystem
     ) {
         parent::__construct($translator);
-        $this->creditSystem = $creditSystem;
     }
 
     public function __invoke(User $user): string
@@ -38,6 +35,7 @@ class HelpCommand extends AbstractCommand implements SmsCommandInterface
         if (!$this->creditSystem->isEnabled()) {
             unset($availableCommands['CREDIT']);
         }
+
         $message = 'Commands:' . PHP_EOL;
         if ($user->getPrivileges() > 0) {
             $availableCommands = array_merge(
@@ -56,6 +54,7 @@ class HelpCommand extends AbstractCommand implements SmsCommandInterface
                 ]
             );
         }
+
         $message .= implode(PHP_EOL, array_keys($availableCommands));
 
         return $message;

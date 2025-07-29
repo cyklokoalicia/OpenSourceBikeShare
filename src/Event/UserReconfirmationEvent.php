@@ -8,11 +8,8 @@ use BikeShare\App\Entity\User;
 
 class UserReconfirmationEvent
 {
-    private User $user;
-
-    public function __construct(User $user)
+    public function __construct(private readonly User $user)
     {
-        $this->user = $user;
     }
 
     public function getUser(): User

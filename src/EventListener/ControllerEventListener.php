@@ -6,7 +6,7 @@ namespace BikeShare\EventListener;
 
 use BikeShare\Db\DbInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class ControllerEventListener
 {
@@ -38,15 +38,10 @@ class ControllerEventListener
         'api_bike_trip',
     ];
 
-    private DbInterface $db;
-    private Security $security;
-
     public function __construct(
-        DbInterface $db,
-        Security $security
+        private readonly DbInterface $db,
+        private readonly Security $security,
     ) {
-        $this->db = $db;
-        $this->security = $security;
     }
 
     public function __invoke(ControllerEvent $event): void
@@ -54,6 +49,7 @@ class ControllerEventListener
         if (!$event->isMainRequest()) {
             return;
         }
+
         if (!in_array($event->getRequest()->attributes->get('_route'), self::LOGGED_ROUTES)) {
             return;
         }

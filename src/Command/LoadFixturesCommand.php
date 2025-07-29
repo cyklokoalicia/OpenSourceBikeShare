@@ -14,31 +14,19 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'load:fixtures', description: 'Load test fixtures into the database')]
 class LoadFixturesCommand extends Command
 {
-    private string $appEnvironment;
-    private string $projectDir;
-    private string $dbDatabase;
-    private SimpleFileLoader $fixturesLoader;
-    private DbInterface $db;
-
     public function __construct(
-        string $appEnvironment,
-        string $projectDir,
-        string $dbDatabase,
-        SimpleFileLoader $fixturesLoader,
-        DbInterface $db
+        private readonly string $appEnvironment,
+        private readonly string $projectDir,
+        private readonly string $dbDatabase,
+        private readonly SimpleFileLoader $fixturesLoader,
+        private readonly DbInterface $db,
     ) {
-        $this->appEnvironment = $appEnvironment;
-        $this->projectDir = $projectDir;
-        $this->dbDatabase = $dbDatabase;
-        $this->fixturesLoader = $fixturesLoader;
-        $this->db = $db;
-
         parent::__construct('load:fixtures');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (!in_array($this->appEnvironment, ['test'], true)) {
+        if ($this->appEnvironment !== 'test') {
             $output->writeln('<error>This command can only be run in the test environment.</error>');
             return Command::FAILURE;
         }
@@ -46,6 +34,7 @@ class LoadFixturesCommand extends Command
         $this->db->query('DROP DATABASE IF EXISTS `' . $this->dbDatabase . '`;');
         $this->db->query('CREATE DATABASE `' . $this->dbDatabase . '` CHARACTER SET utf8 COLLATE utf8_general_ci;');
         $this->db->query('USE `' . $this->dbDatabase . '`');
+
         $initSql = file_get_contents($this->projectDir . '/docker-data/mysql/create-database.sql');
         $this->db->exec($initSql);
 
@@ -63,7 +52,7 @@ class LoadFixturesCommand extends Command
                 return $val === null ? 'NULL' : '"' . addslashes((string)$val) . '"';
             }, $values));
 
-            $sql = "INSERT INTO `{$tableName}` ({$fieldsStr}) VALUES ({$valuesStr})";
+            $sql = sprintf('INSERT INTO `%s` (%s) VALUES (%s)', $tableName, $fieldsStr, $valuesStr);
             $this->db->query($sql);
         }
 

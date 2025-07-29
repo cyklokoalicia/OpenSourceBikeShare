@@ -14,17 +14,12 @@ class TagCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'TAG';
 
-    private StandRepository $standRepository;
-    private NoteRepository $noteRepository;
-
     public function __construct(
         TranslatorInterface $translator,
-        StandRepository $standRepository,
-        NoteRepository $noteRepository
+        private readonly StandRepository $standRepository,
+        private readonly NoteRepository $noteRepository
     ) {
         parent::__construct($translator);
-        $this->standRepository = $standRepository;
-        $this->noteRepository = $noteRepository;
     }
 
     /**

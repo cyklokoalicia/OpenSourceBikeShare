@@ -73,7 +73,7 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$notifyUser', env('bool:NOTIFY_USER_ABOUT_LONG_RENTAL'))
         ->bind('$longRentalHours', env('int:WATCHES_LONG_RENTAL'));
 
-    if (in_array($container->env(), ['test'], true)) {
+    if ($container->env() === 'test') {
         $services->set(\BikeShare\Command\LoadFixturesCommand::class)
             ->bind('$appEnvironment', env('APP_ENV'))
             ->bind('$projectDir', param('kernel.project_dir'))

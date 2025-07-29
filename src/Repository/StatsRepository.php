@@ -9,15 +9,10 @@ use Psr\Log\LoggerInterface;
 
 class StatsRepository
 {
-    private DbInterface $db;
-    private LoggerInterface $logger;
-
     public function __construct(
-        DbInterface $db,
-        LoggerInterface $logger
+        private readonly DbInterface $db,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->db = $db;
-        $this->logger = $logger;
     }
 
     public function getUserStatsForYear(int $userId, int $year): array
@@ -68,6 +63,7 @@ class StatsRepository
                     $stats['rent_station'][$returnHistory[$item['bikeNum']]['parameter']] =
                         ($stats['rent_station'][$returnHistory[$item['bikeNum']]['parameter']] ?? 0) + 1;
                 }
+
                 $stats['bikes_rented'][$item['bikeNum']] = ($stats['bikes_rented'][$item['bikeNum']] ?? 0) + 1;
                 $partOfDay = $date->format('H') < 6 ? 'Night' : ($date->format('H') < 12 ?
                     'Morning' : ($date->format('H') < 18 ? 'Day' : 'Evening'));
@@ -80,7 +76,7 @@ class StatsRepository
             } elseif ($item['action'] === 'RETURN' || $item['action'] === 'FORCERETURN') {
                 $returnHistory[$item['bikeNum']] = $item;
                 $stats['return_station'][$item['parameter']] = ($stats['return_station'][$item['parameter']] ?? 0) + 1;
-                $rentDuration = strtotime($item['time'])
+                $rentDuration = strtotime((string) $item['time'])
                     - strtotime($rentHistory[$item['bikeNum']]['time'] ?? $item['time']);
                 if ($rentDuration > 3600 * 24 * 7) {
                     $this->logger->warning(
@@ -92,6 +88,7 @@ class StatsRepository
                         ]
                     );
                 }
+
                 $stats['total_rental_duration'] += $rentDuration;
                 $stats['longest_rental_duration'] = max($stats['longest_rental_duration'], $rentDuration);
                 $stats['shortest_rental_duration'] = min($stats['shortest_rental_duration'], $rentDuration);
@@ -99,6 +96,7 @@ class StatsRepository
                     $stats['return_station'][$rentHistory[$item['bikeNum']]['parameter']] =
                         ($stats['return_station'][$rentHistory[$item['bikeNum']]['parameter']] ?? 0) + 1;
                 }
+
                 unset($rentHistory[$item['bikeNum']]);
             } elseif ($item['action'] === 'REVERT') {
                 unset($rentHistory[$item['bikeNum']]);
@@ -111,6 +109,7 @@ class StatsRepository
         if ($stats['rental_count'] > 1) {
             $stats['average_rental_duration'] = $stats['total_rental_duration'] / $stats['rental_count'] ?? 0;
         }
+
         $stats['unique_bikes_rented'] = count($stats['bikes_rented']);
         arsort($stats['bikes_rented']);
         $stats['most_popular_bike'] = array_key_first($stats['bikes_rented']);

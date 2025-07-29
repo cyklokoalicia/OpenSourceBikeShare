@@ -1,17 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Rent;
 
 use Symfony\Component\DependencyInjection\ServiceLocator;
 
 class RentSystemFactory
 {
-    private ServiceLocator $locator;
-
     public function __construct(
-        ServiceLocator $locator
+        private readonly ServiceLocator $locator
     ) {
-        $this->locator = $locator;
     }
 
     public function getRentSystem(string $type): RentSystemInterface

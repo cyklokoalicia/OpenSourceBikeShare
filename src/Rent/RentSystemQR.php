@@ -32,10 +32,12 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
             if ($this->isSmsSystemEnabled) {
                 $message .= _(' or SMS');
             }
+
             $message .= _(' to return the bikes.');
 
             return $this->response($message, self::ERROR);
         }
+
         $bikeId = $result->fetchAssoc()['bikeNum'];
 
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);

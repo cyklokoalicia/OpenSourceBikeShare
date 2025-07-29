@@ -13,12 +13,9 @@ use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 class TokenProvider implements TokenProviderInterface
 {
     private $tokens = [];
-    private DbInterface $db;
 
-    public function __construct(
-        DbInterface $db
-    ) {
-        $this->db = $db;
+    public function __construct(private readonly DbInterface $db)
+    {
     }
 
     public function loadTokenBySeries(string $series): PersistentTokenInterface
@@ -49,7 +46,7 @@ class TokenProvider implements TokenProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function updateToken(string $series, string $tokenValue, \DateTime $lastUsed)
+    public function updateToken(string $series, string $tokenValue, \DateTimeInterface $lastUsed)
     {
         $currentToken = $this->loadTokenBySeries($series);
 
