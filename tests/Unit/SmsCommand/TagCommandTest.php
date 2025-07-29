@@ -134,16 +134,16 @@ class TagCommandTest extends TestCase
         $this->translatorMock
             ->expects($matcher)
             ->method('trans')->willReturnCallback(function (...$parameters) use ($matcher) {
-            if ($matcher->getInvocationCount() === 1) {
-                $this->assertSame('vandalism', $parameters[0]);
-                return 'vandalism';
-            }
-            if ($matcher->getInvocationCount() === 2) {
-                $this->assertSame('with stand name and problem description: {example}', $parameters[0]);
-                $this->assertSame(['example' => 'TAG MAINSQUARE vandalism'], $parameters[1]);
-                return 'with stand name and problem description: TAG MAINSQUARE vandalism';
-            }
-        });
+                if ($matcher->getInvocationCount() === 1) {
+                    $this->assertSame('vandalism', $parameters[0]);
+                    return 'vandalism';
+                }
+                if ($matcher->getInvocationCount() === 2) {
+                    $this->assertSame('with stand name and problem description: {example}', $parameters[0]);
+                    $this->assertSame(['example' => 'TAG MAINSQUARE vandalism'], $parameters[1]);
+                    return 'with stand name and problem description: TAG MAINSQUARE vandalism';
+                }
+            });
 
         $this->assertEquals(
             'with stand name and problem description: TAG MAINSQUARE vandalism',
