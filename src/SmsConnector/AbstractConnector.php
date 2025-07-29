@@ -6,7 +6,6 @@ namespace BikeShare\SmsConnector;
 
 abstract class AbstractConnector implements SmsConnectorInterface
 {
-    protected bool $debugMode = false;
     protected string $message = '';
     protected string $number = '';
     protected string $uuid = '';
@@ -15,9 +14,8 @@ abstract class AbstractConnector implements SmsConnectorInterface
 
     public function __construct(
         array $configuration,
-        $debugMode = false
+        protected bool $debugMode = false,
     ) {
-        $this->debugMode = $debugMode;
         $connectorConfig = $configuration[static::getType()] ?? [];
         $this->checkConfig($connectorConfig);
     }

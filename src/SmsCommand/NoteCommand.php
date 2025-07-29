@@ -15,20 +15,13 @@ class NoteCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'NOTE';
 
-    private BikeRepository $bikeRepository;
-    private StandRepository $standRepository;
-    private NoteRepository $noteRepository;
-
     public function __construct(
         TranslatorInterface $translator,
-        BikeRepository $bikeRepository,
-        StandRepository $standRepository,
-        NoteRepository $noteRepository
+        private BikeRepository $bikeRepository,
+        private StandRepository $standRepository,
+        private NoteRepository $noteRepository
     ) {
         parent::__construct($translator);
-        $this->bikeRepository = $bikeRepository;
-        $this->standRepository = $standRepository;
-        $this->noteRepository = $noteRepository;
     }
 
     public function __invoke(

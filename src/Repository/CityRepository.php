@@ -6,12 +6,8 @@ namespace BikeShare\Repository;
 
 class CityRepository
 {
-    private array $cities;
-
-    public function __construct(
-        array $cities
-    ) {
-        $this->cities = $cities;
+    public function __construct(private array $cities)
+    {
     }
 
     public function findAvailableCities(): array

@@ -24,24 +24,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationFormType extends AbstractType
 {
-    private string $systemRules;
-    private CityRepository $cityRepository;
-    private TranslatorInterface $translator;
-    private PhonePurifier $phonePurifier;
-    private UserRepository $userRepository;
-
     public function __construct(
-        string $systemRules,
-        CityRepository $cityRepository,
-        TranslatorInterface $translator,
-        PhonePurifier $phonePurifier,
-        UserRepository $userRepository
+        private string $systemRules,
+        private CityRepository $cityRepository,
+        private TranslatorInterface $translator,
+        private PhonePurifier $phonePurifier,
+        private UserRepository $userRepository,
     ) {
-        $this->systemRules = $systemRules;
-        $this->cityRepository = $cityRepository;
-        $this->translator = $translator;
-        $this->phonePurifier = $phonePurifier;
-        $this->userRepository = $userRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)

@@ -16,24 +16,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ScanController extends AbstractController
 {
-    private RentSystemFactory $rentSystemFactory;
-    private BikeRepository $bikeRepository;
-    private StandRepository $standRepository;
-    private TranslatorInterface $translator;
-    private DbInterface $db;
-
     public function __construct(
-        RentSystemFactory $rentSystemFactory,
-        BikeRepository $bikeRepository,
-        StandRepository $standRepository,
-        TranslatorInterface $translator,
-        DbInterface $db
+        private RentSystemFactory $rentSystemFactory,
+        private BikeRepository $bikeRepository,
+        private StandRepository $standRepository,
+        private TranslatorInterface $translator,
+        private DbInterface $db,
     ) {
-        $this->rentSystemFactory = $rentSystemFactory;
-        $this->bikeRepository = $bikeRepository;
-        $this->standRepository = $standRepository;
-        $this->translator = $translator;
-        $this->db = $db;
     }
 
     /**

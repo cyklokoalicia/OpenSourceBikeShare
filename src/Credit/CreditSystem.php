@@ -29,9 +29,6 @@ class CreditSystem implements CreditSystemInterface
     // credit deduction for rule violations (applied by admins)
     private float $violationFee;
 
-    private DbInterface $db;
-    private HistoryRepository $historyRepository;
-
     public function __construct(
         bool $isEnabled,
         string $creditCurrency,
@@ -41,8 +38,8 @@ class CreditSystem implements CreditSystemInterface
         float $longRentalFee,
         float $limitIncreaseFee,
         float $violationFee,
-        DbInterface $db,
-        HistoryRepository $historyRepository
+        private DbInterface $db,
+        private HistoryRepository $historyRepository,
     ) {
         if (!$isEnabled) {
             throw new \RuntimeException('Use DisabledCreditSystem instead');
@@ -67,8 +64,6 @@ class CreditSystem implements CreditSystemInterface
         $this->longRentalFee = $longRentalFee;
         $this->limitIncreaseFee = $limitIncreaseFee;
         $this->violationFee = $violationFee;
-        $this->db = $db;
-        $this->historyRepository = $historyRepository;
     }
 
     public function addCredit(int $userId, float $creditAmount, ?string $coupon = null): void

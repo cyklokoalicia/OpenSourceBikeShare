@@ -9,13 +9,10 @@ use Symfony\Contracts\Service\ResetInterface;
 
 class DebugMailSender implements MailSenderInterface, ResetInterface
 {
-    private LoggerInterface $logger;
     private array $sentMessages = [];
 
-    public function __construct(
-        LoggerInterface $logger
-    ) {
-        $this->logger = $logger;
+    public function __construct(private LoggerInterface $logger)
+    {
     }
 
     public function sendMail($recipient, $subject, $message)

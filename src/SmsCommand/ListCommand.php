@@ -14,17 +14,12 @@ class ListCommand extends AbstractCommand implements SmsCommandInterface
     protected const COMMAND_NAME = 'LIST';
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
-    private StandRepository $standRepository;
-    private bool $forceStack;
-
     public function __construct(
         TranslatorInterface $translator,
-        StandRepository $standRepository,
-        bool $forceStack = false
+        private StandRepository $standRepository,
+        private bool $forceStack = false
     ) {
         parent::__construct($translator);
-        $this->standRepository = $standRepository;
-        $this->forceStack = $forceStack;
     }
 
     public function __invoke(User $user, string $standName): string

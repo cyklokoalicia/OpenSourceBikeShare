@@ -11,15 +11,13 @@ class EuroSmsConnector extends AbstractConnector
     private string $gatewayId = '';
     private string $gatewayKey = '';
     private string $gatewaySenderNumber = '';
-    private RequestStack $requestStack;
 
     public function __construct(
-        RequestStack $requestStack,
+        private RequestStack $requestStack,
         array $configuration,
-        $debugMode = false
+        $debugMode = false,
     ) {
         parent::__construct($configuration, $debugMode);
-        $this->requestStack = $requestStack;
     }
 
     public function checkConfig(array $config): void

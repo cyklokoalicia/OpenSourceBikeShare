@@ -13,17 +13,12 @@ class FreeCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'FREE';
 
-    private BikeRepository $bikeRepository;
-    private StandRepository $standRepository;
-
     public function __construct(
         TranslatorInterface $translator,
-        BikeRepository $bikeRepository,
-        StandRepository $standRepository
+        private BikeRepository $bikeRepository,
+        private StandRepository $standRepository
     ) {
         parent::__construct($translator);
-        $this->bikeRepository = $bikeRepository;
-        $this->standRepository = $standRepository;
     }
 
     public function __invoke(User $user): string

@@ -62,7 +62,7 @@ class SecurityController extends AbstractController
 
             try {
                 $user = $userProvider->loadUserByIdentifier($number);
-            } catch (UserNotFoundException $e) {
+            } catch (UserNotFoundException) {
                 $user = null;
             }
 

@@ -9,18 +9,11 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 
 class SmsConnectorFactory
 {
-    private LoggerInterface $logger;
-    private ServiceLocator $locator;
-    private string $connectorName;
-
     public function __construct(
-        string $connectorName,
-        ServiceLocator $locator,
-        LoggerInterface $logger
+        private string $connectorName,
+        private ServiceLocator $locator,
+        private LoggerInterface $logger,
     ) {
-        $this->connectorName = $connectorName;
-        $this->logger = $logger;
-        $this->locator = $locator;
     }
 
     public function getConnector(): SmsConnectorInterface

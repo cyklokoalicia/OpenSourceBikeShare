@@ -12,14 +12,11 @@ class HelpCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'HELP';
 
-    private CreditSystemInterface $creditSystem;
-
     public function __construct(
         TranslatorInterface $translator,
-        CreditSystemInterface $creditSystem
+        private CreditSystemInterface $creditSystem
     ) {
         parent::__construct($translator);
-        $this->creditSystem = $creditSystem;
     }
 
     public function __invoke(User $user): string

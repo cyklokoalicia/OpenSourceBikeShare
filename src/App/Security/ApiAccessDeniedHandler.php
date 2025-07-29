@@ -14,15 +14,10 @@ use Symfony\Component\Security\Http\Authorization\AccessDeniedHandlerInterface;
 
 class ApiAccessDeniedHandler implements AccessDeniedHandlerInterface
 {
-    private Security $security;
-    private LoggerInterface $logger;
-
     public function __construct(
-        Security $security,
-        LoggerInterface $logger
+        private Security $security,
+        private LoggerInterface $logger
     ) {
-        $this->security = $security;
-        $this->logger = $logger;
     }
 
     public function handle(Request $request, AccessDeniedException $accessDeniedException): Response

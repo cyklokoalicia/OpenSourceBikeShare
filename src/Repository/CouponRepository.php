@@ -9,12 +9,8 @@ use BikeShare\Db\DbInterface;
 #@TODO: Refactor the status field to use an enum for better type safety and clarity.
 class CouponRepository
 {
-    private DbInterface $db;
-
-    public function __construct(
-        DbInterface $db
-    ) {
-        $this->db = $db;
+    public function __construct(private DbInterface $db)
+    {
     }
 
     public function findAllActive(): array

@@ -16,11 +16,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class BikeController extends AbstractController
 {
-    private BikeRepository $bikeRepository;
-
-    public function __construct(BikeRepository $bikeRepository)
+    public function __construct(private BikeRepository $bikeRepository)
     {
-        $this->bikeRepository = $bikeRepository;
     }
 
     /**

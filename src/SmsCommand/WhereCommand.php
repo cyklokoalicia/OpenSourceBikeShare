@@ -14,17 +14,12 @@ class WhereCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'WHERE';
 
-    private BikeRepository $bikeRepository;
-    private NoteRepository $noteRepository;
-
     public function __construct(
         TranslatorInterface $translator,
-        BikeRepository $bikeRepository,
-        NoteRepository $noteRepository
+        private BikeRepository $bikeRepository,
+        private NoteRepository $noteRepository,
     ) {
         parent::__construct($translator);
-        $this->bikeRepository = $bikeRepository;
-        $this->noteRepository = $noteRepository;
     }
 
     public function __invoke(User $user, int $bikeNumber): string

@@ -12,27 +12,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationEventListener
 {
-    private string $appName;
-    private string $systemRules;
-    private RegistrationRepository $registrationRepository;
-    private MailSenderInterface $mailSender;
-    private TranslatorInterface $translator;
-    private UrlGeneratorInterface $urlGenerator;
-
     public function __construct(
-        string $appName,
-        string $systemRules,
-        RegistrationRepository $registrationRepository,
-        MailSenderInterface $mailSender,
-        TranslatorInterface $translator,
-        UrlGeneratorInterface $urlGenerator
+        private string $appName,
+        private string $systemRules,
+        private RegistrationRepository $registrationRepository,
+        private MailSenderInterface $mailSender,
+        private TranslatorInterface $translator,
+        private UrlGeneratorInterface $urlGenerator,
     ) {
-        $this->appName = $appName;
-        $this->systemRules = $systemRules;
-        $this->registrationRepository = $registrationRepository;
-        $this->mailSender = $mailSender;
-        $this->translator = $translator;
-        $this->urlGenerator = $urlGenerator;
     }
 
     public function __invoke(UserRegistrationEvent $event): void

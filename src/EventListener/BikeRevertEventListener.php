@@ -7,23 +7,15 @@ namespace BikeShare\EventListener;
 use BikeShare\Event\BikeRevertEvent;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\User\User;
-use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class BikeRevertEventListener
 {
-    private User $user;
-    private SmsSenderInterface $smsSender;
-    private TranslatorInterface $translator;
-
     public function __construct(
-        User $user,
-        SmsSenderInterface $smsSender,
-        TranslatorInterface $translator
+        private User $user,
+        private SmsSenderInterface $smsSender,
+        private TranslatorInterface $translator,
     ) {
-        $this->user = $user;
-        $this->smsSender = $smsSender;
-        $this->translator = $translator;
     }
 
     public function __invoke(BikeRevertEvent $event): void

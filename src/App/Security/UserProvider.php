@@ -16,15 +16,10 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
 {
-    private DbInterface $db;
-    private PhonePurifierInterface $phonePurifier;
-
     public function __construct(
-        DbInterface $db,
-        PhonePurifierInterface $phonePurifier
+        private DbInterface $db,
+        private PhonePurifierInterface $phonePurifier,
     ) {
-        $this->db = $db;
-        $this->phonePurifier = $phonePurifier;
     }
 
     /**
@@ -88,7 +83,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof User) {
-            throw new UnsupportedUserException(sprintf('Invalid user class "%s".', get_class($user)));
+            throw new UnsupportedUserException(sprintf('Invalid user class "%s".', $user::class));
         }
 
         $user = $this->loadUserByIdentifier($user->getNumber());

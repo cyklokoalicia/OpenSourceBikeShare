@@ -21,39 +21,18 @@ abstract class AbstractRentSystem implements RentSystemInterface
 {
     protected const ERROR = 1;
 
-    protected DbInterface $db;
-    protected CreditSystemInterface $creditSystem;
-    protected User $user;
-    protected EventDispatcherInterface $eventDispatcher;
-    protected AdminNotifier $adminNotifier;
-    protected LoggerInterface $logger;
-    protected StandRepository $standRepository;
-    protected array $watchesConfig;
-    protected bool $isSmsSystemEnabled;
-    protected bool $forceStack;
-
     public function __construct(
-        DbInterface $db,
-        CreditSystemInterface $creditSystem,
-        User $user,
-        EventDispatcherInterface $eventDispatcher,
-        AdminNotifier $adminNotifier,
-        LoggerInterface $logger,
-        StandRepository $standRepository,
-        array $watchesConfig,
-        bool $isSmsSystemEnabled,
-        bool $forceStack
+        protected DbInterface $db,
+        protected CreditSystemInterface $creditSystem,
+        protected User $user,
+        protected EventDispatcherInterface $eventDispatcher,
+        protected AdminNotifier $adminNotifier,
+        protected LoggerInterface $logger,
+        protected StandRepository $standRepository,
+        protected array $watchesConfig,
+        protected bool $isSmsSystemEnabled,
+        protected bool $forceStack,
     ) {
-        $this->db = $db;
-        $this->creditSystem = $creditSystem;
-        $this->user = $user;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->adminNotifier = $adminNotifier;
-        $this->logger = $logger;
-        $this->standRepository = $standRepository;
-        $this->watchesConfig = $watchesConfig;
-        $this->isSmsSystemEnabled = $isSmsSystemEnabled;
-        $this->forceStack = $forceStack;
     }
 
     public function rentBike($userId, $bikeId, $force = false)

@@ -13,14 +13,11 @@ class InfoCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'INFO';
 
-    private StandRepository $standRepository;
-
     public function __construct(
         TranslatorInterface $translator,
-        StandRepository $bikeRepository
+        private StandRepository $standRepository
     ) {
         parent::__construct($translator);
-        $this->standRepository = $bikeRepository;
     }
 
     public function __invoke(User $user, string $standName): string

@@ -7,21 +7,10 @@ use BikeShare\SmsConnector\SmsConnectorInterface;
 
 class SmsSender implements SmsSenderInterface
 {
-    /**
-     * @var SmsConnectorInterface
-     */
-    private $smsConnector;
-    /**
-     * @var DbInterface
-     */
-    private $db;
-
     public function __construct(
-        SmsConnectorInterface $smsConnector,
-        DbInterface $db
+        private SmsConnectorInterface $smsConnector,
+        private DbInterface $db,
     ) {
-        $this->smsConnector = $smsConnector;
-        $this->db = $db;
     }
 
     public function send($number, $message)

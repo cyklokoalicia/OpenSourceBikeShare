@@ -9,15 +9,10 @@ use Psr\Log\LoggerInterface;
 
 class StatsRepository
 {
-    private DbInterface $db;
-    private LoggerInterface $logger;
-
     public function __construct(
-        DbInterface $db,
-        LoggerInterface $logger
+        private DbInterface $db,
+        private LoggerInterface $logger,
     ) {
-        $this->db = $db;
-        $this->logger = $logger;
     }
 
     public function getUserStatsForYear(int $userId, int $year): array

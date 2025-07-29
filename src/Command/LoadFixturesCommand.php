@@ -14,25 +14,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'load:fixtures', description: 'Load test fixtures into the database')]
 class LoadFixturesCommand extends Command
 {
-    private string $appEnvironment;
-    private string $projectDir;
-    private string $dbDatabase;
-    private SimpleFileLoader $fixturesLoader;
-    private DbInterface $db;
-
     public function __construct(
-        string $appEnvironment,
-        string $projectDir,
-        string $dbDatabase,
-        SimpleFileLoader $fixturesLoader,
-        DbInterface $db
+        private string $appEnvironment,
+        private string $projectDir,
+        private string $dbDatabase,
+        private SimpleFileLoader $fixturesLoader,
+        private DbInterface $db,
     ) {
-        $this->appEnvironment = $appEnvironment;
-        $this->projectDir = $projectDir;
-        $this->dbDatabase = $dbDatabase;
-        $this->fixturesLoader = $fixturesLoader;
-        $this->db = $db;
-
         parent::__construct('load:fixtures');
     }
 

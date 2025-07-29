@@ -9,28 +9,16 @@ use Psr\Log\LoggerInterface;
 
 class PHPMailerMailSender implements MailSenderInterface
 {
-    private string $fromEmail;
-    private string $fromName;
-    private array $emailConfig;
-    private PHPMailer $mailer;
-    private int $debugLevel;
-    private ?LoggerInterface $logger;
     private array $sendLog = [];
 
     public function __construct(
-        string $fromEmail,
-        string $fromName,
-        array $emailConfig,
-        PHPMailer $mailer,
-        int $debugLevel = 0,
-        ?LoggerInterface $logger = null
+        private string $fromEmail,
+        private string $fromName,
+        private array $emailConfig,
+        private PHPMailer $mailer,
+        private int $debugLevel = 0,
+        private ?LoggerInterface $logger = null,
     ) {
-        $this->fromEmail = $fromEmail;
-        $this->fromName = $fromName;
-        $this->emailConfig = $emailConfig;
-        $this->mailer = $mailer;
-        $this->debugLevel = $debugLevel;
-        $this->logger = $logger;
     }
 
     public function sendMail($recipient, $subject, $message)

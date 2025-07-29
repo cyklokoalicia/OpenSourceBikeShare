@@ -6,12 +6,8 @@ use BikeShare\Db\DbInterface;
 
 class BikeRepository
 {
-    private DbInterface $db;
-
-    public function __construct(
-        DbInterface $db
-    ) {
-        $this->db = $db;
+    public function __construct(private DbInterface $db)
+    {
     }
 
     public function findAll(): array

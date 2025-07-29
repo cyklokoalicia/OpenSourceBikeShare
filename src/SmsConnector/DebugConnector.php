@@ -10,19 +10,15 @@ use Symfony\Contracts\Service\ResetInterface;
 
 class DebugConnector extends AbstractConnector implements ResetInterface
 {
-    private RequestStack $requestStack;
-    private LoggerInterface $logger;
     private array $sentMessages = [];
 
     public function __construct(
-        RequestStack $requestStack,
-        LoggerInterface $logger,
+        private RequestStack $requestStack,
+        private LoggerInterface $logger,
         array $configuration,
-        $debugMode = false
+        $debugMode = false,
     ) {
         parent::__construct($configuration, $debugMode);
-        $this->requestStack = $requestStack;
-        $this->logger = $logger;
     }
 
     public function checkConfig(array $config): void

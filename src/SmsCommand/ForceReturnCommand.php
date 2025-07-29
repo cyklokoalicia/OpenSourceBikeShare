@@ -13,14 +13,11 @@ class ForceReturnCommand extends AbstractCommand implements SmsCommandInterface
     protected const COMMAND_NAME = 'FORCERETURN';
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
-    private RentSystemInterface $rentSystem;
-
     public function __construct(
         TranslatorInterface $translator,
-        RentSystemInterface $rentSystem
+        private RentSystemInterface $rentSystem
     ) {
         parent::__construct($translator);
-        $this->rentSystem = $rentSystem;
     }
 
     public function __invoke(User $user, int $bikeNumber, string $standName, ?string $note = null): string

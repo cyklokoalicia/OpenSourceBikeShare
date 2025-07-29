@@ -15,18 +15,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CouponController extends AbstractController
 {
-    private CreditSystemInterface $creditSystem;
-    private CouponRepository $couponRepository;
-    private LoggerInterface $logger;
-
     public function __construct(
-        CreditSystemInterface $creditSystem,
-        CouponRepository $couponRepository,
-        LoggerInterface $logger
+        private CreditSystemInterface $creditSystem,
+        private CouponRepository $couponRepository,
+        private LoggerInterface $logger,
     ) {
-        $this->creditSystem = $creditSystem;
-        $this->couponRepository = $couponRepository;
-        $this->logger = $logger;
     }
 
     /**

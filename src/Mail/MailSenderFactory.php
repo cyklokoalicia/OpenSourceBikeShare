@@ -8,15 +8,10 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 
 class MailSenderFactory
 {
-    private string $smtpHost;
-    private ServiceLocator $locator;
-
     public function __construct(
-        string $smtpHost,
-        ServiceLocator $locator
+        private string $smtpHost,
+        private ServiceLocator $locator,
     ) {
-        $this->smtpHost = $smtpHost;
-        $this->locator = $locator;
     }
 
     public function getMailSender(): MailSenderInterface

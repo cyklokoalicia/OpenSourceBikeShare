@@ -13,12 +13,9 @@ use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 class TokenProvider implements TokenProviderInterface
 {
     private $tokens = [];
-    private DbInterface $db;
 
-    public function __construct(
-        DbInterface $db
-    ) {
-        $this->db = $db;
+    public function __construct(private DbInterface $db)
+    {
     }
 
     public function loadTokenBySeries(string $series): PersistentTokenInterface

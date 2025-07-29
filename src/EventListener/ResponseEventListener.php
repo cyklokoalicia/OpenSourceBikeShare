@@ -27,15 +27,10 @@ class ResponseEventListener
         'api_stand_remove_note',
     ];
 
-    private DbInterface $db;
-    private Security $security;
-
     public function __construct(
-        DbInterface $db,
-        Security $security
+        private DbInterface $db,
+        private Security $security,
     ) {
-        $this->db = $db;
-        $this->security = $security;
     }
 
     public function __invoke(ResponseEvent $event): void

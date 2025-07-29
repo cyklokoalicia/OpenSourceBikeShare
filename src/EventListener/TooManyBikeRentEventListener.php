@@ -12,27 +12,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TooManyBikeRentEventListener
 {
-    private int $timeTooManyHours;
-    private int $numberToMany;
-    private UserRepository $userRepository;
-    private HistoryRepository $historyRepository;
-    private TranslatorInterface $translator;
-    private AdminNotifier $adminNotifier;
-
     public function __construct(
-        int $timeTooManyHours,
-        int $numberToMany,
-        UserRepository $userRepository,
-        HistoryRepository $historyRepository,
-        TranslatorInterface $translator,
-        AdminNotifier $adminNotifier
+        private int $timeTooManyHours,
+        private int $numberToMany,
+        private UserRepository $userRepository,
+        private HistoryRepository $historyRepository,
+        private TranslatorInterface $translator,
+        private AdminNotifier $adminNotifier,
     ) {
-        $this->timeTooManyHours = $timeTooManyHours;
-        $this->numberToMany = $numberToMany;
-        $this->userRepository = $userRepository;
-        $this->historyRepository = $historyRepository;
-        $this->translator = $translator;
-        $this->adminNotifier = $adminNotifier;
     }
 
     public function __invoke(BikeRentEvent $event): void

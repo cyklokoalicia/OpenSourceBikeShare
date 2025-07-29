@@ -8,12 +8,8 @@ use BikeShare\Db\DbInterface;
 
 class NoteRepository
 {
-    private DbInterface $db;
-
-    public function __construct(
-        DbInterface $db
-    ) {
-        $this->db = $db;
+    public function __construct(private DbInterface $db)
+    {
     }
 
     public function findBikeNote(int $bikeNumber): array

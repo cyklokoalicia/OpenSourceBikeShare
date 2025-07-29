@@ -9,15 +9,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class LoopbackConnector extends AbstractConnector
 {
     private array $store = [];
-    private RequestStack $requestStack;
 
     public function __construct(
-        RequestStack $requestStack,
+        private RequestStack $requestStack,
         array $configuration,
-        $debugMode = false
+        $debugMode = false,
     ) {
         parent::__construct($configuration, $debugMode);
-        $this->requestStack = $requestStack;
     }
 
     public function checkConfig(array $config): void

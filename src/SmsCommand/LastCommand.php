@@ -14,14 +14,11 @@ class LastCommand extends AbstractCommand implements SmsCommandInterface
     protected const COMMAND_NAME = 'LAST';
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
-    private BikeRepository $bikeRepository;
-
     public function __construct(
         TranslatorInterface $translator,
-        BikeRepository $bikeRepository
+        private BikeRepository $bikeRepository
     ) {
         parent::__construct($translator);
-        $this->bikeRepository = $bikeRepository;
     }
 
     public function __invoke(User $user, int $bikeNumber): string

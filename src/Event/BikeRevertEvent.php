@@ -6,15 +6,11 @@ namespace BikeShare\Event;
 
 class BikeRevertEvent
 {
-    private int $bikeNumber;
-    private int $revertedByUserId;
-    private int $previousOwnerId;
-
-    public function __construct(int $bikeNumber, int $revertedByUserId, int $previousUserId)
-    {
-        $this->bikeNumber = $bikeNumber;
-        $this->revertedByUserId = $revertedByUserId;
-        $this->previousOwnerId = $previousUserId;
+    public function __construct(
+        private int $bikeNumber,
+        private int $revertedByUserId,
+        private int $previousOwnerId,
+    ) {
     }
 
     public function getBikeNumber(): int
