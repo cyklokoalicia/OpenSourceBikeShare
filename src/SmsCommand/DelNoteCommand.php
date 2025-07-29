@@ -23,7 +23,6 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
         private readonly NoteRepository $noteRepository
     ) {
         parent::__construct($translator);
-        $this->translator = $translator;
     }
 
     public function __invoke(
