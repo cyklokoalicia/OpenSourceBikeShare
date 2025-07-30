@@ -8,6 +8,7 @@ use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Sms\SmsSenderInterface;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -26,14 +27,12 @@ class LongRentalCheckCommand extends Command
         private readonly SmsSenderInterface $smsSender,
         private readonly TranslatorInterface $translator,
         private readonly AdminNotifier $adminNotifier,
+        private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
     }
 
-    /**
-     * @phpcs:disable Generic.Files.LineLength
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $abusers = [];
@@ -50,8 +49,8 @@ class LongRentalCheckCommand extends Command
                 continue;
             }
 
-            $time = strtotime((string) $lastRent['time']);
-            if ($time + ($this->longRentalHours * 3600) <= time()) {
+            $time = new \DateTimeImmutable((string) $lastRent['time']);
+            if ($time->getTimestamp() + ($this->longRentalHours * 3600) <= $this->clock->now()->getTimestamp()) {
                 $abusers[] = [
                     'userId' => $userId,
                     'bikeNumber' => $bikeNumber,
@@ -63,7 +62,8 @@ class LongRentalCheckCommand extends Command
                     $this->smsSender->send(
                         $userPhone,
                         $this->translator->trans(
-                            'Please, return your bike {bikeNumber} immediately to the closest stand! Ignoring this warning can get you banned from the system.',
+                            'Please, return your bike {bikeNumber} immediately to the closest stand! '.
+                                'Ignoring this warning can get you banned from the system.',
                             ['{bikeNumber}' => $bikeNumber]
                         )
                     );

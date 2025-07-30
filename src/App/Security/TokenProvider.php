@@ -46,7 +46,7 @@ class TokenProvider implements TokenProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function updateToken(string $series, string $tokenValue, \DateTimeInterface $lastUsed)
+    public function updateToken(string $series, string $tokenValue, \DateTimeInterface $lastUsed): void
     {
         $currentToken = $this->loadTokenBySeries($series);
 
@@ -63,7 +63,7 @@ class TokenProvider implements TokenProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function deleteTokenBySeries(string $series)
+    public function deleteTokenBySeries(string $series): void
     {
         $this->db->query(
             'DELETE FROM remember_me_token WHERE series= :series',
@@ -76,7 +76,7 @@ class TokenProvider implements TokenProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function createNewToken(PersistentTokenInterface $token)
+    public function createNewToken(PersistentTokenInterface $token): void
     {
         $this->db->query(
             'INSERT INTO remember_me_token (class, username, series, value, lastUsed) 

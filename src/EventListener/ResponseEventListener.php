@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Db\DbInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -30,6 +31,7 @@ class ResponseEventListener
     public function __construct(
         private readonly DbInterface $db,
         private readonly Security $security,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -54,10 +56,12 @@ class ResponseEventListener
         $this->db->query(
             'INSERT INTO sent 
              SET number = :number,
-                 text = :text',
+                 text = :text,
+                 time = :time',
             [
                 'number' => $number,
-                'text' => strip_tags((string)$response)
+                'text' => strip_tags((string)$response),
+                'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
     }

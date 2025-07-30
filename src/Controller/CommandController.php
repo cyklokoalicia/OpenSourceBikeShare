@@ -30,9 +30,9 @@ class CommandController extends AbstractController
         $logger->notice(
             'Access to command.php map:markers',
             [
-            'ip' => $request->getClientIp(),
-            'uri' => $request->getRequestUri(),
-            'request' => $request->request->all(),
+                'ip' => $request->getClientIp(),
+                'uri' => $request->getRequestUri(),
+                'request' => $request->request->all(),
             ]
         );
 

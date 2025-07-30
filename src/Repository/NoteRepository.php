@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
+use Symfony\Component\Clock\ClockInterface;
 
 class NoteRepository
 {
-    public function __construct(private readonly DbInterface $db)
-    {
+    public function __construct(
+        private readonly DbInterface $db,
+        private readonly ClockInterface $clock,
+    ) {
     }
 
     public function findBikeNote(int $bikeNumber): array
@@ -58,11 +61,12 @@ class NoteRepository
     {
         $this->db->query(
             'INSERT INTO notes (standId, userId, note, time)
-                VALUES (:standId, :userId, :note, NOW())',
+                VALUES (:standId, :userId, :note, :time)',
             [
                 'standId' => $standId,
                 'userId' => $userId,
                 'note' => $note,
+                'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
     }
@@ -71,11 +75,12 @@ class NoteRepository
     {
         $this->db->query(
             'INSERT INTO notes (bikeNum, userId, note, time)
-                VALUES (:bikeNumber, :userId, :note, NOW())',
+                VALUES (:bikeNumber, :userId, :note, :time)',
             [
                 'bikeNumber' => $bikeNumber,
                 'userId' => $userId,
                 'note' => $note,
+                'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
     }

@@ -63,7 +63,7 @@ class DebugConnector extends AbstractConnector implements ResetInterface
         return $this->sentMessages;
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->sentMessages = [];
     }

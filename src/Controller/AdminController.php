@@ -7,6 +7,7 @@ namespace BikeShare\Controller;
 use BikeShare\Credit\CreditSystemInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -14,12 +15,12 @@ class AdminController extends AbstractController
 {
     /**
      * @Route("/admin", name="admin")
-     * @Route("/admin.php", name="admin_old")
      */
     public function index(
         bool $isSmsSystemEnabled,
         CreditSystemInterface $creditSystem,
-        LoggerInterface $logger
+        ClockInterface $clock,
+        LoggerInterface $logger,
     ): Response {
         if (!$this->isGranted('ROLE_ADMIN')) {
             $logger->info(
@@ -37,7 +38,7 @@ class AdminController extends AbstractController
             [
                 'isSmsSystemEnabled' => $isSmsSystemEnabled,
                 'creditSystem' => $creditSystem,
-                'currentYear' => date('Y'),
+                'currentYear' => $clock->now()->format('Y'),
             ]
         );
     }

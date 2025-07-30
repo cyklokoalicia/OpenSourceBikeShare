@@ -76,8 +76,10 @@ class StatsRepository
             } elseif ($item['action'] === 'RETURN' || $item['action'] === 'FORCERETURN') {
                 $returnHistory[$item['bikeNum']] = $item;
                 $stats['return_station'][$item['parameter']] = ($stats['return_station'][$item['parameter']] ?? 0) + 1;
-                $rentDuration = strtotime((string) $item['time'])
-                    - strtotime($rentHistory[$item['bikeNum']]['time'] ?? $item['time']);
+
+                $startRent = new \DateTimeImmutable((string)($rentHistory[$item['bikeNum']]['time'] ?? $item['time']));
+                $endRent = new \DateTimeImmutable((string)$item['time']);
+                $rentDuration = $endRent->getTimestamp() - $startRent->getTimestamp();
                 if ($rentDuration > 3600 * 24 * 7) {
                     $this->logger->warning(
                         'Too long rental duration',

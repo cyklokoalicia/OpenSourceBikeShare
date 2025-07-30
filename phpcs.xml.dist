@@ -9,6 +9,13 @@
 
     <rule ref="PSR12"/>
 
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+           <property name="lineLimit" value="120"/>
+           <property name="absoluteLineLimit" value="160"/>
+        </properties>
+     </rule>
+
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>
             <property name="rootNamespaces" type="array">

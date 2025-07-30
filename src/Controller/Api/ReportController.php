@@ -6,6 +6,7 @@ namespace BikeShare\Controller\Api;
 
 use BikeShare\Repository\HistoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -29,14 +30,15 @@ class ReportController extends AbstractController
      */
     public function user(
         HistoryRepository $historyRepository,
-        $year = null
+        ClockInterface $clock,
+        $year = null,
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         if (is_null($year)) {
-            $year = (int)date('Y');
+            $year = (int)$clock->now()->format('Y');
         } elseif (
-            $year > (int)date('Y')
+            $year > (int)$clock->now()->format('Y')
             || $year < 2010
         ) {
             return $this->json([], Response::HTTP_BAD_REQUEST);

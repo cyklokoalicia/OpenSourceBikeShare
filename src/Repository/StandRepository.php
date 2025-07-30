@@ -50,11 +50,11 @@ class StandRepository
              FROM stands 
              LEFT JOIN bikes ON bikes.currentStand=stands.standId
              WHERE stands.serviceTag = 0 ' .
-            (is_null($city) ? '' : ' AND city = :city ') .
+            (is_null($city) ? ' AND standId != :city ' : ' AND city = :city ') .
             'GROUP BY standName 
                  ORDER BY standName',
             [
-                'city' => $city,
+                'city' => (string)$city,
             ]
         )->fetchAllAssoc();
 

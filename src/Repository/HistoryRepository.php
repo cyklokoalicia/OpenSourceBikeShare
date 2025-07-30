@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
+use Symfony\Component\Clock\ClockInterface;
 
 class HistoryRepository
 {
-    public function __construct(private readonly DbInterface $db)
-    {
+    public function __construct(
+        private readonly DbInterface $db,
+        private readonly ClockInterface $clock,
+    ) {
     }
 
     public function addItem(
@@ -19,13 +22,14 @@ class HistoryRepository
         string $parameter
     ): void {
         $this->db->query(
-            'INSERT INTO history (userId, bikeNum, action, parameter)
-             VALUES (:userId, :bikeNum, :action, :parameter)',
+            'INSERT INTO history (userId, bikeNum, action, parameter, time)
+             VALUES (:userId, :bikeNum, :action, :parameter, :time)',
             [
                 'userId' => $userId,
                 'bikeNum' => $bikeNum,
                 'action' => $action,
                 'parameter' => $parameter,
+                'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
     }
@@ -94,7 +98,7 @@ class HistoryRepository
         return $result;
     }
 
-    public function findRentCountByUser(int $userId, string $offsetTime): int
+    public function findRentCountByUser(int $userId, \DateTimeImmutable $offsetTime): int
     {
         $result = $this->db->query(
             "SELECT
@@ -105,7 +109,7 @@ class HistoryRepository
               AND time > :offsetTime",
             [
                 'userId' => $userId,
-                'offsetTime' => $offsetTime,
+                'offsetTime' => $offsetTime->format('Y-m-d H:i:s'),
             ]
         )->fetchAssoc();
 
