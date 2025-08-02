@@ -47,8 +47,13 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['standName' => '\w+'])
         ->methods(['DELETE'])
         ->controller([\BikeShare\Controller\Api\StandController::class, 'removeNote']);
+    $routes->add('api_stand_markers_external', '/api/stand/markers')
+        ->methods(['GET'])
+        ->condition('request.headers.has("authorization")')
+        ->controller([\BikeShare\Controller\Api\StandController::class, 'apiMarkers']);
     $routes->add('api_stand_markers', '/api/stand/markers')
         ->methods(['GET'])
+        ->condition('!request.headers.has("authorization")')
         ->controller([\BikeShare\Controller\Api\StandController::class, 'markers']);
     $routes->add('api_bike_index', '/api/bike')
         ->methods(['GET'])

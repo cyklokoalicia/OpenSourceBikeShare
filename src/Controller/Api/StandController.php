@@ -20,7 +20,6 @@ class StandController extends AbstractController
     ) {
     }
 
-
     /**
      * @Route("/api/stand", name="api_stand_index", methods={"GET"})
      */
@@ -107,6 +106,17 @@ class StandController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         $stands = $this->standRepository->findAllExtended($this->getUser()->getCity());
+
+        return $this->json($stands);
+    }
+
+    /**
+     * @Route("/api/stand/markers", name="api_stand_markers_external", methods={"GET"})
+     */
+    public function apiMarkers(): Response {
+        $this->denyAccessUnlessGranted('ROLE_API');
+
+        $stands = $this->standRepository->findAllExtended();
 
         return $this->json($stands);
     }
