@@ -39,7 +39,7 @@ class TooManyBikeRentEventListenerTest extends BikeSharingKernelTestCase
         $this->getContainer()->set(HistoryRepository::class, $historyRepository);
 
         $eventDispatcher = $this->getContainer()->get('event_dispatcher');
-        $eventDispatcher->dispatch(new BikeRentEvent(self::BIKE_NUMBER,$user['userId'], false));
+        $eventDispatcher->dispatch(new BikeRentEvent(self::BIKE_NUMBER, $user['userId'], false));
 
         $mailSender = self::getContainer()->get(MailSenderInterface::class);
         $this->assertCount(1, $mailSender->getSentMessages(), 'Invalid number of sent email');

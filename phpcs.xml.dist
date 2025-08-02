@@ -3,7 +3,7 @@
          xsi:noNamespaceSchemaLocation="phpcs.xsd">
     <description>The coding standard for Open Source Bike Sharing.</description>
 
-    <config name="php_version" value="704000"/>
+    <config name="php_version" value="801000"/>
     <file>src</file>
     <file>tests</file>
 

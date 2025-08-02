@@ -62,7 +62,7 @@ class LongRentalCheckCommand extends Command
                     $this->smsSender->send(
                         $userPhone,
                         $this->translator->trans(
-                            'Please, return your bike {bikeNumber} immediately to the closest stand! '.
+                            'Please, return your bike {bikeNumber} immediately to the closest stand! ' .
                                 'Ignoring this warning can get you banned from the system.',
                             ['{bikeNumber}' => $bikeNumber]
                         )

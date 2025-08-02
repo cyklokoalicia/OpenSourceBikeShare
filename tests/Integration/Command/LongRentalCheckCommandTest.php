@@ -74,7 +74,7 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
         self::getContainer()->get(RentSystemFactory::class)->getRentSystem('web')
             ->rentBike($user['userId'], self::BIKE_NUMBER);
 
-        static::mockTime('+' . $_ENV['WATCHES_LONG_RENTAL']. ' hours 15 minutes');
+        static::mockTime('+' . $_ENV['WATCHES_LONG_RENTAL'] . ' hours 15 minutes');
 
         $application = new Application(self::$kernel);
 

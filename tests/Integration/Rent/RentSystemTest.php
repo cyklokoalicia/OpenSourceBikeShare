@@ -107,7 +107,7 @@ class RentSystemTest extends BikeSharingKernelTestCase
         static::mockTime('+' . $returnTimeMoveToFuture . ' seconds');
         #return bike by user
         $result = self::getContainer()->get(RentSystemFactory::class)->getRentSystem('web')
-            ->returnBike($user['userId'], self::BIKE_NUMBER,  self::STAND_NAME);
+            ->returnBike($user['userId'], self::BIKE_NUMBER, self::STAND_NAME);
 
         $bike = self::getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
         $stand = self::getContainer()->get(StandRepository::class)->findItemByName(self::STAND_NAME);
