@@ -34,14 +34,13 @@ return function (SecurityConfig $security) {
 
     $apiFirewall = $security->firewall('api');
     $apiFirewall
+        ->security(true)
         ->pattern('^/api')
         ->context('main')
         ->accessDeniedHandler(ApiAccessDeniedHandler::class);
     $apiFirewall
-        ->security(true)
         ->customAuthenticators([ApiTokenAuthenticator::class]);
     $apiFirewall
-        ->security(true)
         ->httpBasic()
         ->realm('Bike Sharing API');
     $security

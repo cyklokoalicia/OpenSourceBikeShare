@@ -113,7 +113,8 @@ class StandController extends AbstractController
     /**
      * @Route("/api/stand/markers", name="api_stand_markers_external", methods={"GET"})
      */
-    public function apiMarkers(): Response {
+    public function apiMarkers(): Response
+    {
         $this->denyAccessUnlessGranted('ROLE_API');
 
         $stands = $this->standRepository->findAllExtended();

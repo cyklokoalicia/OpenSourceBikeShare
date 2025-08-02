@@ -40,9 +40,12 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
             throw new AuthenticationException('Invalid API token');
         }
 
-        return new SelfValidatingPassport(new UserBadge($token, function () use ($token) {
-                return new ApiServiceUser($this->validTokens[$token]);
-            })
+        return new SelfValidatingPassport(
+            new UserBadge(
+                hash('sha256', $token),
+                function () use ($token) {
+                    return new ApiServiceUser($this->validTokens[$token]);
+                })
         );
     }
 
