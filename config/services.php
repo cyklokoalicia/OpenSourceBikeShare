@@ -69,6 +69,9 @@ return static function (ContainerConfigurator $container): void {
             '../src/SmsCommand/*Command.php',
         ]);
 
+    $services->get(\BikeShare\App\Security\ApiTokenAuthenticator::class)
+        ->bind('$validTokens', env('json:SERVICE_API_TOKENS'));
+
     $services->get(\BikeShare\Command\LongRentalCheckCommand::class)
         ->bind('$notifyUser', env('bool:NOTIFY_USER_ABOUT_LONG_RENTAL'))
         ->bind('$longRentalHours', env('int:WATCHES_LONG_RENTAL'));

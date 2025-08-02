@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use BikeShare\App\Security\ApiAccessDeniedHandler;
+use BikeShare\App\Security\ApiTokenAuthenticator;
 use BikeShare\App\Security\TokenProvider;
 use BikeShare\App\Security\UserConfirmedEmailChecker;
 use BikeShare\App\Security\UserProvider;
@@ -12,6 +13,9 @@ use Symfony\Config\SecurityConfig;
 return function (SecurityConfig $security) {
 
     $security->enableAuthenticatorManager(true);
+
+    $security->roleHierarchy('ROLE_ADMIN', ['ROLE_USER']);
+    $security->roleHierarchy('ROLE_SUPER_ADMIN', ['ROLE_ADMIN']);
 
     $security
         ->passwordHasher(PasswordAuthenticatedUserInterface::class)
@@ -30,13 +34,19 @@ return function (SecurityConfig $security) {
 
     $apiFirewall = $security->firewall('api');
     $apiFirewall
+        ->security(true)
         ->pattern('^/api')
         ->context('main')
         ->accessDeniedHandler(ApiAccessDeniedHandler::class);
     $apiFirewall
-        ->security(true)
+        ->customAuthenticators([ApiTokenAuthenticator::class]);
+    $apiFirewall
         ->httpBasic()
         ->realm('Bike Sharing API');
+    $security
+        ->accessControl()
+        ->path('^/api')
+        ->roles(['ROLE_USER', 'ROLE_API']);
 
     $mainFirewall = $security->firewall('main');
     $mainFirewall
@@ -61,9 +71,6 @@ return function (SecurityConfig $security) {
     $mainFirewall
         ->pattern('^/')
         ->userChecker(UserConfirmedEmailChecker::class);
-
-    $security->roleHierarchy('ROLE_ADMIN', ['ROLE_USER']);
-    $security->roleHierarchy('ROLE_SUPER_ADMIN', ['ROLE_ADMIN']);
 
     $security->accessControl()
         ->path('^/admin')
