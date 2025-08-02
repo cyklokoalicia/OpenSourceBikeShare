@@ -352,13 +352,11 @@ abstract class AbstractRentSystem implements RentSystemInterface
     }
 
     // subtract credit for rental
-    private function changecreditendrental($bike, $userid)
+    private function changecreditendrental($bike, $userid): ?float
     {
-        if ($this->creditSystem->isEnabled() == false) {
+        if ($this->creditSystem->isEnabled() === false) {
             return null;
         }
-
-        // if credit system disabled, exit
 
         $userCredit = $this->creditSystem->getUserCredit($userid);
 
@@ -371,7 +369,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $creditchange = 0;
             $changelog = '';
 
-            //ak vrati a znova pozica bike do 10 min tak free time nebude mať.
+            // if the bike is returned and rented again within 10 minutes, a user will not have new free time.
             $oldRetrun = $this->db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RETURN' OR action='FORCERETURN') ORDER BY time DESC LIMIT 1");
             if ($oldRetrun->rowCount() == 1) {
                 $oldRow = $oldRetrun->fetchAssoc();
@@ -381,7 +379,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     $changelog .= 'rerent-' . $this->creditSystem->getRentalFee() . ';';
                 }
             }
-            //end
 
             if ($timeDiff > $this->watchesConfig['freetime'] * 60) {
                 $creditchange += $this->creditSystem->getRentalFee();
@@ -425,7 +422,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $changelog .= 'longrent-' . $this->creditSystem->getLongRentalFee() . ';';
             }
             $userCredit -= $creditchange;
-            $this->db->query("UPDATE credit SET credit=$userCredit WHERE userId=$userid");
+            if ($creditchange > 0) {
+                $this->creditSystem->useCredit($userid, $creditchange);
+            }
 
             $this->db->query(
                 "INSERT INTO history SET userId = :userId, bikeNum = :bikeNum, action = :action, parameter = :creditChange, time = :time",
@@ -450,6 +449,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             return $creditchange;
         }
+
         return null;
     }
 }
