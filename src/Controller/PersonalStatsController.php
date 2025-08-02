@@ -8,6 +8,7 @@ use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\StatsRepository;
 use BikeShare\User\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -19,13 +20,14 @@ class PersonalStatsController extends AbstractController
     public function yearStats(
         StatsRepository $statsRepository,
         StandRepository $standRepository,
+        ClockInterface $clock,
         User $user,
-        $year = null
+        $year = null,
     ): Response {
         if (is_null($year)) {
-            $year = (int)date('Y');
+            $year = (int)$clock->now()->format('Y');
         } elseif (
-            $year > (int)date('Y')
+            $year > (int)$clock->now()->format('Y')
             || $year < 2010
         ) {
             return new Response('', Response::HTTP_BAD_REQUEST);

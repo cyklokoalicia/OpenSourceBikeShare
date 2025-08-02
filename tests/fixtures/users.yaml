@@ -37,3 +37,8 @@ stdClass:
     privileges: 0
     mail: 'test_registration_email@gmail.com'
     number: 421333333333
+
+  userForLongRentalCheckTest (extends defaultUser):
+    userId: 9
+    privileges: 0
+    number: 421444444444

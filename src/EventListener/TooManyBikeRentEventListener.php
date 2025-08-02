@@ -8,6 +8,7 @@ use BikeShare\Event\BikeRentEvent;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TooManyBikeRentEventListener
@@ -19,6 +20,7 @@ class TooManyBikeRentEventListener
         private readonly HistoryRepository $historyRepository,
         private readonly TranslatorInterface $translator,
         private readonly AdminNotifier $adminNotifier,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -30,10 +32,7 @@ class TooManyBikeRentEventListener
         }
 
         $user = $this->userRepository->findItem($event->getUserId());
-        $offsetTime = date(
-            'Y-m-d H:i:s',
-            time() - $this->timeTooManyHours * 3600
-        );
+        $offsetTime = $this->clock->now()->sub(new \DateInterval('PT' . $this->timeTooManyHours . 'H'));
 
         $rentCount = $this->historyRepository->findRentCountByUser($event->getUserId(), $offsetTime);
         if ($rentCount >= ($user['userLimit'] + $this->numberToMany)) {

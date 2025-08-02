@@ -8,26 +8,31 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Sms\SmsSender;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\ClockInterface;
+use Symfony\Component\Clock\MockClock;
 
 class SmsSenderTest extends TestCase
 {
-    private SmsConnectorInterface $smsConnector;
-    private DbInterface $db;
+    private SmsConnectorInterface $smsConnectorMock;
+    private DbInterface $dbMock;
+    private ClockInterface $clockMock;
     private SmsSender $smsSender;
 
     protected function setUp(): void
     {
-        $this->smsConnector = $this->createMock(SmsConnectorInterface::class);
-        $this->db = $this->createMock(DbInterface::class);
-        $this->smsSender = new SmsSender($this->smsConnector, $this->db);
+        $this->smsConnectorMock = $this->createMock(SmsConnectorInterface::class);
+        $this->dbMock = $this->createMock(DbInterface::class);
+        $this->clockMock = new MockClock();
+        $this->smsSender = new SmsSender($this->smsConnectorMock, $this->dbMock, $this->clockMock);
     }
 
     protected function tearDown(): void
     {
         unset(
-            $this->smsConnector,
-            $this->db,
-            $this->smsSender
+            $this->smsConnectorMock,
+            $this->dbMock,
+            $this->smsSender,
+            $this->clockMock,
         );
     }
 
@@ -37,25 +42,27 @@ class SmsSenderTest extends TestCase
     public function testSend(
         $number,
         $message,
+        $currentDateTime,
         $smsConnectorCallParams,
         $smsConnectorMaxMessageLength,
         $dbEscapeCallParams,
         $dbEscapeCallResult,
         $dbCallParams
     ) {
+        $this->clockMock->modify($currentDateTime);
         $matcher = $this->exactly(count($smsConnectorCallParams));
-        $this->smsConnector
+        $this->smsConnectorMock
             ->expects($matcher)
             ->method('send')
             ->willReturnCallback(function (...$parameters) use ($matcher, $smsConnectorCallParams) {
                 $this->assertSame($smsConnectorCallParams[$matcher->getInvocationCount() - 1], $parameters);
             });
-        $this->smsConnector
+        $this->smsConnectorMock
             ->expects($this->once())
             ->method('getMaxMessageLength')
             ->willReturn($smsConnectorMaxMessageLength);
         $matcher = $this->exactly(count($dbEscapeCallParams));
-        $this->db
+        $this->dbMock
             ->expects($matcher)
             ->method('escape')
             ->willReturnCallback(function (...$parameters) use ($matcher, $dbEscapeCallParams, $dbEscapeCallResult) {
@@ -64,7 +71,7 @@ class SmsSenderTest extends TestCase
                 return $dbEscapeCallResult[$matcher->getInvocationCount() - 1];
             });
         $matcher = $this->exactly(count($dbCallParams));
-        $this->db
+        $this->dbMock
             ->expects($matcher)
             ->method('query')
             ->willReturnCallback(function (...$parameters) use ($matcher, $dbCallParams) {
@@ -79,6 +86,7 @@ class SmsSenderTest extends TestCase
         yield 'short message' => [
             'number' => '123456789',
             'message' => 'Hello, World!',
+            'currentDateTime' => '2023-10-01 12:00:00',
             'smsConnectorCallParams' => [
                 ['123456789', 'Hello, World!']
             ],
@@ -87,14 +95,15 @@ class SmsSenderTest extends TestCase
             'dbEscapeCallResult' => ['Hello, World!'],
             'dbCallParams' => [
                 [
-                    "INSERT INTO sent SET number = :number, text = :message",
-                    ['number' => '123456789', 'message' => 'Hello, World!']
+                    "INSERT INTO sent SET number = :number, text = :message, time = :time",
+                    ['number' => '123456789', 'message' => 'Hello, World!', 'time' => '2023-10-01 12:00:00']
                 ]
             ]
         ];
         yield 'encoded message' => [
             'number' => '123456789',
             'message' => 'Hello, "World"!',
+            'currentDateTime' => '2023-12-01 12:00:00',
             'smsConnectorCallParams' => [
                 ['123456789', 'Hello, "World"!']
             ],
@@ -103,14 +112,15 @@ class SmsSenderTest extends TestCase
             'dbEscapeCallResult' => ['Hello, \"World\"!'],
             'dbCallParams' => [
                 [
-                    "INSERT INTO sent SET number = :number, text = :message",
-                    ['number' => '123456789', 'message' => 'Hello, \"World\"!']
+                    "INSERT INTO sent SET number = :number, text = :message, time = :time",
+                    ['number' => '123456789', 'message' => 'Hello, \"World\"!', 'time' => '2023-12-01 12:00:00']
                 ]
             ]
         ];
         yield 'long message' => [
             'number' => '123456789',
             'message' => 'Hello, World! Lorem ipsum dolor sit amet',
+            'currentDateTime' => '2024-10-01 12:00:00',
             'smsConnectorCallParams' => [
                 [
                     '123456789',
@@ -136,17 +146,19 @@ class SmsSenderTest extends TestCase
             ],
             'dbCallParams' => [
                 [
-                    "INSERT INTO sent SET number = :number, text = :message",
+                    "INSERT INTO sent SET number = :number, text = :message, time = :time",
                     [
                         'number' => '123456789',
                         'message' => 'Hello, World! Lorem ',
+                        'time' => '2024-10-01 12:00:00'
                     ]
                 ],
                 [
-                    "INSERT INTO sent SET number = :number, text = :message",
+                    "INSERT INTO sent SET number = :number, text = :message, time = :time",
                     [
                         'number' => '123456789',
-                        'message' => 'ipsum dolor sit amet'
+                        'message' => 'ipsum dolor sit amet',
+                        'time' => '2024-10-01 12:00:00'
                     ]
                 ],
             ]

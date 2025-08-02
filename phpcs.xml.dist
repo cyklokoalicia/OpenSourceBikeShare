@@ -3,11 +3,18 @@
          xsi:noNamespaceSchemaLocation="phpcs.xsd">
     <description>The coding standard for Open Source Bike Sharing.</description>
 
-    <config name="php_version" value="704000"/>
+    <config name="php_version" value="801000"/>
     <file>src</file>
     <file>tests</file>
 
     <rule ref="PSR12"/>
+
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+           <property name="lineLimit" value="120"/>
+           <property name="absoluteLineLimit" value="160"/>
+        </properties>
+     </rule>
 
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>

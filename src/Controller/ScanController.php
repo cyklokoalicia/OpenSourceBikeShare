@@ -9,6 +9,7 @@ use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,6 +23,7 @@ class ScanController extends AbstractController
         private readonly StandRepository $standRepository,
         private readonly TranslatorInterface $translator,
         private readonly DbInterface $db,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -98,10 +100,13 @@ class ScanController extends AbstractController
         $this->db->query(
             'INSERT INTO sent 
                 SET number = :number,
-                text = :text',
+                    text = :text,
+                    time = :time
+                ',
             [
                 'number' => $this->getUser()->getUserIdentifier(),
-                'text' => strip_tags($response)
+                'text' => strip_tags($response),
+                'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
     }

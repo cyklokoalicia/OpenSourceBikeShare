@@ -12,6 +12,10 @@ stdClass:
     userId: '@userForSmsControllerTest->userId'
     userLimit: 1
 
+  userLimitForLongRentalCheckTest (extends defaultLimit):
+    userId: '@userForLongRentalCheckTest->userId'
+    userLimit: 1
+
   adminLimitForSmsControllerTest (extends defaultLimit):
     userId: '@adminForSmsControllerTest->userId'
     userLimit: 5

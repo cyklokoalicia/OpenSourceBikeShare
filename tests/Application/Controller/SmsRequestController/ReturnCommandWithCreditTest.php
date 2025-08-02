@@ -168,13 +168,5 @@ class ReturnCommandWithCreditTest extends BikeSharingWebTestCase
             'expectedCreditLeft' => 100,
             'returnTimeMoveToFuture' => 0,
         ];
-        //we should use symfony/clock for using posibility change current time
-        //history repository should set time in code not in DB
-
-//        yield 'end of free time' => [
-//            'userCredit' => 100,
-//            'expectedCreditLeft' => 90,
-//            'returnTimeMoveToFuture' => $_ENV['WATCHES_FREE_TIME'] * 60 + 5 * 60,
-//        ];
     }
 }

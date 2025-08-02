@@ -30,7 +30,7 @@ class DebugMailSender implements MailSenderInterface, ResetInterface
         return $this->sentMessages;
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->sentMessages = [];
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Db\DbInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -41,6 +42,7 @@ class ControllerEventListener
     public function __construct(
         private readonly DbInterface $db,
         private readonly Security $security,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -66,7 +68,7 @@ class ControllerEventListener
             [
                 'uuid' => '',
                 'number' => $number,
-                'receive_time' => date('Y-m-d H:i:s'),
+                'receive_time' => $this->clock->now()->format('Y-m-d H:i:s'),
                 'sms_text' => $event->getRequest()->getRequestUri(),
                 'ip' => $event->getRequest()->getClientIp(),
             ]

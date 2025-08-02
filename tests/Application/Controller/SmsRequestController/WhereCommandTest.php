@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
+use BikeShare\Rent\RentSystemFactory;
+use BikeShare\Repository\UserRepository;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +16,23 @@ class WhereCommandTest extends BikeSharingWebTestCase
     private const ADMIN_PHONE_NUMBER = '421222222222';
     private const BIKE_NUMBER = 7;
     private const STAND_NAME = 'STAND1';
+
+    protected function tearDown(): void
+    {
+        #force return bike
+        $admin = $this->client->getContainer()->get(UserRepository::class)
+            ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+
+        $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem('web')
+            ->returnBike(
+                $admin['userId'],
+                self::BIKE_NUMBER,
+                self::STAND_NAME,
+                '',
+                true
+            );
+        parent::tearDown();
+    }
 
     /**
      * @dataProvider whereCommandDataProvider

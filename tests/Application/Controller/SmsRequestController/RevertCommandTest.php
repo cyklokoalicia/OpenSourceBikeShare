@@ -136,17 +136,31 @@ class RevertCommandTest extends BikeSharingWebTestCase
         $this->assertSame($stand['standName'], $bike['standName'], 'Bike is on invalid stand');
 
         $history = $this->client->getContainer()->get(DbInterface::class)->query(
-            'SELECT * FROM history WHERE userId = :userId AND bikeNum = :bikeNum ORDER BY id DESC LIMIT 1',
+            'SELECT * FROM history WHERE userId = :userId AND bikeNum = :bikeNum ORDER BY id DESC LIMIT 3',
             [
                 'userId' => $admin['userId'],
                 'bikeNum' => self::BIKE_NUMBER,
             ]
-        )->fetchAssoc();
+        )->fetchAllAssoc();
 
-        $this->assertSame('REVERT', $history['action'], 'Invalid history action');
+        $this->assertSame('RETURN', $history[0]['action'], 'Invalid history action');
+        $this->assertEquals(
+            $stand['standId'],
+            $history[0]['parameter'],
+            'Missed standId'
+        );
+
+        $this->assertSame('RENT', $history[1]['action'], 'Invalid history action');
+        $this->assertEquals(
+            $matches['newCode'],
+            $history[1]['parameter'],
+            'Missed lock code'
+        );
+
+        $this->assertSame('REVERT', $history[2]['action'], 'Invalid history action');
         $this->assertEquals(
             $stand['standId'] . '|' . $matches['newCode'],
-            $history['parameter'],
+            $history[2]['parameter'],
             'Missed standId and lock code'
         );
 

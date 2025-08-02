@@ -10,6 +10,7 @@ use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\NoteRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -235,7 +236,8 @@ class BikeController extends AbstractController
     public function bikeGeoLocation(
         $bikeNumber,
         Request $request,
-        DbInterface $db
+        DbInterface $db,
+        ClockInterface $clock,
     ): Response {
         //Currently does not work
         return $this->json([]);
@@ -252,11 +254,12 @@ class BikeController extends AbstractController
         }
 
         $db->query(
-            "INSERT INTO geolocation SET bikeNum = :bikeNumber, latitude = :latitude, longitude= :longitude",
+            "INSERT INTO geolocation SET bikeNum = :bikeNumber, latitude = :latitude, longitude= :longitude, time = :time",
             [
                 'bikeNumber' => $bikeNumber,
                 'latitude' => (float)$request->request->get('lat'),
                 'longitude' => (float)$request->request->get('long'),
+                'time' => $clock->now()->format('Y-m-d H:i:s'),
             ]
         );
 

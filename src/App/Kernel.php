@@ -18,7 +18,7 @@ class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
-    public function boot()
+    public function boot(): void
     {
         if ($this->debug) {
             Debug::enable();
