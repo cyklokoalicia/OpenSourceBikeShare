@@ -2,7 +2,7 @@
 
 {% block head %}
     {{ parent() }}
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/leaflet.css') }}"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
     <link rel="stylesheet" type="text/css" href="{{ asset('css/L.Control.Sidebar.css') }}"/>
     <link rel="stylesheet" type="text/css" href="{{ asset('css/map.css') }}"/>
 {% endblock %}
@@ -146,8 +146,8 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="//cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
     <script src="{{ asset('js/viewportDetect.js') }}"></script>
-    <script src="{{ asset('js/leaflet.js') }}"></script>
     <script src="{{ asset('js/L.Control.Sidebar.js') }}"></script>
     <script src="{{ asset('js/translations.php') }}"></script>
     <script src="{{ asset('js/functions.js') }}"></script>
