@@ -1,42 +1,165 @@
-<!DOCTYPE html>
-<html lang="{{ app.request.locale }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>{% block title %}{{ siteName }}{% endblock %}</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}"/>
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script type="text/javascript" src="{{ asset('js/bootstrap.min.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/viewportDetect.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/leaflet.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/L.Control.Sidebar.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/translations.php') }}"></script>
-    <script type="text/javascript" src="{{ asset('js/functions.js') }}"></script>
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/bootstrap.min.css') }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/bootstrap-theme.min.css') }}"/>
+{% extends 'base.html.twig' %}
+
+{% block head %}
+    {{ parent() }}
     <link rel="stylesheet" type="text/css" href="{{ asset('css/leaflet.css') }}"/>
     <link rel="stylesheet" type="text/css" href="{{ asset('css/L.Control.Sidebar.css') }}"/>
     <link rel="stylesheet" type="text/css" href="{{ asset('css/map.css') }}"/>
-    <link rel="icon" type="image/png" href="{{ asset('favicon-96x96.png') }}" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}" />
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}" />
-    <meta name="apple-mobile-web-app-title" content="{{ block('title') }}" />
-    <link rel="manifest" href="{{ asset('site.webmanifest') }}" />
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-    <meta name="theme-color" content="#ffffff">
-    <script>
+{% endblock %}
 
+{% block menuItems %}
+    {% if app.user and app.user.privileges > 0 %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('admin') }}">
+                <i class="fas fa-cog mr-1"></i>{{ 'Admin'|trans }}
+            </a>
+        </li>
+    {% endif %}
+    {% if personalStatsYearUrl is not none %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ personalStatsYearUrl }}">
+                <i class="fas fa-book mr-1"></i>{{ 'Year statistic'|trans }}
+            </a>
+        </li>
+    {% endif %}
+    {{ parent() }}
+{% endblock %}
+
+{% block userMenuItems %}
+    {% if creditSystem.isEnabled %}
+        <li class="nav-item">
+            <a class="nav-link">
+                <i class="fas fa-book mr-1"></i>{{ 'Remaining credit'|trans }}
+                <span id="userCredit">{{ creditSystem.getUserCredit(app.user.userId) }}</span>
+                {{ creditSystem.getCreditCurrency() }}
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" href="#creditModal" data-toggle="modal">
+                <i class="fas fa-plus mr-1"></i>{{ 'Add credit'|trans }}
+            </a>
+        </li>
+    {% endif %}
+    {{ parent() }}
+{% endblock %}
+
+{% block bodyContainer %}
+<div class="container-fluid flex-grow-1">
+    <div id="map"></div>
+
+    <div id="sidebar">
+        <div id="overlay"></div>
+
+        <!-- Title and Stand Selection -->
+        <div class="row px-3 mt-3">
+            <div class="col-12 text-center">
+                <div class="form-inline mb-2">
+                    <label for="stands" class="mr-2"><strong>Choose Stand:</strong></label>
+                    <select id="stands" class="form-control form-control-sm mr-2"></select>
+                </div>
+                <h3><span id="standcount" class="badge badge-success"></span></h3>
+            </div>
+        </div>
+
+        <div id="standinfo" class="text-center"></div>
+        <div id="standbikes" class="text-center col-12 mb-1"></div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div id="console">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="standactions" class="btn-group">
+                <div class="col-lg-12">
+                    <button class="btn btn-primary" type="button" id="rent"
+                            title="{{ 'Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'|trans }}">
+                        <i class="fas fa-bicycle"></i> {{ 'Rent'|trans }} <span class="bikenumber"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <br/>
+            </div>
+        </div>
+        <div id="rentedbikes"></div>
+        <div class="row">
+            <div class="input-group">
+                <div class="col-lg-12">
+                    <input type="text" name="notetext" id="notetext" class="form-control"
+                           placeholder="{{ 'Describe problem'|trans }}">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="btn-group bicycleactions">
+                <div class="col-lg-12">
+                    <button type="button" class="btn btn-primary" id="return"
+                            title="{{ 'Return this bicycle to the selected stand.'|trans }}">
+                        <i class="fas fa-sign-in-alt"></i>
+                        {{ 'Return bicycle'|trans }}
+                        <span class="bikenumber"></span>
+                    </button>
+                    (and <a href="#" id="note"
+                            title="{{ 'Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).'|trans }}">
+                        {{ 'report problem'|trans }}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </a>)
+                </div>
+            </div>
+        </div>
+
+        <div id="standphoto" class="mt-1"></div>
+    </div>
+</div>
+
+    <!-- Credit Modal -->
+    <div class="modal fade" id="creditModal" tabindex="-1" role="dialog" aria-labelledby="creditModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="creditModalLabel">{{ 'Add credit'|trans }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="couponblock">
+                        <div id="coupon-message" class="mt-2"></div>
+                        <div class="form-inline">
+                            <input type="text" class="form-control form-control-sm mr-1" id="coupon" placeholder="XXXXXX"/>
+                            <button type="button" class="btn btn-primary btn-sm" id="validatecoupon" title="{{ 'Confirm coupon'|trans }}">
+                                <i class="fas fa-plus"></i> {{ 'Confirm coupon'|trans }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ 'Close'|trans }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ asset('js/viewportDetect.js') }}"></script>
+    <script src="{{ asset('js/leaflet.js') }}"></script>
+    <script src="{{ asset('js/L.Control.Sidebar.js') }}"></script>
+    <script src="{{ asset('js/translations.php') }}"></script>
+    <script src="{{ asset('js/functions.js') }}"></script>
+    <script>
         var mapzoom = {{ systemZoom }};
 
         {% if app.user %}
         var loggedin = 1;
         var priv = {{ app.user.privileges }};
-        {% set usercity = app.user.city %}
         {% if cities %}
-        var maplat = {{ cities[usercity][0] }};
-        var maplon = {{ cities[usercity][1] }};
+        var maplat = {{ cities[app.user.city][0] }};
+        var maplon = {{ cities[app.user.city][1] }};
         {% endif %}
         {% else %}
         var loggedin = 0;
@@ -47,144 +170,7 @@
 
         var standselected = 0;
         var creditsystem = {{ creditSystem.isEnabled ? 1 : 0 }};
-        var freeTimeSeconds =  {{ freeTime * 60 }}; // and convert to seconds
-        var serverTimeSeconds = {{ date().timestamp }}; // using the server timestamp for time difference calculation
+        var freeTimeSeconds = {{ freeTime * 60 }}; // convert to seconds
+        var serverTimeSeconds = {{ date().timestamp }}; // server timestamp for time difference calculation
     </script>
-</head>
-<body>
-<div id="map"></div>
-
-<div id="sidebar">
-    <div id="overlay"></div>
-    <div class="row text-center" style="margin-top: 0.5em;">
-        <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
-            <ul class="list-inline">
-                <li>
-                    <a href="{{ systemRules }}" target="_blank">
-                        <span class="glyphicon glyphicon-question-sign"></span>&nbsp;{{ 'Help'|trans }}
-                    </a>
-                </li>
-                {% if app.user and app.user.privileges > 0 %}
-                    <li>
-                        <a href="{{ path('admin') }}">
-                            <span class="glyphicon glyphicon-cog"></span>&nbsp;{{ 'Admin'|trans }}
-                        </a>
-                    </li>
-                    {% if personalStatsYearUrl is not none %}
-                        <li>
-                            <a href="{{ personalStatsYearUrl }}">
-                                <span class="glyphicon glyphicon-signal"></span>&nbsp;{{ 'Year statistic'|trans }}
-                            </a>
-                        </li>
-                    {% endif %}
-                {% endif %}
-                {% if app.user %}
-                    <li>
-                    <span class="glyphicon glyphicon-user"></span><small>{{ app.user.username }}</small>
-                    {% if creditSystem.isEnabled %}
-                        (
-                        <span id="usercredit"
-                              title="{{ 'Remaining credit'|trans }}">{{ creditSystem.getUserCredit(app.user.userId) }} </span>
-                        {{ creditSystem.getCreditCurrency() }}
-                        <button type="button" class="btn btn-success btn-xs" id="opencredit"
-                                title="{{ 'Add credit'|trans }}">
-                            <span class="glyphicon glyphicon-plus"></span>
-                        </button>
-                        )
-                        <span id="couponblock">
-                                <br/>
-                                <span class="form-inline"><input type="text" class="form-control input-sm" id="coupon"
-                                                                 placeholder="XXXXXX"/>
-                                    <button type="button" class="btn btn-primary btn-sm" id="validatecoupon"
-                                            title="{{ 'Confirm coupon'|trans }}">
-                                        <span class="glyphicon glyphicon-plus"></span>
-                                    </button>
-                                </span>
-                            </span>
-                        </li>
-                    {% endif %}
-                    {% if cities and cities|length > 1 %}
-                        <li>
-                            <select class="form-control input-sm" id="citychange" title="{{ 'My City'|trans }}">
-                                {% for city in cities|keys %}
-                                    <option value="{{ city }}" {% if usercity == city %}selected{% endif %}>{{ city }}</option>
-                                {% endfor %}
-                            </select>
-                        </li>
-                    {% endif %}
-                    <li>
-                        <a href="/logout" id="logout">
-                            <span class="glyphicon glyphicon-log-out"></span>{{ 'Log out'|trans }}
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
-        <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-xs-11 col-sm-11 col-md-11 col-lg-11">
-            <h1 class="pull-left">{{ siteName }}</h1>
-        </div>
-        <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
-        </div>
-    </div>
-
-    <h2 id="standname"><select id="stands"></select><span id="standcount"></span></h2>
-    <div id="standinfo"></div>
-    <div id="standbikes"></div>
-    <div class="row">
-        <div class="col-lg-12">
-            <div id="console">
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div id="standactions" class="btn-group">
-            <div class="col-lg-12">
-                <button class="btn btn-primary" type="button" id="rent"
-                        title="{{ 'Choose bike number and rent bicycle. You will receive a code to unlock the bike and the new code to set.'|trans }}">
-                    <span class="glyphicon glyphicon-log-out"></span> {{ 'Rent'|trans }} <span
-                            class="bikenumber"></span>
-                </button>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-lg-12">
-            <br/>
-        </div>
-    </div>
-    <div id="rentedbikes"></div>
-    <div class="row">
-        <div class="input-group">
-            <div class="col-lg-12">
-                <input type="text" name="notetext" id="notetext" class="form-control"
-                       placeholder="{{ 'Describe problem'|trans }}">
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="btn-group bicycleactions">
-            <div class="col-lg-12">
-                <button type="button" class="btn btn-primary" id="return"
-                        title="{{ 'Return this bicycle to the selected stand.'|trans }}">
-                    <span class="glyphicon glyphicon-log-in"></span>
-                    {{ 'Return bicycle'|trans }}
-                    <span class="bikenumber"></span>
-                </button>
-                (and <a href="#" id="note"
-                        title="{{ 'Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).'|trans }}">
-                    {{ 'report problem'|trans }}
-                    <span class=" glyphicon glyphicon-exclamation-sign"></span>
-                </a>)
-            </div>
-        </div>
-    </div>
-
-    <div id="standphoto"></div>
-</div>
-</body>
-</html>
+{% endblock %}

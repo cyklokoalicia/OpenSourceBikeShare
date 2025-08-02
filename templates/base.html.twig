@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ app.request.locale }}">
 <head>
+    {% block head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ siteName }}{% endblock %}</title>
@@ -15,7 +16,7 @@
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    {% block css %}{% endblock %}
+    {% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -23,6 +24,17 @@
         <img src="{{ asset('images/logo_small.svg') }}" width="30" height="30" class="d-inline-block align-top" alt="Logo">
         {{ siteName }}
     </a>
+    {% if app.user %}
+        {% if cities and cities|length > 1 %}
+            <li class="list-inline-item">
+                <select class="form-control form-control-sm" id="citychange" title="{{ 'My City'|trans }}">
+                    {% for city in cities|keys %}
+                        <option value="{{ city }}" {% if app.user.city == city %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </li>
+        {% endif %}
+    {% endif %}
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -31,41 +43,57 @@
         <ul class="navbar-nav">
             {% block menuItems %}
                 <li class="nav-item">
-                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_to_funguje%3F">{{ 'How it works'|trans }}</a>
+                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_to_funguje%3F">
+                        <i class="fas fa-info-circle mr-1"></i>{{ 'How it works'|trans }}
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_sa_zapoj%C3%ADm%3F">{{ 'Get Involved'|trans }}</a>
+                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Ako_sa_zapoj%C3%ADm%3F">
+                        <i class="fas fa-hands-helping mr-1"></i>{{ 'Get Involved'|trans }}
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Nie%C4%8Do_mi_nejde">{{ 'Help'|trans }}</a>
+                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Nie%C4%8Do_mi_nejde">
+                        <i class="fas fa-question-circle mr-1"></i>{{ 'Help'|trans }}
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Podrobn%C3%BD_manu%C3%A1l">{{ 'Manual'|trans }}</a>
+                    <a class="nav-link" href="https://wiki.whitebikes.info/index.php/Podrobn%C3%BD_manu%C3%A1l">
+                        <i class="fas fa-book mr-1"></i>{{ 'Manual'|trans }}
+                    </a>
                 </li>
             {% endblock %}
         </ul>
-        {% if app.user %}
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ path('logout') }}">{{ 'Logout'|trans }}</a>
-            </li>
+            {% block userMenuItems %}
+                {% if app.user %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('logout') }}">
+                            <i class="fas fa-sign-out-alt mr-1"></i>{{ 'Logout'|trans }} ({{ app.user.username }})
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('login') }}">
+                            <i class="fas fa-sign-in-alt mr-1"></i>{{ 'Log in'|trans }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('register') }}">
+                            <i class="fas fa-user-plus mr-1"></i>{{ 'Registration'|trans }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endblock %}
         </ul>
-        {% else %}
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('login') }}">{{ 'Log in'|trans }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('register') }}">{{ 'Registration'|trans }}</a>
-                </li>
-            </ul>
-        {% endif %}
     </div>
 </nav>
 
+{% block bodyContainer %}
 <div class="container flex-grow-1">
     {% block body %}{% endblock %}
 </div>
+{% endblock %}
 
 <footer class="footer mt-auto">
     <div class="card">

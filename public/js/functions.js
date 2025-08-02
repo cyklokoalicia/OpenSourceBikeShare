@@ -10,7 +10,6 @@ $(document).ready(function () {
     $('#standactions').hide();
     $('.bicycleactions').hide();
     $('#notetext').hide();
-    $('#couponblock').hide();
     $("#rent").hide();
     $(document).ajaxStart(function () {
         $('#overlay').show();
@@ -28,7 +27,7 @@ $(document).ready(function () {
     });
     $("#note").click(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-note');
-        note();
+        addNote();
     });
     $('#stands').change(function () {
         showstand($('#stands').val());
@@ -38,7 +37,6 @@ $(document).ready(function () {
     if ($('usercredit')) {
         $("#opencredit").click(function () {
             if (window.ga) ga('send', 'event', 'buttons', 'click', 'credit-enter');
-            $('#couponblock').toggle();
         });
         $("#validatecoupon").click(function () {
             if (window.ga) ga('send', 'event', 'buttons', 'click', 'credit-add');
@@ -182,7 +180,7 @@ function getuserstatus() {
     }).done(function (jsonObject) {
         $('body').data('limit', jsonObject.limit);
         $('body').data('rented', jsonObject.rented);
-        if ($('usercredit')) $('#usercredit').html(jsonObject.userCredit);
+        if ($('userCredit')) $('#userCredit').html(jsonObject.userCredit);
         togglebikeactions();
     });
 }
@@ -234,11 +232,11 @@ function showstand(e, clear) {
     $('#stands').val(standid);
     $('#stands option[value="del"]').remove();
     if (markerdata[standid].count > 0) {
-        $('#standcount').removeClass('label label-danger').addClass('label label-success');
+        $('#standcount').removeClass('badge badge-danger').addClass('badge badge-success');
         if (markerdata[standid].count == 1) {
-            $('#standcount').html(markerdata[standid].count + ' ' + _bicycle + ':');
+            $('#standcount').html(markerdata[standid].count + ' ' + _bicycle);
         } else {
-            $('#standcount').html(markerdata[standid].count + ' ' + _bicycles + ':');
+            $('#standcount').html(markerdata[standid].count + ' ' + _bicycles);
         }
         $.ajax({
             global: false,
@@ -249,55 +247,69 @@ function showstand(e, clear) {
             let bikes = jsonobject.bikesOnStand || [];
             let stackTopBike = jsonobject.stackTopBike;
             if (bikes.length > 0) {
-                for (var i = 0, len = bikes.length; i < len; i++) {
-                    let bikeNum = bikes[i].bikeNum;
-                    let note = bikes[i].notes ? bikes[i].notes : '';
-                    let bikeIssue = note !== '';
-                    if (stackTopBike === false) // bike stack is disabled, allow renting any bike
-                    {
-                        if (bikeIssue && $("body").data("limit") > 0) {
-                            bikeList += ' <button type="button" class="btn btn-warning bikeid" data-id="' + bikeNum + '" data-note="' + note + '">' + bikeNum + '</button>';
-                        } else if (bikeIssue && $("body").data("limit") == 0) {
-                            bikeList += ' <button type="button" class="btn btn-default bikeid" data-id="' + bikeNum + '">' + bikeNum + '</button>';
-                        } else if ($("body").data("limit") > 0) bikeList = bikeList + ' <button type="button" class="btn btn-success bikeid b' + bikeNum + '" data-id="' + bikeNum + '">' + bikeNum + '</button>';
-                        else {
-                            bikeList += ' <button type="button" class="btn btn-default bikeid">' + bikeNum + '</button>';
+                let bikeButtons = [];
+
+                for (let i = 0; i < bikes.length; i++) {
+                    let bike = bikes[i];
+                    let bikeNum = bike.bikeNum;
+                    let note = bike.notes || '';
+                    let hasIssue = note !== '';
+                    let limit = $("body").data("limit");
+                    let isStacked = stackTopBike && stackTopBike != bikeNum;
+
+                    let btn = {
+                        num: bikeNum,
+                        note: note,
+                        class: 'btn btn-secondary bikeid mr-1 mb-2',
+                        dataNote: ''
+                    };
+
+                    if (!isStacked) {
+                        if (hasIssue && limit > 0) {
+                            btn.class = 'btn btn-warning bikeid mr-1 mb-2';
+                            btn.dataNote = note;
+                        } else if (hasIssue && limit == 0) {
+                            btn.class = 'btn btn-secondary bikeid mr-1 mb-2';
+                        } else if (limit > 0) {
+                            btn.class = 'btn btn-success bikeid b' + bikeNum + ' mr-1 mb-2';
                         }
-                    } else // bike stack is enabled, allow renting top of the stack bike only
-                    {
-                        if (stackTopBike == bikeNum && bikeIssue && $("body").data("limit") > 0) {
-                            bikeList += ' <button type="button" class="btn btn-warning bikeid b' + bikeNum + '" data-id="' + bikeNum + '" data-note="' + note + '">' + bikeNum + '</button>';
-                        } else if (stackTopBike == bikeNum && bikeIssue && $("body").data("limit") == 0) {
-                            bikeList += ' <button type="button" class="btn btn-default bikeid b' + bikeNum + '" data-id="' + bikeNum + '">' + bikeNum + '</button>';
-                        } else if (stackTopBike == bikeNum && $("body").data("limit") > 0) bikeList = bikeList + ' <button type="button" class="btn btn-success bikeid b' + bikeNum + '" data-id="' + bikeNum + '">' + bikeNum + '</button>';
-                        else bikeList += ' <button type="button" class="btn btn-default bikeid">' + bikeNum + '</button>';
                     }
+
+                    btn.dataId = bikeNum;
+                    bikeButtons.push(btn);
                 }
-                $('#standbikes').html('<div class="btn-group">' + bikeList + '</div>');
-                if (stackTopBike !== false) // bike stack is enabled, allow renting top of the stack bike only
-                {
+
+                let bikeList = '<div class="d-flex flex-wrap justify-content-center">';
+                bikeButtons.forEach(btn => {
+                    let noteAttr = btn.dataNote ? ` data-note="${btn.dataNote}"` : '';
+                    bikeList += `<button type="button" class="${btn.class}" data-id="${btn.dataId}"${noteAttr}>${btn.num}</button>`;
+                });
+                bikeList += '</div>';
+                $('#standbikes').html(bikeList);
+                if (stackTopBike !== false) {
+                    // bike stack is enabled, allow renting top of the stack bike only
                     $('.b' + stackTopBike).click(function () {
                         if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-number');
                         attachbicycleinfo(this, "rent");
                     });
                     $('body').data('stackTopBike', stackTopBike);
-                } else // bike stack is disabled, allow renting any bike
-                {
+                } else {
+                    // bike stack is disabled, allow renting any bike
                     $('#standbikes .bikeid').click(function () {
                         if (window.ga) ga('send', 'event', 'buttons', 'click', 'bike-number');
                         attachbicycleinfo(this, "rent");
                     });
                 }
-            } else // no bicyles at stand
-            {
+            } else {
+                // no bicyles at stand
                 $('#standcount').html(_no_bicycles);
-                $('#standcount').removeClass('label label-success').addClass('label label-danger');
+                $('#standcount').removeClass('badge badge-success').addClass('badge badge-danger');
                 resetstandbikes();
             }
         });
     } else {
         $('#standcount').html(_no_bicycles);
-        $('#standcount').removeClass('label label-success').addClass('label label-danger');
+        $('#standcount').removeClass('badge badge-success').addClass('badge badge-danger');
         resetstandbikes();
     }
     walklink = '';
@@ -369,7 +381,7 @@ function rentedbikes() {
                     }
                 }
 
-                bikeList += ' <button type="button" class="btn btn-info bikeid b' + bike.bikeNum + '" data-id="' + bike.bikeNum + '" title="' + _currently_rented + '">' + bike.bikeNum + '<br /><span class="label label-primary">(' + bike.currentCode + ')</span><br /><span class="label"><s>(' + bike.oldCode + ')</s></span>' + leftTimeText + '</button> ';
+                bikeList += ' <button type="button" class="btn btn-info bikeid b' + bike.bikeNum + '" data-id="' + bike.bikeNum + '" title="' + _currently_rented + '">' + bike.bikeNum + '<br /><span class="badge badge-primary">(' + bike.currentCode + ')</span><br /><span class="label"><s>(' + bike.oldCode + ')</s></span>' + leftTimeText + '</button> ';
             }
 
             $('#rentedbikes').html('<div class="btn-group">' + bikeList + '</div>');
@@ -383,7 +395,7 @@ function rentedbikes() {
     });
 }
 
-function note() {
+function addNote() {
     $('#notetext').slideToggle();
     $('#notetext').val('');
 }
@@ -393,7 +405,7 @@ function togglestandactions(count) {
         $('#standactions').hide();
         return false;
     }
-    if (count == 0 || $("body").data("limit") == 0) {
+    if (count == 0 || $("body").data("limit") == 0 || $('#rent .bikenumber').html() == "") {
         $('#standactions').hide();
     } else {
         $('#standactions').show();
@@ -484,7 +496,7 @@ function returnbike() {
 
 function changecity() {
     $.ajax({
-        url: "/api/user/changecity",
+        url: "/api/user/changeCity",
         method: "PUT",
         dataType: "json",
         data: {
@@ -497,37 +509,29 @@ function changecity() {
 }
 
 function validatecoupon() {
+    var $input = $('#coupon');
+    var $message = $('#coupon-message');
+    var code = $input.val();
+
     $.ajax({
         url: "/api/coupon/use",
         method: "POST",
         dataType: "json",
-        data: {
-            coupon: $('#coupon').val(),
-        }
-    }).always(function (xhr, status, error) {
-        jsonobject = xhr.responseJSON
-        temp = $('#couponblock').html();
-        if (jsonobject.error == 1) {
-            $('#couponblock').html('<div class="alert alert-danger" role="alert">' + jsonobject.message + '</div>');
-            setTimeout(function () {
-                $('#couponblock').html(temp);
-                $("#validatecoupon").click(function () {
-                    if (window.ga) ga('send', 'event', 'buttons', 'click', 'credit-add');
-                    validatecoupon();
-                });
-            }, 2500);
-        } else {
-            $('#couponblock').html('<div class="alert alert-success" role="alert">' + jsonobject.message + '</div>');
+        data: { coupon: code }
+    }).done(function (response) {
+        var alertClass = response.error == 1 ? 'alert-danger' : 'alert-success';
+        $message.html('<div class="alert ' + alertClass + '" role="alert">' + response.message + '</div>');
+
+        if (response.error !== 1) {
             getuserstatus();
             setTimeout(function () {
-                $('#couponblock').html(temp);
-                $('#couponblock').toggle();
-                $("#validatecoupon").click(function () {
-                    if (window.ga) ga('send', 'event', 'buttons', 'click', 'credit-add');
-                    validatecoupon();
-                });
+                $('#creditModal').modal('hide');
+                $input.val('');
+                $message.empty();
             }, 2500);
         }
+    }).fail(function () {
+        $message.html('<div class="alert alert-danger" role="alert">An error occurred. Please try again.</div>');
     });
 }
 
@@ -538,6 +542,7 @@ function attachbicycleinfo(element, attachto) {
     // or hide warning, if bike without issue is clicked
     else if ($(element).hasClass('btn-warning') == false && $('#console div').hasClass('alert-warning')) resetconsole();
     $('#rent').show();
+    togglestandactions();
 }
 
 function checkonebikeattach() {
