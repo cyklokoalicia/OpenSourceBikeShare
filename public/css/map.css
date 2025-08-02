@@ -53,7 +53,7 @@ html, body {
 
    .standname {
       position: absolute;
-      bottom: -3px;
+      bottom: -10px;
       left: 2px;
       font-size: 75%;
    }

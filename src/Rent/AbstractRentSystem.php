@@ -200,9 +200,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand
-            . ' : <span class="badge badge-primary label label-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>'
+            . ' : <span class="badge badge-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>'
             . '<br />' . _('Please') . ', <strong>' . _('rotate the lockpad to')
-            . ' <span class="badge badge-primary label label-primary">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
+            . ' <span class="badge badge-primary">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
         if ($note) {
             $message .= '<br />' . _('You have also reported this problem:') . ' ' . $note . '.';
         }
@@ -311,7 +311,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
             );
 
-            return $this->response('<h3>' . _('Bike') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="label label-primary">' . $stand . '</span> ' . _('with code') . ' <span class="label label-primary">' . $code . '</span>.</h3>');
+            return $this->response('<h3>' . _('Bike') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="badge badge-primary">' . $stand . '</span> ' . _('with code') . ' <span class="badge badge-primary">' . $code . '</span>.</h3>');
         } else {
             return $this->response(_('No last stand or code for bicycle') . ' ' . $bikeId . ' ' . _('found. Revert not successful!'), ERROR);
         }
