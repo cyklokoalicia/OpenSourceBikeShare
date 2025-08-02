@@ -1,182 +1,131 @@
 L.Control.Sidebar = L.Control.extend({
-
-    includes: L.Mixin.Events,
-
     options: {
-        closeButton: true,
         position: 'left',
-        autoPan: true
+        closeButton: true,
+        autoPan: true,
     },
 
-    initialize: function (placeholder, options) {
+    initialize(placeholder, options = {}) {
         L.setOptions(this, options);
 
-        // Find content container
-        var content = this._contentContainer = L.DomUtil.get(placeholder);
+        this._contentContainer = L.DomUtil.get(placeholder);
+        this._contentContainer.parentNode.removeChild(this._contentContainer);
 
-        // Remove the content container from its original parent
-        content.parentNode.removeChild(content);
+        this._container = L.DomUtil.create(
+            'div',
+            `leaflet-sidebar ${this.options.position}`
+        );
 
-        var l = 'leaflet-';
+        L.DomUtil.addClass(this._contentContainer, 'leaflet-control');
+        this._container.appendChild(this._contentContainer);
 
-        // Create sidebar container
-        var container = this._container =
-            L.DomUtil.create('div', l + 'sidebar ' + this.options.position);
-
-        // Style and attach content container
-        L.DomUtil.addClass(content, l + 'control');
-        container.appendChild(content);
-
-        // Create close button and attach it if configured
         if (this.options.closeButton) {
-            var close = this._closeButton =
-                L.DomUtil.create('a', 'close', container);
-            close.innerHTML = '&times;';
+            this._closeButton = L.DomUtil.create('a', 'close', this._container);
+            this._closeButton.innerHTML = '&times;';
         }
     },
 
-    addTo: function (map) {
-        var container = this._container;
-        var content = this._contentContainer;
-
-        // Attach event to close button
-        if (this.options.closeButton) {
-            var close = this._closeButton;
-
-            L.DomEvent.on(close, 'click', this.hide, this);
-        }
-
-        L.DomEvent
-            .on(container, 'transitionend',
-                this._handleTransitionEvent, this)
-            .on(container, 'webkitTransitionEnd',
-                this._handleTransitionEvent, this);
-
-        // Attach sidebar container to controls container
-        var controlContainer = map._controlContainer;
-        controlContainer.insertBefore(container, controlContainer.firstChild);
-
+    addTo(map) {
         this._map = map;
 
-        // Make sure we don't drag the map when we interact with the content
+        const stop = L.DomEvent.stopPropagation;
 
-        var stop = L.DomEvent.stopPropagation;
-        L.DomEvent
-            .on(content, 'contextmenu', stop)
-            .on(content, 'click', stop)
-            .on(content, 'mousedown', stop)
-            .on(content, 'touchstart', stop)
-            .on(content, 'dblclick', stop)
-            .on(content, 'mousewheel', stop)
-            .on(content, 'MozMousePixelScroll', stop);
-
-        return this;
-    },
-
-    removeFrom: function (map) {
-        //if the control is visible, hide it before removing it.
-        this.hide();
-
-        var content = this._contentContainer;
-
-        // Remove sidebar container from controls container
-        var controlContainer = map._controlContainer;
-        controlContainer.removeChild(this._container);
-
-        //disassociate the map object
-        this._map = null;
-
-        // Unregister events to prevent memory leak
-        var stop = L.DomEvent.stopPropagation;
-
-        L.DomEvent
-            .off(content, 'contextmenu', stop)
-            .off(content, 'click', stop)
-            .off(content, 'mousedown', stop)
-            .off(content, 'touchstart', stop)
-            .off(content, 'dblclick', stop)
-            .off(content, 'mousewheel', stop)
-            .off(content, 'MozMousePixelScroll', stop);
-
-        L.DomEvent
-            .off(container, 'transitionend',
-                this._handleTransitionEvent, this)
-            .off(container, 'webkitTransitionEnd',
-                this._handleTransitionEvent, this);
-
-        if (this._closeButton && this._close) {
-            var close = this._closeButton;
-
-            L.DomEvent.off(close, 'click', this.hide, this);
+        if (this._closeButton) {
+            L.DomEvent.on(this._closeButton, 'click', this.hide, this);
         }
 
+        L.DomEvent
+            .on(this._container, 'transitionend', this._onTransition, this)
+            .on(this._container, 'webkitTransitionEnd', this._onTransition, this);
+
+        ['contextmenu', 'click', 'mousedown', 'touchstart', 'dblclick', 'wheel']
+            .forEach(event =>
+                L.DomEvent.on(this._contentContainer, event, stop)
+            );
+
+        map._controlContainer.insertBefore(
+            this._container,
+            map._controlContainer.firstChild
+        );
+
         return this;
     },
 
-    isVisible: function () {
-        return L.DomUtil.hasClass(this._container, 'visible');
+    removeFrom(map) {
+        this.hide();
+
+        if (this._closeButton) {
+            L.DomEvent.off(this._closeButton, 'click', this.hide, this);
+        }
+
+        ['contextmenu', 'click', 'mousedown', 'touchstart', 'dblclick', 'wheel']
+            .forEach(event =>
+                L.DomEvent.off(this._contentContainer, event, L.DomEvent.stopPropagation)
+            );
+
+        L.DomEvent
+            .off(this._container, 'transitionend', this._onTransition, this)
+            .off(this._container, 'webkitTransitionEnd', this._onTransition, this);
+
+        map._controlContainer.removeChild(this._container);
+        this._map = null;
+
+        return this;
     },
 
-    show: function () {
+    isVisible() {
+        return this._container.classList.contains('visible');
+    },
+
+    show() {
         if (!this.isVisible()) {
-            L.DomUtil.addClass(this._container, 'visible');
+            this._container.classList.add('visible');
             if (this.options.autoPan) {
-                this._map.panBy([-this.getOffset() / 2, 0], {
-                    duration: 0.5
-                });
+                this._map.panBy([-this._getOffset() / 2, 0], { duration: 0.5 });
             }
             this.fire('show');
         }
     },
 
-    hide: function (e) {
+    hide(e) {
         if (this.isVisible()) {
-            L.DomUtil.removeClass(this._container, 'visible');
+            this._container.classList.remove('visible');
             if (this.options.autoPan) {
-                this._map.panBy([this.getOffset() / 2, 0], {
-                    duration: 0.5
-                });
+                this._map.panBy([this._getOffset() / 2, 0], { duration: 0.5 });
             }
             this.fire('hide');
         }
-        if(e) {
-            L.DomEvent.stopPropagation(e);
-        }
+        if (e) L.DomEvent.stopPropagation(e);
     },
 
-    toggle: function () {
-        if (this.isVisible()) {
-            this.hide();
-        } else {
-            this.show();
-        }
+    toggle() {
+        this.isVisible() ? this.hide() : this.show();
     },
 
-    getContainer: function () {
-        return this._contentContainer;
-    },
-
-    getCloseButton: function () {
-        return this._closeButton;
-    },
-
-    setContent: function (content) {
-        this.getContainer().innerHTML = content;
+    setContent(html) {
+        this._contentContainer.innerHTML = html;
         return this;
     },
 
-    getOffset: function () {
-        if (this.options.position === 'right') {
-            return -this._container.offsetWidth;
-        } else {
-            return this._container.offsetWidth;
-        }
+    getContainer() {
+        return this._contentContainer;
     },
 
-    _handleTransitionEvent: function (e) {
-        if (e.propertyName == 'left' || e.propertyName == 'right')
+    getCloseButton() {
+        return this._closeButton;
+    },
+
+    _getOffset() {
+        return this.options.position === 'right'
+            ? -this._container.offsetWidth
+            : this._container.offsetWidth;
+    },
+
+    _onTransition(e) {
+        if (e.propertyName === 'left' || e.propertyName === 'right') {
             this.fire(this.isVisible() ? 'shown' : 'hidden');
-    }
+        }
+    },
 });
 
 L.control.sidebar = function (placeholder, options) {
