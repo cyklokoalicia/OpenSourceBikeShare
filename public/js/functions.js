@@ -53,6 +53,21 @@ $(document).ready(function () {
         console.log($(this).val());
     });
 
+    userLatitude = $("body").data("mapcenterlat");
+    userLongitude = $("body").data("mapcenterlong");
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                userLatitude = position.coords.latitude;
+                userLongitude = position.coords.longitude;
+            },
+            function (error) {
+                console.warn('Geolocation failed:', error.message);
+            }
+        );
+    }
+
     mapinit();
     // geolocate();
     setInterval(getmarkers, 60000); // refresh map every 60 seconds
@@ -76,9 +91,18 @@ function mapinit() {
 
     map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
     map.addLayer(osm);
+
+    lc = L.control.locate({
+        locateOptions: {
+            maxZoom: mapzoom
+        }
+    }).addTo(map);
+    lc.start();
+
     sidebar = L.control.sidebar('sidebar', {
         position: 'left'
     });
+
     map.addControl(sidebar);
     getmarkers();
     $('link[rel="points"]').each(function () {
@@ -314,11 +338,9 @@ function showstand(e, clear) {
         $('#standcount').removeClass('badge badge-success').addClass('badge badge-danger');
         resetstandbikes();
     }
-    walklink = '';
-    if ("geolocation" in navigator) // if geolocated, provide link to walking directions
-    {
-        walklink = '<a href="https://www.google.com/maps?q=' + $("body").data("mapcenterlat") + ',' + $("body").data("mapcenterlong") + '+to:' + lat + ',' + long + '&saddr=' + $("body").data("mapcenterlat") + ',' + $("body").data("mapcenterlong") + '&daddr=' + lat + ',' + long + '&output=classic&dirflg=w&t=m" target="_blank" title="' + _open_map + '">' + _walking_directions + '</a>';
-    }
+
+    walklink = '<a href="https://www.google.com/maps?q=' + userLatitude + ',' + userLongitude + '+to:' + lat + ',' + long + '&saddr=' + userLatitude + ',' + userLongitude + '&daddr=' + lat + ',' + long + '&output=classic&dirflg=w&t=m" target="_blank" title="' + _open_map + '">' + _walking_directions + '</a>';
+
     if (loggedin == 1 && markerdata[standid].photo) {
         //walklink = walklink + ' | ';
         $('#standinfo').html(markerdata[standid].desc + ' (' + walklink + ')');
