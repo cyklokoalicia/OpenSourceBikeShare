@@ -180,7 +180,9 @@ function getuserstatus() {
     }).done(function (jsonObject) {
         $('body').data('limit', jsonObject.limit);
         $('body').data('rented', jsonObject.rented);
-        if ($('userCredit')) $('#userCredit').html(jsonObject.userCredit);
+        if ($('#userCredit').length) {
+            $('#userCredit').html(jsonObject.userCredit);
+        }
         togglebikeactions();
     });
 }
@@ -405,7 +407,7 @@ function togglestandactions(count) {
         $('#standactions').hide();
         return false;
     }
-    if (count == 0 || $("body").data("limit") == 0 || $('#rent .bikenumber').html() == "") {
+    if (count == 0 || $("body").data("limit") == 0 || !$('#rent .bikenumber').html()) {
         $('#standactions').hide();
     } else {
         $('#standactions').show();

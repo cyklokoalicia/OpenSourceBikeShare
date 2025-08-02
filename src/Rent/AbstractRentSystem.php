@@ -200,9 +200,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand
-            . ' : <span class="badge badge-primary badge badge-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>'
+            . ' : <span class="badge badge-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>'
             . '<br />' . _('Please') . ', <strong>' . _('rotate the lockpad to')
-            . ' <span class="badge badge-primary badge badge-primary">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
+            . ' <span class="badge badge-primary">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
         if ($note) {
             $message .= '<br />' . _('You have also reported this problem:') . ' ' . $note . '.';
         }
