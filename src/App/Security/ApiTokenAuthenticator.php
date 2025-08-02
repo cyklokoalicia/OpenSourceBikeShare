@@ -14,7 +14,6 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
-
 class ApiTokenAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
@@ -45,7 +44,8 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
                 hash('sha256', $token),
                 function () use ($token) {
                     return new ApiServiceUser($this->validTokens[$token]);
-                })
+                }
+            )
         );
     }
 
