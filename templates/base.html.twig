@@ -24,17 +24,8 @@
         <img src="{{ asset('images/logo_small.svg') }}" width="30" height="30" class="d-inline-block align-top" alt="Logo">
         {{ siteName }}
     </a>
-    {% if app.user %}
-        {% if cities and cities|length > 1 %}
-            <li class="list-inline-item">
-                <select class="form-control form-control-sm" id="citychange" title="{{ 'My City'|trans }}">
-                    {% for city in cities|keys %}
-                        <option value="{{ city }}" {% if app.user.city == city %}selected{% endif %}>{{ city }}</option>
-                    {% endfor %}
-                </select>
-            </li>
-        {% endif %}
-    {% endif %}
+    {% block cities %}{% endblock %}
+
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>

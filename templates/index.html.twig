@@ -7,6 +7,20 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('css/map.css') }}"/>
 {% endblock %}
 
+{% block cities %}
+    {% if app.user %}
+        {% if cities and cities|length > 1 %}
+            <li class="list-inline-item">
+                <select class="form-control form-control-sm" id="citychange" title="{{ 'My City'|trans }}">
+                    {% for city in cities|keys %}
+                        <option value="{{ city }}" {% if app.user.city == city %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </li>
+        {% endif %}
+    {% endif %}
+{{ endblock }}
+
 {% block menuItems %}
     {% if app.user and app.user.privileges > 0 %}
         <li class="nav-item">
