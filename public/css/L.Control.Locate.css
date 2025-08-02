@@ -1,22 +1,36 @@
-/* Compatible with Leaflet 0.7 */
+/* Leaflet 1.9.4 - Locate Control Styling */
 .leaflet-control-locate a {
   font-size: 1.4em;
   color: #444;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.leaflet-touch .leaflet-control-locate a {
+  font-size: 1.6em;
+}
+
 .leaflet-control-locate.active a {
   color: #2074B6;
 }
+
 .leaflet-control-locate.active.following a {
   color: #FC8428;
 }
 
 .leaflet-control-locate-location circle {
-  animation: leaflet-control-locate-throb 4s ease infinite;
+  animation: locate-throb 4s ease infinite;
+  fill: #136AEC;
+  fill-opacity: 0.2;
+  stroke: #136AEC;
+  stroke-opacity: 0.5;
+  stroke-width: 2;
 }
 
-@keyframes leaflet-control-locate-throb {
-  0% {
+@keyframes locate-throb {
+  0%, 100% {
     r: 9;
     stroke-width: 1;
   }
@@ -24,10 +38,4 @@
     r: 7;
     stroke-width: 3;
   }
-  100% {
-    r: 9;
-    stroke-width: 1;
-  }
 }
-
-/*# sourceMappingURL=L.Control.Locate.css.map */
