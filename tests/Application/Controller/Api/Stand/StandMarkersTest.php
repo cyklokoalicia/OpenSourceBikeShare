@@ -48,7 +48,11 @@ class StandMarkersTest extends BikeSharingWebTestCase
 
     public function testMarkersByToken(): void
     {
-        $this->client->request(Request::METHOD_GET, '/api/stand/markers', server: ['HTTP_AUTHORIZATION' => 'Bearer test-token']);
+        $this->client->request(
+            Request::METHOD_GET,
+            '/api/stand/markers',
+            server: ['HTTP_AUTHORIZATION' => 'Bearer test-token']
+        );
         $this->assertResponseIsSuccessful();
         $response = $this->client->getResponse()->getContent();
         $this->assertJson($response, 'Response is not JSON');

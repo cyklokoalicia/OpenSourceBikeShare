@@ -56,11 +56,12 @@ class FreeCommandTest extends TestCase
         $this->translatorMock
             ->expects($matcher)
             ->method('trans')
-            ->willReturnCallback(function (...$parameters) use ($matcher, $translatorCallParams, $translatorCallResult) {
-                $this->assertEquals($translatorCallParams[$matcher->getInvocationCount() - 1], $parameters);
+            ->willReturnCallback(
+                function (...$parameters) use ($matcher, $translatorCallParams, $translatorCallResult) {
+                    $this->assertEquals($translatorCallParams[$matcher->getInvocationCount() - 1], $parameters);
 
-                return $translatorCallResult[$matcher->getInvocationCount() - 1];
-            });
+                    return $translatorCallResult[$matcher->getInvocationCount() - 1];
+                });
         $this->standRepositoryMock
             ->expects($this->exactly($standRepositoryCallsCount))
             ->method('findFreeStands')

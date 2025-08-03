@@ -209,21 +209,27 @@ class UnTagCommandTest extends TestCase
     {
         $matcher = $this->exactly(2);
         $this->translatorMock->expects($matcher)
-            ->method('trans')->willReturnCallback(function (...$parameters) use ($matcher) {
-                if ($matcher->getInvocationCount() === 1) {
-                    $this->assertSame('vandalism', $parameters[0]);
+            ->method('trans')
+            ->willReturnCallback(
+                function (...$parameters) use ($matcher) {
+                    if ($matcher->getInvocationCount() === 1) {
+                        $this->assertSame('vandalism', $parameters[0]);
 
-                    return 'vandalism';
-                }
-                if ($matcher->getInvocationCount() === 2) {
-                    $this->assertSame('with stand name and optional pattern. ' .
-                        'All notes matching pattern will be deleted for all bikes on that stand: {example}', $parameters[0]);
-                    $this->assertSame(['example' => 'UNTAG MAINSQUARE vandalism'], $parameters[1]);
+                        return 'vandalism';
+                    }
+                    if ($matcher->getInvocationCount() === 2) {
+                        $this->assertSame(
+                            'with stand name and optional pattern. '
+                                . 'All notes matching pattern will be deleted for all bikes on that stand: {example}',
+                            $parameters[0]
+                        );
+                        $this->assertSame(['example' => 'UNTAG MAINSQUARE vandalism'], $parameters[1]);
 
-                    return 'with stand name and optional pattern. ' .
-                        'All notes matching pattern will be deleted for all bikes on that stand: UNTAG MAINSQUARE vandalism';
-                }
-            });
+                        return 'with stand name and optional pattern. ' .
+                            'All notes matching pattern will be deleted for all bikes on that stand: ' .
+                            'UNTAG MAINSQUARE vandalism';
+                    }
+                });
 
         $this->assertEquals(
             'with stand name and optional pattern. ' .

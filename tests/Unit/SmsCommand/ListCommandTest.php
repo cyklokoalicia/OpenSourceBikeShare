@@ -105,11 +105,12 @@ class ListCommandTest extends TestCase
         $this->translatorMock
             ->expects($matcher)
             ->method('trans')
-            ->willReturnCallback(function (...$parameters) use ($matcher, $translatorCallParams, $translatorCallResult) {
-                $this->assertSame($translatorCallParams[$matcher->getInvocationCount() - 1], $parameters);
+            ->willReturnCallback(
+                function (...$parameters) use ($matcher, $translatorCallParams, $translatorCallResult) {
+                    $this->assertSame($translatorCallParams[$matcher->getInvocationCount() - 1], $parameters);
 
-                return $translatorCallResult[$matcher->getInvocationCount() - 1];
-            });
+                    return $translatorCallResult[$matcher->getInvocationCount() - 1];
+                });
 
         $this->assertSame($message, ($command)($userMock, $standName));
     }

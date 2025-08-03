@@ -14,7 +14,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class PersonalStatsController extends AbstractController
 {
-    #[Route('/personalStats/year/{year}', name: 'personal_stats_year', requirements: ['year' => '\d+'], methods: ['GET'])]
+    #[Route(
+        path: '/personalStats/year/{year}',
+        name: 'personal_stats_year',
+        requirements: ['year' => '\d+'],
+        methods: ['GET'],
+    )]
     public function yearStats(
         StatsRepository $statsRepository,
         StandRepository $standRepository,

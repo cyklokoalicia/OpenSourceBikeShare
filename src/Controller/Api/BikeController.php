@@ -279,7 +279,8 @@ class BikeController extends AbstractController
         }
 
         $db->query(
-            "INSERT INTO geolocation SET bikeNum = :bikeNumber, latitude = :latitude, longitude= :longitude, time = :time",
+            "INSERT INTO geolocation 
+                SET bikeNum = :bikeNumber, latitude = :latitude, longitude= :longitude, time = :time",
             [
                 'bikeNumber' => $bikeNumber,
                 'latitude' => (float)$request->request->get('lat'),
