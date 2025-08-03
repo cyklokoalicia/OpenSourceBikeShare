@@ -171,10 +171,14 @@ class DelNoteCommandTest extends TestCase
             ->method('deleteBikeNote')
             ->willReturnCallback(
                 function (...$parameters) use ($matcher, $noteRepositoryDeleteBikeNoteCallParams) {
-                    $this->assertSame($noteRepositoryDeleteBikeNoteCallParams[$matcher->getInvocationCount() - 1], $parameters);
+                    $this->assertSame(
+                        $noteRepositoryDeleteBikeNoteCallParams[$matcher->getInvocationCount() - 1],
+                        $parameters
+                    );
 
                     return 2;
-                });
+                }
+            );
         $matcher = $this->exactly(count($noteRepositoryDeleteStandNoteCallParams));
         $this->noteRepositoryMock
             ->expects($matcher)
@@ -187,7 +191,8 @@ class DelNoteCommandTest extends TestCase
                     );
 
                     return 2;
-                });
+                }
+            );
         $this->standRepositoryMock
             ->expects($this->exactly(count($standRepositoryCallParams)))
             ->method('findItemByName')

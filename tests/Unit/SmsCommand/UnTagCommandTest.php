@@ -229,7 +229,8 @@ class UnTagCommandTest extends TestCase
                             'All notes matching pattern will be deleted for all bikes on that stand: ' .
                             'UNTAG MAINSQUARE vandalism';
                     }
-                });
+                }
+            );
 
         $this->assertEquals(
             'with stand name and optional pattern. ' .

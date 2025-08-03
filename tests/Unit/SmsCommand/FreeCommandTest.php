@@ -61,7 +61,8 @@ class FreeCommandTest extends TestCase
                     $this->assertEquals($translatorCallParams[$matcher->getInvocationCount() - 1], $parameters);
 
                     return $translatorCallResult[$matcher->getInvocationCount() - 1];
-                });
+                }
+            );
         $this->standRepositoryMock
             ->expects($this->exactly($standRepositoryCallsCount))
             ->method('findFreeStands')

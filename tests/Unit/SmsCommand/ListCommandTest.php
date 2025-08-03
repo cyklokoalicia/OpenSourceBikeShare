@@ -110,7 +110,8 @@ class ListCommandTest extends TestCase
                     $this->assertSame($translatorCallParams[$matcher->getInvocationCount() - 1], $parameters);
 
                     return $translatorCallResult[$matcher->getInvocationCount() - 1];
-                });
+                }
+            );
 
         $this->assertSame($message, ($command)($userMock, $standName));
     }
