@@ -20,9 +20,7 @@ class StandController extends AbstractController
     ) {
     }
 
-    /**
-     * @Route("/api/stand", name="api_stand_index", methods={"GET"})
-     */
+    #[Route('/api/stand', name: 'api_stand_index', methods: ['GET'])]
     public function index(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -32,9 +30,7 @@ class StandController extends AbstractController
         return $this->json($stands);
     }
 
-    /**
-     * @Route("/api/stand/{standName}/bike", name="api_stand_item", methods={"GET"}, requirements: {"standName"="\w+"})
-     */
+    #[Route('/api/stand/{standName}/bike', name: 'api_stand_item', methods: ['GET'], requirements: ['standName' => '\w+'])]
     public function bike(
         string $standName
     ): Response {
@@ -70,9 +66,7 @@ class StandController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/api/stand/{standName}/removeNote", name="api_stand_remove_note", methods={"DELETE"}, requirements: {"standName"="\w+"})
-     */
+    #[Route('/api/stand/{standName}/removeNote', name: 'api_stand_remove_note', methods: ['DELETE'], requirements: ['standName' => '\w+'])]
     public function removeNote(
         $standName,
         NoteRepository $noteRepository,
@@ -98,9 +92,7 @@ class StandController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/stand/markers", name="api_stand_markers", methods={"GET"})
-     */
+    #[Route('/api/stand/markers', name: 'api_stand_markers', methods: ['GET'])]
     public function markers(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
@@ -110,9 +102,7 @@ class StandController extends AbstractController
         return $this->json($stands);
     }
 
-    /**
-     * @Route("/api/stand/markers", name="api_stand_markers_external", methods={"GET"})
-     */
+    #[Route('/api/stand/markers', name: 'api_stand_markers_external', methods: ['GET'])]
     public function apiMarkers(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_API');

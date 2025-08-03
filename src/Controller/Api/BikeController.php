@@ -21,9 +21,7 @@ class BikeController extends AbstractController
     {
     }
 
-    /**
-     * @Route("/api/bike", name="api_bike_index", methods={"GET"})
-     */
+    #[Route('/api/bike', name: 'api_bike_index', methods: ['GET'])]
     public function index(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -33,9 +31,7 @@ class BikeController extends AbstractController
         return $this->json($bikes);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}", name="api_bike_item", methods={"GET"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}', name: 'api_bike_item', methods: ['GET'], requirements: ['bikeNumber' => '\d+'])]
     public function item(
         $bikeNumber
     ): Response {
@@ -50,9 +46,7 @@ class BikeController extends AbstractController
         return $this->json($bikes);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/lastUsage", name="api_bike_last_usage", methods={"GET"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}/lastUsage', name: 'api_bike_last_usage', methods: ['GET'], requirements: ['bikeNumber' => '\d+'])]
     public function lastUsage(
         $bikeNumber
     ): Response {
@@ -67,9 +61,7 @@ class BikeController extends AbstractController
         return $this->json($bikes);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/rent", name="api_bike_rent", methods={"PUT"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}/rent', name: 'api_bike_rent', methods: ['PUT'], requirements: ['bikeNumber' => '\d+'])]
     public function rentBike(
         $bikeNumber,
         RentSystemFactory $rentSystemFactory
@@ -88,9 +80,7 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/return", name="api_bike_return", methods={"PUT"}, requirements: {"standName"="\w+", "bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}/return', name: 'api_bike_return', methods: ['PUT'], requirements: ['standName' => '\w+', 'bikeNumber' => '\d+'])]
     public function returnBike(
         $bikeNumber,
         $standName,
@@ -113,9 +103,7 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/forceRent", name="api_bike_force_rent", methods={"PUT"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}/forceRent', name: 'api_bike_force_rent', methods: ['PUT'], requirements: ['bikeNumber' => '\d+'])]
     public function forceRentBike(
         $bikeNumber,
         RentSystemFactory $rentSystemFactory
@@ -135,9 +123,7 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/forceReturn", name="api_bike_force_return", methods={"PUT"}, requirements: {"standName"="\w+", "bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}/forceReturn', name: 'api_bike_force_return', methods: ['PUT'], requirements: ['standName' => '\w+', 'bikeNumber' => '\d+'])]
     public function forceReturnBike(
         $bikeNumber,
         $standName,
@@ -161,9 +147,7 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/revert", name="api_bike_revert", methods={"PUT"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}/revert', name: 'api_bike_revert', methods: ['PUT'], requirements: ['bikeNumber' => '\d+'])]
     public function revertBike(
         $bikeNumber,
         RentSystemFactory $rentSystemFactory
@@ -182,9 +166,7 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/removeNote", name="api_bike_remove_note", methods={"DELETE"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}/removeNote', name: 'api_bike_remove_note', methods: ['DELETE'], requirements: ['bikeNumber' => '\d+'])]
     public function removeNote(
         $bikeNumber,
         NoteRepository $noteRepository,
@@ -208,9 +190,7 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/trip", name="api_bike_trip", methods={"GET"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}/trip', name: 'api_bike_trip', methods: ['GET'], requirements: ['bikeNumber' => '\d+'])]
     public function bikeTrip(
         $bikeNumber,
         HistoryRepository $historyRepository
@@ -231,8 +211,8 @@ class BikeController extends AbstractController
 
     /**
      * For using this endpoint, bikes should have geolocation devices. Perhaps it should be some authorization for it
-     * @Route("/api/bike/{bikeNumber}/geoLocation", name="api_bike_geo_location", methods={"POST"}, requirements: {"bikeNumber"="\d+"})
      */
+    #[Route('/api/bike/{bikeNumber}/geoLocation', name: 'api_bike_geo_location', methods: ['POST'], requirements: ['bikeNumber' => '\d+'])]
     public function bikeGeoLocation(
         $bikeNumber,
         Request $request,

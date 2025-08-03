@@ -15,9 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends AbstractController
 {
-    /**
-     * @Route("/api/user", name="api_user_index", methods={"GET"})
-     */
+    #[Route('/api/user', name: 'api_user_index', methods: ['GET'])]
     public function index(
         UserRepository $userRepository
     ): Response {
@@ -28,9 +26,7 @@ class UserController extends AbstractController
         return $this->json($bikes);
     }
 
-    /**
-     * @Route("/api/user/{userId}", name="api_user_item", methods={"GET"}, requirements: {"userId"="\d+"})
-     */
+    #[Route('/api/user/{userId}', name: 'api_user_item', methods: ['GET'], requirements: ['userId' => '\d+'])]
     public function item(
         $userId,
         UserRepository $userRepository
@@ -46,9 +42,7 @@ class UserController extends AbstractController
         return $this->json($user);
     }
 
-    /**
-     * @Route("/api/user/{userId}", name="api_user_item_update", methods={"PUT"}, requirements: {"userId"="\d+"})
-     */
+    #[Route('/api/user/{userId}', name: 'api_user_item_update', methods: ['PUT'], requirements: ['userId' => '\d+'])]
     public function update(
         $userId,
         bool $isSmsSystemEnabled,
@@ -92,9 +86,7 @@ class UserController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/api/user/changeCity", name="api_user_change_city", methods={"PUT"})
-     */
+    #[Route('/api/user/changeCity', name: 'api_user_change_city', methods: ['PUT'])]
     public function changeCity(
         UserRepository $userRepository,
         CityRepository $cityRepository,
@@ -128,9 +120,7 @@ class UserController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/api/user/bike", name="api_user_bike", methods={"GET"})
-     */
+    #[Route('/api/user/bike', name: 'api_user_bike', methods: ['GET'])]
     public function userBike(
         BikeRepository $bikeRepository
     ): Response {
@@ -143,9 +133,7 @@ class UserController extends AbstractController
         return $this->json($userBikes);
     }
 
-    /**
-     * @Route("/api/user/limit", name="api_user_limit", methods={"GET"})
-     */
+    #[Route('/api/user/limit', name: 'api_user_limit', methods: ['GET'])]
     public function userLimit(
         BikeRepository $bikeRepository,
         UserRepository $userRepository,

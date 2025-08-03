@@ -29,10 +29,8 @@ class SmsRequestController extends AbstractController
     ) {
     }
 
-    /**
-     * @Route("/receive.php", name="sms_request")
-     * @Route("/sms/receive.php", name="sms_request_old")
-     */
+    #[Route('/receive.php', name: 'sms_request')]
+    #[Route('/sms/receive.php', name: 'sms_request_old')]
     public function index(): Response
     {
         $this->smsConnector->receive();

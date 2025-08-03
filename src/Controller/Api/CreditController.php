@@ -13,9 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CreditController extends AbstractController
 {
-    /**
-     * @Route("/api/credit", name="api_credit_add", methods={"PUT"})
-     */
+    #[Route('/api/credit', name: 'api_credit_add', methods: ['PUT'])]
     public function add(
         Request $request,
         CreditSystemInterface $creditSystem,

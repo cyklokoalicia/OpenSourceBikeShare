@@ -15,9 +15,7 @@ use TCPDF;
 
 class QrCodeGeneratorController extends AbstractController
 {
-    /**
-     * @Route("/admin/qrCodeGenerator", name="qr_code_generator")
-     */
+    #[Route('/admin/qrCodeGenerator', name: 'qr_code_generator')]
     public function index(
         string $appName,
         BikeRepository $bikeRepository,

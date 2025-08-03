@@ -11,9 +11,9 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CommandController extends AbstractController
 {
+    #[Route('/command.php', name: 'command')]
     /**
      * @deprecated PyBikes should use another entry point
-     * @Route("/command.php", name="command")
      */
     public function index(
         StandRepository $standRepository,

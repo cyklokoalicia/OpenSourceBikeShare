@@ -14,10 +14,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegisterController extends AbstractController
 {
-    /**
-     * @Route("/register", name="register")
-     * @Route("/register.php", name="register")
-     */
+    #[Route('/register', name: 'register')]
+    #[Route('/register.php', name: 'register')]
     public function index(
         Request $request,
         TranslatorInterface $translator,

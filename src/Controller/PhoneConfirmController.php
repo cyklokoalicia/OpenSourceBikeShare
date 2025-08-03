@@ -12,12 +12,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 class PhoneConfirmController extends AbstractController
 {
-    /**
-     * @Route("/user/confirm/phone/{key}", name="user_confirm_phone")
-     */
+    #[Route('/user/confirm/phone/{key}', name: 'user_confirm_phone')]
     public function index(
         bool $isSmsSystemEnabled,
         SmsSenderInterface $smsSender,

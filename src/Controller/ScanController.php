@@ -27,9 +27,7 @@ class ScanController extends AbstractController
     ) {
     }
 
-    /**
-     * @Route("/scan.php/rent/{bikeNumber}", name="scan_bike", requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/scan.php/rent/{bikeNumber}', name: 'scan_bike', requirements: ['bikeNumber' => '\d+'])]
     public function rentBike(
         string $bikeNumber,
         Request $request
@@ -66,9 +64,7 @@ class ScanController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/scan.php/return/{standName}", name="scan_stand", requirements: {"standName"="\w+"})
-     */
+    #[Route('/scan.php/return/{standName}', name: 'scan_stand', requirements: ['standName' => '\w+'])]
     public function returnBike(
         string $standName
     ): Response {
