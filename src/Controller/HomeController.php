@@ -7,7 +7,7 @@ use BikeShare\Repository\CityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
@@ -21,7 +21,7 @@ class HomeController extends AbstractController
         CityRepository $cityRepository
     ): Response {
 
-        //show stats for current year if it is end of the year
+        //show stats for the current year if it is the end of the year
         $currentDate = new \DateTimeImmutable();
         if ($currentDate->format('z') > 350) {
             $personalStatsYearUrl = $this->generateUrl(

@@ -9,7 +9,7 @@ use BikeShare\Repository\StandRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use TCPDF;
 
@@ -92,7 +92,7 @@ class QrCodeGeneratorController extends AbstractController
         );
     }
 
-    private function addPageQrCode(TCPDF $pdf, string $text, string $url)
+    private function addPageQrCode(TCPDF $pdf, string $text, string $url): void
     {
         // set style for barcode
         $style = array(

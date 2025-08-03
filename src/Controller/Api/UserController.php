@@ -11,7 +11,7 @@ use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class UserController extends AbstractController
 {
@@ -26,7 +26,7 @@ class UserController extends AbstractController
         return $this->json($bikes);
     }
 
-    #[Route('/api/user/{userId}', name: 'api_user_item', methods: ['GET'], requirements: ['userId' => '\d+'])]
+    #[Route('/api/user/{userId}', name: 'api_user_item', requirements: ['userId' => '\d+'], methods: ['GET'])]
     public function item(
         $userId,
         UserRepository $userRepository
@@ -42,7 +42,7 @@ class UserController extends AbstractController
         return $this->json($user);
     }
 
-    #[Route('/api/user/{userId}', name: 'api_user_item_update', methods: ['PUT'], requirements: ['userId' => '\d+'])]
+    #[Route('/api/user/{userId}', name: 'api_user_item_update', requirements: ['userId' => '\d+'], methods: ['PUT'])]
     public function update(
         $userId,
         bool $isSmsSystemEnabled,
