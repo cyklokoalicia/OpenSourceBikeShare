@@ -9,7 +9,7 @@ use BikeShare\Repository\StandRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class StandController extends AbstractController
 {
@@ -20,9 +20,7 @@ class StandController extends AbstractController
     ) {
     }
 
-    /**
-     * @Route("/api/stand", name="api_stand_index", methods={"GET"})
-     */
+    #[Route('/api/stand', name: 'api_stand_index', methods: ['GET'])]
     public function index(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -32,9 +30,12 @@ class StandController extends AbstractController
         return $this->json($stands);
     }
 
-    /**
-     * @Route("/api/stand/{standName}/bike", name="api_stand_item", methods={"GET"}, requirements: {"standName"="\w+"})
-     */
+    #[Route(
+        path: '/api/stand/{standName}/bike',
+        name: 'api_stand_item',
+        requirements: ['standName' => '\w+'],
+        methods: ['GET'],
+    )]
     public function bike(
         string $standName
     ): Response {
@@ -70,9 +71,12 @@ class StandController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/api/stand/{standName}/removeNote", name="api_stand_remove_note", methods={"DELETE"}, requirements: {"standName"="\w+"})
-     */
+    #[Route(
+        path: '/api/stand/{standName}/removeNote',
+        name: 'api_stand_remove_note',
+        requirements: ['standName' => '\w+'],
+        methods: ['DELETE'],
+    )]
     public function removeNote(
         $standName,
         NoteRepository $noteRepository,
@@ -98,9 +102,12 @@ class StandController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/stand/markers", name="api_stand_markers", methods={"GET"})
-     */
+    #[Route(
+        path: '/api/stand/markers',
+        name: 'api_stand_markers',
+        methods: ['GET'],
+        condition: "!request.headers.has('authorization')",
+    )]
     public function markers(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
@@ -110,9 +117,12 @@ class StandController extends AbstractController
         return $this->json($stands);
     }
 
-    /**
-     * @Route("/api/stand/markers", name="api_stand_markers_external", methods={"GET"})
-     */
+    #[Route(
+        path: '/api/stand/markers',
+        name: 'api_stand_markers_external',
+        methods: ['GET'],
+        condition: "request.headers.has('authorization')",
+    )]
     public function apiMarkers(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_API');

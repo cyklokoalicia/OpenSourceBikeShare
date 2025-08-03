@@ -229,7 +229,8 @@ class RentSystemTest extends BikeSharingKernelTestCase
                     'WATCHES_DOUBLE_PRICE_CYCLE_CAP' => 3, // charge double price only 3 times
                 ],
                 'expectedCreditLeft' => $startCredit - 2 - 2 - 2 * 2 - 2 * 4 - 2 * 4,
-                // rental fee (2) + first 5 minutes (2) + second 5 minutes (2 * 2) + third 5 minutes (2 * 4) + fourth 5 minutes (2 * 4)
+                // rental fee (2) + first 5 minutes (2) + second 5 minutes (2 * 2)
+                // + third 5 minutes (2 * 4) + fourth 5 minutes (2 * 4)
                 'expectedCreditHistory' => '24|overfree-2;double-2;double-4;double-8;double-8;',
                 'returnTimeMoveToFuture' => 20 * 60 + 1 // 20 minutes (4 * 5 minutes) + 1 second
             ]

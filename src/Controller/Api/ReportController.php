@@ -8,13 +8,11 @@ use BikeShare\Repository\HistoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class ReportController extends AbstractController
 {
-    /**
-     * @Route("/api/report/daily", name="api_report_daily", methods={"GET"})
-     */
+    #[Route('/api/report/daily', name: 'api_report_daily', methods: ['GET'])]
     public function daily(
         HistoryRepository $historyRepository
     ): Response {
@@ -25,9 +23,7 @@ class ReportController extends AbstractController
         return $this->json($stats);
     }
 
-    /**
-     * @Route("/api/report/user/{year}", name="api_report_user", requirements: {'year' => '\d+'}, methods={"GET"})
-     */
+    #[Route('/api/report/user/{year}', name: 'api_report_user', requirements: ['year' => '\d+'], methods: ['GET'])]
     public function user(
         HistoryRepository $historyRepository,
         ClockInterface $clock,

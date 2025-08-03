@@ -12,7 +12,7 @@ use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -29,10 +29,8 @@ class SmsRequestController extends AbstractController
     ) {
     }
 
-    /**
-     * @Route("/receive.php", name="sms_request")
-     * @Route("/sms/receive.php", name="sms_request_old")
-     */
+    #[Route('/receive.php', name: 'sms_request')]
+    #[Route('/sms/receive.php', name: 'sms_request_old')]
     public function index(): Response
     {
         $this->smsConnector->receive();

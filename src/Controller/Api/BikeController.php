@@ -13,7 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class BikeController extends AbstractController
 {
@@ -21,9 +21,7 @@ class BikeController extends AbstractController
     {
     }
 
-    /**
-     * @Route("/api/bike", name="api_bike_index", methods={"GET"})
-     */
+    #[Route('/api/bike', name: 'api_bike_index', methods: ['GET'])]
     public function index(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -33,9 +31,7 @@ class BikeController extends AbstractController
         return $this->json($bikes);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}", name="api_bike_item", methods={"GET"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/api/bike/{bikeNumber}', name: 'api_bike_item', requirements: ['bikeNumber' => '\d+'], methods: ['GET'])]
     public function item(
         $bikeNumber
     ): Response {
@@ -50,9 +46,12 @@ class BikeController extends AbstractController
         return $this->json($bikes);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/lastUsage", name="api_bike_last_usage", methods={"GET"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route(
+        path: '/api/bike/{bikeNumber}/lastUsage',
+        name: 'api_bike_last_usage',
+        requirements: ['bikeNumber' => '\d+'],
+        methods: ['GET'],
+    )]
     public function lastUsage(
         $bikeNumber
     ): Response {
@@ -67,9 +66,12 @@ class BikeController extends AbstractController
         return $this->json($bikes);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/rent", name="api_bike_rent", methods={"PUT"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route(
+        path: '/api/bike/{bikeNumber}/rent',
+        name: 'api_bike_rent',
+        requirements: ['bikeNumber' => '\d+'],
+        methods: ['PUT'],
+    )]
     public function rentBike(
         $bikeNumber,
         RentSystemFactory $rentSystemFactory
@@ -88,9 +90,12 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/return", name="api_bike_return", methods={"PUT"}, requirements: {"standName"="\w+", "bikeNumber"="\d+"})
-     */
+    #[Route(
+        path: '/api/bike/{bikeNumber}/return',
+        name: 'api_bike_return',
+        requirements: ['standName' => '\w+', 'bikeNumber' => '\d+'],
+        methods: ['PUT'],
+    )]
     public function returnBike(
         $bikeNumber,
         $standName,
@@ -113,9 +118,12 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/forceRent", name="api_bike_force_rent", methods={"PUT"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route(
+        path: '/api/bike/{bikeNumber}/forceRent',
+        name: 'api_bike_force_rent',
+        requirements: ['bikeNumber' => '\d+'],
+        methods: ['PUT'],
+    )]
     public function forceRentBike(
         $bikeNumber,
         RentSystemFactory $rentSystemFactory
@@ -135,9 +143,12 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/forceReturn", name="api_bike_force_return", methods={"PUT"}, requirements: {"standName"="\w+", "bikeNumber"="\d+"})
-     */
+    #[Route(
+        path: '/api/bike/{bikeNumber}/forceReturn',
+        name: 'api_bike_force_return',
+        requirements: ['standName' => '\w+', 'bikeNumber' => '\d+'],
+        methods: ['PUT'],
+    )]
     public function forceReturnBike(
         $bikeNumber,
         $standName,
@@ -161,9 +172,12 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/revert", name="api_bike_revert", methods={"PUT"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route(
+        path: '/api/bike/{bikeNumber}/revert',
+        name: 'api_bike_revert',
+        requirements: ['bikeNumber' => '\d+'],
+        methods: ['PUT'],
+    )]
     public function revertBike(
         $bikeNumber,
         RentSystemFactory $rentSystemFactory
@@ -182,9 +196,12 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/removeNote", name="api_bike_remove_note", methods={"DELETE"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route(
+        path: '/api/bike/{bikeNumber}/removeNote',
+        name: 'api_bike_remove_note',
+        requirements: ['bikeNumber' => '\d+'],
+        methods: ['DELETE'],
+    )]
     public function removeNote(
         $bikeNumber,
         NoteRepository $noteRepository,
@@ -208,9 +225,12 @@ class BikeController extends AbstractController
         return $this->json($response);
     }
 
-    /**
-     * @Route("/api/bike/{bikeNumber}/trip", name="api_bike_trip", methods={"GET"}, requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route(
+        path: '/api/bike/{bikeNumber}/trip',
+        name: 'api_bike_trip',
+        requirements: ['bikeNumber' => '\d+'],
+        methods: ['GET'],
+    )]
     public function bikeTrip(
         $bikeNumber,
         HistoryRepository $historyRepository
@@ -231,8 +251,13 @@ class BikeController extends AbstractController
 
     /**
      * For using this endpoint, bikes should have geolocation devices. Perhaps it should be some authorization for it
-     * @Route("/api/bike/{bikeNumber}/geoLocation", name="api_bike_geo_location", methods={"POST"}, requirements: {"bikeNumber"="\d+"})
      */
+    #[Route(
+        path: '/api/bike/{bikeNumber}/geoLocation',
+        name: 'api_bike_geo_location',
+        requirements: ['bikeNumber' => '\d+'],
+        methods: ['POST'],
+    )]
     public function bikeGeoLocation(
         $bikeNumber,
         Request $request,
@@ -254,7 +279,8 @@ class BikeController extends AbstractController
         }
 
         $db->query(
-            "INSERT INTO geolocation SET bikeNum = :bikeNumber, latitude = :latitude, longitude= :longitude, time = :time",
+            "INSERT INTO geolocation 
+                SET bikeNum = :bikeNumber, latitude = :latitude, longitude= :longitude, time = :time",
             [
                 'bikeNumber' => $bikeNumber,
                 'latitude' => (float)$request->request->get('lat'),

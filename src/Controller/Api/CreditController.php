@@ -9,13 +9,11 @@ use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class CreditController extends AbstractController
 {
-    /**
-     * @Route("/api/credit", name="api_credit_add", methods={"PUT"})
-     */
+    #[Route('/api/credit', name: 'api_credit_add', methods: ['PUT'])]
     public function add(
         Request $request,
         CreditSystemInterface $creditSystem,

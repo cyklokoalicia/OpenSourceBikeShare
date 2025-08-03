@@ -7,14 +7,14 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * @deprecated PyBikes should use another entry point
+ */
 class CommandController extends AbstractController
 {
-    /**
-     * @deprecated PyBikes should use another entry point
-     * @Route("/command.php", name="command")
-     */
+    #[Route('/command.php', name: 'command')]
     public function index(
         StandRepository $standRepository,
         Request $request,
@@ -27,14 +27,16 @@ class CommandController extends AbstractController
             return $this->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        $logger->notice(
-            'Access to command.php map:markers',
-            [
-                'ip' => $request->getClientIp(),
-                'uri' => $request->getRequestUri(),
-                'request' => $request->request->all(),
-            ]
-        );
+        if (mt_rand(0, 100) > 97) {
+            $logger->notice(
+                'Access to command.php map:markers',
+                [
+                    'ip' => $request->getClientIp(),
+                    'uri' => $request->getRequestUri(),
+                    'request' => $request->request->all(),
+                ]
+            );
+        }
 
         $stands = $standRepository->findAllExtended();
 

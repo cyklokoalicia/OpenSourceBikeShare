@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class CouponController extends AbstractController
 {
@@ -22,9 +22,7 @@ class CouponController extends AbstractController
     ) {
     }
 
-    /**
-     * @Route("/api/coupon", name="api_coupon_index", methods={"GET"})
-     */
+    #[Route('/api/coupon', name: 'api_coupon_index', methods: ['GET'])]
     public function index(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -42,9 +40,7 @@ class CouponController extends AbstractController
         return $this->json($coupons);
     }
 
-    /**
-     * @Route("/api/coupon/sell", name="api_coupon_sell", methods={"POST"})
-     */
+    #[Route('/api/coupon/sell', name: 'api_coupon_sell', methods: ['POST'])]
     public function sellCoupon(
         Request $request
     ): Response {
@@ -68,9 +64,7 @@ class CouponController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/api/coupon/generate", name="api_coupon_generate", methods={"POST"})
-     */
+    #[Route('/api/coupon/generate', name: 'api_coupon_generate', methods: ['POST'])]
     public function generate(
         Request $request,
         CodeGeneratorInterface $codeGenerator
@@ -107,9 +101,7 @@ class CouponController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/api/coupon/use", name="api_coupon_use", methods={"POST"})
-     */
+    #[Route('/api/coupon/use', name: 'api_coupon_use', methods: ['POST'])]
     public function useCoupon(
         Request $request
     ): Response {

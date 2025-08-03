@@ -12,7 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ScanController extends AbstractController
@@ -27,9 +27,7 @@ class ScanController extends AbstractController
     ) {
     }
 
-    /**
-     * @Route("/scan.php/rent/{bikeNumber}", name="scan_bike", requirements: {"bikeNumber"="\d+"})
-     */
+    #[Route('/scan.php/rent/{bikeNumber}', name: 'scan_bike', requirements: ['bikeNumber' => '\d+'])]
     public function rentBike(
         string $bikeNumber,
         Request $request
@@ -66,9 +64,7 @@ class ScanController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/scan.php/return/{standName}", name="scan_stand", requirements: {"standName"="\w+"})
-     */
+    #[Route('/scan.php/return/{standName}', name: 'scan_stand', requirements: ['standName' => '\w+'])]
     public function returnBike(
         string $standName
     ): Response {
@@ -95,7 +91,7 @@ class ScanController extends AbstractController
         ]);
     }
 
-    private function logResponse(string $response)
+    private function logResponse(string $response): void
     {
         $this->db->query(
             'INSERT INTO sent 
