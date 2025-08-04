@@ -74,7 +74,7 @@ return function (SecurityConfig $security) {
 
     $security->accessControl()
         ->path('^/admin')
-        ->roles(['ROLE_SUPER_ADMIN']);
+        ->roles(['ROLE_ADMIN']);
 
     $security->accessControl()
         ->path('^/admin/qrCodeGenerator')
