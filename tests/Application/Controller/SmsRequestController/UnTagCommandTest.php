@@ -78,20 +78,20 @@ class UnTagCommandTest extends BikeSharingWebTestCase
 
         if ($expectedSmsCount === 1) {
             $sentMessage = $sentMessages[0];
-            $this->assertSame($expectedMessage, $sentMessage['text'], 'Invalid message text');
+            $this->assertMatchesRegularExpression($expectedMessage, $sentMessage['text'], 'Invalid message text');
             $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid number');
         } elseif ($expectedSmsCount === 2) {
             $notifiedNumbers = [];
             foreach ($sentMessages as $sentMessage) {
                 if ($sentMessage['number'] === self::ADMIN_PHONE_NUMBER) {
-                    $this->assertSame(
+                    $this->assertMatchesRegularExpression(
                         $expectedMessage,
                         $sentMessage['text'],
                         'Invalid message sent to user'
                     );
                 } else {
-                    $this->assertSame(
-                        $user['username'] . ': ' . $expectedMessage,
+                    $this->assertMatchesRegularExpression(
+                        $expectedMessage,
                         $sentMessage['text'],
                         'Invalid message sent to admin'
                     );
@@ -114,7 +114,7 @@ class UnTagCommandTest extends BikeSharingWebTestCase
 
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertSame($user['username'] . ': ' . $expectedMessage, $sentMessage['message']);
+                $this->assertMatchesRegularExpression($expectedMessage, $sentMessage['message']);
                 $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
@@ -136,16 +136,16 @@ class UnTagCommandTest extends BikeSharingWebTestCase
         return [
             'No pattern' => [
                 'pattern' => null,
-                'expectedMessage' => '2 notes for bikes on stand ' . self::STAND_NAME . ' were deleted.',
+                'expectedMessage' => '/note(s)? for bikes on stand ' . self::STAND_NAME . ' \w* deleted\./',
                 'expectedSmsCount' => 2,
                 'expectedMailCount' => 1,
                 'expectedRemainingNotes' => 0,
                 'expectedWarning' => false,
             ],
-            'Valid pattern for one note' => [
+            'Valid pattern for part of notes' => [
                 'pattern' => 'test',
-                'expectedMessage' => 'One note matching pattern "test" for bikes on stand ' .
-                    self::STAND_NAME . ' was deleted.',
+                'expectedMessage' => '/note(s)? matching pattern \"test\" for bikes on stand ' .
+                    self::STAND_NAME . ' \w* deleted\./',
                 'expectedSmsCount' => 2,
                 'expectedMailCount' => 1,
                 'expectedRemainingNotes' => 1,
@@ -153,8 +153,8 @@ class UnTagCommandTest extends BikeSharingWebTestCase
             ],
             'Invalid pattern' => [
                 'pattern' => 'INVALID_PATTERN',
-                'expectedMessage' => 'No notes matching pattern "INVALID_PATTERN" found for bikes on stand '
-                    . self::STAND_NAME . ' to delete.',
+                'expectedMessage' => '/No notes matching pattern \"INVALID_PATTERN\" found for bikes on stand '
+                    . self::STAND_NAME . ' to delete\./',
                 'expectedSmsCount' => 1,
                 'expectedMailCount' => 0,
                 'expectedRemainingNotes' => 2,

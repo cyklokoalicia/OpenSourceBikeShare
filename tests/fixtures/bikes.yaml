@@ -6,6 +6,6 @@ stdClass:
     currentStand: null
     currentCode: <randomNumber(4, true)>
 
-  bike_{1..10} (extends defaultBike):
+  bike_{1..25} (extends defaultBike):
     bikeNum: '<($current)>'
     currentStand: '@stand_<numberBetween(1, 5)>->standId'

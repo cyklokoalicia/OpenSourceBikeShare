@@ -29,7 +29,7 @@
                 <div class="card-footer">
                     <div class="bike-actions d-flex justify-content-end">
                         <button type="button" class="btn btn-outline-primary btn-sm bike-revert" title="{{ 'Be careful! Revert accidentally rented bike in case of mistake or misread bike number.'|trans }}">
-                            <i class="fas fa-fast-backward" title="{{ 'Revert'|trans }}"></i>
+                            <i class="fas fa-history" title="{{ 'Revert'|trans }}"></i>
                         </button>
                         <button type="button" class="btn btn-outline-primary btn-sm bike-last-usage" title="{{ 'Display network usage (blank) or history of bike usage (number entered).'|trans }}">
                             <i class="fas fa-signal" title="{{ 'Last usage'|trans }}" aria-hidden="true"></i>
@@ -52,6 +52,35 @@
                     <div class="modal-body">
 
                     </div>
+                    <div class="modal-footer justify-content-center flex-wrap">
+                        <div class="d-flex flex-wrap justify-content-center gap-3 text-center">
+
+                            <div class="legend-item mx-3 text-danger">
+                                <i class="fas fa-fast-forward fa-lg" title="{{ 'Force Rent'|trans }}"></i><br>
+                                <small class="font-weight-bold">{{ 'Force Rent'|trans }}</small>
+                            </div>
+
+                            <div class="legend-item mx-3 text-info">
+                                <i class="fas fa-forward fa-lg" title="{{ 'Rent'|trans }}"></i><br>
+                                <small class="font-weight-bold">{{ 'Rent'|trans }}</small>
+                            </div>
+
+                            <div class="legend-item mx-3 text-info">
+                                <i class="fas fa-backward fa-lg" title="{{ 'Return'|trans }}"></i><br>
+                                <small class="font-weight-bold">{{ 'Return'|trans }}</small>
+                            </div>
+
+                            <div class="legend-item mx-3 text-danger">
+                                <i class="fas fa-fast-backward fa-lg" title="{{ 'Force Return'|trans }}"></i><br>
+                                <small class="font-weight-bold">{{ 'Force Return'|trans }}</small>
+                            </div>
+
+                            <div class="legend-item mx-3 text-warning">
+                                <i class="fas fa-history fa-lg" title="{{ 'Revert'|trans }}"></i><br>
+                                <small class="font-weight-bold">{{ 'Revert'|trans }}</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -69,6 +98,7 @@
     <div class="d-none" id="bike-card-last_usage_template">
         <span id="action">
             <i class="RENT d-none fas fa-lg fa-forward text-info" aria-hidden="true" title="{{ 'Rent'|trans }}"></i>
+            <i class="FORCERENT d-none fas fa-lg fa-fast-forward text-danger" aria-hidden="true" title="{{ 'Force Rent'|trans }}"></i>
             <i class="RETURN d-none fas fa-lg fa-backward text-info" aria-hidden="true" title="{{ 'Return'|trans }}"></i>
             <i class="FORCERETURN d-none fas fa-lg fa-fast-backward text-danger" aria-hidden="true" title="{{ 'Force Return'|trans }}"></i>
             <i class="REVERT d-none fas fa-lg fa-history text-warning" aria-hidden="true" title="{{ 'Revert'|trans }}"></i>
