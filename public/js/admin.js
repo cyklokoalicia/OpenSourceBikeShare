@@ -168,10 +168,19 @@ function last(bikeNumber) {
                 $container.append($notes);
             }
 
+            const dateTimeFormatter = new Intl.DateTimeFormat(navigator.language, {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            });
+
             $.each(data.history, function (index, item) {
                 const $template = $("#bike-card-last_usage_template");
                 const $history = $template.clone().removeClass("d-none");
-                $history.find("#time").text(item.time);
+                const date = new Date(item.time);
+                $history.find("#time").text(dateTimeFormatter.format(date));
                 $history.find("#standName").text(item.standName);
                 $history.find("#userName").text(item.userName);
                 $history.find("#parameter").text(item.parameter);

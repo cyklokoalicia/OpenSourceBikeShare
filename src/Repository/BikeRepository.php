@@ -141,10 +141,11 @@ class BikeRepository
         $result['history'] = [];
         foreach ($history as $row) {
             $historyItem = [];
-            $historyItem['time'] = date('d/m H:i', strtotime((string) $row['time']));
+            $historyItem['time'] = $row['time'];
             $historyItem['action'] = $row['action'];
+            $historyItem['userName'] = $row['userName'];
 
-            if ($row['standName'] != null) {
+            if (!is_null($row['standName'])) {
                 $historyItem['standName'] = $row['standName'];
                 if (strpos((string) $row['parameter'], '|')) {
                     $revertCode = explode('|', (string) $row['parameter']);
@@ -152,10 +153,9 @@ class BikeRepository
                 }
 
                 if ($row['action'] == 'REVERT') {
-                    $historyItem['parameter'] = str_pad($revertCode, 4, '0', STR_PAD_LEFT);
+                    $historyItem['parameter'] = str_pad($revertCode ?? '', 4, '0', STR_PAD_LEFT);
                 }
             } else {
-                $historyItem['userName'] = $row['userName'];
                 $historyItem['parameter'] = str_pad((string) $row['parameter'], 4, '0', STR_PAD_LEFT);
             }
 
