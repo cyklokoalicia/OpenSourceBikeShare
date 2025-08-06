@@ -40,9 +40,6 @@ return function (SecurityConfig $security) {
         ->accessDeniedHandler(ApiAccessDeniedHandler::class);
     $apiFirewall
         ->customAuthenticators([ApiTokenAuthenticator::class]);
-    $apiFirewall
-        ->httpBasic()
-        ->realm('Bike Sharing API');
     $security
         ->accessControl()
         ->path('^/api')
