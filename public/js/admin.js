@@ -180,7 +180,7 @@ function last(bikeNumber) {
                 const $template = $("#bike-card-last_usage_template");
                 const $history = $template.clone().removeClass("d-none");
                 const date = new Date(item.time);
-                $history.find("#time").text(dateTimeFormatter.format(date));
+                $history.find("#time").text(isNaN(date.getTime()) ? item.time : dateTimeFormatter.format(date));
                 $history.find("#standName").text(item.standName);
                 $history.find("#userName").text(item.userName);
                 $history.find("#parameter").text(item.parameter);
