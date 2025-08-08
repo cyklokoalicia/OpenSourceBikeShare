@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Enum\Action;
 use Psr\Log\LoggerInterface;
 
 class StatsRepository
@@ -56,7 +57,7 @@ class StatsRepository
         $returnHistory = [];
         foreach ($history as $item) {
             $date = new \DateTimeImmutable($item['time']);
-            if ($item['action'] === 'RENT' || $item['action'] === 'FORCERENT') {
+            if ($item['action'] === Action::RENT->value || $item['action'] === Action::FORCE_RENT->value) {
                 $rentHistory[$item['bikeNum']] = $item;
                 $stats['rental_count']++;
                 if (isset($returnHistory[$item['bikeNum']])) {
@@ -73,7 +74,7 @@ class StatsRepository
                     ($stats['rent_period']['day_of_week'][$date->format('l')] ?? 0) + 1;
                 $stats['rent_period']['month'][$date->format('F')] =
                     ($stats['rent_period']['month'][$date->format('F')] ?? 0) + 1;
-            } elseif ($item['action'] === 'RETURN' || $item['action'] === 'FORCERETURN') {
+            } elseif ($item['action'] === Action::RETURN->value || $item['action'] === Action::FORCE_RETURN->value) {
                 $returnHistory[$item['bikeNum']] = $item;
                 $stats['return_station'][$item['parameter']] = ($stats['return_station'][$item['parameter']] ?? 0) + 1;
 
@@ -100,7 +101,7 @@ class StatsRepository
                 }
 
                 unset($rentHistory[$item['bikeNum']]);
-            } elseif ($item['action'] === 'REVERT') {
+            } elseif ($item['action'] === Action::REVERT->value) {
                 unset($rentHistory[$item['bikeNum']]);
                 unset($returnHistory[$item['bikeNum']]);
             } else {

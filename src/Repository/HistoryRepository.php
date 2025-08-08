@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Enum\Action;
 use Symfony\Component\Clock\ClockInterface;
 
 class HistoryRepository
@@ -18,7 +19,7 @@ class HistoryRepository
     public function addItem(
         int $userId,
         int $bikeNum,
-        string $action,
+        Action $action,
         string $parameter
     ): void {
         $this->db->query(
@@ -27,7 +28,7 @@ class HistoryRepository
             [
                 'userId' => $userId,
                 'bikeNum' => $bikeNum,
-                'action' => $action,
+                'action' => $action->value,
                 'parameter' => $parameter,
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
@@ -36,17 +37,24 @@ class HistoryRepository
 
     public function dailyStats(): array
     {
+
         $result = $this->db->query(
-            "SELECT 
+            "SELECT
               DATE(time) AS day,
-              SUM(CASE WHEN action = 'RENT' THEN 1 ELSE 0 END) AS rentCount,
-              SUM(CASE WHEN action = 'RETURN' THEN 1 ELSE 0 END) AS returnCount
-            FROM history 
-            WHERE userId IS NOT NULL 
-              AND action IN ('RENT','RETURN') 
-            GROUP BY day 
+              SUM(CASE WHEN action = :rentActionSum THEN 1 ELSE 0 END) AS rentCount,
+              SUM(CASE WHEN action = :returnActionSum THEN 1 ELSE 0 END) AS returnCount
+            FROM history
+            WHERE userId IS NOT NULL
+              AND action IN (:rentAction, :returnAction)
+            GROUP BY day
             ORDER BY day DESC
-            LIMIT 60"
+            LIMIT 60",
+            [
+                'rentActionSum' => Action::RENT->value,
+                'returnActionSum' => Action::RETURN->value,
+                'rentAction' => Action::RENT->value,
+                'returnAction' => Action::RETURN->value,
+            ]
         )->fetchAllAssoc();
 
         return $result;
@@ -58,16 +66,20 @@ class HistoryRepository
             "SELECT
                 users.userId,
                 username,
-                SUM(CASE WHEN action = 'RENT' THEN 1 ELSE 0 END) AS rentCount,
-                SUM(CASE WHEN action = 'RETURN' THEN 1 ELSE 0 END) AS returnCount,
+                SUM(CASE WHEN action = :rentActionSum THEN 1 ELSE 0 END) AS rentCount,
+                SUM(CASE WHEN action = :returnActionSum THEN 1 ELSE 0 END) AS returnCount,
                 COUNT(action) AS totalActionCount
-            FROM users 
-            LEFT JOIN history ON users.userId=history.userId 
+            FROM users
+            LEFT JOIN history ON users.userId=history.userId
             WHERE history.userId IS NOT NULL
               AND YEAR(time) = :year
-            GROUP BY username 
+            GROUP BY username
             ORDER BY totalActionCount DESC",
-            ['year' => $year]
+            [
+                'year' => $year,
+                'rentActionSum' => Action::RENT->value,
+                'returnActionSum' => Action::RETURN->value,
+            ]
         )->fetchAllAssoc();
 
         return $result;
@@ -83,15 +95,16 @@ class HistoryRepository
               action,
               parameter,
               standId
-            FROM history 
-            WHERE bikeNum = :bikeNumber 
-              AND userId = :userId 
-              AND action = 'RENT' 
-            ORDER BY time DESC 
+            FROM history
+            WHERE bikeNum = :bikeNumber
+              AND userId = :userId
+              AND action = :rentAction
+            ORDER BY time DESC
             LIMIT 1",
             [
                 'bikeNumber' => $bikeNumber,
                 'userId' => $userId,
+                'rentAction' => Action::RENT->value,
             ]
         )->fetchAssoc();
 
@@ -103,13 +116,14 @@ class HistoryRepository
         $result = $this->db->query(
             "SELECT
               COUNT(*) AS rentCount
-            FROM history 
-            WHERE userId = :userId 
-              AND action = 'RENT' 
+            FROM history
+            WHERE userId = :userId
+              AND action = :rentAction
               AND time > :offsetTime",
             [
                 'userId' => $userId,
                 'offsetTime' => $offsetTime->format('Y-m-d H:i:s'),
+                'rentAction' => Action::RENT->value,
             ]
         )->fetchAssoc();
 
@@ -126,15 +140,16 @@ class HistoryRepository
               action,
               parameter,
               standId
-            FROM history 
-            WHERE action = 'PHONE_CONFIRM_REQUEST' 
+            FROM history
+            WHERE action = :phoneConfirmRequestAction
               AND parameter = :checkCode
               AND userId = :userId
-            ORDER BY time DESC 
+            ORDER BY time DESC
             LIMIT 1",
             [
                 'checkCode' => $checkCode,
                 'userId' => $userId,
+                'phoneConfirmRequestAction' => Action::PHONE_CONFIRM_REQUEST->value,
             ]
         )->fetchAssoc();
 
@@ -149,11 +164,13 @@ class HistoryRepository
                  LEFT JOIN stands ON stands.standid=history.parameter
                  WHERE bikenum = :bikeNumber
                    AND time > :startTime
-                   AND action IN ('RETURN', 'FORCERETURN')
+                   AND action IN (:returnAction, :forceReturnAction)
                  ORDER BY history.time DESC, history.id DESC",
             [
                 'bikeNumber' => $bikeNumber,
                 'startTime' => $startTime->format('Y-m-d H:i:s'),
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
             ]
         )->fetchAllAssoc();
 

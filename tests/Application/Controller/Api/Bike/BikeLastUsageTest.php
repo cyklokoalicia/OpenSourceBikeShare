@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Test\Application\Controller\Api\Bike;
 
 use BikeShare\App\Security\UserProvider;
+use BikeShare\Enum\Action;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,13 +48,13 @@ class BikeLastUsageTest extends BikeSharingWebTestCase
 
         // Check the history actions, the last action will be on the top
         $this->assertCount(7, $responseData['history']);
-        $this->assertSame('RETURN', $responseData['history'][0]['action']);
-        $this->assertSame('RENT', $responseData['history'][1]['action']);
-        $this->assertSame('REVERT', $responseData['history'][2]['action']);
-        $this->assertSame('RENT', $responseData['history'][3]['action']);
-        $this->assertSame('RETURN', $responseData['history'][4]['action']);
-        $this->assertSame('RENT', $responseData['history'][5]['action']);
-        $this->assertSame('FORCERETURN', $responseData['history'][6]['action']);
+        $this->assertSame(Action::RETURN->value, $responseData['history'][0]['action']);
+        $this->assertSame(Action::RENT->value, $responseData['history'][1]['action']);
+        $this->assertSame(Action::REVERT->value, $responseData['history'][2]['action']);
+        $this->assertSame(Action::RENT->value, $responseData['history'][3]['action']);
+        $this->assertSame(Action::RETURN->value, $responseData['history'][4]['action']);
+        $this->assertSame(Action::RENT->value, $responseData['history'][5]['action']);
+        $this->assertSame(Action::FORCE_RETURN->value, $responseData['history'][6]['action']);
 
         $this->assertSame(
             $responseData['history'][2]['parameter'], //REVERT

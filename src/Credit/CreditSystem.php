@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Credit;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Enum\Action;
 use BikeShare\Repository\HistoryRepository;
 
 class CreditSystem implements CreditSystemInterface
@@ -90,7 +91,7 @@ class CreditSystem implements CreditSystemInterface
             $this->historyRepository->addItem(
                 $userId,
                 0, //BikeNum
-                'CREDITCHANGE', //action
+                Action::CREDIT_CHANGE,
                 $creditAmount . '|add+' . $creditAmount . ($coupon ? '|' . $coupon : '') //parameter
             );
         }

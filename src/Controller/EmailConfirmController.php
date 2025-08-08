@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
+use BikeShare\Enum\Action;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
@@ -38,7 +39,7 @@ class EmailConfirmController extends AbstractController
                 $historyRepository->addItem(
                     (int)$registration['userId'],
                     0,
-                    'EMAIL_CONFIRMED',
+                    Action::EMAIL_CONFIRMED,
                     ''
                 );
 
