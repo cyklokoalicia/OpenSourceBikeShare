@@ -3,7 +3,7 @@
 namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
-use BikeShare\History\HistoryAction;
+use BikeShare\Enum\Action;
 
 class BikeRepository
 {
@@ -36,19 +36,17 @@ class BikeRepository
              */
             if (!empty($bike['userName'])) {
                 $historyInfo = $this->db->query(
-                    sprintf(
-                        'SELECT time
+                    'SELECT time
                      FROM history
                      WHERE bikeNum = :bikeNumber
                          AND userId = :userId
-                         AND action =\'%s\'
+                         AND action = :action
                      ORDER BY time DESC
                      LIMIT 1',
-                        HistoryAction::RENT->value
-                    ),
                     [
                         'bikeNumber' => $bike['bikeNum'],
                         'userId' => $bike['userId'],
+                        'action' => Action::RENT->value,
                     ]
                 )->fetchAssoc();
 
@@ -88,20 +86,18 @@ class BikeRepository
          */
         if (!empty($bike['userName'])) {
             $historyInfo = $this->db->query(
-                sprintf(
-                    'SELECT time
+                'SELECT time
                      FROM history
                      WHERE bikeNum = :bikeNumber
                          AND userId = :userId
-                         AND action IN (\'%s\', \'%s\')
+                         AND action IN (:rentAction, :forceRentAction)
                      ORDER BY time DESC
                      LIMIT 1',
-                    HistoryAction::RENT->value,
-                    HistoryAction::FORCERENT->value
-                ),
                 [
                     'bikeNumber' => $bike['bikeNum'],
                     'userId' => $bike['userId'],
+                    'rentAction' => Action::RENT->value,
+                    'forceRentAction' => Action::FORCE_RENT->value,
                 ]
             )->fetchAssoc();
 
@@ -160,7 +156,7 @@ class BikeRepository
                     $revertCode = $revertCode[1];
                 }
 
-                if ($row['action'] == HistoryAction::REVERT->value) {
+                if ($row['action'] == Action::REVERT->value) {
                     $historyItem['parameter'] = str_pad($revertCode ?? '', 4, '0', STR_PAD_LEFT);
                 }
             } else {
@@ -242,17 +238,15 @@ class BikeRepository
         foreach ($bikes as &$bike) {
             $bike['currentCode'] = str_pad((string) $bike['currentCode'], 4, '0', STR_PAD_LEFT);
             $historyInfo = $this->db->query(
-                sprintf(
-                    "SELECT TIMESTAMPDIFF(SECOND, time, NOW()) as rentedSeconds, parameter
+                "SELECT TIMESTAMPDIFF(SECOND, time, NOW()) as rentedSeconds, parameter
                 FROM history
                 WHERE bikeNum = :bikeNumber
-                    AND action IN ('%s','%s')
+                    AND action IN (:rentAction, :forceRentAction)
                 ORDER BY time DESC, id DESC LIMIT 2",
-                    HistoryAction::RENT->value,
-                    HistoryAction::FORCERENT->value
-                ),
                 [
                     'bikeNumber' => $bike['bikeNum'],
+                    'rentAction' => Action::RENT->value,
+                    'forceRentAction' => Action::FORCE_RENT->value,
                 ]
             )->fetchAllAssoc();
             foreach ($historyInfo as $index => $row) {

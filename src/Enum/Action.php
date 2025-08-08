@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace BikeShare\History;
+namespace BikeShare\Enum;
 
-enum HistoryAction: string
+enum Action: string
 {
     case RENT = 'RENT';
     case RETURN = 'RETURN';
     case REVERT = 'REVERT';
-    case FORCERENT = 'FORCERENT';
-    case FORCERETURN = 'FORCERETURN';
+    case FORCE_RENT = 'FORCERENT';
+    case FORCE_RETURN = 'FORCERETURN';
     case PHONE_CONFIRMED = 'PHONE_CONFIRMED';
     case PHONE_CONFIRM_REQUEST = 'PHONE_CONFIRM_REQUEST';
     case EMAIL_CONFIRMED = 'EMAIL_CONFIRMED';
-    case CREDITCHANGE = 'CREDITCHANGE';
+    case CREDIT_CHANGE = 'CREDITCHANGE';
     case CREDIT = 'CREDIT';
 }

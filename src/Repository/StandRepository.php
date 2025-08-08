@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Enum\Action;
 
 class StandRepository
 {
@@ -138,18 +139,18 @@ class StandRepository
             }
 
             $result = $this->db->query(
-                sprintf(
                     "SELECT bikeNum FROM history
-                WHERE action IN ('%s','%s')
+                WHERE action IN (:returnAction, :forceReturnAction)
                     AND parameter=:standId
                     AND bikeNum IN (" . implode(',', array_keys($bikeQueryParams)) . ")
                 ORDER BY `time` DESC, id DESC
                 LIMIT 1",
-                    HistoryAction::RETURN->value,
-                    HistoryAction::FORCERETURN->value
-                ),
                 array_merge(
-                    ['standId' => $standId],
+                    [
+                        'standId' => $standId,
+                        'returnAction' => Action::RETURN->value,
+                        'forceReturnAction' => Action::FORCE_RETURN->value,
+                    ],
                     $bikeQueryParams,
                 )
             )->fetchAssoc();

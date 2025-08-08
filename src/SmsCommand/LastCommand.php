@@ -6,7 +6,7 @@ namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Repository\BikeRepository;
-use BikeShare\History\HistoryAction;
+use BikeShare\Enum\Action;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -36,12 +36,12 @@ class LastCommand extends AbstractCommand implements SmsCommandInterface
         $historyInfo = [];
         $historyInfo[] = "B.$bikeNumber:";
         foreach ($lastUsage['history'] as $row) {
-            if (!in_array($row['action'], [HistoryAction::RETURN->value, HistoryAction::RENT->value, HistoryAction::REVERT->value])) {
+            if (!in_array($row['action'], [Action::RETURN->value, Action::RENT->value, Action::REVERT->value])) {
                 continue;
             }
 
             if (!is_null($standName = $row["standName"])) {
-                if ($row["action"] == HistoryAction::REVERT->value) {
+                if ($row["action"] == Action::REVERT->value) {
                     $historyInfo[] = "*";
                 }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
-use BikeShare\History\HistoryAction;
+use BikeShare\Enum\Action;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\SmsSenderInterface;
@@ -54,7 +54,7 @@ class PhoneConfirmController extends AbstractController
                 $historyRepository->addItem(
                     $user->getUserId(),
                     0,
-                    HistoryAction::PHONE_CONFIRM_REQUEST,
+                    Action::PHONE_CONFIRM_REQUEST,
                     sprintf('%s;%s;%s', $number, $sanitizedSmsCode, $checkCode)
                 );
 
@@ -85,7 +85,7 @@ class PhoneConfirmController extends AbstractController
 
                 if ($history) {
                     $userRepository->confirmUserNumber($user->getUserId());
-                    $historyRepository->addItem($user->getUserId(), 0, HistoryAction::PHONE_CONFIRMED, '');
+                    $historyRepository->addItem($user->getUserId(), 0, Action::PHONE_CONFIRMED, '');
 
                     $session->remove('phoneCheckCode');
                     $session->remove('phoneVerificationStep');
