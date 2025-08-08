@@ -5,8 +5,6 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 return function (RoutingConfigurator $routes) {
     $routes->add('home', '/')
         ->controller([\BikeShare\Controller\HomeController::class, 'index']);
-    $routes->add('command', '/command.php')
-        ->controller([\BikeShare\Controller\CommandController::class, 'index']);
     $routes->add('scan_bike', '/scan.php/rent/{bikeNumber}')
         ->requirements(['bikeNumber' => '\d+'])
         ->controller([\BikeShare\Controller\ScanController::class, 'rentBike']);
