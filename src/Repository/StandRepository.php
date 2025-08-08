@@ -138,12 +138,16 @@ class StandRepository
             }
 
             $result = $this->db->query(
-                "SELECT bikeNum FROM history 
-                WHERE action IN ('RETURN','FORCERETURN')
-                    AND parameter=:standId 
+                sprintf(
+                    "SELECT bikeNum FROM history
+                WHERE action IN ('%s','%s')
+                    AND parameter=:standId
                     AND bikeNum IN (" . implode(',', array_keys($bikeQueryParams)) . ")
                 ORDER BY `time` DESC, id DESC
                 LIMIT 1",
+                    HistoryAction::RETURN->value,
+                    HistoryAction::FORCERETURN->value
+                ),
                 array_merge(
                     ['standId' => $standId],
                     $bikeQueryParams,

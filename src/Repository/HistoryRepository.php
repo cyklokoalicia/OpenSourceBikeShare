@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\History\HistoryAction;
 use Symfony\Component\Clock\ClockInterface;
 
 class HistoryRepository
@@ -18,7 +19,7 @@ class HistoryRepository
     public function addItem(
         int $userId,
         int $bikeNum,
-        string $action,
+        HistoryAction $action,
         string $parameter
     ): void {
         $this->db->query(
@@ -27,7 +28,7 @@ class HistoryRepository
             [
                 'userId' => $userId,
                 'bikeNum' => $bikeNum,
-                'action' => $action,
+                'action' => $action->value,
                 'parameter' => $parameter,
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
@@ -36,17 +37,25 @@ class HistoryRepository
 
     public function dailyStats(): array
     {
+        $rent = HistoryAction::RENT->value;
+        $return = HistoryAction::RETURN->value;
         $result = $this->db->query(
-            "SELECT 
+            sprintf(
+                "SELECT
               DATE(time) AS day,
-              SUM(CASE WHEN action = 'RENT' THEN 1 ELSE 0 END) AS rentCount,
-              SUM(CASE WHEN action = 'RETURN' THEN 1 ELSE 0 END) AS returnCount
-            FROM history 
-            WHERE userId IS NOT NULL 
-              AND action IN ('RENT','RETURN') 
-            GROUP BY day 
+              SUM(CASE WHEN action = '%s' THEN 1 ELSE 0 END) AS rentCount,
+              SUM(CASE WHEN action = '%s' THEN 1 ELSE 0 END) AS returnCount
+            FROM history
+            WHERE userId IS NOT NULL
+              AND action IN ('%s','%s')
+            GROUP BY day
             ORDER BY day DESC
-            LIMIT 60"
+            LIMIT 60",
+                $rent,
+                $return,
+                $rent,
+                $return
+            )
         )->fetchAllAssoc();
 
         return $result;
@@ -54,19 +63,25 @@ class HistoryRepository
 
     public function userStats(int $year): array
     {
+        $rent = HistoryAction::RENT->value;
+        $return = HistoryAction::RETURN->value;
         $result = $this->db->query(
-            "SELECT
+            sprintf(
+                "SELECT
                 users.userId,
                 username,
-                SUM(CASE WHEN action = 'RENT' THEN 1 ELSE 0 END) AS rentCount,
-                SUM(CASE WHEN action = 'RETURN' THEN 1 ELSE 0 END) AS returnCount,
+                SUM(CASE WHEN action = '%s' THEN 1 ELSE 0 END) AS rentCount,
+                SUM(CASE WHEN action = '%s' THEN 1 ELSE 0 END) AS returnCount,
                 COUNT(action) AS totalActionCount
-            FROM users 
-            LEFT JOIN history ON users.userId=history.userId 
+            FROM users
+            LEFT JOIN history ON users.userId=history.userId
             WHERE history.userId IS NOT NULL
               AND YEAR(time) = :year
-            GROUP BY username 
+            GROUP BY username
             ORDER BY totalActionCount DESC",
+                $rent,
+                $return
+            ),
             ['year' => $year]
         )->fetchAllAssoc();
 
@@ -76,19 +91,22 @@ class HistoryRepository
     public function findLastBikeRentByUser(int $bikeNumber, int $userId): ?array
     {
         $result = $this->db->query(
-            "SELECT
+            sprintf(
+                "SELECT
               userId,
               bikeNum,
               time,
               action,
               parameter,
               standId
-            FROM history 
-            WHERE bikeNum = :bikeNumber 
-              AND userId = :userId 
-              AND action = 'RENT' 
-            ORDER BY time DESC 
+            FROM history
+            WHERE bikeNum = :bikeNumber
+              AND userId = :userId
+              AND action = '%s'
+            ORDER BY time DESC
             LIMIT 1",
+                HistoryAction::RENT->value
+            ),
             [
                 'bikeNumber' => $bikeNumber,
                 'userId' => $userId,
@@ -101,12 +119,15 @@ class HistoryRepository
     public function findRentCountByUser(int $userId, \DateTimeImmutable $offsetTime): int
     {
         $result = $this->db->query(
-            "SELECT
+            sprintf(
+                "SELECT
               COUNT(*) AS rentCount
-            FROM history 
-            WHERE userId = :userId 
-              AND action = 'RENT' 
+            FROM history
+            WHERE userId = :userId
+              AND action = '%s'
               AND time > :offsetTime",
+                HistoryAction::RENT->value
+            ),
             [
                 'userId' => $userId,
                 'offsetTime' => $offsetTime->format('Y-m-d H:i:s'),
@@ -119,19 +140,22 @@ class HistoryRepository
     public function findConfirmationRequest(string $checkCode, int $userId): ?array
     {
         $result = $this->db->query(
-            "SELECT
+            sprintf(
+                "SELECT
               userId,
               bikeNum,
               time,
               action,
               parameter,
               standId
-            FROM history 
-            WHERE action = 'PHONE_CONFIRM_REQUEST' 
+            FROM history
+            WHERE action = '%s'
               AND parameter = :checkCode
               AND userId = :userId
-            ORDER BY time DESC 
+            ORDER BY time DESC
             LIMIT 1",
+                HistoryAction::PHONE_CONFIRM_REQUEST->value
+            ),
             [
                 'checkCode' => $checkCode,
                 'userId' => $userId,
@@ -144,13 +168,17 @@ class HistoryRepository
     public function findBikeTrip(int $bikeNumber, \DateTimeImmutable $startTime): array
     {
         $result = $this->db->query(
-            "SELECT time, longitude, latitude
+            sprintf(
+                "SELECT time, longitude, latitude
                  FROM `history`
                  LEFT JOIN stands ON stands.standid=history.parameter
                  WHERE bikenum = :bikeNumber
                    AND time > :startTime
-                   AND action IN ('RETURN', 'FORCERETURN')
+                   AND action IN ('%s', '%s')
                  ORDER BY history.time DESC, history.id DESC",
+                HistoryAction::RETURN->value,
+                HistoryAction::FORCERETURN->value
+            ),
             [
                 'bikeNumber' => $bikeNumber,
                 'startTime' => $startTime->format('Y-m-d H:i:s'),

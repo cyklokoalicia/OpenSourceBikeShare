@@ -10,6 +10,7 @@ use BikeShare\Event\BikeRevertEvent;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\StandRepository;
 use BikeShare\User\User;
+use BikeShare\History\HistoryAction;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -140,7 +141,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             [
                 'userId' => $userId,
                 'bikeNum' => $bikeNum,
-                'action' => $force ? 'FORCERENT' : 'RENT',
+                'action' => $force ? HistoryAction::FORCERENT->value : HistoryAction::RENT->value,
                 'newCode' => $newCode,
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
@@ -218,7 +219,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             [
                 'userId' => $userId,
                 'bikeNum' => $bikeNum,
-                'action' => $force ? 'FORCERETURN' : 'RETURN',
+                'action' => $force ? HistoryAction::FORCERETURN->value : HistoryAction::RETURN->value,
                 'standId' => $standId,
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
@@ -246,13 +247,18 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         $result = $this->db->query(
-            "SELECT parameter,standName 
+            sprintf(
+                "SELECT parameter,standName
                    FROM stands
                    LEFT JOIN history ON stands.standId=parameter
-                   WHERE bikeNum={$bikeId} 
-                     AND action IN ('RETURN','FORCERETURN') 
+                   WHERE bikeNum=%d
+                     AND action IN ('%s','%s')
                    ORDER BY time DESC
-                   LIMIT 1"
+                   LIMIT 1",
+                $bikeId,
+                HistoryAction::RETURN->value,
+                HistoryAction::FORCERETURN->value
+            )
         );
         if ($result->rowCount() === 1) {
             $row = $result->fetchAssoc();
@@ -261,12 +267,17 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         $result = $this->db->query(
-            "SELECT parameter 
-                   FROM history 
-                   WHERE bikeNum={$bikeId} 
-                     AND action IN ('RENT','FORCERENT') 
+            sprintf(
+                "SELECT parameter
+                   FROM history
+                   WHERE bikeNum=%d
+                     AND action IN ('%s','%s')
                    ORDER BY time DESC
-                   LIMIT 1"
+                   LIMIT 1",
+                $bikeId,
+                HistoryAction::RENT->value,
+                HistoryAction::FORCERENT->value
+            )
         );
         if ($result->rowCount() == 1) {
             $row = $result->fetchAssoc();
@@ -281,7 +292,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 [
                     'userId' => $userId,
                     'bikeNum' => $bikeId,
-                    'action' => 'REVERT',
+                    'action' => HistoryAction::REVERT->value,
                     'parameter' => "$standId|$code",
                     'time' => $this->clock->now()->format('Y-m-d H:i:s'),
                 ]
@@ -291,7 +302,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 [
                     'userId' => $userId,
                     'bikeNum' => $bikeId,
-                    'action' => 'RENT',
+                    'action' => HistoryAction::RENT->value,
                     'code' => $code,
                     'time' => $this->clock->now()->format('Y-m-d H:i:s'),
                 ]
@@ -301,7 +312,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 [
                     'userId' => $userId,
                     'bikeNum' => $bikeId,
-                    'action' => 'RETURN',
+                    'action' => HistoryAction::RETURN->value,
                     'standId' => $standId,
                     'time' => $this->clock->now()->format('Y-m-d H:i:s'),
                 ]
@@ -360,7 +371,15 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $userCredit = $this->creditSystem->getUserCredit($userid);
 
-        $result = $this->db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RENT' OR action='FORCERENT') ORDER BY time DESC LIMIT 1");
+        $result = $this->db->query(
+            sprintf(
+                "SELECT time FROM history WHERE bikeNum=%d AND userId=%d AND (action='%s' OR action='%s') ORDER BY time DESC LIMIT 1",
+                $bike,
+                $userid,
+                HistoryAction::RENT->value,
+                HistoryAction::FORCERENT->value
+            )
+        );
         if ($result->rowCount() == 1) {
             $row = $result->fetchAssoc();
             $startTime = new \DateTimeImmutable($row['time']);
@@ -370,7 +389,15 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $changelog = '';
 
             // if the bike is returned and rented again within 10 minutes, a user will not have new free time.
-            $oldRetrun = $this->db->query("SELECT time FROM history WHERE bikeNum=$bike AND userId=$userid AND (action='RETURN' OR action='FORCERETURN') ORDER BY time DESC LIMIT 1");
+            $oldRetrun = $this->db->query(
+                sprintf(
+                    "SELECT time FROM history WHERE bikeNum=%d AND userId=%d AND (action='%s' OR action='%s') ORDER BY time DESC LIMIT 1",
+                    $bike,
+                    $userid,
+                    HistoryAction::RETURN->value,
+                    HistoryAction::FORCERETURN->value
+                )
+            );
             if ($oldRetrun->rowCount() == 1) {
                 $oldRow = $oldRetrun->fetchAssoc();
                 $returnTime = new \DateTimeImmutable($oldRow["time"]);
@@ -431,7 +458,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 [
                     'userId' => $userid,
                     'bikeNum' => $bike,
-                    'action' => 'CREDITCHANGE',
+                    'action' => HistoryAction::CREDITCHANGE->value,
                     'creditChange' => $creditchange . '|' . $changelog,
                     'time' => $this->clock->now()->format('Y-m-d H:i:s'),
                 ]
@@ -441,7 +468,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 [
                     'userId' => $userid,
                     'bikeNum' => $bike,
-                    'action' => 'CREDIT',
+                    'action' => HistoryAction::CREDIT->value,
                     'userCredit' => $userCredit,
                     'time' => $this->clock->now()->format('Y-m-d H:i:s'),
                 ]
