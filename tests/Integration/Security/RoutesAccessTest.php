@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 class RoutesAccessTest extends BikeSharingKernelTestCase
 {
     private const ADMIN_ROUTES = [
+        '/api/stand' => 'GET',
         '/api/bike' => 'GET',
         '/api/bike/1' => 'GET',
         '/api/bike/1/lastUsage' => 'GET',
@@ -71,5 +72,11 @@ class RoutesAccessTest extends BikeSharingKernelTestCase
                 );
             }
         }
+    }
+
+    public function testApiAccessWithoutToken(): void
+    {
+        $this->client->request('GET', '/api/stand');
+        $this->assertEquals(401, $this->client->getResponse()->getStatusCode());
     }
 }
