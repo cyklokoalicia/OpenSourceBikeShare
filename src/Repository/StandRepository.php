@@ -139,7 +139,7 @@ class StandRepository
             }
 
             $result = $this->db->query(
-                    "SELECT bikeNum FROM history
+                "SELECT bikeNum FROM history
                 WHERE action IN (:returnAction, :forceReturnAction)
                     AND parameter=:standId
                     AND bikeNum IN (" . implode(',', array_keys($bikeQueryParams)) . ")

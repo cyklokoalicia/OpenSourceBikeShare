@@ -159,7 +159,7 @@ class HistoryRepository
     public function findBikeTrip(int $bikeNumber, \DateTimeImmutable $startTime): array
     {
         $result = $this->db->query(
-                "SELECT time, longitude, latitude
+            "SELECT time, longitude, latitude
                  FROM `history`
                  LEFT JOIN stands ON stands.standid=history.parameter
                  WHERE bikenum = :bikeNumber
