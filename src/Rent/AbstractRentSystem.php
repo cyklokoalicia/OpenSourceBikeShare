@@ -240,7 +240,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $standId = 0;
         $result = $this->db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeId AND currentUser IS NOT NULL");
         if (!$result->rowCount()) {
-            return $this->response(_('Bicycle') . ' ' . $bikeId . ' ' . _('is not rented right now. Revert not successful!'), ERROR);
+            return $this->response(_('Bicycle') . ' ' . $bikeId . ' ' . _('is not rented right now. Revert not successful!'), self::ERROR);
         } else {
             $row = $result->fetchAssoc();
             $previousOwnerId = $row['currentUser'];
@@ -324,7 +324,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             return $this->response('<h3>' . _('Bike') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="badge badge-primary">' . $stand . '</span> ' . _('with code') . ' <span class="badge badge-primary">' . $code . '</span>.</h3>');
         } else {
-            return $this->response(_('No last stand or code for bicycle') . ' ' . $bikeId . ' ' . _('found. Revert not successful!'), ERROR);
+            return $this->response(_('No last stand or code for bicycle') . ' ' . $bikeId . ' ' . _('found. Revert not successful!'), self::ERROR);
         }
     }
 
