@@ -116,7 +116,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $user->getUsername(),
             $user->getPrivileges(),
             $user->isNumberConfirmed(),
-            $user->getRegistrationDate()
+            $user->getRegistrationDate(),
         );
     }
 
