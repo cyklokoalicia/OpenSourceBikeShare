@@ -2,4 +2,3 @@ include:
   - bikes.yaml
   - stands.yaml
   - users.yaml
-  - limits.yaml
