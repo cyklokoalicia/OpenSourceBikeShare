@@ -401,6 +401,7 @@ function edituser(userid) {
             }
             $container.find('#privileges').val(data.privileges);
             $container.find('#limit').val(data.userLimit);
+            $container.find('#registrationDate').val(data.registrationDate);
             $container.removeClass('d-none');
             $('html, body').animate({
                 scrollTop: $container.offset().top

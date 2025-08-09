@@ -126,6 +126,7 @@ return [
   'User list' => 'User list',
   'Fullname:' => 'Fullname:',
   'Email:' => 'Email:',
+  'Registration Date:' => 'Registration Date:',
   'Privileges:' => 'Privileges:',
   'Bike limit:' => 'Bike limit:',
   'City:' => 'City:',
