@@ -15,7 +15,7 @@ class LanguageController extends AbstractController
     }
 
     #[Route(
-        path: '/{_locale}',
+        path: '/switchLanguage/{_locale}',
         name: 'switch_language',
         requirements: ['_locale' => '[a-z]{2}'],
         defaults: ['_locale' => 'en']
