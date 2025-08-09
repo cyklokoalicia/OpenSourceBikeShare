@@ -160,7 +160,7 @@ class RegistrationFormType extends AbstractType
                     }
                 }
 
-                if (empty($data['number']) || strlen((string) $data['number']) < 5) {
+                if (empty($data['number']) || !$this->phonePurifier->isValid($data['number'])) {
                     $form->get('number')->addError(
                         new FormError(
                             $this->translator->trans('Invalid phone number.')

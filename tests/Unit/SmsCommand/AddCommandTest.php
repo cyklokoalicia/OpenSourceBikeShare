@@ -19,8 +19,6 @@ class AddCommandTest extends TestCase
 {
     /** @var TranslatorInterface|MockObject */
     private $translatorMock;
-    /** @var string */
-    private $countryCode;
     /** @var UserRegistration|MockObject */
     private $userRegistrationMock;
     /** @var UserRepository|MockObject */
@@ -33,14 +31,12 @@ class AddCommandTest extends TestCase
     protected function setUp(): void
     {
         $this->translatorMock = $this->createMock(TranslatorInterface::class);
-        $this->countryCode = '421';
         $this->userRegistrationMock = $this->createMock(UserRegistration::class);
         $this->userRepositoryMock = $this->createMock(UserRepository::class);
         $this->phonePurifierMock = $this->createMock(PhonePurifier::class);
 
         $this->command = new AddCommand(
             $this->translatorMock,
-            $this->countryCode,
             $this->userRegistrationMock,
             $this->userRepositoryMock,
             $this->phonePurifierMock
@@ -51,7 +47,6 @@ class AddCommandTest extends TestCase
     {
         unset(
             $this->translatorMock,
-            $this->countryCode,
             $this->userRegistrationMock,
             $this->userRepositoryMock,
             $this->phonePurifierMock,
@@ -62,6 +57,7 @@ class AddCommandTest extends TestCase
     /** @dataProvider invokeThrowsValidationDataProvider */
     public function testInvokeThrowsValidation(
         string $phonePurifierCallResult,
+        bool $isValid,
         array $userRepositoryByPhoneCallParams,
         ?array $userRepositoryByPhoneCallResult,
         array $userRepositoryByEmailCallParams,
@@ -77,6 +73,11 @@ class AddCommandTest extends TestCase
             ->method('purify')
             ->with($phone)
             ->willReturn($phonePurifierCallResult);
+        $this->phonePurifierMock
+            ->expects($this->once())
+            ->method('isValid')
+            ->with($phonePurifierCallResult)
+            ->willReturn($isValid);
         $this->userRepositoryMock
             ->expects($this->exactly(count($userRepositoryByPhoneCallParams)))
             ->method('findItemByPhoneNumber')
@@ -112,6 +113,7 @@ class AddCommandTest extends TestCase
 
         $userMock->expects($this->once())->method('getCity')->willReturn($city);
         $this->phonePurifierMock->expects($this->once())->method('purify')->with($phone)->willReturn($purifiedPhone);
+        $this->phonePurifierMock->expects($this->once())->method('isValid')->with($purifiedPhone)->willReturn(true);
         $this->userRepositoryMock
             ->expects($this->once())
             ->method('findItemByPhoneNumber')
@@ -155,19 +157,11 @@ class AddCommandTest extends TestCase
 
     public function invokeThrowsValidationDataProvider(): Generator
     {
-        yield 'phone number invalid -- less' => [
+        yield 'phone number invalid' => [
             'phonePurifierCallResult' => '420123456789',
+            'isValid' => false,
             'userRepositoryByPhoneCallParams' => [],
-            'userRepositoryByPhoneCallResult' => [],
-            'userRepositoryByEmailCallParams' => [],
-            'userRepositoryByEmailCallResult' => null,
-            'email' => 'test@example.com',
-            'message' => 'Invalid phone number.',
-        ];
-        yield 'phone number invalid -- greater' => [
-            'phonePurifierCallResult' => '422123456789',
-            'userRepositoryByPhoneCallParams' => [],
-            'userRepositoryByPhoneCallResult' => [],
+            'userRepositoryByPhoneCallResult' => null,
             'userRepositoryByEmailCallParams' => [],
             'userRepositoryByEmailCallResult' => null,
             'email' => 'test@example.com',
@@ -175,6 +169,7 @@ class AddCommandTest extends TestCase
         ];
         yield 'email invalid' => [
             'phonePurifierCallResult' => '421123456789',
+            'isValid' => true,
             'userRepositoryByPhoneCallParams' => [],
             'userRepositoryByPhoneCallResult' => null,
             'userRepositoryByEmailCallParams' => [],
@@ -184,7 +179,8 @@ class AddCommandTest extends TestCase
         ];
         yield 'user with phone already exists' => [
             'phonePurifierCallResult' => '421123456789',
-            'userRepositoryByPhoneCallParams' => ['420123456789'],
+            'isValid' => true,
+            'userRepositoryByPhoneCallParams' => ['421123456789'],
             'userRepositoryByPhoneCallResult' => ['id' => 123],
             'userRepositoryByEmailCallParams' => [],
             'userRepositoryByEmailCallResult' => null,
@@ -193,6 +189,7 @@ class AddCommandTest extends TestCase
         ];
         yield 'user with email already exists' => [
             'phonePurifierCallResult' => '421123456789',
+            'isValid' => true,
             'userRepositoryByPhoneCallParams' => ['421123456789'],
             'userRepositoryByPhoneCallResult' => null,
             'userRepositoryByEmailCallParams' => ['test@example.com'],

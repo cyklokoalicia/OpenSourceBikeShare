@@ -8,5 +8,6 @@ return [
     \Symfony\Bundle\TwigBundle\TwigBundle::class  => ['all' => true],
     \Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
     \Sentry\SentryBundle\SentryBundle::class => ['all' => true],
+    \Misd\PhoneNumberBundle\MisdPhoneNumberBundle::class => ['all' => true],
     \Nelmio\Alice\Bridge\Symfony\NelmioAliceBundle::class => ['test' => true],
 ];

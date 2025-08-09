@@ -46,7 +46,8 @@
     "symfony/event-dispatcher": "^6.0",
     "symfony/form": "^6.0",
     "sentry/sentry-symfony": "^5.1",
-    "symfony/clock": "^6.4"
+    "symfony/clock": "^6.4",
+    "odolbeau/phone-number-bundle": "^4.2"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.10|^4.0",

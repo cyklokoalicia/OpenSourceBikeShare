@@ -18,7 +18,6 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private readonly string $countryCode,
         private readonly UserRegistration $userRegistration,
         private readonly UserRepository $userRepository,
         private readonly PhonePurifier $phonePurifier
@@ -29,11 +28,7 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
     public function __invoke(User $user, string $email, string $phone, string $fullName): string
     {
         $phone = $this->phonePurifier->purify($phone);
-
-        if (
-            $phone < $this->countryCode . "000000000"
-            || $phone > ((int)$this->countryCode + 1) . "000000000"
-        ) {
+        if (!$this->phonePurifier->isValid($phone)) {
             throw new ValidationException(
                 $this->translator->trans('Invalid phone number.')
             );

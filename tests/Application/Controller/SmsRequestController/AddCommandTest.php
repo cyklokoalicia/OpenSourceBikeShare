@@ -25,7 +25,7 @@ class AddCommandTest extends BikeSharingWebTestCase
     {
         $adminPhoneNumber = self::ADMIN_PHONE_NUMBER;
         $email = 'testAddUser' . rand(1000, 9999) . '@net.net';
-        $phoneNumber = '42199999' . rand(1000, 9999);
+        $phoneNumber = '421903' . rand(100000, 999999);
         $fullName = 'Test User';
 
         $this->client->getContainer()->get('event_dispatcher')->addListener(
