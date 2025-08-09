@@ -37,6 +37,7 @@ return function (SecurityConfig $security) {
         ->security(true)
         ->pattern('^/api')
         ->context('main')
+        ->entryPoint(ApiTokenAuthenticator::class)
         ->accessDeniedHandler(ApiAccessDeniedHandler::class);
     $apiFirewall
         ->customAuthenticators([ApiTokenAuthenticator::class]);
