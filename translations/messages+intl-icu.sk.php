@@ -67,7 +67,7 @@ return [
     'You need admin privileges to access this page.' => '',
     'administration' => '',
     'Toggle navigation' => '',
-    'Map' => '',
+    'Map' => 'Mapa',
     'Administration' => '',
     'Fleet' => '',
     'Stands' => '',

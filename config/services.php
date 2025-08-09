@@ -91,6 +91,9 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$freeTimeHours', env('int:WATCHES_FREE_TIME'))
         ->bind('$systemZoom', env('int:SYSTEM_ZOOM'));
 
+    $services->get(\BikeShare\Controller\LanguageController::class)
+        ->bind('$enabledLocales', '%kernel.enabled_locales%');
+
     $services->get(\BikeShare\Controller\EmailConfirmController::class)
         ->bind('$userBikeLimitAfterRegistration', env('int:USER_BIKE_LIMIT_AFTER_REGISTRATION'));
 
@@ -178,7 +181,11 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(PhonePurifierInterface::class, PhonePurifier::class);
 
     $services->load('BikeShare\\EventListener\\', '../src/EventListener')
+        ->exclude('../src/EventListener/LocaleListener.php')
         ->tag('kernel.event_listener');
+
+    $services->get(\BikeShare\EventListener\LocaleListener::class)
+        ->bind('$defaultLocale', '%kernel.default_locale%');
 
     $services->get(\BikeShare\EventListener\TooManyBikeRentEventListener::class)
         ->bind('$timeTooManyHours', env('int:WATCHES_TIME_TOO_MANY'))
