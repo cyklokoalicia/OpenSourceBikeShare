@@ -4,8 +4,9 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return function (RoutingConfigurator $routes) {
     $routes->add('switch_language', '/switch-language/{locale}')
+        ->requirements(['locale' => '[a-z]{2}'])
+        ->defaults(['_locale', 'en'])
         ->controller([\BikeShare\Controller\LanguageController::class, 'switchLanguage']);
-
     $routes->add('home', '/')
         ->controller([\BikeShare\Controller\HomeController::class, 'index']);
     $routes->add('command', '/command.php')

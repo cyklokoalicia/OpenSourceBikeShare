@@ -31,5 +31,6 @@ return static function (FrameworkConfig $framework): void {
         ->defaultLocale('en')
         ->enabledLocales(['en', 'sk', 'de', 'ua'])
         ->translator()
-        ->defaultPath('%kernel.project_dir%/translations');
+        ->defaultPath('%kernel.project_dir%/translations')
+        ->fallbacks(['en']);
 };

@@ -4,16 +4,16 @@ namespace BikeShare\EventListener;
 
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
 
-#[AsEventListener(event: KernelEvents::REQUEST, method: 'onKernelRequest', priority: 110)]
+#[AsEventListener(priority: 110)]
 class LocaleListener
 {
-    public function __construct(private readonly string $defaultLocale = 'en')
-    {
+    public function __construct(
+        private readonly string $defaultLocale = 'en',
+    ) {
     }
 
-    public function onKernelRequest(RequestEvent $event): void
+    public function __invoke(RequestEvent $event): void
     {
         $request = $event->getRequest();
         $session = $request->getSession();
