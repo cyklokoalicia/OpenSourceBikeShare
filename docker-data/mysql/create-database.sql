@@ -158,6 +158,7 @@ CREATE TABLE `users` (
   `privileges` int(11) UNSIGNED NOT NULL DEFAULT '0',
   `city` varchar(45) NOT NULL DEFAULT 'Bratisalva',
   `isNumberConfirmed` tinyint(1) NOT NULL DEFAULT '0',
+  `registration_date` datetime DEFAULT NULL,
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

@@ -42,7 +42,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     {
         $identifier = $this->phonePurifier->purify($identifier);
         $result = $this->db->query(
-            'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed
+            'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed, registration_date
              FROM users 
              WHERE number = :identifier',
             [
@@ -64,6 +64,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $row['userName'],
             (int)$row['privileges'],
             (bool)$row['isNumberConfirmed'],
+            $row['registration_date'] ? new \DateTimeImmutable($row['registration_date']) : null,
         );
     }
 
@@ -120,7 +121,8 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $user->getCity(),
             $user->getUsername(),
             $user->getPrivileges(),
-            $user->isNumberConfirmed()
+            $user->isNumberConfirmed(),
+            $user->getRegistrationDate()
         );
     }
 
@@ -155,7 +157,8 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $city,
             $userName,
             $privileges,
-            $isNumberConfirmed
+            $isNumberConfirmed,
+            null
         );
     }
 }
