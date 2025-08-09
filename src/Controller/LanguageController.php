@@ -8,12 +8,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 class LanguageController extends AbstractController
 {
+    public function __construct(private readonly array $enabledLocales)
+    {
+    }
+
     public function switchLanguage(Request $request, string $locale): Response
     {
-        $session = $request->getSession();
-        $session->start();
-        $session->set('_locale', $locale);
-        $session->save();
+        if (in_array($locale, $this->enabledLocales, true)) {
+            $request->getSession()->set('_locale', $locale);
+        }
 
         $referer = $request->headers->get('referer');
         if ($referer) {

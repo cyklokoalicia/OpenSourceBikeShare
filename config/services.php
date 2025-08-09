@@ -91,6 +91,9 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$freeTimeHours', env('int:WATCHES_FREE_TIME'))
         ->bind('$systemZoom', env('int:SYSTEM_ZOOM'));
 
+    $services->get(\BikeShare\Controller\LanguageController::class)
+        ->bind('$enabledLocales', '%kernel.enabled_locales%');
+
     $services->get(\BikeShare\Controller\EmailConfirmController::class)
         ->bind('$userBikeLimitAfterRegistration', env('int:USER_BIKE_LIMIT_AFTER_REGISTRATION'));
 

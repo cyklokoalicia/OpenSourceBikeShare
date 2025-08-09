@@ -6,7 +6,7 @@ use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-#[AsEventListener(event: KernelEvents::REQUEST, method: 'onKernelRequest', priority: 20)]
+#[AsEventListener(event: KernelEvents::REQUEST, method: 'onKernelRequest', priority: 110)]
 class LocaleListener
 {
     public function __construct(private readonly string $defaultLocale = 'en')

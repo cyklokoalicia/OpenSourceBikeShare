@@ -61,10 +61,15 @@
                     <i class="fas fa-globe"></i> {{ app.request.locale|upper }}
                 </a>
                 <div class="dropdown-menu" aria-labelledby="languageDropdown">
-                    <a class="dropdown-item" href="{{ path('switch_language', {locale: 'en'}) }}">English</a>
-                    <a class="dropdown-item" href="{{ path('switch_language', {locale: 'sk'}) }}">Slovenčina</a>
-                    <a class="dropdown-item" href="{{ path('switch_language', {locale: 'de'}) }}">Deutsch</a>
-                    <a class="dropdown-item" href="{{ path('switch_language', {locale: 'ua'}) }}">Українська</a>
+                    {% set language_names = {
+                        'en': 'English',
+                        'sk': 'Slovenčina',
+                        'de': 'Deutsch',
+                        'ua': 'Українська'
+                    } %}
+                    {% for locale in enabled_locales %}
+                        <a class="dropdown-item" href="{{ path('switch_language', {locale: locale}) }}">{{ language_names[locale] ?? locale|upper }}</a>
+                    {% endfor %}
                 </div>
             </li>
             {% block userMenuItems %}
