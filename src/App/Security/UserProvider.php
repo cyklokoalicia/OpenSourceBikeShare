@@ -132,7 +132,8 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
         $registrationDate = $this->clock->now();
         $this->db->query(
             'INSERT INTO users (number, mail, password, city, userName, privileges, isNumberConfirmed, registrationDate)
-               VALUES (:number, :mail, :plainPassword, :city, :userName, :privileges, :isNumberConfirmed, :registrationDate)',
+               VALUES (:number, :mail, :plainPassword, :city, :userName, :privileges,
+                       :isNumberConfirmed, :registrationDate)',
             [
                 'number' => $number,
                 'mail' => $mail,
