@@ -32,7 +32,6 @@ class RoutesAccessTest extends BikeSharingKernelTestCase
         '/register' => [],
         '/user/confirm/email/' => [],
         '/resetPassword' => [],
-        '/command.php' => [],
     ];
 
     private $creditSystemEnabled;
