@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'My City' => 'Meine Stadt',
     'Help' => 'Hilfe',
     'Admin' => 'Admin',
     'Remaining credit' => 'Guthaben',
