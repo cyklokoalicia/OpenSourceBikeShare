@@ -22,6 +22,10 @@
             <label for="limit">{{ 'Bike limit:'|trans }}</label>
             <input type="number" name="limit" id="limit" class="form-control"/>
         </div>
+        <div class="form-group">
+            <label for="registrationDate">{{ 'Registration Date'|trans }}</label>
+            <input type="text" class="form-control" id="registrationDate" disabled/>
+        </div>
         <input type="hidden" name="userid" id="userid" value=""/>
         <button type="button" id="saveuser" class="btn btn-primary">{{ 'Save'|trans }}</button>
         <button type="button" class="cancel btn btn-secondary">{{ 'Cancel'|trans }}</button>
