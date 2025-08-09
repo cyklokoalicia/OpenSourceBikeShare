@@ -5,7 +5,7 @@
 ALTER TABLE `users` ADD `isNumberConfirmed` tinyint(1) NOT NULL DEFAULT '0';
 ALTER TABLE `users` ADD `registrationDate` DATETIME DEFAULT NOW();
 UPDATE users u
-SET u.registration_date = (
+SET u.registrationDate = (
     SELECT MIN(h.time)
     FROM history h
     WHERE h.userId = u.userId
