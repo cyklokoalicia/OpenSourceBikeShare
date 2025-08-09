@@ -13,9 +13,8 @@ use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
-use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 
-class ApiTokenAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
+class ApiTokenAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
         private readonly array $validTokens,
@@ -60,14 +59,6 @@ class ApiTokenAuthenticator extends AbstractAuthenticator implements Authenticat
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): JsonResponse
     {
-        return new JsonResponse(['error' => 'Unauthorized', 'message' => 'Invalid credentials'], 401);
-    }
-
-    public function start(Request $request, AuthenticationException $authException = null): JsonResponse
-    {
-        $response = new JsonResponse(['error' => 'Unauthorized', 'message' => 'Authentication required'], 401);
-        $response->headers->set('WWW-Authenticate', 'Bearer');
-
-        return $response;
+        return new JsonResponse(['error' => 'Unauthorized', 'message' => $exception->getMessage()], 401);
     }
 }

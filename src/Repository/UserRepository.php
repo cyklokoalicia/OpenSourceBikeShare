@@ -25,7 +25,7 @@ class UserRepository
                 credit,
                 userLimit,
                 isNumberConfirmed,
-                registration_date
+                registrationDate
             FROM users 
             LEFT JOIN credit ON users.userId=credit.userId 
             LEFT JOIN limits ON users.userId=limits.userId 
@@ -49,7 +49,7 @@ class UserRepository
                 credit,
                 userLimit,
                 isNumberConfirmed,
-                registration_date
+                registrationDate
               FROM users 
               LEFT JOIN credit ON users.userId=credit.userId 
               LEFT JOIN limits ON users.userId=limits.userId 
@@ -75,7 +75,7 @@ class UserRepository
                 credit,
                 userLimit,
                 isNumberConfirmed,
-                registration_date
+                registrationDate
               FROM users 
               LEFT JOIN credit ON users.userId=credit.userId 
               LEFT JOIN limits ON users.userId=limits.userId 
@@ -101,7 +101,7 @@ class UserRepository
                 credit,
                 userLimit,
                 isNumberConfirmed,
-                registration_date
+                registrationDate
               FROM users 
               LEFT JOIN credit ON users.userId=credit.userId 
               LEFT JOIN limits ON users.userId=limits.userId 

@@ -56,6 +56,9 @@ class LoadFixturesCommand extends Command
             $this->db->query($sql);
         }
 
+        $this->db->query("UPDATE users SET registrationDate = '2023-01-01 12:00:00'");
+        $this->db->query('ALTER TABLE users MODIFY registrationDate DATETIME NOT NULL');
+
         return Command::SUCCESS;
     }
 }

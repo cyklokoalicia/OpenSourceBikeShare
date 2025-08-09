@@ -42,7 +42,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     {
         $identifier = $this->phonePurifier->purify($identifier);
         $result = $this->db->query(
-            'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed, registration_date
+            'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed, registrationDate
              FROM users 
              WHERE number = :identifier',
             [
@@ -64,7 +64,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $row['userName'],
             (int)$row['privileges'],
             (bool)$row['isNumberConfirmed'],
-            $row['registration_date'] ? new \DateTimeImmutable($row['registration_date']) : null,
+            new \DateTimeImmutable($row['registrationDate']),
         );
     }
 
@@ -136,8 +136,8 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
         bool $isNumberConfirmed = false
     ): User {
         $this->db->query(
-            'INSERT INTO users (number, mail, password, city, userName, privileges, isNumberConfirmed) 
-               VALUES (:number, :mail, :plainPassword, :city, :userName, :privileges, :isNumberConfirmed)',
+            'INSERT INTO users (number, mail, password, city, userName, privileges, isNumberConfirmed, registrationDate)
+               VALUES (:number, :mail, :plainPassword, :city, :userName, :privileges, :isNumberConfirmed, NOW())',
             [
                 'number' => $number,
                 'mail' => $mail,
@@ -149,8 +149,10 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             ]
         );
 
+        $userId = $this->db->getLastInsertId();
+
         return new User(
-            $this->db->getLastInsertId(),
+            $userId,
             $number,
             $mail,
             $plainPassword,
@@ -158,7 +160,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $userName,
             $privileges,
             $isNumberConfirmed,
-            null
+            new \DateTimeImmutable()
         );
     }
 }
