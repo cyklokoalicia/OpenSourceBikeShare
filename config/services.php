@@ -178,7 +178,11 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(PhonePurifierInterface::class, PhonePurifier::class);
 
     $services->load('BikeShare\\EventListener\\', '../src/EventListener')
+        ->exclude('../src/EventListener/LocaleListener.php')
         ->tag('kernel.event_listener');
+
+    $services->get(\BikeShare\EventListener\LocaleListener::class)
+        ->bind('$defaultLocale', '%kernel.default_locale%');
 
     $services->get(\BikeShare\EventListener\TooManyBikeRentEventListener::class)
         ->bind('$timeTooManyHours', env('int:WATCHES_TIME_TOO_MANY'))

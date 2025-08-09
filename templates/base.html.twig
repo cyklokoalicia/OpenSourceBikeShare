@@ -56,6 +56,17 @@
             {% endblock %}
         </ul>
         <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-globe"></i> {{ app.request.locale|upper }}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                    <a class="dropdown-item" href="{{ path('switch_language', {locale: 'en'}) }}">English</a>
+                    <a class="dropdown-item" href="{{ path('switch_language', {locale: 'sk'}) }}">Slovenčina</a>
+                    <a class="dropdown-item" href="{{ path('switch_language', {locale: 'de'}) }}">Deutsch</a>
+                    <a class="dropdown-item" href="{{ path('switch_language', {locale: 'ua'}) }}">Українська</a>
+                </div>
+            </li>
             {% block userMenuItems %}
                 {% if app.user %}
                     <li class="nav-item">
