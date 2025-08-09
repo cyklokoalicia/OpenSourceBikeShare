@@ -9,6 +9,7 @@ stdClass:
     privileges: 0
     city: 'Default City'
     isNumberConfirmed: 1
+    userLimit: 0
 
   user_{1..3} (extends defaultUser):
     userId: '<($current)>'
@@ -18,19 +19,23 @@ stdClass:
     userId: 4
     privileges: 0
     number: 421111111111
+    userLimit: 1
 
   adminForSmsControllerTest (extends defaultUser):
     userId: 5
     privileges: 1
     number: 421222222222
+    userLimit: 5
 
   admin (extends defaultUser):
     userId: 6
     privileges: 1
+    userLimit: 6
 
   superAdmin (extends defaultUser):
     userId: 7
     privileges: 7
+    userLimit: 7
 
   userForRegistrationTest (extends defaultUser):
     userId: 8
@@ -42,3 +47,5 @@ stdClass:
     userId: 9
     privileges: 0
     number: 421444444444
+    userLimit: 1
+

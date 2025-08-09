@@ -59,7 +59,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $row = $result->fetchAssoc();
             $countRented = $row['countRented'];
 
-            $result = $this->db->query("SELECT userLimit FROM limits where userId=$userId");
+            $result = $this->db->query("SELECT userLimit FROM users where userId=$userId");
             $row = $result->fetchAssoc();
             $limit = $row['userLimit'];
 
