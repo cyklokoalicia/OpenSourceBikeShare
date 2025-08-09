@@ -27,7 +27,7 @@ class CommandController extends AbstractController
             return $this->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        if (mt_rand(0, 100) > 97) {
+        if (mt_rand(0, 100) > 99) {
             $logger->notice(
                 'Access to command.php map:markers',
                 [
