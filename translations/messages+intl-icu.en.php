@@ -253,10 +253,10 @@ By clicking the following link you will confirm your email: {emailConfirmURL}',
   'You currently have no rented bikes.' => 'You currently have no rented bikes.',
   'Bike' => 'Bike',
   'at' => 'at',
-  'Display network usage (blank) or history of bike usage (number entered).' => 'Display network usage (blank) or hist...',
-  'Registration Date' => 'Registration Date',
+  'Display network usage (blank) or history of bike usage (number entered).' => 'Display network usage (blank) or history of bike usage (number entered).',
+  'Registration Date:' => 'Registration Date:',
   'Privacy policy:' => 'Privacy policy:',
-  'Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).' => 'Use this link to open a text field to...',
+  'Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).' => 'Use this link to open a text field to write in any issues with the bicycle you are returning (flat tire, chain stuck etc.).',
   'Close' => 'Close',
 ];
 
