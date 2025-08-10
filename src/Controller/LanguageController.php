@@ -37,12 +37,7 @@ class LanguageController extends AbstractController
         return $this->redirectToRoute('home');
     }
 
-    #[Route(
-        path: '/js/translations.json',
-        name: 'js_translations',
-        requirements: ['_locale' => '[a-z]{2}'],
-        defaults: ['_locale' => 'en']
-    )]
+    #[Route(path: '/js/translations.json', name: 'js_translations')]
     public function getTranslations(): JsonResponse
     {
         $keys = [
