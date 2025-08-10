@@ -23,6 +23,7 @@ use BikeShare\SmsCommand\SmsCommandInterface;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use PHPMailer\PHPMailer\PHPMailer;
+use libphonenumber\PhoneNumberUtil;
 use Symfony\Component\Dotenv\Command\DotenvDumpCommand;
 
 return static function (ContainerConfigurator $container): void {
@@ -136,6 +137,9 @@ return static function (ContainerConfigurator $container): void {
             '$mailer',
             inline_service(PHPMailer::class)->args([false])->property('Debugoutput', service('logger')),
         );
+
+    $services->set(PhoneNumberUtil::class)
+        ->factory([PhoneNumberUtil::class, 'getInstance']);
 
     $services->get(PhonePurifier::class)
         ->bind('$countryCodes', env('json:COUNTRY_CODES'));
