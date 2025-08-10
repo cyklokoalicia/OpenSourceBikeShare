@@ -16,8 +16,12 @@ class PhonePurifierTest extends TestCase
     public function testPurify(
         $phoneNumber,
         $countryCode,
-        $expectedPhoneNumber
+        $expectedPhoneNumber,
+        $expectedException = null,
     ) {
+        if ($expectedException) {
+            $this->expectException($expectedException);
+        }
         $purifier = new PhonePurifier(PhoneNumberUtil::getInstance(), [$countryCode]);
         $this->assertEquals($expectedPhoneNumber, $purifier->purify($phoneNumber));
     }
@@ -27,17 +31,20 @@ class PhonePurifierTest extends TestCase
         yield 'default' => [
             'phoneNumber' => '+421 903-123-456',
             'countryCode' => 'SK',
-            'expectedPhoneNumber' => '421903123456'
+            'expectedPhoneNumber' => '421903123456',
+            'expectedException' => null,
         ];
         yield 'local number without prefix' => [
             'phoneNumber' => '0903 123 456',
             'countryCode' => 'SK',
-            'expectedPhoneNumber' => '421903123456'
+            'expectedPhoneNumber' => '421903123456',
+            'expectedException' => null,
         ];
         yield 'international for another region' => [
             'phoneNumber' => '+33123456789',
             'countryCode' => 'SK',
-            'expectedPhoneNumber' => '33123456789'
+            'expectedPhoneNumber' => '',
+            'expectedException' => \InvalidArgumentException::class,
         ];
     }
 

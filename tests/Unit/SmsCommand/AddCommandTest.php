@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Test\Unit\SmsCommand;
 
 use BikeShare\App\Entity\User;
-use BikeShare\Purifier\PhonePurifier;
+use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\SmsCommand\AddCommand;
 use BikeShare\SmsCommand\Exception\ValidationException;
@@ -23,7 +23,7 @@ class AddCommandTest extends TestCase
     private $userRegistrationMock;
     /** @var UserRepository|MockObject */
     private $userRepositoryMock;
-    /** @var PhonePurifier|MockObject */
+    /** @var PhonePurifierInterface|MockObject */
     private $phonePurifierMock;
 
     private AddCommand $command;
@@ -33,7 +33,7 @@ class AddCommandTest extends TestCase
         $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->userRegistrationMock = $this->createMock(UserRegistration::class);
         $this->userRepositoryMock = $this->createMock(UserRepository::class);
-        $this->phonePurifierMock = $this->createMock(PhonePurifier::class);
+        $this->phonePurifierMock = $this->createMock(PhonePurifierInterface::class);
 
         $this->command = new AddCommand(
             $this->translatorMock,

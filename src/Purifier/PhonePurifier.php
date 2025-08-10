@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace BikeShare\Purifier;
 
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumber;
+use libphonenumber\PhoneNumberFormat;
+use libphonenumber\PhoneNumberUtil;
+
 class PhonePurifier implements PhonePurifierInterface
 {
     /**
      * @param string[] $countryCodes ISO 3166-1 alpha-2 country codes
      */
     public function __construct(
-        private readonly \libphonenumber\PhoneNumberUtil $phoneNumberUtil,
+        private readonly PhoneNumberUtil $phoneNumberUtil,
         private readonly array $countryCodes
     ) {
     }
@@ -22,12 +27,12 @@ class PhonePurifier implements PhonePurifierInterface
         $parsed = $this->parse($phoneNumber);
         if ($parsed !== null) {
             return ltrim(
-                $this->phoneNumberUtil->format($parsed, \libphonenumber\PhoneNumberFormat::E164),
+                $this->phoneNumberUtil->format($parsed, PhoneNumberFormat::E164),
                 '+'
             );
         }
 
-        return preg_replace('/\D+/', '', $phoneNumber) ?? '';
+        throw new \InvalidArgumentException('Invalid phone number');
     }
 
     public function isValid(string $phoneNumber): bool
@@ -35,7 +40,7 @@ class PhonePurifier implements PhonePurifierInterface
         return $this->parse($phoneNumber) !== null;
     }
 
-    private function parse(string $phoneNumber): ?\libphonenumber\PhoneNumber
+    private function parse(string $phoneNumber): ?PhoneNumber
     {
         foreach ($this->countryCodes as $region) {
             try {
@@ -46,20 +51,22 @@ class PhonePurifier implements PhonePurifierInterface
                 ) {
                     return $number;
                 }
-            } catch (\libphonenumber\NumberParseException) {
+            } catch (NumberParseException $e) {
                 // try next region
+                $a = $e;
             }
         }
 
         try {
-            $number = $this->phoneNumberUtil->parse($phoneNumber, \libphonenumber\PhoneNumberUtil::UNKNOWN_REGION);
+            $number = $this->phoneNumberUtil->parse($phoneNumber, PhoneNumberUtil::UNKNOWN_REGION);
             $regionCode = $this->phoneNumberUtil->getRegionCodeForNumber($number);
             if (\in_array($regionCode, $this->countryCodes, true) &&
                 $this->phoneNumberUtil->isValidNumberForRegion($number, $regionCode)
             ) {
                 return $number;
             }
-        } catch (\libphonenumber\NumberParseException) {
+        } catch (NumberParseException $e) {
+            $a = $e;
         }
 
         return null;

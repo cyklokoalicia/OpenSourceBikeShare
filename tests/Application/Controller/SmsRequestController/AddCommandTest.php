@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class AddCommandTest extends BikeSharingWebTestCase
 {
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
 
     /**
      * This test generates a new user on each run, so be careful with running it multiple times.

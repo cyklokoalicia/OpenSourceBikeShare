@@ -11,8 +11,8 @@ use BikeShare\Test\Application\BikeSharingWebTestCase;
 
 class StandBikeListTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const USER_PHONE_NUMBER = '421951111111';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 6;
     private const STAND_NAME = 'STAND1';
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
-use BikeShare\Purifier\PhonePurifier;
+use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\User\UserRegistration;
@@ -20,7 +20,7 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
         TranslatorInterface $translator,
         private readonly UserRegistration $userRegistration,
         private readonly UserRepository $userRepository,
-        private readonly PhonePurifier $phonePurifier
+        private readonly PhonePurifierInterface $phonePurifier
     ) {
         parent::__construct($translator);
     }

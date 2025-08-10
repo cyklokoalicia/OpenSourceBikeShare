@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SmsRequestControllerTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
+    private const USER_PHONE_NUMBER = '421951111111';
 
     /**
      * @var Callback|string $expectedSms
@@ -68,8 +68,17 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
 
     public function smsDataProvider(): iterable
     {
-        yield 'unknown user' => [
+        yield 'invalid phone number' => [
             'phoneNumber' => '0000000000000',
+            'message' => 'Test message',
+            'expectedResponse' => 'Invalid phone number',
+            'expectedSms' => null,
+            'expectedLog' => [
+                Logger::ERROR, '/Invalid phone number/',
+            ],
+        ];
+        yield 'unknown user' => [
+            'phoneNumber' => '421951000000',
             'message' => 'Test message',
             'expectedResponse' => 'User not found',
             'expectedSms' => null,

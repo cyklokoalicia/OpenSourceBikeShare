@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ForceReturnCommandTest extends BikeSharingWebTestCase
 {
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 3;
     private const STAND_NAME = 'STAND3';
 
