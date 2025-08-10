@@ -57,7 +57,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         if ($force == false) {
             if (!$this->creditSystem->isEnoughCreditForRent($userId)) {
                 $minRequiredCredit = $this->creditSystem->getMinRequiredCredit();
-            
+
                 return $this->response(
                     $this->translator->trans(
                         'You are below required credit {minRequiredCredit}{creditCurrency}. Please, recharge your credit.',
@@ -267,12 +267,12 @@ abstract class AbstractRentSystem implements RentSystemInterface
             if ($this->creditSystem->isEnabled() && $creditchange) {
                 $message .= $messageType === 'text' ? "\n" : '<br />';
                 $message .= $this->translator->trans(
-                        'Credit change: -{creditChange}{creditCurrency}.',
-                        [
-                            'creditChange' => $creditchange,
-                            'creditCurrency' => $this->creditSystem->getCreditCurrency()
-                        ]
-                    );
+                    'Credit change: -{creditChange}{creditCurrency}.',
+                    [
+                        'creditChange' => $creditchange,
+                        'creditCurrency' => $this->creditSystem->getCreditCurrency()
+                    ]
+                );
             }
         }
         $result = $this->db->query(
@@ -393,7 +393,8 @@ abstract class AbstractRentSystem implements RentSystemInterface
             return $this->response(
                 $this->translator->trans(
                     'bike.revert.success.' . $messageType,
-                    ['bikeNumber' => $bikeId, 'standName' => $stand, 'code' => $code])
+                    ['bikeNumber' => $bikeId, 'standName' => $stand, 'code' => $code]
+                )
             );
         } else {
             return $this->response(
