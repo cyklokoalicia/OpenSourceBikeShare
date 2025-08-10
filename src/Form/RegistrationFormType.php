@@ -90,7 +90,6 @@ class RegistrationFormType extends AbstractType
             FormEvents::PRE_SUBMIT,
             function (FormEvent $event) {
                 $data = $event->getData();
-//                $data['number'] = $this->phonePurifier->purify($data['number'] ?? '');
                 $data['fullname'] = strip_tags($data['fullname'] ?? '');
                 $event->setData($data);
             }

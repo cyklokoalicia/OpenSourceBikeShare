@@ -88,7 +88,6 @@ class RentSystemTest extends BikeSharingKernelTestCase
 
         static::mockTime();
 
-
         self::getContainer()->get(CreditSystemInterface::class)->addCredit($user['userId'], $userCredit);
 
         self::getContainer()->get('event_dispatcher')->addListener(

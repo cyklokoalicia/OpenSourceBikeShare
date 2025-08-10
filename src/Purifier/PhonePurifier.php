@@ -42,31 +42,23 @@ class PhonePurifier implements PhonePurifierInterface
 
     private function parse(string $phoneNumber): ?PhoneNumber
     {
-        foreach ($this->countryCodes as $region) {
+        $regions = array_merge(
+            $this->countryCodes,
+            [PhoneNumberUtil::UNKNOWN_REGION]
+        );
+        foreach ($regions as $region) {
             try {
                 $number = $this->phoneNumberUtil->parse($phoneNumber, $region);
                 $regionCode = $this->phoneNumberUtil->getRegionCodeForNumber($number);
-                if (\in_array($regionCode, $this->countryCodes, true) &&
-                    $this->phoneNumberUtil->isValidNumberForRegion($number, $regionCode)
+                if (
+                    \in_array($regionCode, $this->countryCodes, true)
+                    && $this->phoneNumberUtil->isValidNumberForRegion($number, $regionCode)
                 ) {
                     return $number;
                 }
-            } catch (NumberParseException $e) {
+            } catch (NumberParseException) {
                 // try next region
-                $a = $e;
             }
-        }
-
-        try {
-            $number = $this->phoneNumberUtil->parse($phoneNumber, PhoneNumberUtil::UNKNOWN_REGION);
-            $regionCode = $this->phoneNumberUtil->getRegionCodeForNumber($number);
-            if (\in_array($regionCode, $this->countryCodes, true) &&
-                $this->phoneNumberUtil->isValidNumberForRegion($number, $regionCode)
-            ) {
-                return $number;
-            }
-        } catch (NumberParseException $e) {
-            $a = $e;
         }
 
         return null;
