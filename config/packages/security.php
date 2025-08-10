@@ -100,6 +100,14 @@ return function (SecurityConfig $security) {
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
+        ->path('^/js/translations.json')
+        ->roles(['PUBLIC_ACCESS']);
+    $security
+        ->accessControl()
+        ->path('^/switchLanguage')
+        ->roles(['PUBLIC_ACCESS']);
+    $security
+        ->accessControl()
         ->path('^/command.php$')
         ->roles(['PUBLIC_ACCESS']);
 
