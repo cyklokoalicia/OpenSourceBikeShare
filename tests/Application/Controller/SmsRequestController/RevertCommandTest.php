@@ -87,8 +87,8 @@ class RevertCommandTest extends BikeSharingWebTestCase
         $sentMessage = $smsConnector->getSentMessages()[0];
 
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $pattern = '/Bike ' . self::BIKE_NUMBER . ': Open with code (?P<oldCode>\d{4})\.' .
-            'Change code immediately to (?P<newCode>\d{4})' .
+        $pattern = '/Bike ' . self::BIKE_NUMBER . ': Open with code (?P<oldCode>\d{4})\.\s*' .
+            'Change code immediately to (?P<newCode>\d{4})\s*' .
             '\(open, rotate metal part, set new code, rotate metal part back\)\./';
         $this->assertMatchesRegularExpression($pattern, $sentMessage['text'], 'Invalid response sms text');
         preg_match($pattern, $sentMessage['text'], $matches);

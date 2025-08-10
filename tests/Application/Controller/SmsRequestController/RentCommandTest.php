@@ -95,7 +95,7 @@ class RentCommandTest extends BikeSharingWebTestCase
 
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.Change code immediately to \d{4}' .
+            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.\s*Change code immediately to \d{4}\s*' .
                 '\(open, rotate metal part, set new code, rotate metal part back\)\./',
             $sentMessage['text'],
             'Invalid response sms text'

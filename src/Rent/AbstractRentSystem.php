@@ -14,6 +14,7 @@ use BikeShare\Enum\Action;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @phpcs:disable PSR12.Classes.PropertyDeclaration
@@ -32,6 +33,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected LoggerInterface $logger,
         protected StandRepository $standRepository,
         protected ClockInterface $clock,
+        protected TranslatorInterface $translator,
         protected array $watchesConfig,
         protected bool $isSmsSystemEnabled,
         protected bool $forceStack,
@@ -46,30 +48,47 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $result = $this->db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
         if ($result->rowCount() != 1) {
-            return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('does not exist.'), self::ERROR);
+            return $this->response(
+                $this->translator->trans('Bike {bikeNumber} does not exist.', ['bikeNumber' => $bikeNum]),
+                self::ERROR
+            );
         }
 
         if ($force == false) {
             if (!$this->creditSystem->isEnoughCreditForRent($userId)) {
                 $minRequiredCredit = $this->creditSystem->getMinRequiredCredit();
-                return $this->response(_('You are below required credit') . ' ' . $minRequiredCredit . $this->creditSystem->getCreditCurrency() . '. ' . _('Please, recharge your credit.'), self::ERROR);
+
+                return $this->response(
+                    $this->translator->trans(
+                        'You are below required credit {minRequiredCredit}{creditCurrency}. Please, recharge your credit.',
+                        [
+                            'minRequiredCredit' => $minRequiredCredit,
+                            'creditCurrency' => $this->creditSystem->getCreditCurrency()
+                        ]
+                    ),
+                    self::ERROR
+                );
             }
 
             $result = $this->db->query("SELECT count(*) as countRented FROM bikes where currentUser=$userId");
             $row = $result->fetchAssoc();
             $countRented = $row['countRented'];
 
-            $result = $this->db->query("SELECT userLimit FROM users where userId=$userId");
+            $result = $this->db->query("SELECT userLimit FROM users where userId = :userId", ['userId' => $userId]);
             $row = $result->fetchAssoc();
             $limit = $row['userLimit'];
 
             if ($countRented >= $limit) {
                 if ($limit == 0) {
-                    return $this->response(_('You can not rent any bikes. Contact the admins to lift the ban.'), self::ERROR);
-                } elseif ($limit == 1) {
-                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . '.', self::ERROR);
+                    return $this->response(
+                        $this->translator->trans('You can not rent any bikes. Contact the admins to lift the ban.'),
+                        self::ERROR
+                    );
                 } else {
-                    return $this->response(_('You can only rent') . ' ' . sprintf(ngettext('%d bike', '%d bikes', $limit), $limit) . ' ' . _('at once') . ' ' . _('and you have already rented') . ' ' . $limit . '.', self::ERROR);
+                    return $this->response(
+                        $this->translator->trans('You can only rent {count} bike at once.', ['count' => $limit]),
+                        self::ERROR
+                    );
                 }
             }
 
@@ -84,7 +103,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $serviceTag = $row['serviceTag'];
 
                 if ($serviceTag != 0) {
-                    return $this->response(_('Renting from service stands is not allowed: The bike probably waits for a repair.'), self::ERROR);
+                    return $this->response(
+                        $this->translator->trans('Renting from service stands is not allowed: The bike probably waits for a repair.'),
+                        self::ERROR
+                    );
                 }
 
                 if ($this->watchesConfig['stack'] && $stacktopbike != $bikeId) {
@@ -92,11 +114,23 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     $row = $result->fetchAssoc();
                     $stand = $row['standName'];
                     $userName = $this->user->findUserName($userId);
-                    $this->notifyAdmins(_('Bike') . ' ' . $bikeId . ' ' . _('rented out of stack by') . ' ' . $userName . '. ' . $stacktopbike . ' ' . _('was on the top of the stack at') . ' ' . $stand . '.', false);
+                    $this->notifyAdmins(
+                        $this->translator->trans(
+                            'Bike {bikeNumber} rented out of stack by {userName}. {stackTopBike} was on the top of the stack at {standName}.',
+                            ['bikeNumber' => $bikeId, 'userName' => $userName, 'stackTopBike' => $stacktopbike, 'standName' => $stand]
+                        ),
+                        false, //bySms
+                    );
                 }
 
                 if ($this->forceStack && $stacktopbike != $bikeId) {
-                    return $this->response(_('Bike') . ' ' . $bikeId . ' ' . _('is not rentable now, you have to rent bike') . ' ' . $stacktopbike . ' ' . _('from this stand') . '.', self::ERROR);
+                    return $this->response(
+                        $this->translator->trans(
+                            'Bike {bikeNumber} is not rentable now, you have to rent bike {stackTopBike} from this stand.',
+                            ['bikeNumber' => $bikeId, 'stackTopBike' => $stacktopbike]
+                        ),
+                        self::ERROR
+                    );
                 }
             }
         }
@@ -117,24 +151,33 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         if ($force == false) {
             if ($currentUser == $userId) {
-                return $this->response(_('You have already rented the bike') . ' ' . $bikeNum . '. ' . _('Code is') . ' ' . $currentCode . '.', self::ERROR);
+                return $this->response(
+                    $this->translator->trans(
+                        'You have already rented the bike {bikeNumber}. Code is {currentCode}.',
+                        ['bikeNumber' => $bikeNum, 'currentCode' => $currentCode]
+                    ),
+                    self::ERROR
+                );
             }
 
             if ($currentUser != 0) {
-                return $this->response(_('Bike') . ' ' . $bikeNum . ' ' . _('is already rented') . '.', self::ERROR);
+                return $this->response(
+                    $this->translator->trans('Bike {bikeNumber} is already rented.', ['bikeNumber' => $bikeNum]),
+                    self::ERROR
+                );
             }
         }
 
-        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ': <span class="badge badge-primary">' . _('Open with code') . ' ' . $currentCode . '.</span></h3>'
-            . '<h3>' . _('Change code immediately to') . ' <span class="badge badge-primary">' . $newCode . '</span></h3>'
-            . _('(open, rotate metal part, set new code, rotate metal part back)') . '.';
+        $messageType = $this->getType() === 'sms' ? 'text' : 'html';
+        $message = $this->translator->trans('bike.rent.success.' . $messageType, ['bikeNumber' => $bikeNum, 'currentCode' => $currentCode, 'newCode' => $newCode]);
         if ($note) {
-            $message .= '<br />' . _('Reported issue') . ': <em>' . $note . '</em>';
+            $message .= $messageType === 'text' ? "\n" : '<br />';
+            $message .= $this->translator->trans('bike.rent.reported_issue.' . $messageType, ['note' => $note]);
         }
 
         $result = $this->db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
         if ($force) {
-            //$this->response(_('System override') . ": " . _('Your rented bike') . " " . $bikeNum . " " . _('has been rented by admin') . ".");
+            //$this->response($this->translator->trans('System override: Your rented bike {bikeNumber} has been rented by admin.', ['bikeNumber' => $bikeNum]));
         }
         $result = $this->db->query(
             "INSERT INTO history SET userId = :userId, bikeNum = :bikeNum, action = :action, parameter = :newCode, time = :time",
@@ -162,7 +205,13 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $result = $this->db->query("SELECT standId FROM stands WHERE standName='$stand'");
         if (!$result->rowCount()) {
-            return $this->response(_('Stand name') . " '" . $stand . "' " . _('does not exist. Stands are marked by CAPITALLETTERS.'), self::ERROR);
+            return $this->response(
+                $this->translator->trans(
+                    'Stand name \'{standName}\' does not exist. Stands are marked by CAPITALLETTERS.',
+                    ['standName' => $stand]
+                ),
+                self::ERROR
+            );
         }
 
         $row = $result->fetchAssoc();
@@ -173,7 +222,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $bikenumber = $result->rowCount();
 
             if ($bikenumber == 0) {
-                return $this->response(_('You currently have no rented bikes.'), self::ERROR);
+                return $this->response(
+                    $this->translator->trans('You currently have no rented bikes.'),
+                    self::ERROR
+                );
             }
         }
 
@@ -200,18 +252,27 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $note = $row["note"] ?? '';
         }
 
-        $message = '<h3>' . _('Bike') . ' ' . $bikeNum . ' ' . _('returned to stand') . ' ' . $stand
-            . ' : <span class="badge badge-primary">' . _('Lock with code') . ' ' . $currentCode . '.</span></h3>'
-            . '<br />' . _('Please') . ', <strong>' . _('rotate the lockpad to')
-            . ' <span class="badge badge-primary">0000</span></strong> ' . _('when leaving') . '.' . _('Wipe the bike clean if it is dirty, please') . '.';
+        $messageType = $this->getType() === 'sms' ? 'text' : 'html';
+        $message = $this->translator->trans(
+            'bike.return.success.' . $messageType,
+            ['bikeNumber' => $bikeNum, 'standName' => $stand, 'currentCode' => $currentCode]
+        );
         if ($note) {
-            $message .= '<br />' . _('You have also reported this problem:') . ' ' . $note . '.';
+            $message .= $messageType === 'text' ? "\n" : '<br />';
+            $message .= $this->translator->trans('You have also reported this problem: {note}.', ['note' => $note]);
         }
 
         if ($force == false) {
             $creditchange = $this->changecreditendrental($bikeNum, $userId);
             if ($this->creditSystem->isEnabled() && $creditchange) {
-                $message .= '<br />' . _('Credit change') . ': -' . $creditchange . $this->creditSystem->getCreditCurrency() . '.';
+                $message .= $messageType === 'text' ? "\n" : '<br />';
+                $message .= $this->translator->trans(
+                    'Credit change: -{creditChange}{creditCurrency}.',
+                    [
+                        'creditChange' => $creditchange,
+                        'creditCurrency' => $this->creditSystem->getCreditCurrency()
+                    ]
+                );
             }
         }
         $result = $this->db->query(
@@ -240,7 +301,13 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $standId = 0;
         $result = $this->db->query("SELECT currentUser FROM bikes WHERE bikeNum=$bikeId AND currentUser IS NOT NULL");
         if (!$result->rowCount()) {
-            return $this->response(_('Bicycle') . ' ' . $bikeId . ' ' . _('is not rented right now. Revert not successful!'), self::ERROR);
+            return $this->response(
+                $this->translator->trans(
+                    'Bicycle {bikeNumber} is not rented right now. Revert not successful!',
+                    ['bikeNumber' => $bikeId]
+                ),
+                self::ERROR
+            );
         } else {
             $row = $result->fetchAssoc();
             $previousOwnerId = $row['currentUser'];
@@ -321,10 +388,22 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $this->eventDispatcher->dispatch(
                 new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
             );
+            $messageType = $this->getType() === 'sms' ? 'text' : 'html';
 
-            return $this->response('<h3>' . _('Bike') . ' ' . $bikeId . ' ' . _('reverted to') . ' <span class="badge badge-primary">' . $stand . '</span> ' . _('with code') . ' <span class="badge badge-primary">' . $code . '</span>.</h3>');
+            return $this->response(
+                $this->translator->trans(
+                    'bike.revert.success.' . $messageType,
+                    ['bikeNumber' => $bikeId, 'standName' => $stand, 'code' => $code]
+                )
+            );
         } else {
-            return $this->response(_('No last stand or code for bicycle') . ' ' . $bikeId . ' ' . _('found. Revert not successful!'), self::ERROR);
+            return $this->response(
+                $this->translator->trans(
+                    'No last stand or code for bicycle {bikeNumber} found. Revert not successful!',
+                    ['bikeNumber' => $bikeId]
+                ),
+                self::ERROR
+            );
         }
     }
 
@@ -353,13 +432,25 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $row = $result->fetchAssoc();
         $standName = $row['standName'];
         if ($standName != null) {
-            $bikeStatus = _('at') . ' ' . $standName;
+            $bikeStatus = $this->translator->trans('at {standName}', ['standName' => $standName]);
         } else {
-            $bikeStatus = _('used by') . ' ' . $userName . ' +' . $phone;
+            $bikeStatus = $this->translator->trans('used by {userName} +{phone}', ['userName' => $userName, 'phone' => $phone]);
         }
         $this->db->query("INSERT INTO notes SET bikeNum='$bikeNum',userId='$userId',note='$userNote'");
         $noteid = $this->db->getLastInsertId();
-        $this->notifyAdmins(_('Note #') . $noteid . ': b.' . $bikeNum . ' (' . $bikeStatus . ') ' . _('by') . ' ' . $userName . '/' . $phone . ':' . $userNote);
+        $this->notifyAdmins(
+            $this->translator->trans(
+                'Note #{noteId}: b.{bikeNumber} ({bikeStatus}) by {userName}/{phone}:{userNote}',
+                [
+                    'noteId' => $noteid,
+                    'bikeNumber' => $bikeNum,
+                    'bikeStatus' => $bikeStatus,
+                    'userName' => $userName,
+                    'phone' => $phone,
+                    'userNote' => $userNote
+                ]
+            )
+        );
     }
 
     // subtract credit for rental

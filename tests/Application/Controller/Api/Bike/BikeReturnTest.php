@@ -98,8 +98,8 @@ class BikeReturnTest extends BikeSharingWebTestCase
         $response = strip_tags($response['message']);
 
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . ' : Lock with code \d{4}\.' .
-            'Please, rotate the lockpad to 0000 when leaving\.Wipe the bike clean if it is dirty, please\./',
+            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . '\.\s*Lock with code \d{4}\.\s*' .
+            'Please, rotate the lockpad to 0000 when leaving\.\s*Wipe the bike clean if it is dirty, please\./',
             $response,
             'Invalid return message'
         );
@@ -143,8 +143,8 @@ class BikeReturnTest extends BikeSharingWebTestCase
             ['number' => self::USER_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . ' : Lock with code \d{4}\.' .
-            'Please, rotate the lockpad to 0000 when leaving\.Wipe the bike clean if it is dirty, please\./',
+            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . '\.\s*Lock with code \d{4}\.\s*' .
+            'Please, rotate the lockpad to 0000 when leaving\.\s*Wipe the bike clean if it is dirty, please\./',
             $sent['text'],
             'Send message is not logged'
         );
