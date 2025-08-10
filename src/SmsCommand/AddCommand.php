@@ -27,12 +27,12 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __invoke(User $user, string $email, string $phone, string $fullName): string
     {
-        $phone = $this->phonePurifier->purify($phone);
         if (!$this->phonePurifier->isValid($phone)) {
             throw new ValidationException(
                 $this->translator->trans('Invalid phone number.')
             );
         }
+        $phone = $this->phonePurifier->purify($phone);
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new ValidationException(

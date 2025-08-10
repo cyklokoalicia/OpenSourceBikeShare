@@ -70,14 +70,14 @@ class AddCommandTest extends TestCase
 
         $this->phonePurifierMock
             ->expects($this->once())
+            ->method('isValid')
+            ->with($phone)
+            ->willReturn($isValid);
+        $this->phonePurifierMock
+            ->expects($isValid ? $this->once() : $this->never())
             ->method('purify')
             ->with($phone)
             ->willReturn($phonePurifierCallResult);
-        $this->phonePurifierMock
-            ->expects($this->once())
-            ->method('isValid')
-            ->with($phonePurifierCallResult)
-            ->willReturn($isValid);
         $this->userRepositoryMock
             ->expects($this->exactly(count($userRepositoryByPhoneCallParams)))
             ->method('findItemByPhoneNumber')

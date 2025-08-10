@@ -43,7 +43,7 @@ class SmsRequestController extends AbstractController
                 ["number" => $this->smsConnector->getNumber(), 'sms' => $this->smsConnector]
             );
 
-            return new Response("Invalid phone number");
+            return new Response("Invalid phone number", Response::HTTP_BAD_REQUEST);
         }
 
         try {
@@ -54,7 +54,7 @@ class SmsRequestController extends AbstractController
                 ["number" => $this->smsConnector->getNumber(), 'sms' => $this->smsConnector]
             );
 
-            return new Response("User not found");
+            return new Response("User not found", Response::HTTP_BAD_REQUEST);
         }
 
         try {
