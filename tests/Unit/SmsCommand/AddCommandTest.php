@@ -112,8 +112,8 @@ class AddCommandTest extends TestCase
         $message = 'User Test User added. They need to read email and agree to rules before using the system.';
 
         $userMock->expects($this->once())->method('getCity')->willReturn($city);
+        $this->phonePurifierMock->expects($this->once())->method('isValid')->with($phone)->willReturn(true);
         $this->phonePurifierMock->expects($this->once())->method('purify')->with($phone)->willReturn($purifiedPhone);
-        $this->phonePurifierMock->expects($this->once())->method('isValid')->with($purifiedPhone)->willReturn(true);
         $this->userRepositoryMock
             ->expects($this->once())
             ->method('findItemByPhoneNumber')
