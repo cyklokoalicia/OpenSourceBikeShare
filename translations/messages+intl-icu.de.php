@@ -217,7 +217,7 @@ return [
     'related activities only' => 'nur verwandte Aktivitäten',
     'You already rented bike' => 'Du hast bereits ein Fahrrad gemietet',
     'Reported issue' => 'Gemeldetes Problem',
-    'Youh currently have no rented bikes.' => 'Du hast derzeit keine Fahrräder gemietet.',
+    'You currently have no rented bikes.' => 'Du hast derzeit keine Fahrräder gemietet.',
     'You have also reported this problem:' => 'Du hast dieses Problem auch gemeldet:',
     'Bike note:' => 'Fahrradnotiz:',
     'rented by' => 'gemietet von',

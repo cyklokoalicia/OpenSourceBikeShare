@@ -217,7 +217,7 @@ return [
     'related activities only' => 'pouze související aktivity',
     'You already rented bike' => 'Už jste si půjčili kolo',
     'Reported issue' => 'Nahlášený problém',
-    'Youh currently have no rented bikes.' => 'Momentálně nemáte půjčená žádná kola.',
+    'You currently have no rented bikes.' => 'Momentálně nemáte půjčená žádná kola.',
     'You have also reported this problem:' => 'Tento problém jste také nahlásili:',
     'Bike note:' => 'Poznámka ke kolu:',
     'rented by' => 'půjčil si',

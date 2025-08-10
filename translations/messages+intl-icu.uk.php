@@ -217,7 +217,7 @@ return [
     'related activities only' => 'лише пов\'язаної діяльності',
     'You already rented bike' => 'Ви вже орендували велосипед',
     'Reported issue' => 'Повідомлена проблема',
-    'Youh currently have no rented bikes.' => 'На даний момент у вас немає орендованих велосипедів.',
+    'You currently have no rented bikes.' => 'На даний момент у вас немає орендованих велосипедів.',
     'You have also reported this problem:' => 'Ви також повідомили про цю проблему:',
     'Bike note:' => 'Примітка до велосипеда:',
     'rented by' => 'орендував',
