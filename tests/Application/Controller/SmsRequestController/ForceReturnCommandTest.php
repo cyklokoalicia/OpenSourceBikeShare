@@ -54,8 +54,8 @@ class ForceReturnCommandTest extends BikeSharingWebTestCase
 
         $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . ' : Lock with code \d{4}\.' .
-                'Please, rotate the lockpad to 0000 when leaving\.Wipe the bike clean if it is dirty, please\./',
+            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . '\.\s*Lock with code \d{4}\.\s*' .
+                'Please, rotate the lockpad to 0000 when leaving\.\s*Wipe the bike clean if it is dirty, please\./',
             $sentMessage['text'],
             'Invalid response sms text'
         );

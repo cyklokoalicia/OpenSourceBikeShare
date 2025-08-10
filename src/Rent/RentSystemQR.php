@@ -2,6 +2,9 @@
 
 namespace BikeShare\Rent;
 
+/**
+ * @phpcs:disable Generic.Files.LineLength
+ */
 class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 {
     public function rentBike($userId, $bikeId, $force = false)
@@ -18,6 +21,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 
         if ($bikeId !== 0) {
             $this->logger->error("Bike number could not be provided via QR code", ["userId" => $userId]);
+
             return $this->response($this->translator->trans('Invalid bike number'), self::ERROR);
         }
 
@@ -27,9 +31,15 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         if ($bikeNumber === 0) {
             return $this->response($this->translator->trans('You currently have no rented bikes.'), self::ERROR);
         } elseif ($bikeNumber > 1) {
-            $message = $this->translator->trans('You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web or SMS to return the bikes.', ['bikeNumber' => $bikeNumber]);
+            $message = $this->translator->trans(
+                'You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web or SMS to return the bikes.',
+                ['bikeNumber' => $bikeNumber]
+            );
             if (!$this->isSmsSystemEnabled) {
-                $message = $this->translator->trans('You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web to return the bikes.', ['bikeNumber' => $bikeNumber]);
+                $message = $this->translator->trans(
+                    'You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web to return the bikes.',
+                    ['bikeNumber' => $bikeNumber]
+                );
             }
 
             return $this->response($message, self::ERROR);

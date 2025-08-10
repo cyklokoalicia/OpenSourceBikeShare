@@ -341,5 +341,5 @@ return [
     'Value' => '',
     'Status' => '',
     'Mark as sold' => '',
-    'Rent bike {bikeNum} on stand {standName}' => 'Rent bike {bikeNum} on stand {standName}',
+    'Rent bike {bikeNumber} on stand {standName}' => '',
 ];

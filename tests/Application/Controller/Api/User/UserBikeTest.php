@@ -71,8 +71,8 @@ class UserBikeTest extends BikeSharingWebTestCase
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
         $response = strip_tags($response['message']);
-        $pattern = '/Bike ' . self::BIKE_NUMBER . ': Open with code (?P<oldCode>\d{4})\.' .
-            'Change code immediately to (?P<newCode>\d{4})' .
+        $pattern = '/Bike ' . self::BIKE_NUMBER . ': Open with code (?P<oldCode>\d{4})\.\s*' .
+            'Change code immediately to (?P<newCode>\d{4})\s*' .
             '\(open, rotate metal part, set new code, rotate metal part back\)\./';
         $this->assertMatchesRegularExpression($pattern, $response, 'Invalid response text');
         preg_match($pattern, $response, $matches);
