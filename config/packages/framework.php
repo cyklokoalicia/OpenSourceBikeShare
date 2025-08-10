@@ -29,7 +29,7 @@ return static function (FrameworkConfig $framework): void {
 
     $framework
         ->defaultLocale('en')
-        ->enabledLocales(['en', 'sk', 'cs', 'de', 'ua'])
+        ->enabledLocales(['en', 'sk', 'cs', 'de', 'uk'])
         ->translator()
         ->defaultPath('%kernel.project_dir%/translations')
         ->fallbacks(['en']);
