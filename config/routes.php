@@ -7,6 +7,8 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['locale' => '[a-z]{2}'])
         ->defaults(['_locale' => 'en'])
         ->controller([\BikeShare\Controller\LanguageController::class, 'switchLanguage']);
+    $routes->add('js_translations', '/js/translations.json')
+        ->controller([\BikeShare\Controller\LanguageController::class, 'getTranslations']);
     $routes->add('home', '/')
         ->controller([\BikeShare\Controller\HomeController::class, 'index']);
     $routes->add('command', '/command.php')

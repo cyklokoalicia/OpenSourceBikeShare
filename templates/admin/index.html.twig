@@ -17,8 +17,8 @@
 {% block title %}{{ siteName }}|{{ 'Administration'|trans }}{% endblock %}
 
 {% block scripts %}
+    {{ parent() }}
     <script src="{{ asset('js/admin.js') }}"></script>
-    <script src="{{ asset('js/translations.php') }}"></script>
     <script src="//cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
     <script>
         {% if creditSystem.isEnabled %}

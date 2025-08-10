@@ -121,6 +121,15 @@
 {% if googleAnalyticsId is not empty %}
     {% include ('google.analytics.html.twig') %}
 {% endif %}
-{% block scripts %}{% endblock %}
+{% block scripts %}
+    <script>
+        window.translations = {};
+        fetch('{{ path('js_translations') }}')
+            .then(response => response.json())
+            .then(data => {
+                window.translations = data;
+            });
+    </script>
+{% endblock %}
 </body>
 </html>

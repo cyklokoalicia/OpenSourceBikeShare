@@ -212,7 +212,7 @@ function getuserstatus() {
 }
 
 function createstandselector() {
-    var selectdata = '<option value="del">-- ' + _select_stand + ' --</option>';
+    var selectdata = '<option value="del">-- ' + window.translations['Select stand'] + ' --</option>';
     $.each(markerdata, function (key, value) {
         if (value != undefined) {
             selectdata = selectdata + '<option value="' + key + '">' + value.name + '</option>';
@@ -260,9 +260,9 @@ function showstand(e, clear) {
     if (markerdata[standid].count > 0) {
         $('#standcount').removeClass('badge badge-danger').addClass('badge badge-success');
         if (markerdata[standid].count == 1) {
-            $('#standcount').html(markerdata[standid].count + ' ' + _bicycle);
+            $('#standcount').html(markerdata[standid].count + ' ' + window.translations['bicycle']);
         } else {
-            $('#standcount').html(markerdata[standid].count + ' ' + _bicycles);
+            $('#standcount').html(markerdata[standid].count + ' ' + window.translations['bicycles']);
         }
         $.ajax({
             global: false,
@@ -328,23 +328,23 @@ function showstand(e, clear) {
                 }
             } else {
                 // no bicyles at stand
-                $('#standcount').html(_no_bicycles);
+                $('#standcount').html(window.translations['No bicycles']);
                 $('#standcount').removeClass('badge badge-success').addClass('badge badge-danger');
                 resetstandbikes();
             }
         });
     } else {
-        $('#standcount').html(_no_bicycles);
+        $('#standcount').html(window.translations['No bicycles']);
         $('#standcount').removeClass('badge badge-success').addClass('badge badge-danger');
         resetstandbikes();
     }
 
-    walklink = '<a href="https://www.google.com/maps?q=' + userLatitude + ',' + userLongitude + '+to:' + lat + ',' + long + '&saddr=' + userLatitude + ',' + userLongitude + '&daddr=' + lat + ',' + long + '&output=classic&dirflg=w&t=m" target="_blank" title="' + _open_map + '">' + _walking_directions + '</a>';
+    walklink = '<a href="https://www.google.com/maps?q=' + userLatitude + ',' + userLongitude + '+to:' + lat + ',' + long + '&saddr=' + userLatitude + ',' + userLongitude + '&daddr=' + lat + ',' + long + '&output=classic&dirflg=w&t=m" target="_blank" title="' + window.translations['Open a map with directions to the selected stand from your current location.'] + '">' + window.translations['walking directions'] + '</a>';
 
     if (loggedin == 1 && markerdata[standid].photo) {
         //walklink = walklink + ' | ';
         $('#standinfo').html(markerdata[standid].desc + ' (' + walklink + ')');
-        //removed + ' <a href="' + markerdata[standid].photo + '" id="photo' + standid + '" title="' + _display_photo + '">' + _photo + '</a>
+        //removed + ' <a href="' + markerdata[standid].photo + '" id="photo' + standid + '" title="' + window.translations['Display photo of the stand.'] + '">' + window.translations['photo'] + '</a>
         $('#standphoto').show();
         $('#standphoto').html('<img src="' + markerdata[standid].photo + '" alt="' + markerdata[standid].name + '" width="100%" />');
         $('#photo' + standid).click(function () {
@@ -385,27 +385,27 @@ function rentedbikes() {
                         timeDiff = Math.abs(freeTimeSeconds - rentedSeconds);
                     }
 
-                    var units = _secs;
+                    var units = window.translations['sec.'];
                     if (timeDiff > (60 * 59)) {
                         timeDiff = Math.round(timeDiff / 60 / 59);
-                        units = _hour_s;
+                        units = window.translations['hour/s'];
                     } else if (timeDiff > 59) {
                         timeDiff = Math.round(timeDiff / 60);
-                        units = _mins;
+                        units = window.translations['min.'];
                     }
 
                     if (!isNaN(timeDiff)) {
                         leftTimeText += '<br/><span class=\'label\'>';
                         if (rentedSeconds >= freeTimeSeconds) {
-                            leftTimeText += '<span style=\'text-align: center; display: inline-flex\' class=\'text-danger\'>' + timeDiff + ' ' + units + '<br/>' + _over + '</span>';
+                            leftTimeText += '<span style=\'text-align: center; display: inline-flex\' class=\'text-danger\'>' + timeDiff + ' ' + units + '<br/>' + window.translations['over'] + '</span>';
                         } else {
-                            leftTimeText += '<span style=\'text-align: center; display: inline-flex\'>' + timeDiff + ' ' + units + '<br/>' + _left + '</span>';
+                            leftTimeText += '<span style=\'text-align: center; display: inline-flex\'>' + timeDiff + ' ' + units + '<br/>' + window.translations['left'] + '</span>';
                         }
                         leftTimeText += '</span>';
                     }
                 }
 
-                bikeList += ' <button type="button" class="btn btn-info bikeid b' + bike.bikeNum + '" data-id="' + bike.bikeNum + '" title="' + _currently_rented + '">' + bike.bikeNum + '<br /><span class="badge badge-primary">(' + bike.currentCode + ')</span><br /><span class="label"><s>(' + bike.oldCode + ')</s></span>' + leftTimeText + '</button> ';
+                bikeList += ' <button type="button" class="btn btn-info bikeid b' + bike.bikeNum + '" data-id="' + bike.bikeNum + '" title="' + window.translations['You have this bicycle currently rented. The current lock code is displayed below the bike number.'] + '">' + bike.bikeNum + '<br /><span class="badge badge-primary">(' + bike.currentCode + ')</span><br /><span class="label"><s>(' + bike.oldCode + ')</s></span>' + leftTimeText + '</button> ';
             }
 
             $('#rentedbikes').html('<div class="btn-group">' + bikeList + '</div>');
@@ -562,7 +562,7 @@ function validatecoupon() {
 function attachbicycleinfo(element, attachto) {
     $('#' + attachto + ' .bikenumber').html($(element).attr('data-id'));
     // show warning, if exists:
-    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">' + _reported_problem + ' ' + $(element).attr('data-note') + '</div>');
+    if ($(element).hasClass('btn-warning')) $('#console').html('<div class="alert alert-warning" role="alert">' + window.translations['Reported problem on this bicycle:'] + ' ' + $(element).attr('data-note') + '</div>');
     // or hide warning, if bike without issue is clicked
     else if ($(element).hasClass('btn-warning') == false && $('#console div').hasClass('alert-warning')) resetconsole();
     $('#rent').show();

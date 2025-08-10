@@ -161,11 +161,11 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ parent() }}
     <script src="//cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.84.2/dist/L.Control.Locate.min.js" charset="utf-8"></script>
     <script src="//cdn.jsdelivr.net/npm/leaflet-sidebar@0.2.4/src/L.Control.Sidebar.js" charset="utf-8"></script>
     <script src="{{ asset('js/viewportDetect.js') }}"></script>
-    <script src="{{ asset('js/translations.php') }}"></script>
     <script src="{{ asset('js/functions.js') }}"></script>
     <script>
         var mapzoom = {{ systemZoom }};
