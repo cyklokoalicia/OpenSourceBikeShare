@@ -27,13 +27,10 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         if ($bikeNumber === 0) {
             return $this->response($this->translator->trans('You currently have no rented bikes.'), self::ERROR);
         } elseif ($bikeNumber > 1) {
-            $message = $this->translator->trans('You have') . ' ' . $bikeNumber . ' '
-                . $this->translator->trans('rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web');
-            if ($this->isSmsSystemEnabled) {
-                $message .= $this->translator->trans(' or SMS');
+            $message = $this->translator->trans('You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web or SMS to return the bikes.', ['bikeNumber' => $bikeNumber]);
+            if (!$this->isSmsSystemEnabled) {
+                $message = $this->translator->trans('You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web to return the bikes.', ['bikeNumber' => $bikeNumber]);
             }
-
-            $message .= $this->translator->trans(' to return the bikes.');
 
             return $this->response($message, self::ERROR);
         }
