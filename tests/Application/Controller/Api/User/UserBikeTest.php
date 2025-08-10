@@ -12,8 +12,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class UserBikeTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const USER_PHONE_NUMBER = '421951111111';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 7;
     private const STAND_NAME = 'STAND1';
 

@@ -13,8 +13,8 @@ use BikeShare\Test\Application\BikeSharingWebTestCase;
 
 class CouponApiControllerTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const USER_PHONE_NUMBER = '421951111111';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
 
     private $creditSystemEnabled;
 

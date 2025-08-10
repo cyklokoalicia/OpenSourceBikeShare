@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class BikeTripTest extends BikeSharingWebTestCase
 {
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 7;
     private const STAND_NAME = 'STAND1';
 

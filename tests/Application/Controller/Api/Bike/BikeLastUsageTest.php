@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class BikeLastUsageTest extends BikeSharingWebTestCase
 {
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 9;
     private const STAND_NAME = 'STAND1';
 
@@ -59,7 +59,7 @@ class BikeLastUsageTest extends BikeSharingWebTestCase
         $this->assertSame(
             $responseData['history'][2]['parameter'], //REVERT
             $responseData['history'][5]['parameter'], //RENT
-            'Incorrect code after revert'
+            'Incorrect code after revert. Full history' . json_encode($responseData['history'])
         );
     }
 }

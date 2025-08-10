@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class FreeCommandTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
+    private const USER_PHONE_NUMBER = '421951111111';
 
     /**
      * @dataProvider freeCommandDataProvider

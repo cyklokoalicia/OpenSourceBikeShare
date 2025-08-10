@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class StandMarkersTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
+    private const USER_PHONE_NUMBER = '421951111111';
 
     protected function setUp(): void
     {

@@ -23,6 +23,7 @@ use BikeShare\SmsCommand\SmsCommandInterface;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use PHPMailer\PHPMailer\PHPMailer;
+use libphonenumber\PhoneNumberUtil;
 use Symfony\Component\Dotenv\Command\DotenvDumpCommand;
 
 return static function (ContainerConfigurator $container): void {
@@ -106,7 +107,6 @@ return static function (ContainerConfigurator $container): void {
     $services->load('BikeShare\\SmsCommand\\', '../src/SmsCommand/*Command.php')
         ->bind(RentSystemInterface::class, expr('service("BikeShare\\\Rent\\\RentSystemFactory").getRentSystem("sms")'))
         ->bind('$forceStack', env('bool:FORCE_STACK'))
-        ->bind('$countryCode', env('COUNTRY_CODE'))
     ;
 
     $services->get(PdoDb::class)
@@ -138,8 +138,11 @@ return static function (ContainerConfigurator $container): void {
             inline_service(PHPMailer::class)->args([false])->property('Debugoutput', service('logger')),
         );
 
+    $services->set(PhoneNumberUtil::class)
+        ->factory([PhoneNumberUtil::class, 'getInstance']);
+
     $services->get(PhonePurifier::class)
-        ->bind('$countryCode', env('COUNTRY_CODE'));
+        ->bind('$countryCodes', env('json:COUNTRY_CODES'));
 
     $services->get(CreditSystemFactory::class)
         ->bind('$isEnabled', env('bool:CREDIT_SYSTEM_ENABLED'));

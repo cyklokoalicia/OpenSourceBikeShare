@@ -6,6 +6,7 @@ namespace BikeShare\Controller;
 
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsCommand\CommandExecutor;
 use BikeShare\SmsConnector\SmsConnectorInterface;
@@ -19,6 +20,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class SmsRequestController extends AbstractController
 {
     public function __construct(
+        private readonly PhonePurifierInterface $phonePurifier,
         private readonly SmsConnectorInterface $smsConnector,
         private readonly SmsSenderInterface $smsSender,
         private readonly UserProvider $userProvider,
@@ -35,6 +37,15 @@ class SmsRequestController extends AbstractController
     {
         $this->smsConnector->receive();
 
+        if (!$this->phonePurifier->isValid($this->smsConnector->getNumber())) {
+            $this->logger->error(
+                "Invalid phone number",
+                ["number" => $this->smsConnector->getNumber(), 'sms' => $this->smsConnector]
+            );
+
+            return new Response("Invalid phone number", Response::HTTP_BAD_REQUEST);
+        }
+
         try {
             $user = $this->userProvider->loadUserByIdentifier($this->smsConnector->getNumber());
         } catch (UserNotFoundException) {
@@ -43,7 +54,7 @@ class SmsRequestController extends AbstractController
                 ["number" => $this->smsConnector->getNumber(), 'sms' => $this->smsConnector]
             );
 
-            return new Response("User not found");
+            return new Response("User not found", Response::HTTP_BAD_REQUEST);
         }
 
         try {
