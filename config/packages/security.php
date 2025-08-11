@@ -108,11 +108,6 @@ return function (SecurityConfig $security) {
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
-        ->path('^/command.php$')
-        ->roles(['PUBLIC_ACCESS']);
-
-    $security
-        ->accessControl()
         ->path('^/')
         ->roles(['ROLE_USER']);
 };

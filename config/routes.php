@@ -11,8 +11,6 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\LanguageController::class, 'getTranslations']);
     $routes->add('home', '/')
         ->controller([\BikeShare\Controller\HomeController::class, 'index']);
-    $routes->add('command', '/command.php')
-        ->controller([\BikeShare\Controller\CommandController::class, 'index']);
     $routes->add('scan_bike', '/scan.php/rent/{bikeNumber}')
         ->requirements(['bikeNumber' => '\d+'])
         ->controller([\BikeShare\Controller\ScanController::class, 'rentBike']);
