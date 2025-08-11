@@ -24,11 +24,9 @@ DirectoryIndex index.php
 
     RewriteEngine On
 
-    RewriteCond %{ENV:APP_FixENV} =prod
     RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
     RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 
-    RewriteCond %{ENV:APP_ENV} =prod
     RewriteCond %{HTTPS} =off
     RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L]
 

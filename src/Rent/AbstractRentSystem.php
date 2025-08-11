@@ -153,7 +153,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             }
         }
 
-        $result = $this->db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
+        $result = $this->db->query("SELECT currentCode FROM bikes WHERE bikeNum = :bikeNum", ['bikeNum' => $bikeNum]);
         $row = $result->fetchAssoc();
         $currentCode = sprintf('%04d', $row['currentCode']);
         $result = $this->db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC");
