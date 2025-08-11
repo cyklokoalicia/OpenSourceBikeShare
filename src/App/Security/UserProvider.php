@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\App\Security;
 
+use BikeShare\App\Entity\ApiServiceUser;
 use BikeShare\App\Entity\User;
 use BikeShare\Db\DbInterface;
 use BikeShare\Purifier\PhonePurifierInterface;
@@ -77,6 +78,10 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function refreshUser(UserInterface $user): UserInterface
     {
+        if ($user instanceof ApiServiceUser) {
+            return $user;
+        }
+
         if (!$user instanceof User) {
             throw new UnsupportedUserException(sprintf('Invalid user class "%s".', $user::class));
         }
@@ -91,7 +96,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function supportsClass(string $class): bool
     {
-        return User::class === $class || is_subclass_of($class, User::class);
+        return User::class === $class || is_subclass_of($class, User::class) || $class === ApiServiceUser::class;
     }
 
     /**
