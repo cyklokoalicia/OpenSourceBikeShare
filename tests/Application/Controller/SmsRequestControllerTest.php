@@ -9,11 +9,13 @@ use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Monolog\Logger;
 use PHPUnit\Framework\Constraint\Callback;
+use PHPUnit\Framework\Constraint\Constraint;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class SmsRequestControllerTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
+    private const USER_PHONE_NUMBER = '421951111111';
 
     /**
      * @var Callback|string $expectedSms
@@ -23,7 +25,8 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
         string $phoneNumber,
         string $message,
         string $expectedResponse,
-        $expectedSms,
+        int $expectedResponseCode,
+        string|Constraint|null $expectedSms,
         array $expectedLog
     ): void {
         $smsUuid = md5((string)microtime(true));
@@ -38,7 +41,7 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
                 'time' => time(),
             ]
         );
-        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame($expectedResponseCode, 'Invalid response code');
         $this->assertSame($expectedResponse, $this->client->getResponse()->getContent());
 
         $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
@@ -68,10 +71,21 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
 
     public function smsDataProvider(): iterable
     {
-        yield 'unknown user' => [
+        yield 'invalid phone number' => [
             'phoneNumber' => '0000000000000',
             'message' => 'Test message',
+            'expectedResponse' => 'Invalid phone number',
+            'expectedResponseCode' => Response::HTTP_BAD_REQUEST,
+            'expectedSms' => null,
+            'expectedLog' => [
+                Logger::ERROR, '/Invalid phone number/',
+            ],
+        ];
+        yield 'unknown user' => [
+            'phoneNumber' => '421951000000',
+            'message' => 'Test message',
             'expectedResponse' => 'User not found',
+            'expectedResponseCode' => Response::HTTP_BAD_REQUEST,
             'expectedSms' => null,
             'expectedLog' => [
                 Logger::ERROR, '/User not found/',
@@ -81,6 +95,7 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
             'phoneNumber' => self::USER_PHONE_NUMBER,
             'message' => 'Test message',
             'expectedResponse' => '',
+            'expectedResponseCode' => Response::HTTP_OK,
             'expectedSms' => null,
             'expectedLog' => [
                 Logger::ERROR, '/Error processing SMS/',
@@ -90,6 +105,7 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
             'phoneNumber' => self::USER_PHONE_NUMBER,
             'message' => 'RENT',
             'expectedResponse' => '',
+            'expectedResponseCode' => Response::HTTP_OK,
             'expectedSms' => 'Error. More arguments needed, use command with bike number: RENT 42',
             'expectedLog' => [],
         ];
@@ -97,6 +113,7 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
             'phoneNumber' => self::USER_PHONE_NUMBER,
             'message' => 'HELP',
             'expectedResponse' => '',
+            'expectedResponseCode' => Response::HTTP_OK,
             'expectedSms' => $this->callback(function ($message) {
                 return (bool)preg_match('/Commands:.*/', $message);
             }),
@@ -106,6 +123,7 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
             'phoneNumber' => self::USER_PHONE_NUMBER,
             'message' => 'WHERE 1',
             'expectedResponse' => '',
+            'expectedResponseCode' => Response::HTTP_OK,
             'expectedSms' => $this->callback(function ($message) {
                 return (bool)preg_match('/Bike 1 is at stand STAND\d*. /', $message);
             }),
@@ -115,6 +133,7 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
             'phoneNumber' => self::USER_PHONE_NUMBER,
             'message' => 'FORCERENT 1',
             'expectedResponse' => '',
+            'expectedResponseCode' => Response::HTTP_OK,
             'expectedSms' => 'Sorry, this command is only available for the privileged users.',
             'expectedLog' => [
                 Logger::WARNING, '/Validation error/',

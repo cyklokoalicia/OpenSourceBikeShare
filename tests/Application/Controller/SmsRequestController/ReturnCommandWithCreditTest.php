@@ -16,8 +16,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ReturnCommandWithCreditTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const USER_PHONE_NUMBER = '421951111111';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 5;
     private const STAND_NAME = 'STAND5';
 
@@ -128,8 +128,8 @@ class ReturnCommandWithCreditTest extends BikeSharingWebTestCase
 
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . ' : Lock with code \d{4}\.' .
-            'Please, rotate the lockpad to 0000 when leaving\.Wipe the bike clean if it is dirty, please\./',
+            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . '\.\s*Lock with code \d{4}\.\s*' .
+            'Please, rotate the lockpad to 0000 when leaving\.\s*Wipe the bike clean if it is dirty, please\./',
             $sentMessage['text'],
             'Invalid response sms text'
         );

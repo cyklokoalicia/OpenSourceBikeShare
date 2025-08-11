@@ -72,14 +72,6 @@ CREATE TABLE `history` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `limits`;
-CREATE TABLE `limits` (
-  `userId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `userLimit` int(11) UNSIGNED NOT NULL DEFAULT '0',
-  PRIMARY KEY (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
 -- THIS TABLE IS MISSED IN CODE, DO WE NEED IT?
 DROP TABLE IF EXISTS `pairing`;
 CREATE TABLE `pairing` (
@@ -156,8 +148,10 @@ CREATE TABLE `users` (
   `mail` varchar(255) NOT NULL,
   `number` varchar(30) NOT NULL,
   `privileges` int(11) UNSIGNED NOT NULL DEFAULT '0',
+  `userLimit` int(11) UNSIGNED NOT NULL DEFAULT '0',
   `city` varchar(45) NOT NULL DEFAULT 'Bratisalva',
   `isNumberConfirmed` tinyint(1) NOT NULL DEFAULT '0',
+  `registrationDate` datetime DEFAULT NOW(),
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

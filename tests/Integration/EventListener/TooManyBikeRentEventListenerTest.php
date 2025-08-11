@@ -15,7 +15,7 @@ class TooManyBikeRentEventListenerTest extends BikeSharingKernelTestCase
 {
     use ClockSensitiveTrait;
 
-    private const USER_PHONE_NUMBER = '421111111111';
+    private const USER_PHONE_NUMBER = '421951111111';
     private const BIKE_NUMBER = 1;
     private const CURRENT_TIME = '2023-10-01 12:00:00';
     private const RENT_COUNT = 999; //set too big for the test

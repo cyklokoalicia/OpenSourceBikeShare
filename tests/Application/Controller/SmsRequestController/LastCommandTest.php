@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class LastCommandTest extends BikeSharingWebTestCase
 {
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 1;
 
     public function testLastCommand(): void

@@ -109,7 +109,7 @@ class RegistrationFormTypeTest extends BikeSharingKernelTestCase
         ];
         yield 'existing user by number' => [
             'formData' => [
-                'number' => '421333333333',
+                'number' => '421951333333',
             ],
             'expectedErrors' => array_replace(
                 $expectedErrors,
@@ -120,39 +120,44 @@ class RegistrationFormTypeTest extends BikeSharingKernelTestCase
                 ]
             ),
         ];
-    }
-
-    /**
-     * @dataProvider phonePurifyDataProvider
-     */
-    public function testPhonePurify(
-        string $phone,
-        string $expectedPhone
-    ) {
-        $form = static::getContainer()->get('form.factory')->create(RegistrationFormType::class);
-
-        $form->submit(
-            [
-                'number' => $phone,
-            ]
-        );
-
-        // This check ensures there are no transformation failures
-        $this->assertTrue($form->isSynchronized());
-        $this->assertFalse($form->isValid());
-
-        $this->assertSame($expectedPhone, $form->get('number')->getData());
-    }
-
-    public function phonePurifyDataProvider(): iterable
-    {
-        yield 'default' => [
-            'phone' => '421333333333',
-            'expectedPhone' => '421333333333',
+        yield 'invalid local phone number' => [
+            'formData' => [
+                'number' => '4211111111111',
+            ],
+            'expectedErrors' => array_replace(
+                $expectedErrors,
+                [
+                    'number' => [
+                        'Invalid phone number.',
+                    ]
+                ]
+            ),
         ];
-        yield 'without international code' => [
-            'phone' => '0333333333',
-            'expectedPhone' => '421333333333',
+        yield 'invalid phone number symbols' => [
+            'formData' => [
+                'number' => 'sagsagasdg',
+            ],
+            'expectedErrors' => array_replace(
+                $expectedErrors,
+                [
+                    'number' => [
+                        'Invalid phone number.',
+                    ]
+                ]
+            ),
+        ];
+        yield 'invalid phone number numbers' => [
+            'formData' => [
+                'number' => '+00000123131465',
+            ],
+            'expectedErrors' => array_replace(
+                $expectedErrors,
+                [
+                    'number' => [
+                        'Invalid phone number.',
+                    ]
+                ]
+            ),
         ];
     }
 

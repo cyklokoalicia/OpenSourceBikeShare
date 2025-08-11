@@ -56,6 +56,23 @@
             {% endblock %}
         </ul>
         <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-globe"></i> {{ app.request.locale|upper }}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                    {% set language_names = {
+                        'en': 'English',
+                        'sk': 'Slovenčina',
+                        'cs': 'Čeština',
+                        'de': 'Deutsch',
+                        'uk': 'Українська'
+                    } %}
+                    {% for locale in enabled_locales %}
+                        <a class="dropdown-item" href="{{ path('switch_language', {locale: locale}) }}">{{ language_names[locale] ?? locale|upper }}</a>
+                    {% endfor %}
+                </div>
+            </li>
             {% block userMenuItems %}
                 {% if app.user %}
                     <li class="nav-item">
@@ -105,6 +122,15 @@
 {% if googleAnalyticsId is not empty %}
     {% include ('google.analytics.html.twig') %}
 {% endif %}
-{% block scripts %}{% endblock %}
+{% block scripts %}
+    <script>
+        window.translations = {};
+        fetch('{{ path('js_translations') }}')
+            .then(response => response.json())
+            .then(data => {
+                window.translations = data;
+            });
+    </script>
+{% endblock %}
 </body>
 </html>

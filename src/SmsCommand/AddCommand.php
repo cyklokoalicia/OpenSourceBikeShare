@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
-use BikeShare\Purifier\PhonePurifier;
+use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\User\UserRegistration;
@@ -18,26 +18,21 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __construct(
         TranslatorInterface $translator,
-        private readonly string $countryCode,
         private readonly UserRegistration $userRegistration,
         private readonly UserRepository $userRepository,
-        private readonly PhonePurifier $phonePurifier
+        private readonly PhonePurifierInterface $phonePurifier
     ) {
         parent::__construct($translator);
     }
 
     public function __invoke(User $user, string $email, string $phone, string $fullName): string
     {
-        $phone = $this->phonePurifier->purify($phone);
-
-        if (
-            $phone < $this->countryCode . "000000000"
-            || $phone > ((int)$this->countryCode + 1) . "000000000"
-        ) {
+        if (!$this->phonePurifier->isValid($phone)) {
             throw new ValidationException(
                 $this->translator->trans('Invalid phone number.')
             );
         }
+        $phone = $this->phonePurifier->purify($phone);
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new ValidationException(

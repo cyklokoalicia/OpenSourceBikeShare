@@ -15,8 +15,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class BikeRentTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const USER_PHONE_NUMBER = '421951111111';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 6;
     private const STAND_NAME = 'STAND1';
 
@@ -85,7 +85,7 @@ class BikeRentTest extends BikeSharingWebTestCase
         $response = strip_tags($response['message']);
 
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.Change code immediately to \d{4}' .
+            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.\s*Change code immediately to \d{4}\s*' .
             '\(open, rotate metal part, set new code, rotate metal part back\)\./',
             $response,
             'Invalid response text'
@@ -135,7 +135,7 @@ class BikeRentTest extends BikeSharingWebTestCase
             ['number' => self::USER_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.Change code immediately to \d{4}' .
+            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.\s*Change code immediately to \d{4}\s*' .
             '\(open, rotate metal part, set new code, rotate metal part back\)\./',
             $sent['text'],
             'Send message is not logged'

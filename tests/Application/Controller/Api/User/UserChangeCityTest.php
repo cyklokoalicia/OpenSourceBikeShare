@@ -11,7 +11,7 @@ use BikeShare\Test\Application\BikeSharingWebTestCase;
 
 class UserChangeCityTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
+    private const USER_PHONE_NUMBER = '421951111111';
 
     private $cities;
 

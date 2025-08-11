@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class AddCommandTest extends BikeSharingWebTestCase
 {
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
 
     /**
      * This test generates a new user on each run, so be careful with running it multiple times.
@@ -25,7 +25,7 @@ class AddCommandTest extends BikeSharingWebTestCase
     {
         $adminPhoneNumber = self::ADMIN_PHONE_NUMBER;
         $email = 'testAddUser' . rand(1000, 9999) . '@net.net';
-        $phoneNumber = '42199999' . rand(1000, 9999);
+        $phoneNumber = '421903' . rand(100000, 999999);
         $fullName = 'Test User';
 
         $this->client->getContainer()->get('event_dispatcher')->addListener(

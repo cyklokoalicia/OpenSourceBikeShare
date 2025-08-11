@@ -26,4 +26,11 @@ return static function (FrameworkConfig $framework): void {
         ->adapters(['cache.adapter.array'])
         ->defaultLifetime(180)
         ->public(true);
+
+    $framework
+        ->defaultLocale('en')
+        ->enabledLocales(['en', 'sk', 'cs', 'de', 'uk'])
+        ->translator()
+        ->defaultPath('%kernel.project_dir%/translations')
+        ->fallbacks(['en']);
 };

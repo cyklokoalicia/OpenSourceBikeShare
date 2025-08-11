@@ -256,7 +256,7 @@ if (!$connectors["sms"])
    {
    $result=$db->query("UPDATE users SET number='$userid' WHERE userId='$userid'");
    }
-$result=$db->query("REPLACE INTO limits SET userId='$userid',userLimit='100'");
+$result=$db->query("UPDATE users SET userLimit='100' WHERE userId='$userid'");
 ?>
       <h2><?php echo _('Create bicycles and stands'); ?></h2>
        <?php echo '<div class="alert alert-success" role="alert">',_('Admin user'),' ',$_POST["username"],' ',_('created with password:'),' ',$_POST["password"]; if (!$connectors["sms"]) { echo '. ',_('Use number'),' <span class="label label-default">',$userid,'</span> ',_('for login'),'.'; } echo '</div>'; ?>

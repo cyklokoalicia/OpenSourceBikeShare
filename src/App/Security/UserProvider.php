@@ -7,6 +7,7 @@ namespace BikeShare\App\Security;
 use BikeShare\App\Entity\User;
 use BikeShare\Db\DbInterface;
 use BikeShare\Purifier\PhonePurifierInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -19,15 +20,8 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     public function __construct(
         private readonly DbInterface $db,
         private readonly PhonePurifierInterface $phonePurifier,
+        private readonly ClockInterface $clock,
     ) {
-    }
-
-    /**
-     * @deprecated use loadUserByIdentifier() instead
-     */
-    public function loadUserByUsername(string $username)
-    {
-        return $this->loadUserByIdentifier($username);
     }
 
     /**
@@ -42,7 +36,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
     {
         $identifier = $this->phonePurifier->purify($identifier);
         $result = $this->db->query(
-            'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed
+            'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed, registrationDate
              FROM users 
              WHERE number = :identifier',
             [
@@ -64,6 +58,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $row['userName'],
             (int)$row['privileges'],
             (bool)$row['isNumberConfirmed'],
+            new \DateTimeImmutable($row['registrationDate']),
         );
     }
 
@@ -120,7 +115,8 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $user->getCity(),
             $user->getUsername(),
             $user->getPrivileges(),
-            $user->isNumberConfirmed()
+            $user->isNumberConfirmed(),
+            $user->getRegistrationDate(),
         );
     }
 
@@ -133,9 +129,11 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
         int $privileges,
         bool $isNumberConfirmed = false
     ): User {
+        $registrationDate = $this->clock->now();
         $this->db->query(
-            'INSERT INTO users (number, mail, password, city, userName, privileges, isNumberConfirmed) 
-               VALUES (:number, :mail, :plainPassword, :city, :userName, :privileges, :isNumberConfirmed)',
+            'INSERT INTO users (number, mail, password, city, userName, privileges, isNumberConfirmed, registrationDate)
+               VALUES (:number, :mail, :plainPassword, :city, :userName, :privileges,
+                       :isNumberConfirmed, :registrationDate)',
             [
                 'number' => $number,
                 'mail' => $mail,
@@ -144,18 +142,22 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
                 'userName' => $userName,
                 'privileges' => $privileges,
                 'isNumberConfirmed' => (int)$isNumberConfirmed,
+                'registrationDate' => $registrationDate->format('Y-m-d H:i:s')
             ]
         );
 
+        $userId = $this->db->getLastInsertId();
+
         return new User(
-            $this->db->getLastInsertId(),
+            $userId,
             $number,
             $mail,
             $plainPassword,
             $city,
             $userName,
             $privileges,
-            $isNumberConfirmed
+            $isNumberConfirmed,
+            $registrationDate,
         );
     }
 }

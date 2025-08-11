@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ListCommandTest extends BikeSharingWebTestCase
 {
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const STAND_NAME = 'STAND1';
 
     private $forceStack;

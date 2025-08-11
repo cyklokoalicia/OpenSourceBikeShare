@@ -17,8 +17,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ScanControllerTest extends BikeSharingWebTestCase
 {
-    private const USER_PHONE_NUMBER = '421111111111';
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const USER_PHONE_NUMBER = '421951111111';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 5;
     private const STAND_NAME = 'STAND5';
 
@@ -88,7 +88,7 @@ class ScanControllerTest extends BikeSharingWebTestCase
         $rentText = $crawler->filter('.alert-success')->text();
 
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.Change code immediately to \d{4}' .
+            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.\s*Change code immediately to \d{4}\s*' .
             '\(open, rotate metal part, set new code, rotate metal part back\)\./',
             $rentText,
             'Invalid message about success rent'
@@ -139,7 +139,7 @@ class ScanControllerTest extends BikeSharingWebTestCase
             ['number' => self::USER_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.Change code immediately to \d{4}' .
+            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.\s*Change code immediately to \d{4}\s*' .
             '\(open, rotate metal part, set new code, rotate metal part back\)\./',
             $sent['text'],
             'Send message is not logged'
@@ -179,8 +179,8 @@ class ScanControllerTest extends BikeSharingWebTestCase
         $returnText = $crawler->filter('.alert-success')->text();
 
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . ' : Lock with code \d{4}\.' .
-            'Please, rotate the lockpad to 0000 when leaving\.Wipe the bike clean if it is dirty, please\./',
+            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . '\.\s*Lock with code \d{4}\.\s*' .
+            'Please, rotate the lockpad to 0000 when leaving\.\s*Wipe the bike clean if it is dirty, please\./',
             $returnText,
             'Invalid return message'
         );
@@ -224,8 +224,8 @@ class ScanControllerTest extends BikeSharingWebTestCase
             ['number' => self::USER_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . ' : Lock with code \d{4}\.' .
-                'Please, rotate the lockpad to 0000 when leaving\.Wipe the bike clean if it is dirty, please\./',
+            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . '\.\s*Lock with code \d{4}\.\s*' .
+                'Please, rotate the lockpad to 0000 when leaving\.\s*Wipe the bike clean if it is dirty, please\./',
             $sent['text'],
             'Send message is not logged'
         );

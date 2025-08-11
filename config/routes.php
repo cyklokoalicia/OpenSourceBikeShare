@@ -3,6 +3,12 @@
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return function (RoutingConfigurator $routes) {
+    $routes->add('switch_language', '/switchLanguage/{locale}')
+        ->requirements(['locale' => '[a-z]{2}'])
+        ->defaults(['_locale' => 'en'])
+        ->controller([\BikeShare\Controller\LanguageController::class, 'switchLanguage']);
+    $routes->add('js_translations', '/js/translations.json')
+        ->controller([\BikeShare\Controller\LanguageController::class, 'getTranslations']);
     $routes->add('home', '/')
         ->controller([\BikeShare\Controller\HomeController::class, 'index']);
     $routes->add('scan_bike', '/scan.php/rent/{bikeNumber}')

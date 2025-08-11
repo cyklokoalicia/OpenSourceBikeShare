@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Test\Unit\Purifier;
 
 use BikeShare\Purifier\PhonePurifier;
+use libphonenumber\PhoneNumberUtil;
 use PHPUnit\Framework\TestCase;
 
 class PhonePurifierTest extends TestCase
@@ -15,44 +16,43 @@ class PhonePurifierTest extends TestCase
     public function testPurify(
         $phoneNumber,
         $countryCode,
-        $expectedPhoneNumber
+        $expectedPhoneNumber,
+        $expectedException = null,
     ) {
-        $purifier = new PhonePurifier($countryCode);
+        if ($expectedException) {
+            $this->expectException($expectedException);
+        }
+        $purifier = new PhonePurifier(PhoneNumberUtil::getInstance(), [$countryCode]);
         $this->assertEquals($expectedPhoneNumber, $purifier->purify($phoneNumber));
     }
 
     public function purifyDataProvider()
     {
         yield 'default' => [
-            'phoneNumber' => '+1234567890',
-            'countryCode' => '123',
-            'expectedPhoneNumber' => '1234567890'
+            'phoneNumber' => '+421 903-123-456',
+            'countryCode' => 'SK',
+            'expectedPhoneNumber' => '421903123456',
+            'expectedException' => null,
         ];
-        yield 'restricted symbols remove' => [
-            'phoneNumber' => '+421 123-456-78/90.',
-            'countryCode' => '421',
-            'expectedPhoneNumber' => '4211234567890'
+        yield 'local number without prefix' => [
+            'phoneNumber' => '0903 123 456',
+            'countryCode' => 'SK',
+            'expectedPhoneNumber' => '421903123456',
+            'expectedException' => null,
         ];
-        yield 'letters symbols do not remove' => [
-            'phoneNumber' => '+421 123-456-78/90abcdefghijklmnopqrstuvwxyz',
-            'countryCode' => '421',
-            'expectedPhoneNumber' => '4211234567890'
+        yield 'international for another region' => [
+            'phoneNumber' => '+33123456789',
+            'countryCode' => 'SK',
+            'expectedPhoneNumber' => '',
+            'expectedException' => \InvalidArgumentException::class,
         ];
-        yield 'without code' => [
-            'phoneNumber' => '0123-456-78/90',
-            'countryCode' => '421',
-            'expectedPhoneNumber' => '4211234567890'
-        ];
-        yield 'with 3 symbol code and with 0' => [
-            'phoneNumber' => '0421123-456-78/90',
-            'countryCode' => '421',
-            'expectedPhoneNumber' => '4211234567890'
-        ];
-        #is it correct??? maybe code can be less or more than 3 symbols???
-        yield 'with 2 symbol code and with 0' => [
-            'phoneNumber' => '0123-456-78/90',
-            'countryCode' => '12',
-            'expectedPhoneNumber' => '121234567890'
-        ];
+    }
+
+    public function testIsValid(): void
+    {
+        $purifier = new PhonePurifier(PhoneNumberUtil::getInstance(), ['SK', 'CZ']);
+        $this->assertTrue($purifier->isValid('421903123456'));
+        $this->assertTrue($purifier->isValid('420601123456'));
+        $this->assertFalse($purifier->isValid('33123456789'));
     }
 }

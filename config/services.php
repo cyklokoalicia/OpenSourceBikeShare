@@ -23,6 +23,7 @@ use BikeShare\SmsCommand\SmsCommandInterface;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use PHPMailer\PHPMailer\PHPMailer;
+use libphonenumber\PhoneNumberUtil;
 use Symfony\Component\Dotenv\Command\DotenvDumpCommand;
 
 return static function (ContainerConfigurator $container): void {
@@ -91,6 +92,9 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$freeTimeHours', env('int:WATCHES_FREE_TIME'))
         ->bind('$systemZoom', env('int:SYSTEM_ZOOM'));
 
+    $services->get(\BikeShare\Controller\LanguageController::class)
+        ->bind('$enabledLocales', '%kernel.enabled_locales%');
+
     $services->get(\BikeShare\Controller\EmailConfirmController::class)
         ->bind('$userBikeLimitAfterRegistration', env('int:USER_BIKE_LIMIT_AFTER_REGISTRATION'));
 
@@ -103,7 +107,6 @@ return static function (ContainerConfigurator $container): void {
     $services->load('BikeShare\\SmsCommand\\', '../src/SmsCommand/*Command.php')
         ->bind(RentSystemInterface::class, expr('service("BikeShare\\\Rent\\\RentSystemFactory").getRentSystem("sms")'))
         ->bind('$forceStack', env('bool:FORCE_STACK'))
-        ->bind('$countryCode', env('COUNTRY_CODE'))
     ;
 
     $services->get(PdoDb::class)
@@ -135,8 +138,11 @@ return static function (ContainerConfigurator $container): void {
             inline_service(PHPMailer::class)->args([false])->property('Debugoutput', service('logger')),
         );
 
+    $services->set(PhoneNumberUtil::class)
+        ->factory([PhoneNumberUtil::class, 'getInstance']);
+
     $services->get(PhonePurifier::class)
-        ->bind('$countryCode', env('COUNTRY_CODE'));
+        ->bind('$countryCodes', env('json:COUNTRY_CODES'));
 
     $services->get(CreditSystemFactory::class)
         ->bind('$isEnabled', env('bool:CREDIT_SYSTEM_ENABLED'));
@@ -178,7 +184,11 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(PhonePurifierInterface::class, PhonePurifier::class);
 
     $services->load('BikeShare\\EventListener\\', '../src/EventListener')
+        ->exclude('../src/EventListener/LocaleListener.php')
         ->tag('kernel.event_listener');
+
+    $services->get(\BikeShare\EventListener\LocaleListener::class)
+        ->bind('$defaultLocale', '%kernel.default_locale%');
 
     $services->get(\BikeShare\EventListener\TooManyBikeRentEventListener::class)
         ->bind('$timeTooManyHours', env('int:WATCHES_TIME_TOO_MANY'))

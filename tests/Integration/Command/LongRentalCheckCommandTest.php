@@ -17,8 +17,8 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
 {
     use ClockSensitiveTrait;
 
-    private const USER_PHONE_NUMBER = '421444444444';
-    private const ADMIN_PHONE_NUMBER = '421222222222';
+    private const USER_PHONE_NUMBER = '421951444444';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 6;
     private const STAND_NAME = 'STAND1';
 

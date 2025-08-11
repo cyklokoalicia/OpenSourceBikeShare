@@ -15,7 +15,7 @@ class UserRepository
     public function findAll(): array
     {
         $users = $this->db->query(
-            'SELECT 
+            'SELECT
                 users.userId,
                 username,
                 city,
@@ -24,10 +24,10 @@ class UserRepository
                 privileges,
                 credit,
                 userLimit,
-                isNumberConfirmed
-            FROM users 
-            LEFT JOIN credit ON users.userId=credit.userId 
-            LEFT JOIN limits ON users.userId=limits.userId 
+                isNumberConfirmed,
+                registrationDate
+            FROM users
+            LEFT JOIN credit ON users.userId=credit.userId
             ORDER BY username'
         )->fetchAllAssoc();
 
@@ -38,7 +38,7 @@ class UserRepository
     public function findItem(int $userId): ?array
     {
         $user = $this->db->query(
-            'SELECT 
+            'SELECT
                 users.userId,
                 username,
                 city,
@@ -47,10 +47,10 @@ class UserRepository
                 privileges,
                 credit,
                 userLimit,
-                isNumberConfirmed
-              FROM users 
-              LEFT JOIN credit ON users.userId=credit.userId 
-              LEFT JOIN limits ON users.userId=limits.userId 
+                isNumberConfirmed,
+                registrationDate
+              FROM users
+              LEFT JOIN credit ON users.userId=credit.userId
               WHERE users.userId = :userId',
             [
                 'userId' => $userId,
@@ -63,7 +63,7 @@ class UserRepository
     public function findItemByPhoneNumber(string $phoneNumber): ?array
     {
         $user = $this->db->query(
-            'SELECT 
+            'SELECT
                 users.userId,
                 username,
                 city,
@@ -72,10 +72,10 @@ class UserRepository
                 privileges,
                 credit,
                 userLimit,
-                isNumberConfirmed
-              FROM users 
-              LEFT JOIN credit ON users.userId=credit.userId 
-              LEFT JOIN limits ON users.userId=limits.userId 
+                isNumberConfirmed,
+                registrationDate
+              FROM users
+              LEFT JOIN credit ON users.userId=credit.userId
               WHERE users.number = :phoneNumber',
             [
                 'phoneNumber' => $phoneNumber,
@@ -88,7 +88,7 @@ class UserRepository
     public function findItemByEmail(string $email): ?array
     {
         $user = $this->db->query(
-            'SELECT 
+            'SELECT
                 users.userId,
                 username,
                 city,
@@ -97,10 +97,10 @@ class UserRepository
                 privileges,
                 credit,
                 userLimit,
-                isNumberConfirmed
-              FROM users 
-              LEFT JOIN credit ON users.userId=credit.userId 
-              LEFT JOIN limits ON users.userId=limits.userId 
+                isNumberConfirmed,
+                registrationDate
+              FROM users
+              LEFT JOIN credit ON users.userId=credit.userId
               WHERE users.mail= :email',
             [
                 'email' => $email,
@@ -119,11 +119,12 @@ class UserRepository
         int $userLimit
     ): void {
         $this->db->query(
-            'UPDATE users 
-              SET username = :username, 
+            'UPDATE users
+              SET username = :username,
                   mail = :email,
                   number = :number,
-                  privileges = :privileges 
+                  privileges = :privileges,
+                  userLimit = :userLimit
               WHERE userId = :userId',
             [
                 'userId' => $userId,
@@ -131,15 +132,6 @@ class UserRepository
                 'email' => $email,
                 'number' => $number,
                 'privileges' => $privileges,
-            ]
-        );
-
-        $this->db->query(
-            'UPDATE limits 
-              SET userLimit = :userLimit 
-              WHERE userId = :userId',
-            [
-                'userId' => $userId,
                 'userLimit' => $userLimit,
             ]
         );
@@ -148,13 +140,12 @@ class UserRepository
     public function updateUserLimit(int $userId, int $userLimit): void
     {
         $this->db->query(
-            'INSERT INTO limits (userId, userLimit) 
-                  VALUES (:userId, :userLimit) 
-                  ON DUPLICATE KEY UPDATE userLimit = :userLimitUpdate',
+            'UPDATE users
+              SET userLimit = :userLimit
+              WHERE userId = :userId',
             [
                 'userId' => $userId,
                 'userLimit' => $userLimit,
-                'userLimitUpdate' => $userLimit,
             ]
         );
     }

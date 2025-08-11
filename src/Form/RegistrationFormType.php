@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Form;
 
-use BikeShare\Purifier\PhonePurifier;
+use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\CityRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Form\AbstractType;
@@ -28,7 +28,7 @@ class RegistrationFormType extends AbstractType
         private readonly string $systemRules,
         private readonly CityRepository $cityRepository,
         private readonly TranslatorInterface $translator,
-        private readonly PhonePurifier $phonePurifier,
+        private readonly PhonePurifierInterface $phonePurifier,
         private readonly UserRepository $userRepository,
     ) {
     }
@@ -90,7 +90,6 @@ class RegistrationFormType extends AbstractType
             FormEvents::PRE_SUBMIT,
             function (FormEvent $event) {
                 $data = $event->getData();
-                $data['number'] = $this->phonePurifier->purify($data['number'] ?? '');
                 $data['fullname'] = strip_tags($data['fullname'] ?? '');
                 $event->setData($data);
             }
@@ -160,7 +159,7 @@ class RegistrationFormType extends AbstractType
                     }
                 }
 
-                if (empty($data['number']) || strlen((string) $data['number']) < 5) {
+                if (empty($data['number']) || !$this->phonePurifier->isValid($data['number'])) {
                     $form->get('number')->addError(
                         new FormError(
                             $this->translator->trans('Invalid phone number.')

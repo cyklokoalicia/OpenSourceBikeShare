@@ -37,7 +37,8 @@ return function (SecurityConfig $security) {
         ->security(true)
         ->pattern('^/api')
         ->context('main')
-        ->accessDeniedHandler(ApiAccessDeniedHandler::class);
+        ->accessDeniedHandler(ApiAccessDeniedHandler::class)
+        ->entryPoint(ApiTokenAuthenticator::class);
     $apiFirewall
         ->customAuthenticators([ApiTokenAuthenticator::class]);
     $security
@@ -96,6 +97,14 @@ return function (SecurityConfig $security) {
     $security
         ->accessControl()
         ->path('^/resetPassword$')
+        ->roles(['PUBLIC_ACCESS']);
+    $security
+        ->accessControl()
+        ->path('^/js/translations.json')
+        ->roles(['PUBLIC_ACCESS']);
+    $security
+        ->accessControl()
+        ->path('^/switchLanguage')
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
