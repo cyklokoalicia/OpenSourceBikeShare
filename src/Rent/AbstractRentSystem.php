@@ -8,6 +8,7 @@ use BikeShare\Event\BikeRentEvent;
 use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Event\BikeRevertEvent;
 use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\User\User;
 use BikeShare\Enum\Action;
@@ -25,18 +26,19 @@ abstract class AbstractRentSystem implements RentSystemInterface
     protected const ERROR = 1;
 
     public function __construct(
-        protected DbInterface $db,
-        protected CreditSystemInterface $creditSystem,
-        protected User $user,
-        protected EventDispatcherInterface $eventDispatcher,
-        protected AdminNotifier $adminNotifier,
-        protected LoggerInterface $logger,
-        protected StandRepository $standRepository,
-        protected ClockInterface $clock,
-        protected TranslatorInterface $translator,
+        protected readonly BikeRepository $bikeRepository,
+        protected readonly DbInterface $db,
+        protected readonly CreditSystemInterface $creditSystem,
+        protected readonly User $user,
+        protected readonly EventDispatcherInterface $eventDispatcher,
+        protected readonly AdminNotifier $adminNotifier,
+        protected readonly LoggerInterface $logger,
+        protected readonly StandRepository $standRepository,
+        protected readonly ClockInterface $clock,
+        protected readonly TranslatorInterface $translator,
         protected array $watchesConfig,
-        protected bool $isSmsSystemEnabled,
-        protected bool $forceStack,
+        protected readonly bool $isSmsSystemEnabled,
+        protected readonly bool $forceStack,
     ) {
     }
 
@@ -46,8 +48,8 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $userId = intval($userId);
         $bikeNum = intval($bikeId);
 
-        $result = $this->db->query("SELECT bikeNum FROM bikes WHERE bikeNum=$bikeNum");
-        if ($result->rowCount() != 1) {
+        $bike = $this->bikeRepository->findItem($bikeNum);
+        if (empty($bike)) {
             return $this->response(
                 $this->translator->trans('Bike {bikeNumber} does not exist.', ['bikeNumber' => $bikeNum]),
                 self::ERROR
@@ -55,6 +57,22 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
 
         if ($force == false) {
+            if ($bike['userId'] == $userId) {
+                $result = $this->db->query("SELECT currentCode FROM bikes WHERE bikeNum = :bikeNum", ['bikeNum' => $bikeNum])->fetchAssoc();
+                return $this->response(
+                    $this->translator->trans(
+                        'You have already rented the bike {bikeNumber}. Code is {currentCode}.',
+                        ['bikeNumber' => $bikeNum, 'currentCode' => $result['currentCode']]
+                    ),
+                    self::ERROR
+                );
+            } elseif (!empty($bike['userId'])) {
+                return $this->response(
+                    $this->translator->trans('Bike {bikeNumber} is already rented.', ['bikeNumber' => $bikeNum]),
+                    self::ERROR
+                );
+            }
+
             if (!$this->creditSystem->isEnoughCreditForRent($userId)) {
                 $minRequiredCredit = $this->creditSystem->getMinRequiredCredit();
 
@@ -135,10 +153,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
             }
         }
 
-        $result = $this->db->query("SELECT currentUser,currentCode FROM bikes WHERE bikeNum=$bikeNum");
+        $result = $this->db->query("SELECT currentCode FROM bikes WHERE bikeNum=$bikeNum");
         $row = $result->fetchAssoc();
         $currentCode = sprintf('%04d', $row['currentCode']);
-        $currentUser = $row['currentUser'];
         $result = $this->db->query("SELECT note FROM notes WHERE bikeNum='$bikeNum' AND deleted IS NULL ORDER BY time DESC");
         $note = '';
         while ($row = $result->fetchAssoc()) {
@@ -148,25 +165,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $note = substr($note, 0, strlen($note) - 2); // remove the last two chars - comma and space
 
         $newCode = sprintf('%04d', rand(100, 9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
-
-        if ($force == false) {
-            if ($currentUser == $userId) {
-                return $this->response(
-                    $this->translator->trans(
-                        'You have already rented the bike {bikeNumber}. Code is {currentCode}.',
-                        ['bikeNumber' => $bikeNum, 'currentCode' => $currentCode]
-                    ),
-                    self::ERROR
-                );
-            }
-
-            if ($currentUser != 0) {
-                return $this->response(
-                    $this->translator->trans('Bike {bikeNumber} is already rented.', ['bikeNumber' => $bikeNum]),
-                    self::ERROR
-                );
-            }
-        }
 
         $messageType = $this->getType() === 'sms' ? 'text' : 'html';
         $message = $this->translator->trans('bike.rent.success.' . $messageType, ['bikeNumber' => $bikeNum, 'currentCode' => $currentCode, 'newCode' => $newCode]);

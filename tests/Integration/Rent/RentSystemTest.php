@@ -277,4 +277,35 @@ class RentSystemTest extends BikeSharingKernelTestCase
             }
         }
     }
+
+    public function testRentAlreadyRentedBike(): void
+    {
+        self::bootKernel();
+        $admin = self::getContainer()->get(UserRepository::class)->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $user = self::getContainer()->get(UserRepository::class)->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        //use sms rent system for better text parsing
+        $rentSystem = self::getContainer()->get(RentSystemFactory::class)->getRentSystem('sms');
+
+        // First rent by user
+        $response = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $pattern = '/Bike ' . self::BIKE_NUMBER . ': Open with code (?P<oldCode>\d{4})\.\s*' .
+            'Change code immediately to (?P<newCode>\d{4})\s*' .
+            '\(open, rotate metal part, set new code, rotate metal part back\)\./';
+        $this->assertMatchesRegularExpression($pattern, $response, 'Invalid response text');
+        preg_match($pattern, $response, $matches);
+        // Second rent
+        $response = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $this->assertSame(
+            'You have already rented the bike '. self::BIKE_NUMBER . '. Code is ' . $matches['newCode'] . '.',
+            $response,
+            'Invalid response text about already rented bike'
+        );
+        //Try rent bike by admin without force
+        $response = $rentSystem->rentBike($admin['userId'], self::BIKE_NUMBER);
+        $this->assertSame(
+            'Bike '. self::BIKE_NUMBER . ' is already rented.',
+            $response,
+            'Invalid response text about already rented bike for another user'
+        );
+    }
 }
