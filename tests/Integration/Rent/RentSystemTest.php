@@ -296,7 +296,8 @@ class RentSystemTest extends BikeSharingKernelTestCase
         // Second rent
         $response = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
         $this->assertSame(
-            'You have already rented the bike ' . self::BIKE_NUMBER . '. Code is ' . $matches['newCode'] . '.',
+            'You have already rented the bike ' . self::BIKE_NUMBER . '. Code is '
+                . str_pad($matches['newCode'], 4, '0') . '.',
             $response,
             'Invalid response text about already rented bike'
         );
