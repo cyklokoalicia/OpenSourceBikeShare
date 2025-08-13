@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use BikeShare\App\Security\ApiAccessDeniedHandler;
+use BikeShare\App\Security\ApiServiceUserProvider;
 use BikeShare\App\Security\ApiTokenAuthenticator;
 use BikeShare\App\Security\TokenProvider;
 use BikeShare\App\Security\UserConfirmedEmailChecker;
@@ -28,12 +29,17 @@ return function (SecurityConfig $security) {
         ->id(UserProvider::class);
 
     $security
+        ->provider('api_service_user_provider')
+        ->id(ApiServiceUserProvider::class);
+
+    $security
         ->firewall('dev')
         ->pattern('^/(_(profiler|wdt)|css|images|js)/')
         ->security(false);
 
     $apiFirewall = $security->firewall('api');
     $apiFirewall
+        ->provider('api_service_user_provider')
         ->security(true)
         ->pattern('^/api')
         ->context('main')
@@ -48,6 +54,7 @@ return function (SecurityConfig $security) {
 
     $mainFirewall = $security->firewall('main');
     $mainFirewall
+        ->provider('app_user_provider')
         ->formLogin()
         ->usernameParameter('number')
         ->passwordParameter('password')
