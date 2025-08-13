@@ -62,7 +62,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 return $this->response(
                     $this->translator->trans(
                         'You have already rented the bike {bikeNumber}. Code is {currentCode}.',
-                        ['bikeNumber' => $bikeNum, 'currentCode' => $result['currentCode']]
+                        ['bikeNumber' => $bikeNum, 'currentCode' => str_pad($result['currentCode'], 4, '0', STR_PAD_LEFT)]
                     ),
                     self::ERROR
                 );
