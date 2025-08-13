@@ -21,7 +21,7 @@ class ApiServiceUserProvider implements UserProviderInterface
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof ApiServiceUser) {
-            throw new UnsupportedUserException(sprintf('Invalid user class "%s".', get_class($user)));
+            throw new UnsupportedUserException(sprintf('Invalid user class "%s".', $user::class));
         }
 
         return $user;
@@ -29,6 +29,6 @@ class ApiServiceUserProvider implements UserProviderInterface
 
     public function supportsClass(string $class): bool
     {
-        return $class === ApiServiceUser::class;
+        return is_a($class, ApiServiceUser::class, true);
     }
 }
