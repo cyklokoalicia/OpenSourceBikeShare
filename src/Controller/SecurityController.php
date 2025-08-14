@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
+use BikeShare\App\Security\UserProvider;
 use BikeShare\Mail\MailSenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,7 +48,7 @@ class SecurityController extends AbstractController
         bool $isSmsSystemEnabled,
         Request $request,
         MailSenderInterface $mailer,
-        UserProviderInterface $userProvider,
+        UserProvider $userProvider,
         UserPasswordHasherInterface $passwordHasher,
         TranslatorInterface $translator
     ): Response {
