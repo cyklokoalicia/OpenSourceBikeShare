@@ -24,9 +24,14 @@ DirectoryIndex index.php
 
     RewriteEngine On
 
+    # Force HTTPS and non-www on production domains (not localhost)
+    RewriteCond %{HTTP_HOST} !^localhost
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1
     RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
     RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 
+    RewriteCond %{HTTP_HOST} !^localhost
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1
     RewriteCond %{HTTPS} =off
     RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [QSA,L]
 
