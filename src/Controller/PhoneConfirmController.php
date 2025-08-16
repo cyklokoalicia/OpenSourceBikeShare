@@ -37,7 +37,7 @@ class PhoneConfirmController extends AbstractController
 
         if ($verificationStep === 1) {
             // Step 1: Get phone number
-            $form = $this->createFormBuilder()->getForm();
+            $form = $this->createFormBuilder()->setEmptyData([])->getForm();
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {

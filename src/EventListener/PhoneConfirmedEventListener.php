@@ -13,7 +13,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 class PhoneConfirmedEventListener
 {
     private const ALLOWED_ROUTES = [
-        'command', //should be removed in future
         'sms_request',
         'sms_request_old',
         'user_confirm_email',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\Form\RegistrationFormType;
+use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\User\UserRegistration;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +20,8 @@ class RegisterController extends AbstractController
     public function index(
         Request $request,
         TranslatorInterface $translator,
-        UserRegistration $userRegistration
+        UserRegistration $userRegistration,
+        PhonePurifierInterface $phonePurifier,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('home');
@@ -31,10 +33,12 @@ class RegisterController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
+            $data['number'] = $phonePurifier->purify($data['number']);
+
             $user = $userRegistration->register(
                 $data['number'],
                 $data['useremail'],
-                substr(md5(mt_rand() . microtime() . $data['fullname']), 0, 8),
+                $data['password'],
                 $data['city'],
                 $data['fullname'],
                 0
