@@ -44,7 +44,7 @@ class RevertCommandTest extends TestCase
             ->expects($this->once())
             ->method('revertBike')
             ->with($userId, $bikeNumber)
-            ->willReturn($expectedMessage);
+            ->willReturn(['message' => $expectedMessage]);
 
         $this->assertSame($expectedMessage, ($this->command)($userMock, $bikeNumber));
     }

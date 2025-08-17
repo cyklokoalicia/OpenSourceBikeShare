@@ -21,7 +21,8 @@ class ReturnCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __invoke(User $user, int $bikeNumber, string $standName, ?string $note = null): string
     {
-        return $this->rentSystem->returnBike($user->getUserId(), $bikeNumber, $standName, $note);
+        $response = $this->rentSystem->returnBike($user->getUserId(), $bikeNumber, $standName, $note);
+        return $response['message'];
     }
 
     public function getHelpMessage(): string

@@ -46,7 +46,7 @@ class ReturnCommandTest extends TestCase
             ->expects($this->once())
             ->method('returnBike')
             ->with($userId, $bikeNumber, $standName, $note)
-            ->willReturn($expectedMessage);
+            ->willReturn(['message' => $expectedMessage]);
 
         $this->assertSame($expectedMessage, ($this->command)($userMock, $bikeNumber, $standName, $note));
     }
