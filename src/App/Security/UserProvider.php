@@ -34,7 +34,13 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        $identifier = $this->phonePurifier->purify($identifier);
+        try {
+            $identifier = $this->phonePurifier->purify($identifier);
+        } catch (\InvalidArgumentException) {
+            // If the identifier is not a valid phone number, we could not find the user.
+            throw new UserNotFoundException(sprintf('Unknown user %s', $identifier));
+        }
+
         $result = $this->db->query(
             'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed, registrationDate
              FROM users 
