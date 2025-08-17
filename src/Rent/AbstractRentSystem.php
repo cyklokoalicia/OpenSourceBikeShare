@@ -184,10 +184,14 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $newCode = sprintf('%04d', rand(100, 9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
 
         $messageType = $this->getType() === 'sms' ? 'text' : 'html';
-        $message = $this->translator->trans('bike.rent.success.' . $messageType, ['bikeNumber' => $bikeNum, 'currentCode' => $currentCode, 'newCode' => $newCode]);
+        $code = 'bike.rent.success.' . $messageType;
+        $params = ['bikeNumber' => $bikeNum, 'currentCode' => $currentCode, 'newCode' => $newCode];
+        $message = $this->translator->trans($code, $params);
+
         if ($note) {
             $message .= $messageType === 'text' ? "\n" : '<br />';
             $message .= $this->translator->trans('bike.rent.reported_issue.' . $messageType, ['note' => $note]);
+            $params['note'] = $note;
         }
 
         $result = $this->db->query("UPDATE bikes SET currentUser=$userId,currentCode=$newCode,currentStand=NULL WHERE bikeNum=$bikeNum");
@@ -209,7 +213,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             new BikeRentEvent($bikeNum, $userId, $force)
         );
 
-        return $this->response($message);
+        return $this->response($message, 0, $code, $params);
     }
 
     public function returnBike($userId, $bikeId, $standName, $note = '', $force = false)
