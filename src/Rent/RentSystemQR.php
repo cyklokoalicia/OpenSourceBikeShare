@@ -22,7 +22,11 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         if ($bikeId !== 0) {
             $this->logger->error("Bike number could not be provided via QR code", ["userId" => $userId]);
 
-            return $this->response($this->translator->trans('Invalid bike number'), self::ERROR, 'Invalid bike number');
+            return $this->response(
+                $this->translator->trans('Invalid bike number'),
+                self::ERROR,
+                'bike.return.error.invalid_bike_number'
+            );
         }
 
         $result = $this->db->query("SELECT bikeNum FROM bikes WHERE currentUser=$userId ORDER BY bikeNum");
@@ -32,7 +36,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
             return $this->response(
                 $this->translator->trans('You currently have no rented bikes.'),
                 self::ERROR,
-                'You currently have no rented bikes.'
+                'bike.return.error.no_rented_bikes'
             );
         } elseif ($bikeNumber > 1) {
             $message = $this->translator->trans(
@@ -46,7 +50,12 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
                 );
             }
 
-            return $this->response($message, self::ERROR);
+            return $this->response(
+                $message,
+                self::ERROR,
+                'bike.return.error.multiple_rented_bikes',
+                ['bikeNumber' => $bikeNumber],
+            );
         }
 
         $bikeId = $result->fetchAssoc()['bikeNum'];
@@ -59,7 +68,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         return $this->response(
             $this->translator->trans('Revert is not supported for QR code'),
             self::ERROR,
-            'Revert is not supported for QR code'
+            'bike.revert.error.not_supported'
         );
     }
 

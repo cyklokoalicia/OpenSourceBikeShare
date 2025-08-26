@@ -23,6 +23,7 @@ class RevertCommand extends AbstractCommand implements SmsCommandInterface
     public function __invoke(User $user, int $bikeNumber): string
     {
         $response = $this->rentSystem->revertBike($user->getUserId(), $bikeNumber);
+
         return $response['message'];
     }
 

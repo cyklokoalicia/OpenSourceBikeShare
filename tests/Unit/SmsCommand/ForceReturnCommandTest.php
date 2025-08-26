@@ -45,7 +45,7 @@ class ForceReturnCommandTest extends TestCase
         $this->rentSystemMock
             ->expects($this->once())
             ->method('returnBike')
-            ->with($userId, $bikeNumber, $standName, '', true)
+            ->with($userId, $bikeNumber, $standName, $note, true)
             ->willReturn(['message' => $expectedMessage]);
 
         $this->assertSame($expectedMessage, ($this->command)($userMock, $bikeNumber, $standName, $note));

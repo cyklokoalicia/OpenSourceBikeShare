@@ -81,14 +81,20 @@ class BikeRentTest extends BikeSharingWebTestCase
         $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
-        $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
-        $response = strip_tags($response['message']);
-
-        $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.\s*Change code immediately to \d{4}\s*' .
-            '\(open, rotate metal part, set new code, rotate metal part back\)\./',
-            $response,
-            'Invalid response text'
+        $this->assertArrayHasKey('code', $response, 'Response does not contain code');
+        $this->assertArrayHasKey('params', $response, 'Response does not contain params');
+        $this->assertSame(0, $response['error'], 'Response with error: ' . json_encode($response));
+        $this->assertSame($response['code'], 'bike.rent.success', 'Invalid response code');
+        $this->assertArrayHasKey('bikeNumber', $response['params'], 'Response params does not contain bikeNumber');
+        $this->assertArrayHasKey('currentCode', $response['params'], 'Response params does not contain currentCode');
+        $this->assertArrayHasKey('newCode', $response['params'], 'Response params does not contain newCode');
+        $this->assertArrayHasKey('note', $response['params'], 'Response params does not contain note');
+        $this->assertSame($response['code'], 'bike.rent.success', 'Invalid response code');
+        $this->assertSame($response['params']['bikeNumber'], self::BIKE_NUMBER, 'Invalid bike number');
+        $this->assertNotSame(
+            $response['params']['currentCode'],
+            $response['params']['newCode'],
+            'Codes should be different'
         );
 
         $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
@@ -106,11 +112,7 @@ class BikeRentTest extends BikeSharingWebTestCase
 
         $this->assertSame($history['action'], 'RENT', 'Invalid history action');
         $this->assertNotEmpty($history['parameter'], 'Missed lock code');
-        $this->assertStringContainsString(
-            'Change code immediately to ' . str_pad($history['parameter'], 4, '0', STR_PAD_LEFT),
-            $response,
-            'Response sms does not contain lock code'
-        );
+        $this->assertSame($history['parameter'], $response['params']['newCode'], 'Invalid lock code');
 
         $notCalledListeners = $this->client->getContainer()->get('event_dispatcher')->getNotCalledListeners();
         foreach ($notCalledListeners as $listener) {

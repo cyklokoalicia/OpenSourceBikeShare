@@ -288,7 +288,8 @@ class RentSystemTest extends BikeSharingKernelTestCase
 
         // First rent by user
         $response = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
-        $this->assertSame('bike.rent.success.text', $response['code']);
+        $this->assertSame('bike.rent.success', $response['code']);
+        $this->assertArrayHasKey('params', $response);
         $this->assertArrayHasKey('bikeNumber', $response['params']);
         $this->assertArrayHasKey('currentCode', $response['params']);
         $this->assertArrayHasKey('newCode', $response['params']);
@@ -296,13 +297,18 @@ class RentSystemTest extends BikeSharingKernelTestCase
 
         // Second rent
         $response2 = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
-        $this->assertSame('You have already rented the bike {bikeNumber}. Code is {currentCode}.', $response2['code']);
+        $this->assertSame('bike.rent.error.already_rented_by_current_user', $response2['code']);
+        $this->assertArrayHasKey('params', $response2);
+        $this->assertArrayHasKey('bikeNumber', $response2['params']);
+        $this->assertArrayHasKey('currentCode', $response2['params']);
         $this->assertSame(self::BIKE_NUMBER, $response2['params']['bikeNumber']);
         $this->assertSame($response['params']['newCode'], $response2['params']['currentCode']);
 
         //Try rent bike by admin without force
         $response3 = $rentSystem->rentBike($admin['userId'], self::BIKE_NUMBER);
-        $this->assertSame('Bike {bikeNumber} is already rented.', $response3['code']);
+        $this->assertSame('bike.rent.error.already_rented', $response3['code']);
+        $this->assertArrayHasKey('params', $response3);
+        $this->assertArrayHasKey('bikeNumber', $response3['params']);
         $this->assertSame(self::BIKE_NUMBER, $response3['params']['bikeNumber']);
     }
 }
