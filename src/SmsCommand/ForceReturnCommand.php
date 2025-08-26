@@ -22,7 +22,9 @@ class ForceReturnCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __invoke(User $user, int $bikeNumber, string $standName, ?string $note = null): string
     {
-        return $this->rentSystem->returnBike($user->getUserId(), $bikeNumber, $standName, $note, true);
+        $response = $this->rentSystem->returnBike($user->getUserId(), $bikeNumber, $standName, $note, true);
+
+        return $response['message'];
     }
 
     public function getHelpMessage(): string

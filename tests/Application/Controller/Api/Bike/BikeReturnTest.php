@@ -92,17 +92,17 @@ class BikeReturnTest extends BikeSharingWebTestCase
         $response = $this->client->getResponse()->getContent();
         $this->assertJson($response, 'Response is not JSON');
         $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-        $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
+        $this->assertArrayHasKey('code', $response, 'Response does not contain code');
+        $this->assertArrayHasKey('params', $response, 'Response does not contain params');
         $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
-        $response = strip_tags($response['message']);
+        $this->assertSame($response['code'], 'bike.return.success', 'Invalid response code');
+        $this->assertArrayHasKey('bikeNumber', $response['params'], 'Response params does not contain bikeNumber');
+        $this->assertArrayHasKey('standName', $response['params'], 'Response params does not contain standName');
+        $this->assertArrayHasKey('currentCode', $response['params'], 'Response params does not contain currentCode');
+        $this->assertArrayHasKey('note', $response['params'], 'Response params does not contain note');
+        $this->assertSame($response['params']['bikeNumber'], self::BIKE_NUMBER, 'Invalid bike number');
 
-        $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . '\.\s*Lock with code \d{4}\.\s*' .
-            'Please, rotate the lockpad to 0000 when leaving\.\s*Wipe the bike clean if it is dirty, please\./',
-            $response,
-            'Invalid return message'
-        );
         $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
         $stand = $this->client->getContainer()->get(StandRepository::class)->findItemByName(self::STAND_NAME);
 

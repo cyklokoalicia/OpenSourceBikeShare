@@ -68,15 +68,16 @@ class BikeRevertTest extends BikeSharingWebTestCase
         $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
-        $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
-        $response = strip_tags($response['message']);
-        $pattern = '/Bike ' . self::BIKE_NUMBER . ': Open with code (?P<oldCode>\d{4})\.\s*' .
-            'Change code immediately to (?P<newCode>\d{4})\s*' .
-            '\(open, rotate metal part, set new code, rotate metal part back\)\./';
-        $this->assertMatchesRegularExpression($pattern, $response, 'Invalid response text');
-        preg_match($pattern, $response, $matches);
-        $this->assertNotSame($matches['oldCode'], $matches['newCode'], 'Invalid lock code');
-
+        $this->assertArrayHasKey('code', $response, 'Response does not contain code');
+        $this->assertArrayHasKey('params', $response, 'Response does not contain params');
+        $this->assertSame(0, $response['error'], 'Response with error: ' . json_encode($response));
+        $this->assertSame($response['code'], 'bike.rent.success', 'Invalid response code');
+        $this->assertArrayHasKey('bikeNumber', $response['params'], 'Response params does not contain bikeNumber');
+        $this->assertArrayHasKey('currentCode', $response['params'], 'Response params does not contain currentCode');
+        $this->assertArrayHasKey('newCode', $response['params'], 'Response params does not contain newCode');
+        $this->assertArrayHasKey('note', $response['params'], 'Response params does not contain note');
+        $this->assertSame($response['params']['bikeNumber'], self::BIKE_NUMBER, 'Invalid bike number');
+        $this->assertNotSame($response['params']['currentCode'], $response['params']['newCode'], 'Invalid lock code');
 
         #revert bike
         $this->client->loginUser($admin);
@@ -94,16 +95,16 @@ class BikeRevertTest extends BikeSharingWebTestCase
         $response = $this->client->getResponse()->getContent();
         $this->assertJson($response, 'Response is not JSON');
         $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-        $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
+        $this->assertArrayHasKey('code', $response, 'Response does not contain code');
+        $this->assertArrayHasKey('params', $response, 'Response does not contain params');
         $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
-        $response = strip_tags($response['message']);
-        $this->assertSame(
-            'Bike ' . self::BIKE_NUMBER . ' reverted to ' . self::STAND_NAME .
-            ' with code ' . $matches['newCode'] . '.',
-            $response,
-            'Invalid response text for admin'
-        );
+        $this->assertSame($response['code'], 'bike.revert.success', 'Invalid response code');
+        $this->assertArrayHasKey('bikeNumber', $response['params'], 'Response params does not contain bikeNumber');
+        $this->assertArrayHasKey('standName', $response['params'], 'Response params does not contain standName');
+        $this->assertArrayHasKey('code', $response['params'], 'Response params does not contain code');
+        $this->assertSame($response['params']['bikeNumber'], self::BIKE_NUMBER, 'Invalid bike number');
+        $this->assertSame($response['params']['standName'], self::STAND_NAME, 'Invalid stand name');
 
         $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
         $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
@@ -137,14 +138,14 @@ class BikeRevertTest extends BikeSharingWebTestCase
 
         $this->assertSame('RENT', $history[1]['action'], 'Invalid history action');
         $this->assertEquals(
-            $matches['newCode'],
+            $response['params']['code'],
             $history[1]['parameter'],
             'Missed lock code'
         );
 
         $this->assertSame('REVERT', $history[2]['action'], 'Invalid history action');
         $this->assertEquals(
-            $stand['standId'] . '|' . $matches['newCode'],
+            $stand['standId'] . '|' . $response['params']['code'],
             $history[2]['parameter'],
             'Missed standId and lock code'
         );
@@ -173,7 +174,7 @@ class BikeRevertTest extends BikeSharingWebTestCase
         )->fetchAssoc();
         $this->assertSame(
             'Bike ' . self::BIKE_NUMBER . ' reverted to ' . self::STAND_NAME .
-            ' with code ' . $matches['newCode'] . '.',
+            ' with code ' . $response['params']['code'] . '.',
             $sent['text'],
             'Send message is not logged'
         );

@@ -21,7 +21,9 @@ class RentCommand extends AbstractCommand implements SmsCommandInterface
 
     public function __invoke(User $user, int $bikeNumber): string
     {
-        return $this->rentSystem->rentBike($user->getUserId(), $bikeNumber);
+        $response = $this->rentSystem->rentBike($user->getUserId(), $bikeNumber);
+
+        return $response['message'];
     }
 
     public function getHelpMessage(): string

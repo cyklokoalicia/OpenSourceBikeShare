@@ -288,25 +288,27 @@ class RentSystemTest extends BikeSharingKernelTestCase
 
         // First rent by user
         $response = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
-        $pattern = '/Bike ' . self::BIKE_NUMBER . ': Open with code (?P<oldCode>\d{4})\.\s*' .
-            'Change code immediately to (?P<newCode>\d{4})\s*' .
-            '\(open, rotate metal part, set new code, rotate metal part back\)\./';
-        $this->assertMatchesRegularExpression($pattern, $response, 'Invalid response text');
-        preg_match($pattern, $response, $matches);
+        $this->assertSame('bike.rent.success', $response['code']);
+        $this->assertArrayHasKey('params', $response);
+        $this->assertArrayHasKey('bikeNumber', $response['params']);
+        $this->assertArrayHasKey('currentCode', $response['params']);
+        $this->assertArrayHasKey('newCode', $response['params']);
+        $this->assertSame(self::BIKE_NUMBER, $response['params']['bikeNumber']);
+
         // Second rent
-        $response = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
-        $this->assertSame(
-            'You have already rented the bike ' . self::BIKE_NUMBER . '. Code is '
-                . str_pad($matches['newCode'], 4, '0', STR_PAD_LEFT) . '.',
-            $response,
-            'Invalid response text about already rented bike'
-        );
+        $response2 = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.error.already_rented_by_current_user', $response2['code']);
+        $this->assertArrayHasKey('params', $response2);
+        $this->assertArrayHasKey('bikeNumber', $response2['params']);
+        $this->assertArrayHasKey('currentCode', $response2['params']);
+        $this->assertSame(self::BIKE_NUMBER, $response2['params']['bikeNumber']);
+        $this->assertSame($response['params']['newCode'], $response2['params']['currentCode']);
+
         //Try rent bike by admin without force
-        $response = $rentSystem->rentBike($admin['userId'], self::BIKE_NUMBER);
-        $this->assertSame(
-            'Bike ' . self::BIKE_NUMBER . ' is already rented.',
-            $response,
-            'Invalid response text about already rented bike for another user'
-        );
+        $response3 = $rentSystem->rentBike($admin['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.error.already_rented', $response3['code']);
+        $this->assertArrayHasKey('params', $response3);
+        $this->assertArrayHasKey('bikeNumber', $response3['params']);
+        $this->assertSame(self::BIKE_NUMBER, $response3['params']['bikeNumber']);
     }
 }

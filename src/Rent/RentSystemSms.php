@@ -11,8 +11,13 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
         return 'sms';
     }
 
-    protected function response($message, $error = 0): string
+    protected function response($message, $error = 0, string $code = '', array $params = []): array
     {
-        return strip_tags($message);
+        return [
+            'error' => $error,
+            'message' => strip_tags($message),
+            'code' => $code,
+            'params' => $params,
+        ];
     }
 }

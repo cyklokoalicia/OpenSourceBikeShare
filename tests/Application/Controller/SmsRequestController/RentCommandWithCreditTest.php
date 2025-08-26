@@ -153,7 +153,7 @@ class RentCommandWithCreditTest extends BikeSharingWebTestCase
         }
     }
 
-    public function rentCommandDataProvider(): iterable
+    public static function rentCommandDataProvider(): iterable
     {
         yield 'Credit system enabled but user have no credits' => [
             'isCreditSystemEnabled' => true,

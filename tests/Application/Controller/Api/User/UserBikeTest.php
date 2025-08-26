@@ -54,7 +54,7 @@ class UserBikeTest extends BikeSharingWebTestCase
         parent::tearDown();
     }
 
-    public function testChangeCity(): void
+    public function testUserBike(): void
     {
         //We should not notify admin about too many rents in this testsuite
         $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999;
@@ -62,6 +62,7 @@ class UserBikeTest extends BikeSharingWebTestCase
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);
 
+        #rent bike
         $this->client->request(Request::METHOD_PUT, '/api/bike/' . self::BIKE_NUMBER . '/rent');
         $this->assertResponseIsSuccessful();
         $response = $this->client->getResponse()->getContent();
@@ -69,14 +70,21 @@ class UserBikeTest extends BikeSharingWebTestCase
         $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
-        $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
-        $response = strip_tags($response['message']);
-        $pattern = '/Bike ' . self::BIKE_NUMBER . ': Open with code (?P<oldCode>\d{4})\.\s*' .
-            'Change code immediately to (?P<newCode>\d{4})\s*' .
-            '\(open, rotate metal part, set new code, rotate metal part back\)\./';
-        $this->assertMatchesRegularExpression($pattern, $response, 'Invalid response text');
-        preg_match($pattern, $response, $matches);
+        $this->assertArrayHasKey('code', $response, 'Response does not contain code');
+        $this->assertArrayHasKey('params', $response, 'Response does not contain params');
+        $this->assertSame(0, $response['error'], 'Response with error: ' . json_encode($response));
+        $this->assertSame($response['code'], 'bike.rent.success', 'Invalid response code');
+        $this->assertArrayHasKey('bikeNumber', $response['params'], 'Response params does not contain bikeNumber');
+        $this->assertArrayHasKey('currentCode', $response['params'], 'Response params does not contain currentCode');
+        $this->assertArrayHasKey('newCode', $response['params'], 'Response params does not contain newCode');
+        $this->assertArrayHasKey('note', $response['params'], 'Response params does not contain note');
+        $this->assertSame($response['params']['bikeNumber'], self::BIKE_NUMBER, 'Invalid bike number');
+        $this->assertNotSame($response['params']['currentCode'], $response['params']['newCode'], 'Invalid lock code');
 
+        $oldCode = $response['params']['currentCode'];
+        $newCode = $response['params']['newCode'];
+
+        #get user bikes info
         $this->client->request(Request::METHOD_GET, '/api/user/bike');
         $this->assertResponseIsSuccessful();
         $response = $this->client->getResponse()->getContent();
@@ -84,8 +92,8 @@ class UserBikeTest extends BikeSharingWebTestCase
         $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
         $this->assertCount(1, $response, 'Invalid number of rented bikes');
         $this->assertEquals(self::BIKE_NUMBER, $response[0]['bikeNum'], 'Invalid bike number');
-        $this->assertSame($matches['newCode'], $response[0]['currentCode'], 'Invalid bike code');
-        $this->assertSame($matches['oldCode'], $response[0]['oldCode'], 'Invalid old bike code');
+        $this->assertSame($newCode, $response[0]['currentCode'], 'Invalid bike code');
+        $this->assertSame($oldCode, $response[0]['oldCode'], 'Invalid old bike code');
         $this->assertArrayHasKey('rentedSeconds', $response[0], 'Rented seconds not found in response');
     }
 }
