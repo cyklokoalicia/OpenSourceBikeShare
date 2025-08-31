@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\App;
 
 use BikeShare\App\DependencyInjection\CreditSystemCompilerPass;
+use BikeShare\App\DependencyInjection\FormLoginAuthenticatorPass;
 use BikeShare\App\DependencyInjection\MailSenderCompilerPass;
 use BikeShare\App\DependencyInjection\RentSystemCompilerPass;
 use BikeShare\App\DependencyInjection\SmsConnectorCompilerPass;
@@ -43,5 +44,6 @@ class Kernel extends BaseKernel
         $container->addCompilerPass(new MailSenderCompilerPass());
         $container->addCompilerPass(new RentSystemCompilerPass());
         $container->addCompilerPass(new SmsConnectorCompilerPass());
+        $container->addCompilerPass(new FormLoginAuthenticatorPass());
     }
 }
