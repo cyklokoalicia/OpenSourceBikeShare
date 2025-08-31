@@ -79,6 +79,7 @@ return [
     'Revert' => 'Rückgängig machen',
     'Display network usage (blank) or history of bike usage (number entered).' => 'Netzwerknutzung (leer) oder Verlauf der Fahrradnutzung (Nummer eingegeben) anzeigen.',
     'Last usage' => 'Letzte Nutzung',
+    'Remove note' => 'Notiz entfernen',
     'Generate new coupons.' => 'Neue Gutscheine generieren.',
     'Generate' => 'Generieren',
     'coupons' => 'Gutscheine',

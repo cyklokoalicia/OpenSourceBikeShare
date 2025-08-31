@@ -8,6 +8,11 @@ $(document).ready(function () {
         revert($(this).data('bike-number'));
         event.preventDefault();
     });
+    $("#fleetconsole").on('click', '.bike-remove-note', function (event) {
+        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-remove-note');
+        removeNote($(this).data('bike-number'));
+        event.preventDefault();
+    });
     $('#fleetconsole').on('click', '.bike-last-usage', function (event) {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-last');
         last($(this).data('bike-number'));
@@ -107,6 +112,7 @@ function generateBikeCards(data) {
         $card.attr("data-bike-number", item.bikeNum);
         $card.find(".bike-last-usage").attr("data-bike-number", item.bikeNum);
         $card.find(".bike-revert").attr("data-bike-number", item.bikeNum);
+        $card.find(".bike-remove-note").attr("data-bike-number", item.bikeNum);
 
         $card.find(".bike-number").text(item.bikeNum);
 
@@ -130,8 +136,10 @@ function generateBikeCards(data) {
         if (item.notes) {
             $noteInfo.removeClass("d-none");
             $noteInfo.find(".note-text").text(item.notes);
+            $card.find(".bike-remove-note").removeClass("d-none");
         } else {
             $noteInfo.addClass("d-none");
+            $card.find(".bike-remove-note").addClass("d-none");
         }
 
         $container.append($card);
@@ -560,5 +568,17 @@ function revert(bikeNumber) {
         dataType: "json",
     }).done(function (jsonobject) {
         handleresponse("fleetconsole", jsonobject);
+    });
+}
+
+function removeNote(bikeNumber) {
+    if (window.ga) ga('send', 'event', 'bikes', 'remove-note', bikeNumber);
+    $.ajax({
+        url: "/api/bike/" + bikeNumber + "/removeNote",
+        method: "DELETE",
+        dataType: "json",
+    }).done(function (jsonobject) {
+        handleresponse("fleetconsole", jsonobject);
+        bikeInfo();
     });
 }

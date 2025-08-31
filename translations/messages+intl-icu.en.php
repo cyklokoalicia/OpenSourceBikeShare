@@ -95,6 +95,7 @@ return [
   'Be careful! Revert accidentally rented bike in case of mistake or misread bike number.' => 'Be careful! Revert accidentally rented bike in case of mistake or misread bike number.',
   'Revert' => 'Revert',
   'Last usage' => 'Last usage',
+  'Remove note' => 'Remove note',
   'Generate new coupons.' => 'Generate new coupons.',
   'Generate' => 'Generate',
   'coupons' => 'coupons',
