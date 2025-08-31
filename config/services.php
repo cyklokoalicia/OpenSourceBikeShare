@@ -65,6 +65,7 @@ return static function (ContainerConfigurator $container): void {
             '../src/App/EventListener/ErrorListener.php',
             '../src/App/Kernel.php',
             '../src/App/Entity',
+            '../src/App/Security/FormLoginAuthenticator.php',
             '../src/Event',
             '../src/Command/LoadFixturesCommand.php',
             '../src/SmsCommand/*Command.php',
