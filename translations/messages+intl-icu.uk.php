@@ -79,6 +79,7 @@ return [
     'Revert' => 'Повернути',
     'Display network usage (blank) or history of bike usage (number entered).' => 'Відобразити використання мережі (пусто) або історію використання велосипеда (введений номер).',
     'Last usage' => 'Останнє використання',
+    'Remove note' => 'Видалити примітку',
     'Generate new coupons.' => 'Створити нові купони.',
     'Generate' => 'Створити',
     'coupons' => 'купони',

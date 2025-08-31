@@ -79,6 +79,7 @@ return [
     'Revert' => 'Vrátit',
     'Display network usage (blank) or history of bike usage (number entered).' => 'Zobrazit využití sítě (prázdné) nebo historii používání kola (zadané číslo).',
     'Last usage' => 'Poslední použití',
+    'Remove note' => 'Odstranit poznámku',
     'Generate new coupons.' => 'Generovat nové kupóny.',
     'Generate' => 'Generovat',
     'coupons' => 'kupóny',
