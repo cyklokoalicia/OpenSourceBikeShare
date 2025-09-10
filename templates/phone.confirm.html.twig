@@ -30,7 +30,7 @@
 
     {{ form_widget(form) }}
 
-    <button type="submit" class="btn btn-primary" name="form">
+    <button type="submit" class="btn btn-primary" name="formSubmit">
         {{ verificationStep == 1 ? 'Send confirmation'|trans : 'Confirm'|trans }}
     </button>
     {{ form_end(form) }}

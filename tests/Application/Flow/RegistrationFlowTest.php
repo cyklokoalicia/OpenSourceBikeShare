@@ -74,7 +74,7 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
         $this->assertRouteSame('user_confirm_phone');
 
         // Step 1: Trigger SMS
-        $this->client->submitForm('form');
+        $this->client->submitForm('formSubmit');
 
         // Get SMS code from history
         $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
@@ -91,7 +91,7 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
 
         // Step 2: Submit code
-        $this->client->submitForm('form', [
+        $this->client->submitForm('formSubmit', [
             'form[smscode]' => $smsCode,
         ]);
         $this->assertResponseRedirects();

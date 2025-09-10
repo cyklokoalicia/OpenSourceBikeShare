@@ -9,6 +9,7 @@ use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\SmsSenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -37,7 +38,9 @@ class PhoneConfirmController extends AbstractController
 
         if ($verificationStep === 1) {
             // Step 1: Get phone number
-            $form = $this->createFormBuilder()->setEmptyData([])->getForm();
+            $form = $this->createFormBuilder()
+                ->add('smscode', HiddenType::class)
+                ->getForm();
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
