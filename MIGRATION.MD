@@ -18,4 +18,12 @@ UPDATE users u JOIN limits l ON u.userId = l.userId SET u.userLimit = l.userLimi
 RENAME TABLE limits TO limits_delete;
 #DROP TABLE limits_delete;
 
+CREATE TABLE `userSettings` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `userId` INT NOT NULL,
+    `settings` JSON NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY (`userId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 ```

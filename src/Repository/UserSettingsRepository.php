@@ -5,42 +5,66 @@ declare(strict_types=1);
 namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
+use Psr\Log\LoggerInterface;
 
 class UserSettingsRepository
 {
-    public function __construct(private readonly DbInterface $db)
-    {
+    private array $defaultSettings = [
+        'locale' => 'en',
+        'allowGeoDetection' => false,
+    ];
+
+    public function __construct(
+        private readonly DbInterface $db,
+        private readonly string $defaultLocale,
+        private readonly LoggerInterface $logger,
+    ) {
+        $this->defaultSettings['locale'] = $this->defaultLocale;
     }
 
     public function findByUserId(int $userId): ?array
     {
-        $result = $this->db->query('SELECT * FROM userSettings WHERE userId = :userId', ['userId' => $userId]);
+        $result = $this->db->query('SELECT userId, settings FROM userSettings WHERE userId = :userId', ['userId' => $userId]);
         $row = $result->fetchAssoc();
 
         if ($row === false || $row === null) {
-            return null;
+            return $this->defaultSettings;
         }
 
-        if (isset($row['settings'])) {
-            $row['settings'] = json_decode($row['settings'], true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $settings = json_decode($row['settings'], true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            $settings = [];
+            $this->logger->error('Error parsing user settings', ['userId' => $userId, 'settings' => $row['settings'], 'exception' => $e]);
         }
+        $settings = array_merge($this->defaultSettings, $settings);
 
-        return $row;
+        return $settings;
     }
 
-    public function create(int $userId, array $settings): void
+    public function saveLocale(int $userId, string $locale): void
     {
-        $this->db->query('INSERT INTO userSettings (userId, settings) VALUES (:userId, :settings)', [
-            'userId' => $userId,
-            'settings' => json_encode($settings, JSON_THROW_ON_ERROR)
-        ]);
+        $this->saveSettings($userId, 'locale', $locale);
     }
 
-    public function update(int $id, array $settings): void
+    public function saveAllowGeoLocation(int $userId, bool $allowGeoDetection): void
     {
-        $this->db->query('UPDATE userSettings SET settings = :settings WHERE id = :id', [
-            'id' => $id,
-            'settings' => json_encode($settings, JSON_THROW_ON_ERROR)
-        ]);
+        $this->saveSettings($userId, 'allowGeoDetection', $allowGeoDetection);
+    }
+
+    public function saveSettings(int $userId, string $settingName, $settingValue): void
+    {
+        $settings = $this->findByUserId($userId);
+        $settings[$settingName] = $settingValue;
+
+        $this->db->query(
+            'INSERT INTO userSettings (userId, settings) 
+            VALUES (:userId, :settings) 
+            ON DUPLICATE KEY UPDATE settings = VALUES(settings)',
+            [
+                'userId' => $userId,
+                'settings' => json_encode($settings, JSON_THROW_ON_ERROR)
+            ]
+        );
     }
 }

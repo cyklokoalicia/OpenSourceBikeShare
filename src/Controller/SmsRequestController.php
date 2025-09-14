@@ -17,11 +17,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SmsRequestController extends AbstractController
 {
     public function __construct(
+        private readonly LocaleSwitcher $localeSwitcher,
         private readonly PhonePurifierInterface $phonePurifier,
         private readonly SmsConnectorInterface $smsConnector,
         private readonly SmsSenderInterface $smsSender,
@@ -61,9 +63,7 @@ class SmsRequestController extends AbstractController
         }
 
         $userSettings = $this->userSettingsRepository->findByUserId($user->getUserId());
-        if ($userSettings && isset($userSettings['settings']['locale'])) {
-            $this->translator->setLocale($userSettings['settings']['locale']);
-        }
+        $this->localeSwitcher->setLocale($userSettings['locale']);
 
         try {
             $message = $this->commandExecutor->execute($this->smsConnector->getProcessedMessage(), $user);

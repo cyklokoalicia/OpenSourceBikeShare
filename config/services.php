@@ -189,6 +189,10 @@ return static function (ContainerConfigurator $container): void {
         ->tag('kernel.event_listener');
 
     $services->get(\BikeShare\EventListener\LocaleListener::class)
+        ->bind('$defaultLocale', '%kernel.default_locale%')
+        ->bind('$enabledLocales', '%kernel.enabled_locales%');
+
+    $services->get(\BikeShare\Repository\UserSettingsRepository::class)
         ->bind('$defaultLocale', '%kernel.default_locale%');
 
     $services->get(\BikeShare\EventListener\TooManyBikeRentEventListener::class)

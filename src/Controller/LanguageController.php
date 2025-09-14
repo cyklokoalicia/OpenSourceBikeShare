@@ -21,31 +21,20 @@ class LanguageController extends AbstractController
     }
 
     #[Route(
-        path: '/switchLanguage/{_locale}',
+        path: '/switchLanguage/{locale}',
         name: 'switch_language',
         requirements: ['_locale' => '[a-z]{2}'],
         defaults: ['_locale' => 'en']
     )]
-    public function switchLanguage(Request $request, string $_locale): Response
+    public function switchLanguage(Request $request, string $locale): Response
     {
-        if (in_array($_locale, $this->enabledLocales, true)) {
-            $request->getSession()->set('_locale', $_locale);
+        if (in_array($locale, $this->enabledLocales, true)) {
+            $request->getSession()->set('_locale', $locale);
 
             /** @var User $user */
             $user = $this->getUser();
             if ($user) {
-                $userSettings = $this->userSettingsRepository->findByUserId($user->getUserId());
-
-                if ($userSettings) {
-                    $settings = $userSettings['settings'];
-                    $settings['locale'] = $_locale;
-                    $this->userSettingsRepository->update($userSettings['id'], $settings);
-                } else {
-                    $this->userSettingsRepository->create($user->getUserId(), [
-                        'locale' => $_locale,
-                        'allowGeoDetection' => false,
-                    ]);
-                }
+                $this->userSettingsRepository->saveLocale($user->getUserId(), $locale);
             }
         }
 

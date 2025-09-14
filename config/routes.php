@@ -5,7 +5,7 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 return function (RoutingConfigurator $routes) {
     $routes->add('switch_language', '/switchLanguage/{locale}')
         ->requirements(['locale' => '[a-z]{2}'])
-        ->defaults(['_locale' => 'en'])
+        ->defaults(['locale' => 'en'])
         ->controller([\BikeShare\Controller\LanguageController::class, 'switchLanguage']);
     $routes->add('js_translations', '/js/translations.json')
         ->controller([\BikeShare\Controller\LanguageController::class, 'getTranslations']);
@@ -39,6 +39,8 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\SecurityController::class, 'logout']);
     $routes->add('reset_password', '/resetPassword')
         ->controller([\BikeShare\Controller\SecurityController::class, 'resetPassword']);
+    $routes->add('user_settings_geolocation', '/user/settings/geolocation')
+        ->controller([\BikeShare\Controller\UserSettingsController::class, 'saveGeolocation']);
 
     $routes->add('api_stand_index', '/api/stand')
         ->methods(['GET'])
