@@ -2,6 +2,8 @@
 
 namespace BikeShare\Controller;
 
+use BikeShare\App\Entity\User;
+use BikeShare\Repository\UserSettingsRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +16,7 @@ class LanguageController extends AbstractController
     public function __construct(
         private readonly array $enabledLocales,
         private readonly TranslatorInterface $translator,
+        private readonly UserSettingsRepository $userSettingsRepository,
     ) {
     }
 
@@ -23,10 +26,27 @@ class LanguageController extends AbstractController
         requirements: ['_locale' => '[a-z]{2}'],
         defaults: ['_locale' => 'en']
     )]
-    public function switchLanguage(Request $request, string $locale): Response
+    public function switchLanguage(Request $request, string $_locale): Response
     {
-        if (in_array($locale, $this->enabledLocales, true)) {
-            $request->getSession()->set('_locale', $locale);
+        if (in_array($_locale, $this->enabledLocales, true)) {
+            $request->getSession()->set('_locale', $_locale);
+
+            /** @var User $user */
+            $user = $this->getUser();
+            if ($user) {
+                $userSettings = $this->userSettingsRepository->findByUserId($user->getUserId());
+
+                if ($userSettings) {
+                    $settings = $userSettings['settings'];
+                    $settings['locale'] = $_locale;
+                    $this->userSettingsRepository->update($userSettings['id'], $settings);
+                } else {
+                    $this->userSettingsRepository->create($user->getUserId(), [
+                        'locale' => $_locale,
+                        'allowGeoDetection' => false,
+                    ]);
+                }
+            }
         }
 
         $referer = $request->headers->get('referer');

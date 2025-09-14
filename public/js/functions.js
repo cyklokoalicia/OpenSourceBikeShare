@@ -99,6 +99,13 @@ function mapinit() {
     }).addTo(map);
     lc.start();
 
+    map.on('locationfound', function () {
+        $.ajax({
+            url: "/user/settings/geolocation",
+            method: "PUT"
+        });
+    });
+
     sidebar = L.control.sidebar('sidebar', {
         position: 'left'
     });

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
+use BikeShare\App\Entity\User;
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Purifier\PhonePurifierInterface;
+use BikeShare\Repository\UserSettingsRepository;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsCommand\CommandExecutor;
 use BikeShare\SmsConnector\SmsConnectorInterface;
@@ -28,6 +30,7 @@ class SmsRequestController extends AbstractController
         private readonly AdminNotifier $adminNotifier,
         private readonly TranslatorInterface $translator,
         private readonly CommandExecutor $commandExecutor,
+        private readonly UserSettingsRepository $userSettingsRepository,
     ) {
     }
 
@@ -55,6 +58,11 @@ class SmsRequestController extends AbstractController
             );
 
             return new Response("User not found", Response::HTTP_BAD_REQUEST);
+        }
+
+        $userSettings = $this->userSettingsRepository->findByUserId($user->getUserId());
+        if ($userSettings && isset($userSettings['settings']['locale'])) {
+            $this->translator->setLocale($userSettings['settings']['locale']);
         }
 
         try {
