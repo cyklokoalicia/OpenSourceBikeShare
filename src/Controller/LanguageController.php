@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Controller;
 
 use BikeShare\App\Entity\User;
@@ -23,8 +25,8 @@ class LanguageController extends AbstractController
     #[Route(
         path: '/switchLanguage/{locale}',
         name: 'switch_language',
-        requirements: ['_locale' => '[a-z]{2}'],
-        defaults: ['_locale' => 'en']
+        requirements: ['locale' => '[a-z]{2}'],
+        defaults: ['locale' => 'en']
     )]
     public function switchLanguage(Request $request, string $locale): Response
     {
@@ -39,7 +41,7 @@ class LanguageController extends AbstractController
         }
 
         $referer = $request->headers->get('referer');
-        if ($referer) {
+        if ($referer && strpos($referer, '/switchLanguage') === false) {
             return $this->redirect($referer);
         }
 

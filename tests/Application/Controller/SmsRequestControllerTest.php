@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller;
 
+use BikeShare\App\Security\UserProvider;
 use BikeShare\Db\DbInterface;
+use BikeShare\Repository\UserSettingsRepository;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Monolog\Logger;
@@ -139,5 +141,43 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
                 Logger::WARNING, '/Validation error/',
             ],
         ];
+    }
+
+    public function testSwitchLanguage(): void
+    {
+        $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
+        $this->client->loginUser($user);
+
+        $this->client->request(Request::METHOD_GET, '/switchLanguage/de');
+        $this->assertResponseRedirects('/');
+
+        $userSettingsRepository = $this->client->getContainer()->get(UserSettingsRepository::class);
+        $userSettings = $userSettingsRepository->findByUserId($user->getUserId());
+        $this->assertSame('de', $userSettings['locale']);
+        $this->client->request(Request::METHOD_GET, '/logout');
+
+        $this->client->request(
+            Request::METHOD_GET,
+            '/receive.php',
+            [
+                'number' => self::USER_PHONE_NUMBER,
+                'message' => 'WHERE 1',
+                'uuid' => md5((string)microtime(true)),
+                'time' => time(),
+            ]
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $this->assertCount(1, $smsConnector->getSentMessages());
+        $this->assertMatchesRegularExpression(
+            '/Fahrrad 1 befindet sich am Ständer STAND\d*./',
+            $smsConnector->getSentMessages()[0]['text']
+        );
+
+        //return language to default value
+        $this->client->loginUser($user);
+        $this->client->request(Request::METHOD_GET, '/switchLanguage');
     }
 }

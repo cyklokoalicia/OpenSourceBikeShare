@@ -24,7 +24,10 @@ class UserSettingsRepository
 
     public function findByUserId(int $userId): ?array
     {
-        $result = $this->db->query('SELECT userId, settings FROM userSettings WHERE userId = :userId', ['userId' => $userId]);
+        $result = $this->db->query(
+            'SELECT userId, settings FROM userSettings WHERE userId = :userId',
+            ['userId' => $userId]
+        );
         $row = $result->fetchAssoc();
 
         if ($row === false || $row === null) {
@@ -35,7 +38,10 @@ class UserSettingsRepository
             $settings = json_decode($row['settings'], true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
             $settings = [];
-            $this->logger->error('Error parsing user settings', ['userId' => $userId, 'settings' => $row['settings'], 'exception' => $e]);
+            $this->logger->error(
+                'Error parsing user settings',
+                ['userId' => $userId, 'settings' => $row['settings'], 'exception' => $e]
+            );
         }
         $settings = array_merge($this->defaultSettings, $settings);
 

@@ -21,8 +21,7 @@ class UserSettingsController extends AbstractController
     #[Route('/user/settings/geolocation', name: 'user_settings_geolocation', methods: ['PUT'])]
     public function saveGeolocation(
         Request $request,
-    ): Response
-    {
+    ): Response {
         $allowGeoDetection = $request->request->getBoolean('allowGeoDetection');
         /** @var User $user */
         $user = $this->getUser();
