@@ -58,7 +58,7 @@ class UserSettingsRepository
         $this->saveSettings($userId, 'allowGeoDetection', $allowGeoDetection);
     }
 
-    public function saveSettings(int $userId, string $settingName, $settingValue): void
+    public function saveSettings(int $userId, string $settingName, mixed $settingValue): void
     {
         $settings = $this->findByUserId($userId);
         $settings[$settingName] = $settingValue;
