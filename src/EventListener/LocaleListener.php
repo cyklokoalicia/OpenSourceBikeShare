@@ -9,7 +9,8 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 class LocaleListener
 {
     public function __construct(
-        private readonly string $defaultLocale = 'en',
+        private readonly string $defaultLocale,
+        private readonly array $enabledLocales,
     ) {
     }
 
@@ -18,7 +19,9 @@ class LocaleListener
         $request = $event->getRequest();
         $session = $request->getSession();
 
-        $locale = $session->get('_locale', $this->defaultLocale);
+        $locale = $request->getPreferredLanguage($this->enabledLocales) ?? $this->defaultLocale;
+
+        $locale = $session->get('_locale', $locale);
         $request->setLocale($locale);
     }
 }

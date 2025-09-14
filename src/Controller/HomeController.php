@@ -4,6 +4,7 @@ namespace BikeShare\Controller;
 
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Repository\CityRepository;
+use BikeShare\Repository\UserSettingsRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,8 @@ class HomeController extends AbstractController
         int $systemZoom,
         string $systemRules,
         CreditSystemInterface $creditSystem,
-        CityRepository $cityRepository
+        CityRepository $cityRepository,
+        UserSettingsRepository $userSettingsRepository,
     ): Response {
 
         //show stats for the current year if it is the end of the year
@@ -41,6 +43,7 @@ class HomeController extends AbstractController
             'systemZoom' => $systemZoom,
             'systemRules' => $systemRules,
             'cities' => $cityRepository->findAvailableCities(),
+            'userSettings' => $userSettingsRepository->findByUserId($this->getUser()->getUserId()),
             'personalStatsYearUrl' => $personalStatsYearUrl,
             'freeTime' => $freeTimeHours,
             'creditSystem' => $creditSystem,

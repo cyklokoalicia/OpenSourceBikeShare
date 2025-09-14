@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Controller;
 
+use BikeShare\App\Entity\User;
+use BikeShare\Repository\UserSettingsRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,23 +18,30 @@ class LanguageController extends AbstractController
     public function __construct(
         private readonly array $enabledLocales,
         private readonly TranslatorInterface $translator,
+        private readonly UserSettingsRepository $userSettingsRepository,
     ) {
     }
 
     #[Route(
-        path: '/switchLanguage/{_locale}',
+        path: '/switchLanguage/{locale}',
         name: 'switch_language',
-        requirements: ['_locale' => '[a-z]{2}'],
-        defaults: ['_locale' => 'en']
+        requirements: ['locale' => '[a-z]{2}'],
+        defaults: ['locale' => 'en']
     )]
     public function switchLanguage(Request $request, string $locale): Response
     {
         if (in_array($locale, $this->enabledLocales, true)) {
             $request->getSession()->set('_locale', $locale);
+
+            /** @var User $user */
+            $user = $this->getUser();
+            if ($user) {
+                $this->userSettingsRepository->saveLocale($user->getUserId(), $locale);
+            }
         }
 
         $referer = $request->headers->get('referer');
-        if ($referer) {
+        if ($referer && strpos($referer, '/switchLanguage') === false) {
             return $this->redirect($referer);
         }
 

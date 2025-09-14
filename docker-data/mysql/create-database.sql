@@ -140,6 +140,15 @@ CREATE TABLE `stands` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `userSettings`;
+CREATE TABLE `userSettings` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `userId` INT NOT NULL,
+  `settings` JSON NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`userId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `userId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,

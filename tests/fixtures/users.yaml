@@ -3,7 +3,7 @@ stdClass:
     tableName: 'users'
     userId: 0
     userName (unique): <firstName()> <lastName()>
-    password: '<sha256(<password()>)>'
+    password: '<hash("sha512", <password()>)>'
     mail (unique): test_<email()>
     number (unique): 421<randomNumber(9, true)>
     privileges: 0
@@ -48,4 +48,11 @@ stdClass:
     privileges: 0
     number: 421951444444
     userLimit: 1
+
+  userForLocaleChangeTest (extends defaultUser):
+    userId: 10
+    privileges: 0
+    number: 421951555555
+    userLimit: 0
+    password: '<hash("sha512", "password")>'
 

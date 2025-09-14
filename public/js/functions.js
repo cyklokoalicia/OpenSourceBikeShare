@@ -94,10 +94,34 @@ function mapinit() {
 
     lc = L.control.locate({
         locateOptions: {
-            maxZoom: mapzoom
+            maxZoom: mapzoom,
+            setView: true,
         }
     }).addTo(map);
-    lc.start();
+
+    if (allowGeoDetection) {
+        lc.start();
+    }
+
+    map.on('locateactivate', function() {
+        $.ajax({
+            url: "/user/settings/geolocation",
+            method: "PUT",
+            data: {
+                'allowGeoDetection': true,
+            }
+        });
+    });
+
+    map.on('locatedeactivate', function() {
+        $.ajax({
+            url: "/user/settings/geolocation",
+            method: "PUT",
+            data: {
+                'allowGeoDetection': false,
+            }
+        });
+    });
 
     sidebar = L.control.sidebar('sidebar', {
         position: 'left'

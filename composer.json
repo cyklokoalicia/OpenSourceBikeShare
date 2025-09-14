@@ -73,7 +73,7 @@
       "@putenv APP_ENV=test",
       "php bin/console cache:clear",
       "php bin/console load:fixtures",
-      "phpunit --configuration phpunit.xml.dist"
+      "phpunit --configuration phpunit.xml"
     ]
   }
 }
