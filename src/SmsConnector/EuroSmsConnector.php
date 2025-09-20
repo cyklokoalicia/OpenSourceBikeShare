@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace BikeShare\SmsConnector;
 
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class EuroSmsConnector extends AbstractConnector
 {
     private string $gatewayId = '';
     private string $gatewayKey = '';
     private string $gatewaySenderNumber = '';
+    private const API_HOST = 'rest.eurosms.com';
 
     public function __construct(
         private readonly RequestStack $requestStack,
+        private readonly HttpClientInterface $httpClient,
         array $configuration,
         $debugMode = false,
     ) {
@@ -52,18 +55,65 @@ class EuroSmsConnector extends AbstractConnector
             return;
         }
 
-        $s = substr(md5($this->gatewayKey . $number), 10, 11);
-        $um = urlencode((string) $text);
-        $url = sprintf(
-            'http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=%s&s=%s&d=1&sender=%s&number=%s&msg=%s',
-            $this->gatewayId,
-            $s,
-            $this->gatewaySenderNumber,
-            $number,
-            $um
-        );
-        fopen($url, "r");
+        $timestamp = time();
+        $nonce = uniqid();
+        $method = 'POST';
+        $uri = '/v2/sms/';
+        $port = 443;
+
+        $mac = $this->calculateMac($timestamp, $nonce, $method, $uri, self::API_HOST, $port);
+
+        $headers = [
+            'Authorization' => sprintf(
+                'MAC id="%s", ts="%s", nonce="%s", mac="%s"',
+                $this->gatewayId,
+                $timestamp,
+                $nonce,
+                $mac
+            ),
+            'Content-Type' => 'application/json',
+        ];
+
+        $payload = [
+            'messages' => [
+                [
+                    'destination' => $number,
+                    'message' => $text,
+                    'origin' => $this->gatewaySenderNumber,
+                ],
+            ],
+        ];
+
+        $response = $this->httpClient->request($method, 'https://' . self::API_HOST . $uri, [
+            'headers' => $headers,
+            'json' => $payload,
+        ]);
+
+        $statusCode = $response->getStatusCode();
+
+        if ($statusCode < 200 || $statusCode >= 300) {
+            // Potentially log error response content: $response->getContent(false)
+            throw new \RuntimeException("Failed to send SMS. API responded with status code: {$statusCode}");
+        }
     }
+
+    private function calculateMac(int $timestamp, string $nonce, string $method, string $uri, string $host, int $port): string
+    {
+        $requestString = sprintf(
+            "%s\n%s\n%s\n%s\n%s\n%s\n\n",
+            $timestamp,
+            $nonce,
+            $method,
+            $uri,
+            $host,
+            $port
+        );
+
+        $hash = hash_hmac('sha256', $requestString, $this->gatewayKey, true);
+
+        return base64_encode($hash);
+    }
+
 
     public function receive(): void
     {

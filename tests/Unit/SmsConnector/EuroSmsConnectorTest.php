@@ -7,7 +7,11 @@ namespace BikeShare\Test\Unit\SmsConnector;
 use BikeShare\SmsConnector\EuroSmsConnector;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class EuroSmsConnectorTest extends TestCase
 {
@@ -24,8 +28,10 @@ class EuroSmsConnectorTest extends TestCase
         ];
 
         $requestStack = $this->createMock(RequestStack::class);
+        $httpClient = $this->createMock(HttpClientInterface::class);
         $smsConnector = new EuroSmsConnector(
             $requestStack,
+            $httpClient,
             $configuration,
             false
         );
@@ -45,15 +51,11 @@ class EuroSmsConnectorTest extends TestCase
 
     /**
      * @dataProvider checkConfigErrorDataProvider
-     * @param $gatewayId
-     * @param $gatewayKey
-     * @param $gatewaySenderNumber
-     * @return void
      */
     public function testCheckConfigError(
-        $gatewayId,
-        $gatewayKey,
-        $gatewaySenderNumber
+        ?string $gatewayId,
+        ?string $gatewayKey,
+        ?string $gatewaySenderNumber
     ) {
         $this->expectException(\RuntimeException::class);
         $configuration = [
@@ -64,15 +66,17 @@ class EuroSmsConnectorTest extends TestCase
             ]
         ];
         $requestStack = $this->createMock(RequestStack::class);
-        $smsConnector = new EuroSmsConnector(
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        new EuroSmsConnector(
             $requestStack,
+            $httpClient,
             $configuration,
             false
         );
     }
 
 
-    public function checkConfigErrorDataProvider()
+    public function checkConfigErrorDataProvider(): \Generator
     {
         yield 'gatewayId is empty' => [
             '',
@@ -101,8 +105,10 @@ class EuroSmsConnectorTest extends TestCase
             ]
         ];
         $requestStack = $this->createMock(RequestStack::class);
+        $httpClient = $this->createMock(HttpClientInterface::class);
         $smsConnector = new EuroSmsConnector(
             $requestStack,
+            $httpClient,
             $configuration,
             false
         );
@@ -125,37 +131,58 @@ class EuroSmsConnectorTest extends TestCase
                 'gatewaySenderNumber' => 'SenderNumber',
             ]
         ];
+
+        $timestamp = 1600264980;
+        $nonce = 'mynonce';
+
+        $this->getFunctionMock('BikeShare\SmsConnector', 'time')
+            ->expects($this->once())
+            ->willReturn($timestamp);
+        $this->getFunctionMock('BikeShare\SmsConnector', 'uniqid')
+            ->expects($this->once())
+            ->willReturn($nonce);
+
+        $requestString = "{$timestamp}\n{$nonce}\nPOST\n/v2/sms/\nrest.eurosms.com\n443\n\n";
+        $mac = base64_encode(hash_hmac('sha256', $requestString, 'Key', true));
+
+        $expectedHeaders = [
+            'Authorization' => sprintf(
+                'MAC id="%s", ts="%s", nonce="%s", mac="%s"',
+                'Id',
+                $timestamp,
+                $nonce,
+                $mac
+            ),
+            'Content-Type' => 'application/json',
+        ];
+
+        $expectedPayload = [
+            'messages' => [
+                [
+                    'destination' => '123456789',
+                    'message' => 'Hello World',
+                    'origin' => 'SenderNumber',
+                ],
+            ],
+        ];
+
+        $mockResponse = new MockResponse('', ['http_code' => 200]);
+        $httpClient = new MockHttpClient($mockResponse);
+
         $requestStack = $this->createMock(RequestStack::class);
         $smsConnector = new EuroSmsConnector(
             $requestStack,
+            $httpClient,
             $configuration,
             false
         );
 
-        $this->getFunctionMock('BikeShare\SmsConnector', 'md5')
-            ->expects($this->once())
-            ->with('Key' . 'number')
-            ->willReturn('123456789011223344556677889900aa');
-        $this->getFunctionMock('BikeShare\SmsConnector', 'substr')
-            ->expects($this->once())
-            ->with('123456789011223344556677889900aa', 10, 11)
-            ->willReturn('1122334455');
-        $this->getFunctionMock('BikeShare\SmsConnector', 'urlencode')
-            ->expects($this->once())
-            ->with('text!@-_ +')
-            ->willReturn(urlencode('text!@-_ +'));
+        $smsConnector->send('123456789', 'Hello World');
 
-        $expectedUrl = 'http://as.eurosms.com/sms/Sender?action=send1SMSHTTP&i=Id&'
-            . 's=1122334455&d=1&sender=SenderNumber&number=number&msg=text%21%40-_+%2B';
-
-        $this->getFunctionMock('BikeShare\SmsConnector', 'fopen')
-            ->expects($this->once())
-            ->with(
-                $expectedUrl,
-                'r'
-            )->willReturn(true);
-
-        $smsConnector->send('number', 'text!@-_ +');
-        $this->expectOutputString('');
+        $this->assertSame('POST', $mockResponse->getRequestMethod());
+        $this->assertSame('https://rest.eurosms.com/v2/sms/', $mockResponse->getRequestUrl());
+        $this->assertContains('Authorization: ' . $expectedHeaders['Authorization'], $mockResponse->getRequestOptions()['headers']);
+        $this->assertContains('Content-Type: application/json', $mockResponse->getRequestOptions()['headers']);
+        $this->assertSame(json_encode($expectedPayload), $mockResponse->getRequestOptions()['body']);
     }
 }
