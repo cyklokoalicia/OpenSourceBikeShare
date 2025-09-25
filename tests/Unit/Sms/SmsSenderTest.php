@@ -7,29 +7,34 @@ namespace BikeShare\Test\Unit\Sms;
 use BikeShare\Db\DbInterface;
 use BikeShare\Sms\SmsSender;
 use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\SmsTextNormalizer\SmsTextNormalizerInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Clock\MockClock;
 
 class SmsSenderTest extends TestCase
 {
-    private SmsConnectorInterface $smsConnectorMock;
-    private DbInterface $dbMock;
+    private SmsConnectorInterface&MockObject $smsConnectorMock;
+    private SmsTextNormalizerInterface&MockObject $smsTextNormalizerMock;
+    private DbInterface&MockObject $dbMock;
     private ClockInterface $clockMock;
     private SmsSender $smsSender;
 
     protected function setUp(): void
     {
         $this->smsConnectorMock = $this->createMock(SmsConnectorInterface::class);
+        $this->smsTextNormalizerMock = $this->createMock(SmsTextNormalizerInterface::class);
         $this->dbMock = $this->createMock(DbInterface::class);
         $this->clockMock = new MockClock();
-        $this->smsSender = new SmsSender($this->smsConnectorMock, $this->dbMock, $this->clockMock);
+        $this->smsSender = new SmsSender($this->smsConnectorMock, $this->smsTextNormalizerMock, $this->dbMock, $this->clockMock);
     }
 
     protected function tearDown(): void
     {
         unset(
             $this->smsConnectorMock,
+            $this->smsTextNormalizerMock,
             $this->dbMock,
             $this->smsSender,
             $this->clockMock,
@@ -45,12 +50,15 @@ class SmsSenderTest extends TestCase
         $currentDateTime,
         $smsConnectorCallParams,
         $smsConnectorMaxMessageLength,
-        $dbEscapeCallParams,
-        $dbEscapeCallResult,
         $dbCallParams
     ) {
         $this->clockMock->modify($currentDateTime);
         $matcher = $this->exactly(count($smsConnectorCallParams));
+        $this->smsTextNormalizerMock
+            ->expects($this->once())
+            ->method('normalize')
+            ->with($message)
+            ->willReturn($message);
         $this->smsConnectorMock
             ->expects($matcher)
             ->method('send')
@@ -61,15 +69,6 @@ class SmsSenderTest extends TestCase
             ->expects($this->once())
             ->method('getMaxMessageLength')
             ->willReturn($smsConnectorMaxMessageLength);
-        $matcher = $this->exactly(count($dbEscapeCallParams));
-        $this->dbMock
-            ->expects($matcher)
-            ->method('escape')
-            ->willReturnCallback(function (...$parameters) use ($matcher, $dbEscapeCallParams, $dbEscapeCallResult) {
-                $this->assertSame($dbEscapeCallParams[$matcher->getInvocationCount() - 1], $parameters);
-
-                return $dbEscapeCallResult[$matcher->getInvocationCount() - 1];
-            });
         $matcher = $this->exactly(count($dbCallParams));
         $this->dbMock
             ->expects($matcher)
@@ -91,8 +90,6 @@ class SmsSenderTest extends TestCase
                 ['123456789', 'Hello, World!']
             ],
             'smsConnectorMaxMessageLength' => 160,
-            'dbEscapeCallParams' => [['Hello, World!']],
-            'dbEscapeCallResult' => ['Hello, World!'],
             'dbCallParams' => [
                 [
                     "INSERT INTO sent SET number = :number, text = :message, time = :time",
@@ -108,12 +105,10 @@ class SmsSenderTest extends TestCase
                 ['123456789', 'Hello, "World"!']
             ],
             'smsConnectorMaxMessageLength' => 160,
-            'dbEscapeCallParams' => [['Hello, "World"!']],
-            'dbEscapeCallResult' => ['Hello, \"World\"!'],
             'dbCallParams' => [
                 [
                     "INSERT INTO sent SET number = :number, text = :message, time = :time",
-                    ['number' => '123456789', 'message' => 'Hello, \"World\"!', 'time' => '2023-12-01 12:00:00']
+                    ['number' => '123456789', 'message' => 'Hello, "World"!', 'time' => '2023-12-01 12:00:00']
                 ]
             ]
         ];
@@ -132,24 +127,12 @@ class SmsSenderTest extends TestCase
                 ]
             ],
             'smsConnectorMaxMessageLength' => 20,
-            'dbEscapeCallParams' => [
-                [
-                    'Hello, World! Lorem'
-                ],
-                [
-                    'ipsum dolor sit amet'
-                ]
-            ],
-            'dbEscapeCallResult' => [
-                'Hello, World! Lorem ',
-                'ipsum dolor sit amet',
-            ],
             'dbCallParams' => [
                 [
                     "INSERT INTO sent SET number = :number, text = :message, time = :time",
                     [
                         'number' => '123456789',
-                        'message' => 'Hello, World! Lorem ',
+                        'message' => 'Hello, World! Lorem',
                         'time' => '2024-10-01 12:00:00'
                     ]
                 ],

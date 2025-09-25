@@ -24,7 +24,7 @@ class SmsConnectorFactory
             $connector = $this->connectorName;
             $this->logger->error('Error creating SMS connector', compact('connector', 'exception'));
 
-            return new DisabledConnector([], true);
+            return new DisabledConnector([]);
         }
     }
 }

@@ -17,6 +17,9 @@ class EuroSmsConnectorTest extends TestCase
 {
     use PHPMock;
 
+    private const API_HOST = 'https://as.eurosms.com/api/v3/send/one';
+    private const API_HOST_TEST = 'https://as.eurosms.com/api/v3/test/one';
+
     public function testCheckConfig()
     {
         $configuration = [
@@ -32,8 +35,7 @@ class EuroSmsConnectorTest extends TestCase
         $smsConnector = new EuroSmsConnector(
             $requestStack,
             $httpClient,
-            $configuration,
-            false
+            $configuration
         );
 
         $reflection = new \ReflectionClass($smsConnector);
@@ -70,8 +72,7 @@ class EuroSmsConnectorTest extends TestCase
         new EuroSmsConnector(
             $requestStack,
             $httpClient,
-            $configuration,
-            false
+            $configuration
         );
     }
 
@@ -109,8 +110,7 @@ class EuroSmsConnectorTest extends TestCase
         $smsConnector = new EuroSmsConnector(
             $requestStack,
             $httpClient,
-            $configuration,
-            false
+            $configuration
         );
 
         $reflection = new \ReflectionClass($smsConnector);
@@ -132,40 +132,6 @@ class EuroSmsConnectorTest extends TestCase
             ]
         ];
 
-        $timestamp = 1600264980;
-        $nonce = 'mynonce';
-
-        $this->getFunctionMock('BikeShare\SmsConnector', 'time')
-            ->expects($this->once())
-            ->willReturn($timestamp);
-        $this->getFunctionMock('BikeShare\SmsConnector', 'uniqid')
-            ->expects($this->once())
-            ->willReturn($nonce);
-
-        $requestString = "{$timestamp}\n{$nonce}\nPOST\n/v2/sms/\nrest.eurosms.com\n443\n\n";
-        $mac = base64_encode(hash_hmac('sha256', $requestString, 'Key', true));
-
-        $expectedHeaders = [
-            'Authorization' => sprintf(
-                'MAC id="%s", ts="%s", nonce="%s", mac="%s"',
-                'Id',
-                $timestamp,
-                $nonce,
-                $mac
-            ),
-            'Content-Type' => 'application/json',
-        ];
-
-        $expectedPayload = [
-            'messages' => [
-                [
-                    'destination' => '123456789',
-                    'message' => 'Hello World',
-                    'origin' => 'SenderNumber',
-                ],
-            ],
-        ];
-
         $mockResponse = new MockResponse('', ['http_code' => 200]);
         $httpClient = new MockHttpClient($mockResponse);
 
@@ -173,16 +139,72 @@ class EuroSmsConnectorTest extends TestCase
         $smsConnector = new EuroSmsConnector(
             $requestStack,
             $httpClient,
-            $configuration,
-            false
+            $configuration
         );
 
-        $smsConnector->send('123456789', 'Hello World');
+        $phoneNumber = '123456789';
+        $message = 'Hello World';
+        
+        // Create a spy for the calculateSignature method
+        $reflection = new \ReflectionClass($smsConnector);
+        $calculateSignature = $reflection->getMethod('calculateSignature');
+        $calculateSignature->setAccessible(true);
+        $expectedSignature = $calculateSignature->invoke($smsConnector, $phoneNumber, $message);
+        
+        $smsConnector->send($phoneNumber, $message);
 
         $this->assertSame('POST', $mockResponse->getRequestMethod());
-        $this->assertSame('https://rest.eurosms.com/v2/sms/', $mockResponse->getRequestUrl());
-        $this->assertContains('Authorization: ' . $expectedHeaders['Authorization'], $mockResponse->getRequestOptions()['headers']);
+        $this->assertSame(self::API_HOST, $mockResponse->getRequestUrl());
         $this->assertContains('Content-Type: application/json', $mockResponse->getRequestOptions()['headers']);
-        $this->assertSame(json_encode($expectedPayload), $mockResponse->getRequestOptions()['body']);
+        
+        $requestPayload = json_decode($mockResponse->getRequestOptions()['body'], true);
+        $this->assertArrayHasKey('iid', $requestPayload);
+        $this->assertArrayHasKey('sgn', $requestPayload);
+        $this->assertArrayHasKey('rcpt', $requestPayload);
+        $this->assertArrayHasKey('flgs', $requestPayload);
+        $this->assertArrayHasKey('sndr', $requestPayload);
+        $this->assertArrayHasKey('txt', $requestPayload);
+        
+        $this->assertEquals('Id', $requestPayload['iid']);
+        $this->assertEquals($expectedSignature, $requestPayload['sgn']);
+        $this->assertEquals((int)$phoneNumber, $requestPayload['rcpt']);
+        $this->assertEquals(EuroSmsConnector::FLAG_DELIVERY|EuroSmsConnector::FLAG_LONG_SMS|EuroSmsConnector::FLAG_DIACRITIC, $requestPayload['flgs']);
+        $this->assertEquals('SenderNumber', $requestPayload['sndr']);
+        $this->assertEquals($message, $requestPayload['txt']);
+    }
+
+    public function testCalculateSignature()
+    {
+        $configuration = [
+            'eurosms' => [
+                'gatewayId' => 'Id',
+                'gatewayKey' => 'Key',
+                'gatewaySenderNumber' => 'SenderNumber',
+            ]
+        ];
+
+        $requestStack = $this->createMock(RequestStack::class);
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $smsConnector = new EuroSmsConnector(
+            $requestStack,
+            $httpClient,
+            $configuration
+        );
+
+        $reflection = new \ReflectionClass($smsConnector);
+        $calculateSignature = $reflection->getMethod('calculateSignature');
+        $calculateSignature->setAccessible(true);
+
+        $number = '123456789';
+        $text = 'Hello World';
+        $string = sprintf(
+            '%s%s%s',
+            'SenderNumber',
+            $number,
+            $text
+        );
+        $expectedHash = hash_hmac('sha256', $string, 'Key');
+
+        $this->assertEquals($expectedHash, $calculateSignature->invoke($smsConnector, $number, $text));
     }
 }

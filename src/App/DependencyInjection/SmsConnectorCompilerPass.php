@@ -26,8 +26,8 @@ class SmsConnectorCompilerPass implements CompilerPassInterface
 
         $factory->setArgument('$locator', ServiceLocatorTagPass::register($container, $smsConnectors, 'smsConnectors'));
 
-        $creditSystem = new Definition(SmsConnectorInterface::class);
-        $creditSystem->setFactory([$factory, 'getConnector']);
-        $container->setDefinition(SmsConnectorInterface::class, $creditSystem)->setPublic(true);
+        $smsConnector = new Definition(SmsConnectorInterface::class);
+        $smsConnector->setFactory([$factory, 'getConnector']);
+        $container->setDefinition(SmsConnectorInterface::class, $smsConnector);
     }
 }

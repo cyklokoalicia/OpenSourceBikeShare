@@ -6,7 +6,6 @@ namespace BikeShare\Test\Unit\SmsConnector;
 
 use BikeShare\SmsConnector\DisabledConnector;
 use BikeShare\SmsConnector\EuroSmsConnector;
-use BikeShare\SmsConnector\LoopbackConnector;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\SmsConnector\TextmagicSmsConnector;
 use PHPUnit\Framework\TestCase;
@@ -64,11 +63,6 @@ class SmsConnectorFactoryTest extends TestCase
 
     public function getConnectorDataProvider()
     {
-        yield 'loopback' => [
-            'connectorName' => 'loopback',
-            'debugMode' => true,
-            'expectedInstance' => LoopbackConnector::class,
-        ];
         yield 'eurosms' => [
             'connectorName' => 'eurosms',
             'debugMode' => true,

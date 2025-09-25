@@ -22,6 +22,9 @@ use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsCommand\SmsCommandInterface;
 use BikeShare\SmsConnector\SmsConnectorFactory;
 use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\SmsTextNormalizer\AsciiSmsTextNormalizer;
+use BikeShare\SmsTextNormalizer\DefaultSmsTextNormalizer;
+use BikeShare\SmsTextNormalizer\SmsTextNormalizerInterface;
 use PHPMailer\PHPMailer\PHPMailer;
 use libphonenumber\PhoneNumberUtil;
 use Symfony\Component\Dotenv\Command\DotenvDumpCommand;
@@ -34,7 +37,9 @@ return static function (ContainerConfigurator $container): void {
         ->autowire()
         ->bind('$isSmsSystemEnabled', expr("container.getEnv('SMS_CONNECTOR') ? true : false"))
         ->bind('$appName', env('APP_NAME'))
-        ->bind('$systemRules', env('SYSTEM_RULES'));
+        ->bind('$systemRules', env('SYSTEM_RULES'))
+        ->bind('$defaultLocale', '%kernel.default_locale%')
+    ;
 
     $services->instanceof(CreditSystemInterface::class)->tag('creditSystem');
     $services->instanceof(RentSystemInterface::class)->tag('rentSystem');
@@ -184,6 +189,15 @@ return static function (ContainerConfigurator $container): void {
 
     $services->alias(PhonePurifierInterface::class, PhonePurifier::class);
 
+    $services->alias(SmsTextNormalizerInterface::class, AsciiSmsTextNormalizer::class);
+
+    $services->get(AsciiSmsTextNormalizer::class)
+        ->bind('$locale', '%kernel.default_locale%');
+    $services->set(\ashtokalo\translit\Translit::class);
+    if ($container->env() === 'test') {
+        $services->alias(SmsTextNormalizerInterface::class, DefaultSmsTextNormalizer::class);
+    }
+
     $services->load('BikeShare\\EventListener\\', '../src/EventListener')
         ->exclude('../src/EventListener/LocaleListener.php')
         ->tag('kernel.event_listener');
@@ -191,9 +205,6 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\EventListener\LocaleListener::class)
         ->bind('$defaultLocale', '%kernel.default_locale%')
         ->bind('$enabledLocales', '%kernel.enabled_locales%');
-
-    $services->get(\BikeShare\Repository\UserSettingsRepository::class)
-        ->bind('$defaultLocale', '%kernel.default_locale%');
 
     $services->get(\BikeShare\EventListener\TooManyBikeRentEventListener::class)
         ->bind('$timeTooManyHours', env('int:WATCHES_TIME_TOO_MANY'))

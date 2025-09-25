@@ -28,6 +28,6 @@ class CreditSystemCompilerPass implements CompilerPassInterface
 
         $creditSystem = new Definition(CreditSystemInterface::class);
         $creditSystem->setFactory([$factory, 'getCreditSystem']);
-        $container->setDefinition(CreditSystemInterface::class, $creditSystem)->setPublic(true);
+        $container->setDefinition(CreditSystemInterface::class, $creditSystem);
     }
 }

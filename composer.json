@@ -26,6 +26,7 @@
     "ext-json": "*",
     "ext-mysqli": "*",
     "ext-pdo": "*",
+    "ashtokalo/php-translit": "^0.3.0",
     "giggsey/libphonenumber-for-php": "^8.13",
     "monolog/monolog": "^1.27",
     "phpmailer/phpmailer": "^6.5.0",

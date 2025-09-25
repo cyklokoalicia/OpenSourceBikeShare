@@ -20,17 +20,12 @@ class TextmagicSmsConnector extends AbstractConnector
     public function __construct(
         private readonly RequestStack $requestStack,
         array $configuration,
-        $debugMode = false,
     ) {
-        parent::__construct($configuration, $debugMode);
+        parent::__construct($configuration);
     }
 
     public function checkConfig(array $config): void
     {
-        if ($this->debugMode) {
-            return;
-        }
-
         if (
             empty($config['gatewayUser'])
             || empty($config['gatewayPassword'])
@@ -53,10 +48,6 @@ class TextmagicSmsConnector extends AbstractConnector
     // send SMS message via API
     public function send($number, $text): void
     {
-        if ($this->debugMode) {
-            return;
-        }
-
         $um = urlencode((string) $text);
         $url = sprintf(
             "https://www.textmagic.com/app/api?cmd=send&unicode=0&from=%s&username=%s&password=%s&phone=%s&text=%s",
