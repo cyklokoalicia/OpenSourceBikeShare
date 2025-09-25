@@ -27,7 +27,12 @@ class SmsSenderTest extends TestCase
         $this->smsTextNormalizerMock = $this->createMock(SmsTextNormalizerInterface::class);
         $this->dbMock = $this->createMock(DbInterface::class);
         $this->clockMock = new MockClock();
-        $this->smsSender = new SmsSender($this->smsConnectorMock, $this->smsTextNormalizerMock, $this->dbMock, $this->clockMock);
+        $this->smsSender = new SmsSender(
+            $this->smsConnectorMock,
+            $this->smsTextNormalizerMock,
+            $this->dbMock,
+            $this->clockMock
+        );
     }
 
     protected function tearDown(): void

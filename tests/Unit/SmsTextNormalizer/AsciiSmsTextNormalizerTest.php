@@ -58,7 +58,7 @@ class AsciiSmsTextNormalizerTest extends TestCase
         $inputText = 'Привіт світ!';
         $expectedOutput = 'Pryvit svit!';
         $newLocale = 'uk';
-        
+
         $this->normalizer->setLocale($newLocale);
         $expectedLocaleParam = $newLocale . ',cyrillic,ascii';
 

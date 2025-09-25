@@ -55,7 +55,7 @@ class EuroSmsConnector extends AbstractConnector
             'iid' => $this->gatewayId,
             'sgn' => $signature,
             'rcpt' => (int)$number,
-            'flgs' => self::FLAG_DELIVERY|self::FLAG_LONG_SMS|self::FLAG_DIACRITIC,
+            'flgs' => self::FLAG_DELIVERY | self::FLAG_LONG_SMS | self::FLAG_DIACRITIC,
             'sndr' => $this->gatewaySenderNumber,
             'txt' => $text,
         ];
@@ -85,7 +85,7 @@ class EuroSmsConnector extends AbstractConnector
             $text,
         );
 
-        $hash = hash_hmac('sha256', $string , $this->gatewayKey);
+        $hash = hash_hmac('sha256', $string, $this->gatewayKey);
 
         return $hash;
     }

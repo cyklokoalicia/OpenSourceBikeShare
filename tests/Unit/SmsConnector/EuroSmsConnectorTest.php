@@ -144,19 +144,19 @@ class EuroSmsConnectorTest extends TestCase
 
         $phoneNumber = '123456789';
         $message = 'Hello World';
-        
+
         // Create a spy for the calculateSignature method
         $reflection = new \ReflectionClass($smsConnector);
         $calculateSignature = $reflection->getMethod('calculateSignature');
         $calculateSignature->setAccessible(true);
         $expectedSignature = $calculateSignature->invoke($smsConnector, $phoneNumber, $message);
-        
+
         $smsConnector->send($phoneNumber, $message);
 
         $this->assertSame('POST', $mockResponse->getRequestMethod());
         $this->assertSame(self::API_HOST, $mockResponse->getRequestUrl());
         $this->assertContains('Content-Type: application/json', $mockResponse->getRequestOptions()['headers']);
-        
+
         $requestPayload = json_decode($mockResponse->getRequestOptions()['body'], true);
         $this->assertArrayHasKey('iid', $requestPayload);
         $this->assertArrayHasKey('sgn', $requestPayload);
@@ -164,11 +164,14 @@ class EuroSmsConnectorTest extends TestCase
         $this->assertArrayHasKey('flgs', $requestPayload);
         $this->assertArrayHasKey('sndr', $requestPayload);
         $this->assertArrayHasKey('txt', $requestPayload);
-        
+
         $this->assertEquals('Id', $requestPayload['iid']);
         $this->assertEquals($expectedSignature, $requestPayload['sgn']);
         $this->assertEquals((int)$phoneNumber, $requestPayload['rcpt']);
-        $this->assertEquals(EuroSmsConnector::FLAG_DELIVERY|EuroSmsConnector::FLAG_LONG_SMS|EuroSmsConnector::FLAG_DIACRITIC, $requestPayload['flgs']);
+        $this->assertEquals(
+            EuroSmsConnector::FLAG_DELIVERY | EuroSmsConnector::FLAG_LONG_SMS | EuroSmsConnector::FLAG_DIACRITIC,
+            $requestPayload['flgs']
+        );
         $this->assertEquals('SenderNumber', $requestPayload['sndr']);
         $this->assertEquals($message, $requestPayload['txt']);
     }
