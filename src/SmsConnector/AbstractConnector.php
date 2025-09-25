@@ -14,7 +14,6 @@ abstract class AbstractConnector implements SmsConnectorInterface
 
     public function __construct(
         array $configuration,
-        protected bool $debugMode = false,
     ) {
         $connectorConfig = $configuration[static::getType()] ?? [];
         $this->checkConfig($connectorConfig);

@@ -4,12 +4,14 @@ namespace BikeShare\Sms;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\SmsTextNormalizer\SmsTextNormalizerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
 class SmsSender implements SmsSenderInterface
 {
     public function __construct(
         private readonly SmsConnectorInterface $smsConnector,
+        private readonly SmsTextNormalizerInterface $smsTextNormalizer,
         private readonly DbInterface $db,
         private readonly ClockInterface $clock,
     ) {
@@ -17,6 +19,7 @@ class SmsSender implements SmsSenderInterface
 
     public function send($number, $message)
     {
+        $message = $this->smsTextNormalizer->normalize($message);
         $maxMessageLength = $this->smsConnector->getMaxMessageLength();
         if (strlen($message) > $maxMessageLength) {
             $messageParts = str_split($message, $maxMessageLength);
@@ -35,7 +38,6 @@ class SmsSender implements SmsSenderInterface
 
     private function log($number, $message)
     {
-        $message = $this->db->escape($message);
         $this->db->query(
             'INSERT INTO sent SET number = :number, text = :message, time = :time',
             [

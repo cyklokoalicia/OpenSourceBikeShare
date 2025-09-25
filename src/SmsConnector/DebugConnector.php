@@ -16,9 +16,8 @@ class DebugConnector extends AbstractConnector implements ResetInterface
         private readonly RequestStack $requestStack,
         private readonly LoggerInterface $logger,
         array $configuration,
-        $debugMode = false,
     ) {
-        parent::__construct($configuration, $debugMode);
+        parent::__construct($configuration);
     }
 
     public function checkConfig(array $config): void
