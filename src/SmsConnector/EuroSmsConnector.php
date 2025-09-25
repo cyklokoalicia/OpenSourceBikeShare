@@ -85,7 +85,7 @@ class EuroSmsConnector extends AbstractConnector
             $text,
         );
 
-        $hash = hash_hmac('sha256', $string , $this->gatewayKey);
+        $hash = hash_hmac('sha256', $string, $this->gatewayKey);
 
         return $hash;
     }
