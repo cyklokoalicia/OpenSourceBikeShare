@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1>{{ 'User Profile'|trans }}</h1>
+
+        {% for flash_error in app.flashes('danger') %}
+            <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+        {% endfor %}
+        {% for flash_success in app.flashes('success') %}
+            <div class="alert alert-success" role="alert">{{ flash_success }}</div>
+        {% endfor %}
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ 'User Information'|trans }}</h5>
+                <p><strong>{{ 'Username'|trans }}:</strong> {{ user.username }}</p>
+                <p><strong>{{ 'Email'|trans }}:</strong> {{ user.email }}</p>
+                <p><strong>{{ 'Phone Number'|trans }}:</strong> {{ user.number }}</p>
+                <p><strong>{{ 'City'|trans }}:</strong> {{ user.city }}</p>
+                <p><strong>{{ 'Registration Date'|trans }}:</strong> {{ user.registrationDate|date('Y-m-d H:i:s') }}</p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">{{ 'Change Password'|trans }}</h5>
+                {{ form_start(form) }}
+                {{ form_widget(form) }}
+                <button type="submit" class="btn btn-primary">{{ 'Change Password'|trans }}</button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

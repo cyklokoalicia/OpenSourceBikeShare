@@ -41,6 +41,8 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\SecurityController::class, 'resetPassword']);
     $routes->add('user_settings_geolocation', '/user/settings/geolocation')
         ->controller([\BikeShare\Controller\UserSettingsController::class, 'saveGeolocation']);
+    $routes->add('user_profile', '/user/profile')
+        ->controller([\BikeShare\Controller\UserController::class, 'profile']);
 
     $routes->add('api_stand_index', '/api/stand')
         ->methods(['GET'])
