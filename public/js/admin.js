@@ -8,6 +8,11 @@ $(document).ready(function () {
         revert($(this).data('bike-number'));
         event.preventDefault();
     });
+    $("#fleetconsole").on('click', '.bike-set-code', function (event) {
+        if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-set-code');
+        setCode($(this).data('bike-number'));
+        event.preventDefault();
+    });
     $("#fleetconsole").on('click', '.bike-remove-note', function (event) {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-remove-note');
         removeNote($(this).data('bike-number'));
@@ -84,6 +89,30 @@ $(document).ready(function () {
     });
 
     $('#admin-tabs li:first-child a').tab('show')
+
+    const $setCodeModal = $('#setBikeCodeModal');
+    const $setCodeForm = $('#setBikeCodeForm');
+    const $setCodeInput = $('#setBikeCodeInput');
+    const $setCodeAlert = $('#setBikeCodeAlert');
+
+    $setCodeModal.on('shown.bs.modal', function () {
+        $setCodeInput.trigger('focus');
+    });
+
+    $setCodeModal.on('hidden.bs.modal', function () {
+        $setCodeForm.trigger('reset');
+        $setCodeInput.removeClass('is-invalid');
+        $setCodeAlert.addClass('d-none').text('');
+    });
+
+    $setCodeInput.on('input', function () {
+        $(this).removeClass('is-invalid');
+    });
+
+    $setCodeForm.on('submit', function (event) {
+        event.preventDefault();
+        submitSetCode();
+    });
 });
 
 function handleresponse(elementid, jsonobject, display) {
@@ -113,9 +142,9 @@ function generateBikeCards(data) {
         $card.find(".bike-last-usage").attr("data-bike-number", item.bikeNum);
         $card.find(".bike-revert").attr("data-bike-number", item.bikeNum);
         $card.find(".bike-remove-note").attr("data-bike-number", item.bikeNum);
+        $card.find(".bike-set-code").attr("data-bike-number", item.bikeNum);
 
         $card.find(".bike-number").text(item.bikeNum);
-
         const $standInfo = $card.find(".stand-info");
         const $rentInfo = $card.find(".rent-info");
         if (item.userName !== null) {
@@ -568,6 +597,58 @@ function revert(bikeNumber) {
         dataType: "json",
     }).done(function (jsonobject) {
         handleresponse("fleetconsole", jsonobject);
+    });
+}
+
+function setCode(bikeNumber) {
+    if (window.ga) ga('send', 'event', 'bikes', 'set-code', bikeNumber);
+
+    var $modal = $('#setBikeCodeModal');
+    $modal.data('bike-number', bikeNumber);
+    $modal.find('.bike-number').text(bikeNumber);
+    $('#setBikeCodeInput').val('').removeClass('is-invalid');
+    $('#setBikeCodeAlert').addClass('d-none').text('');
+    $modal.modal('show');
+}
+
+function submitSetCode() {
+    var $modal = $('#setBikeCodeModal');
+    var bikeNumber = $modal.data('bike-number');
+    var $form = $('#setBikeCodeForm');
+    var $input = $('#setBikeCodeInput');
+    var $alert = $('#setBikeCodeAlert');
+    var errorMessage = $modal.data('error-message') || window.translations['Invalid code format. Use four digits.'];
+    var code = $.trim($input.val());
+
+    if (!/^\d{4}$/.test(code)) {
+        $input.addClass('is-invalid');
+        return;
+    }
+
+    $input.removeClass('is-invalid');
+    $alert.addClass('d-none').text('');
+
+    var $submitButton = $form.find('button[type="submit"]');
+    $submitButton.prop('disabled', true);
+
+    $.ajax({
+        url: "/api/bike/" + bikeNumber + "/code",
+        method: "PUT",
+        dataType: "json",
+        data: {code: code},
+    }).done(function (jsonobject) {
+        $('#setBikeCodeModal').modal('hide');
+        handleresponse("fleetconsole", jsonobject);
+        bikeInfo();
+    }).fail(function (xhr) {
+        var message = errorMessage;
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+            message = xhr.responseJSON.message;
+        }
+
+        $alert.removeClass('d-none').text(message);
+    }).always(function () {
+        $submitButton.prop('disabled', false);
     });
 }
 

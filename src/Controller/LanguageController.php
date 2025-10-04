@@ -67,6 +67,7 @@ class LanguageController extends AbstractController
             'hour/s',
             'left',
             'over',
+            'Invalid code format. Use four digits.',
         ];
 
         $translations = [];

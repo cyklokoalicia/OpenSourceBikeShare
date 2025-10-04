@@ -23,6 +23,7 @@ class ResponseEventListener
         'api_bike_return',
         'api_bike_revert',
         'api_bike_remove_note',
+        'api_bike_set_code',
         'api_coupon_use',
         'api_user_change_city',
         'api_stand_remove_note',

@@ -16,4 +16,5 @@ enum Action: string
     case EMAIL_CONFIRMED = 'EMAIL_CONFIRMED';
     case CREDIT_CHANGE = 'CREDITCHANGE';
     case CREDIT = 'CREDIT';
+    case CHANGE_CODE = 'CHANGECODE';
 }
