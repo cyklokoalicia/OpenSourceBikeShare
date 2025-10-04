@@ -262,4 +262,15 @@ class BikeRepository
 
         return $bikes;
     }
+
+    public function updateBikeCode(int $bikeNumber, int $newCode): void
+    {
+        $this->db->query(
+            'UPDATE bikes SET currentCode = :newCode WHERE bikeNum = :bikeNumber',
+            [
+                'bikeNumber' => $bikeNumber,
+                'newCode' => $newCode,
+            ]
+        );
+    }
 }

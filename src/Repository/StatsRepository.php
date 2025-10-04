@@ -48,7 +48,8 @@ class StatsRepository
               FROM history
               WHERE userId = :userId
                 AND bikeNum != 0
-                AND action NOT LIKE \'%CREDIT%\'
+                AND 
+                  ( action LIKE \'%RENT%\' OR action LIKE \'%RETURN%\' ) 
                 AND YEAR(time) = :year
               ORDER BY time ASC';
         $history = $this->db->query($query, ['userId' => $userId, 'year' => $year])->fetchAllAssoc();

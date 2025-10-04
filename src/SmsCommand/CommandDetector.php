@@ -24,6 +24,7 @@ class CommandDetector
         'LIST stand' => '/^(?<command>LIST)\s*(?<standName>\w+)$/i',
         'LAST bikeNumber' => '/^(?<command>LAST)\s*(?<bikeNumber>\d+)$/i',
         'REVERT bikeNumber' => '/^(?<command>REVERT)\s*(?<bikeNumber>\d+)$/i',
+        'CODE bikeNumber code' => '/^(?<command>CODE)\s+(?<bikeNumber>\d+)\s+(?<code>\d{4})$/i',
         'ADD email phone fullName' => '/^(?<command>ADD)\s*(?<email>\S+)\s*(?<phone>\S+)\s*(?<fullName>.+)$/i',
         'DELNOTE bikeNumber [pattern]' => '/^(?<command>DELNOTE)\s*(?<bikeNumber>\d+)(\s*(?<pattern>.+))?$/i',
         'DELNOTE stand [pattern]' => '/^(?<command>DELNOTE)\s*(?<standName>\w+)(\s*(?<pattern>.+))?$/i',

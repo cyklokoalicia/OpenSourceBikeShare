@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Controller\Api;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Enum\Action;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
@@ -168,6 +169,53 @@ class BikeController extends AbstractController
             $request->request->get('note', ''),
             true // Force return
         );
+
+        return $this->json($response);
+    }
+
+    #[Route(
+        path: '/api/bike/{bikeNumber}/code',
+        name: 'api_bike_set_code',
+        requirements: ['bikeNumber' => '\d+'],
+        methods: ['PUT'],
+    )]
+    public function setCode(
+        $bikeNumber,
+        Request $request,
+        HistoryRepository $historyRepository,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (empty($bikeNumber) || !is_numeric($bikeNumber)) {
+            return $this->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $code = $request->request->get('code');
+        if (!is_string($code) || !preg_match('/^\d{4}$/', $code)) {
+            return $this->json([
+                'message' => 'Invalid code format. Use four digits.',
+                'error' => 1,
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $bikeNumber = (int)$bikeNumber;
+        $formattedCode = sprintf('%04d', (int)$code);
+
+        $this->bikeRepository->updateBikeCode($bikeNumber, (int)$code);
+
+        $historyRepository->addItem(
+            $this->getUser()->getUserId(),
+            $bikeNumber,
+            Action::CHANGE_CODE,
+            $formattedCode,
+        );
+
+        $response = [
+            'message' => sprintf('Bike %d code updated to %s.', $bikeNumber, $formattedCode),
+            'error' => 0,
+            'bikeNumber' => $bikeNumber,
+            'code' => $formattedCode,
+        ];
 
         return $this->json($response);
     }

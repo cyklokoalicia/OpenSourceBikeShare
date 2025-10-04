@@ -90,6 +90,10 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['bikeNumber' => '\d+', 'standName' => '\w+'])
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\Api\BikeController::class, 'forceReturnBike']);
+    $routes->add('api_bike_set_code', '/api/bike/{bikeNumber}/code')
+        ->requirements(['bikeNumber' => '\d+'])
+        ->methods(['PUT'])
+        ->controller([\BikeShare\Controller\Api\BikeController::class, 'setCode']);
     $routes->add('api_bike_revert', '/api/bike/{bikeNumber}/revert')
         ->requirements(['bikeNumber' => '\d+', 'standName' => '\w+'])
         ->methods(['PUT'])
