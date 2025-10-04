@@ -79,24 +79,24 @@ class HelpCommandTest extends BikeSharingWebTestCase
         yield 'user help' => [
             'phoneNumber' => self::USER_PHONE_NUMBER,
             'expectedCommands' => ['HELP', 'FREE', 'RENT', 'RETURN', 'WHERE', 'INFO', 'NOTE'],
-            'notExpectedCommands' => ['FORCERENT', 'FORCERETURN', 'LIST', 'LAST', 'REVERT', 'ADD', 'DELNOTE', 'DELNOTE', 'TAG', 'UNTAG', 'CREDIT'],
+            'notExpectedCommands' => ['FORCERENT', 'FORCERETURN', 'LIST', 'LAST', 'REVERT', 'CODE', 'ADD', 'DELNOTE', 'DELNOTE', 'TAG', 'UNTAG', 'CREDIT'],
             'isCreditSystemEnabled' => false,
         ];
         yield 'admin help' => [
             'phoneNumber' => self::ADMIN_PHONE_NUMBER,
-            'expectedCommands' => ['HELP', 'FREE', 'RENT', 'RETURN', 'WHERE', 'INFO', 'NOTE', 'FORCERENT', 'FORCERETURN', 'LIST', 'LAST', 'REVERT', 'ADD', 'DELNOTE', 'DELNOTE', 'TAG', 'UNTAG'],
+            'expectedCommands' => ['HELP', 'FREE', 'RENT', 'RETURN', 'WHERE', 'INFO', 'NOTE', 'FORCERENT', 'FORCERETURN', 'LIST', 'LAST', 'REVERT', 'CODE', 'ADD', 'DELNOTE', 'DELNOTE', 'TAG', 'UNTAG'],
             'notExpectedCommands' => ['CREDIT'],
             'isCreditSystemEnabled' => false,
         ];
         yield 'user credit help' => [
             'phoneNumber' => self::USER_PHONE_NUMBER,
             'expectedCommands' => ['HELP', 'FREE', 'RENT', 'RETURN', 'WHERE', 'INFO', 'NOTE', 'CREDIT'],
-            'notExpectedCommands' => ['FORCERENT', 'FORCERETURN', 'LIST', 'LAST', 'REVERT', 'ADD', 'DELNOTE', 'DELNOTE', 'TAG', 'UNTAG'],
+            'notExpectedCommands' => ['FORCERENT', 'FORCERETURN', 'LIST', 'LAST', 'REVERT', 'CODE', 'ADD', 'DELNOTE', 'DELNOTE', 'TAG', 'UNTAG'],
             'isCreditSystemEnabled' => true,
         ];
         yield 'admin credit help' => [
             'phoneNumber' => self::ADMIN_PHONE_NUMBER,
-            'expectedCommands' => ['HELP', 'FREE', 'RENT', 'RETURN', 'WHERE', 'INFO', 'NOTE', 'FORCERENT', 'FORCERETURN', 'LIST', 'LAST', 'REVERT', 'ADD', 'DELNOTE', 'DELNOTE', 'TAG', 'UNTAG', 'CREDIT'],
+            'expectedCommands' => ['HELP', 'FREE', 'RENT', 'RETURN', 'WHERE', 'INFO', 'NOTE', 'FORCERENT', 'FORCERETURN', 'LIST', 'LAST', 'REVERT', 'CODE', 'ADD', 'DELNOTE', 'DELNOTE', 'TAG', 'UNTAG', 'CREDIT'],
             'notExpectedCommands' => [],
             'isCreditSystemEnabled' => true,
         ];

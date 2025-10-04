@@ -71,6 +71,10 @@ class CommandDetectorTest extends TestCase
             'command' => 'FORCERENT 42',
             'expected' => ['command' => 'FORCERENT', 'arguments' => ['bikeNumber' => '42']],
         ];
+        yield 'CODE' => [
+            'command' => 'CODE 42 1234',
+            'expected' => ['command' => 'CODE', 'arguments' => ['bikeNumber' => '42', 'code' => '1234']],
+        ];
         yield 'FORCERETURN' => [
             'command' => 'FORCERETURN 42 MAINSQUARE',
             'expected' => ['command' => 'FORCERETURN', 'arguments' => ['bikeNumber' => '42', 'standName' => 'MAINSQUARE', 'note' => null]],

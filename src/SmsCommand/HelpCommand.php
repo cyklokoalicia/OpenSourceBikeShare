@@ -46,6 +46,7 @@ class HelpCommand extends AbstractCommand implements SmsCommandInterface
                     'LIST standName' => 0,
                     'LAST bikeNumber' => 0,
                     'REVERT bikeNumber' => 0,
+                    'CODE bikeNumber code' => 0,
                     'ADD email phone fullname' => 0,
                     'DELNOTE bikeNumber [pattern]' => 0,
                     'DELNOTE standName [pattern]' => 0,

@@ -96,6 +96,7 @@ class HelpCommandTest extends TestCase
                 'LIST standName',
                 'LAST bikeNumber',
                 'REVERT bikeNumber',
+                'CODE bikeNumber code',
                 'ADD email phone fullname',
                 'DELNOTE bikeNumber [pattern]',
                 'DELNOTE standName [pattern]',
