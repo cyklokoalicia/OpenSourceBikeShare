@@ -220,7 +220,7 @@ function last(bikeNumber) {
                 $history.find("#time").text(isNaN(date.getTime()) ? item.time : dateTimeFormatter.format(date));
                 $history.find("#standName").text(item.standName);
                 $history.find("#userName").text(item.userName);
-                $history.find("#parameter").text(item.parameter);
+                $history.find("#parameter").text(item.parameter ?? '');
                 $history.find("#action i").addClass("d-none");
                 $history.find("#action ." + item.action).removeClass("d-none");
 
