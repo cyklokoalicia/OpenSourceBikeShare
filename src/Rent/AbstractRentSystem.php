@@ -134,7 +134,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $row = $result->fetchAssoc();
                 $serviceTag = $row['serviceTag'];
 
-                if ($serviceTag != 0) {
+                if ($serviceTag != 0 && $this->user->findPrivileges($userId) < 1) {
                     return $this->response(
                         $this->translator->trans('Renting from service stands is not allowed: The bike probably waits for a repair.'),
                         self::ERROR,
