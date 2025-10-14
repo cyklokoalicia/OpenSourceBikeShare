@@ -15,3 +15,9 @@ stdClass:
     standId: '<($current)>'
     standName: 'STAND<($current)>'
     standDescription: '<streetName()>'
+
+  stand_service (extends defaultStand):
+    standId: '6'
+    standName: 'SERVICE_STAND'
+    standDescription: '<streetName()>'
+    serviceTag: '1'

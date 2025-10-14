@@ -22,6 +22,7 @@ class RentSystemTest extends BikeSharingKernelTestCase
     private const ADMIN_PHONE_NUMBER = '421951222222';
     private const BIKE_NUMBER = 5;
     private const STAND_NAME = 'STAND5';
+    private const SERVICE_STAND_NAME = 'SERVICE_STAND';
 
     private array $configuration = [];
 
@@ -310,5 +311,33 @@ class RentSystemTest extends BikeSharingKernelTestCase
         $this->assertArrayHasKey('params', $response3);
         $this->assertArrayHasKey('bikeNumber', $response3['params']);
         $this->assertSame(self::BIKE_NUMBER, $response3['params']['bikeNumber']);
+    }
+
+    public function testAdminCanRentBikeFromServiceStand(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+        $rentSystemFactory = $container->get(RentSystemFactory::class);
+        $userRepository = $container->get(UserRepository::class);
+
+        $admin = $userRepository->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+
+        $rentSystem = $rentSystemFactory->getRentSystem('web');
+        $rentSystem->returnBike($admin['userId'], self::BIKE_NUMBER, self::SERVICE_STAND_NAME, '', true);
+
+        $userResponse = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.error.service_stand', $userResponse['code']);
+
+        $adminWebResponse = $rentSystem->rentBike($admin['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.success', $adminWebResponse['code']);
+
+        $rentSystem->returnBike(
+            $admin['userId'],
+            self::BIKE_NUMBER,
+            self::STAND_NAME,
+            '',
+            true
+        );
     }
 }
