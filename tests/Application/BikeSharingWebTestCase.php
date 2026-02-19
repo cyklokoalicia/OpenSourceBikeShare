@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace BikeShare\Test\Application;
 
 use Monolog\Logger;
+use Monolog\Level;
+use Monolog\LogRecord;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -50,69 +52,91 @@ abstract class BikeSharingWebTestCase extends WebTestCase
 
     protected function tearDown(): void
     {
-        $logHandler = $this->client->getContainer()->get('monolog.handler.test');
-        /**
-         * Does a single log record satisfy one expectation?
-         */
-        $matches = static function (array $record, array $expected): bool {
-            if ($record['level'] !== $expected['level']) {
-                return false;
+        try {
+            $logHandler = $this->client->getContainer()->get('monolog.handler.test');
+            $normalizeLevel = static function ($level): int {
+                if ($level instanceof Level) {
+                    return $level->value;
+                }
+
+                return (int)$level;
+            };
+            $levelFromRecord = static function ($record) use ($normalizeLevel): int {
+                if ($record instanceof LogRecord) {
+                    return $record->level->value;
+                }
+
+                return $normalizeLevel($record['level']);
+            };
+            $messageFromRecord = static function ($record): string {
+                if ($record instanceof LogRecord) {
+                    return $record->message;
+                }
+
+                return $record['message'];
+            };
+            /**
+             * Does a single log record satisfy one expectation?
+             */
+            $matches = static function ($record, array $expected) use ($levelFromRecord, $messageFromRecord): bool {
+                if ($levelFromRecord($record) !== (int)$expected['level']) {
+                    return false;
+                }
+
+                $message = $messageFromRecord($record);
+
+                return \is_callable($expected['pattern'])
+                    ? ($expected['pattern'])($message)
+                    : (\preg_match($expected['pattern'], $message) === 1);
+            };
+
+            /*
+             * 1) Verify that every declared expectation actually happened.
+             */
+            foreach ($this->expected as $expected) {
+                $found = $logHandler->hasRecordThatPasses(
+                    fn($record) => $matches($record, $expected),
+                    Level::from((int)$expected['level']),
+                );
+
+                self::assertTrue(
+                    $found,
+                    sprintf(
+                        'Expected %s log matching %s but did not find it.',
+                        Logger::getLevelName((int)$expected['level']),
+                        \is_callable($expected['pattern']) ? 'closure' : $expected['pattern']
+                    )
+                );
             }
 
-            $message = $record['message'];
+            /*
+             * 2) Fail if any **other** WARNING / ERROR / ALERT / CRITICAL was produced.
+             */
+            $unexpected = [];
 
-            return \is_callable($expected['pattern'])
-                ? ($expected['pattern'])($message)
-                : (\preg_match($expected['pattern'], $message) === 1);
-        };
+            foreach ($logHandler->getRecords() as $record) {
+                if ($levelFromRecord($record) < Logger::WARNING) {
+                    // only care about ERROR and above
+                    continue;
+                }
+                $isExpected = array_any($this->expected, fn($expected) => $matches($record, $expected));
 
-        /*
-         * 1) Verify that every declared expectation actually happened.
-         */
-        foreach ($this->expected as $expected) {
-            $found = $logHandler->hasRecordThatPasses(
-                fn(array $record) => $matches($record, $expected),
-                $expected['level'],
+                if (!$isExpected) {
+                    $unexpected[] = $record;
+                }
+            }
+            self::assertSame(
+                [],
+                $unexpected,
+                'Unexpected high-severity log(s): ' . \json_encode($unexpected, JSON_PRETTY_PRINT)
             );
+        } finally {
+            /*
+             * 3) Clean up for re-use / multiple tearDown() calls.
+             */
+            $this->expected = [];
 
-            self::assertTrue(
-                $found,
-                sprintf(
-                    'Expected %s log matching %s but did not find it.',
-                    Logger::getLevelName($expected['level']),
-                    \is_callable($expected['pattern']) ? 'closure' : $expected['pattern']
-                )
-            );
+            parent::tearDown();
         }
-
-        /*
-         * 2) Fail if any **other** WARNING / ERROR / ALERT / CRITICAL was produced.
-         */
-        $unexpected = [];
-
-        foreach ($logHandler->getRecords() as $record) {
-            if ($record['level'] < Logger::WARNING) {
-                // only care about ERROR and above
-                continue;
-            }
-            $isExpected = array_any($this->expected, fn($expected) => $matches($record, $expected));
-
-            if (!$isExpected) {
-                $unexpected[] = $record;
-            }
-        }
-
-        self::assertSame(
-            [],
-            $unexpected,
-            'Unexpected high-severity log(s): ' . \json_encode($unexpected, JSON_PRETTY_PRINT)
-        );
-
-        /*
-         * 3) Clean up for re-use / multiple tearDown() calls.
-         */
-        $this->expected = [];
-
-        parent::tearDown();
     }
 }
