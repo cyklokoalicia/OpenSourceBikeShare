@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\Credit\CreditSystemInterface;
-use BikeShare\User\User;
+use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,13 +19,13 @@ class CreditHistoryController extends AbstractController
     )]
     public function history(
         CreditSystemInterface $creditSystem,
-        User $user,
+        UserRepository $userRepository,
     ): Response {
         if (!$creditSystem->isEnabled()) {
             throw $this->createNotFoundException('Credit system is disabled');
         }
 
-        $userId = (int)$user->findUserIdByNumber($this->getUser()->getUserIdentifier());
+        $userId = (int)($userRepository->findItemByPhoneNumber($this->getUser()->getUserIdentifier())['userId']);
         $history = $creditSystem->getUserCreditHistory($userId);
         $currentCredit = $creditSystem->getUserCredit($userId);
         $currency = $creditSystem->getCreditCurrency();

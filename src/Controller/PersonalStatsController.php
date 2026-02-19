@@ -6,7 +6,7 @@ namespace BikeShare\Controller;
 
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\StatsRepository;
-use BikeShare\User\User;
+use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +24,7 @@ class PersonalStatsController extends AbstractController
         StatsRepository $statsRepository,
         StandRepository $standRepository,
         ClockInterface $clock,
-        User $user,
+        UserRepository $userRepository,
         $year = null,
     ): Response {
         if (is_null($year)) {
@@ -36,7 +36,7 @@ class PersonalStatsController extends AbstractController
             return new Response('', Response::HTTP_BAD_REQUEST);
         }
 
-        $userId = $user->findUserIdByNumber($this->getUser()->getUserIdentifier());
+        $userId = $userRepository->findItemByPhoneNumber($this->getUser()->getUserIdentifier())['userId'];
         $stats = $statsRepository->getUserStatsForYear((int)$userId, (int)$year);
         $stands = $standRepository->findAll();
 

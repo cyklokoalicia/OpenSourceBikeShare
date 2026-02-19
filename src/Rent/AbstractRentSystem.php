@@ -12,7 +12,7 @@ use BikeShare\Event\BikeRevertEvent;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
-use BikeShare\User\User;
+use BikeShare\Repository\UserRepository;
 use BikeShare\Enum\Action;
 use BikeShare\Enum\CreditChangeType;
 use Psr\Log\LoggerInterface;
@@ -30,7 +30,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected readonly BikeRepository $bikeRepository,
         protected readonly DbInterface $db,
         protected readonly CreditSystemInterface $creditSystem,
-        protected readonly User $user,
+        protected readonly UserRepository $userRepository,
         protected readonly EventDispatcherInterface $eventDispatcher,
         protected readonly AdminNotifier $adminNotifier,
         protected readonly LoggerInterface $logger,
@@ -138,7 +138,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $row = $result->fetchAssoc();
                 $serviceTag = $row['serviceTag'];
 
-                if ($serviceTag != 0 && $this->user->findPrivileges($userId) < 1) {
+                if ($serviceTag != 0 && ($this->userRepository->findItem($userId)['privileges'] ?? 0) < 1) {
                     return $this->error(
                         $this->translator->trans('Renting from service stands is not allowed: The bike probably waits for a repair.'),
                         'bike.rent.error.service_stand',
@@ -152,7 +152,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     );
                     $row = $result->fetchAssoc();
                     $stand = $row['standName'];
-                    $userName = $this->user->findUserName($userId);
+                    $userName = $this->userRepository->findItem($userId)['userName'] ?? '';
                     $this->notifyAdmins(
                         $this->translator->trans(
                             'Bike {bikeNumber} rented out of stack by {userName}. {stackTopBike} was on the top of the stack at {standName}.',
@@ -535,8 +535,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
     {
         $userNote = trim($message);
 
-        $userName = $this->user->findUserName($userId);
-        $phone = $this->user->findPhoneNumber($userId);
+        $user = $this->userRepository->findItem($userId);
+        $userName = $user['userName'] ?? '';
+        $phone = $user['number'] ?? '';
         $result = $this->db->query(
             'SELECT stands.standName
              FROM bikes

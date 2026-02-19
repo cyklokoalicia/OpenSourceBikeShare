@@ -28,7 +28,7 @@
     "ext-pdo": "*",
     "ashtokalo/php-translit": "^0.3.0",
     "giggsey/libphonenumber-for-php": "^8.13",
-    "monolog/monolog": "^1.27",
+    "monolog/monolog": "^3.0",
     "phpmailer/phpmailer": "^6.5.0",
     "sentry/sentry-symfony": "^5.1",
     "symfony/asset": "^6.0",
