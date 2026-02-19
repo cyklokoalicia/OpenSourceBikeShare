@@ -31,11 +31,8 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
             );
         }
 
-        $result = $this->db->query(
-            'SELECT bikeNum FROM bikes WHERE currentUser = :userId ORDER BY bikeNum',
-            ['userId' => $userId]
-        );
-        $bikeNumber = $result->rowCount();
+        $rentedBikes = $this->bikeRepository->findRentedBikeNumsByUser($userId);
+        $bikeNumber = count($rentedBikes);
 
         if ($bikeNumber === 0) {
             return $this->error(
@@ -61,7 +58,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
             );
         }
 
-        $bikeId = $result->fetchAssoc()['bikeNum'];
+        $bikeId = $rentedBikes[0]['bikeNum'];
 
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
     }

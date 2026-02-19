@@ -203,6 +203,105 @@ class HistoryRepository
         return $result ?: null;
     }
 
+    public function findLastRentTime(int $bikeNum, int $userId): ?\DateTimeImmutable
+    {
+        $result = $this->db->query(
+            "SELECT time FROM history
+             WHERE bikeNum = :bikeNum AND userId = :userId
+               AND action IN (:rentAction, :forceRentAction)
+             ORDER BY time DESC, id DESC LIMIT 1",
+            [
+                'bikeNum' => $bikeNum,
+                'userId' => $userId,
+                'rentAction' => Action::RENT->value,
+                'forceRentAction' => Action::FORCE_RENT->value,
+            ]
+        );
+
+        if ($result->rowCount() !== 1) {
+            return null;
+        }
+
+        return new \DateTimeImmutable($result->fetchAssoc()['time']);
+    }
+
+    public function findLastReturnTime(int $bikeNum, int $userId): ?\DateTimeImmutable
+    {
+        $result = $this->db->query(
+            "SELECT time FROM history
+             WHERE bikeNum = :bikeNum AND userId = :userId
+               AND action IN (:returnAction, :forceReturnAction)
+             ORDER BY time DESC, id DESC LIMIT 1",
+            [
+                'bikeNum' => $bikeNum,
+                'userId' => $userId,
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
+            ]
+        );
+
+        if ($result->rowCount() !== 1) {
+            return null;
+        }
+
+        return new \DateTimeImmutable($result->fetchAssoc()['time']);
+    }
+
+    /**
+     * @return array{standId: int, standName: string}|null
+     */
+    public function findLastReturnStand(int $bikeNum): ?array
+    {
+        $result = $this->db->query(
+            "SELECT parameter, standName
+             FROM stands
+             LEFT JOIN history ON stands.standId = parameter
+             WHERE bikeNum = :bikeNum
+               AND action IN (:returnAction, :forceReturnAction)
+             ORDER BY time DESC
+             LIMIT 1",
+            [
+                'bikeNum' => $bikeNum,
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
+            ]
+        );
+
+        if ($result->rowCount() !== 1) {
+            return null;
+        }
+
+        $row = $result->fetchAssoc();
+
+        return [
+            'standId' => (int)$row['parameter'],
+            'standName' => $row['standName'],
+        ];
+    }
+
+    public function findLastRentCode(int $bikeNum): ?string
+    {
+        $result = $this->db->query(
+            "SELECT parameter
+             FROM history
+             WHERE bikeNum = :bikeNum
+               AND action IN (:rentAction, :forceRentAction)
+             ORDER BY time DESC
+             LIMIT 1",
+            [
+                'bikeNum' => $bikeNum,
+                'rentAction' => Action::RENT->value,
+                'forceRentAction' => Action::FORCE_RENT->value,
+            ]
+        );
+
+        if ($result->rowCount() !== 1) {
+            return null;
+        }
+
+        return str_pad($result->fetchAssoc()['parameter'], 4, '0', STR_PAD_LEFT);
+    }
+
     public function findCreditHistoryByUser(int $userId, int $limit = 100, int $offset = 0): array
     {
         $result = $this->db->query(

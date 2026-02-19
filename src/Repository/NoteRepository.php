@@ -71,7 +71,7 @@ class NoteRepository
         );
     }
 
-    public function addNoteToBike(int $bikeNumber, int $userId, string $note): void
+    public function addNoteToBike(int $bikeNumber, int $userId, string $note): int
     {
         $this->db->query(
             'INSERT INTO notes (bikeNum, userId, note, time)
@@ -83,6 +83,8 @@ class NoteRepository
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
+
+        return $this->db->getLastInsertId();
     }
 
     public function deleteStandNote(int $standId, ?string $notePattern): int
@@ -150,5 +152,32 @@ class NoteRepository
         );
 
         return $result->rowCount();
+    }
+
+    public function findActiveNotes(int $bikeNum): string
+    {
+        $result = $this->db->query(
+            'SELECT note FROM notes WHERE bikeNum = :bikeNum AND deleted IS NULL ORDER BY time DESC',
+            ['bikeNum' => $bikeNum]
+        );
+
+        $notes = '';
+        while ($row = $result->fetchAssoc()) {
+            $notes .= $row['note'] . '; ';
+        }
+
+        return $notes !== '' ? substr($notes, 0, -2) : '';
+    }
+
+    public function findLatestNote(int $bikeNum): ?string
+    {
+        $result = $this->db->query(
+            'SELECT note FROM notes WHERE bikeNum = :bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1',
+            ['bikeNum' => $bikeNum]
+        );
+
+        $row = $result->fetchAssoc();
+
+        return $row['note'] ?? null;
     }
 }
