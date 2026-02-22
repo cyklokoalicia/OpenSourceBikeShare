@@ -10,14 +10,20 @@ use BikeShare\Rent\Enum\RentSystemType;
  */
 class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 {
-    public function rentBike($userId, $bikeId, $force = false): RentSystemResult
+    public function rentBike(int $userId, int $bikeId, bool $force = false): RentSystemResult
     {
         $force = false; #rent by qr code cannot be forced
 
         return parent::rentBike($userId, $bikeId, $force);
     }
 
-    public function returnBike($userId, $bikeId, $standName, $note = '', $force = false): RentSystemResult
+    public function returnBike(
+        int $userId,
+        int $bikeId,
+        string $standName,
+        ?string $note = null,
+        bool $force = false
+    ): RentSystemResult
     {
         $force = false; #return by qr code cannot be forced
         $note = ''; #note cannot be provided via qr code
@@ -63,7 +69,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
     }
 
-    public function revertBike($userId, $bikeId): RentSystemResult
+    public function revertBike(int $userId, int $bikeId): RentSystemResult
     {
         return $this->error(
             $this->translator->trans('Revert is not supported for QR code'),
