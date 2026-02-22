@@ -65,6 +65,8 @@ class BikeRepository
             'SELECT
                     bikes.bikeNum,
                     currentUser as userId,
+                    LPAD(currentCode, 4, \'0\') as currentCode,
+                    currentStand,
                     userName,
                     standName,
                     (standName REGEXP \'SERVIS$\') AS isServiceStand,
@@ -257,7 +259,6 @@ class BikeRepository
                 }
             }
         }
-
         unset($bike);
 
         return $bikes;
@@ -314,38 +315,6 @@ class BikeRepository
         );
     }
 
-    public function findCurrentCode(int $bikeNum): ?string
-    {
-        $result = $this->db->query(
-            'SELECT currentCode FROM bikes WHERE bikeNum = :bikeNum',
-            ['bikeNum' => $bikeNum]
-        );
-        $row = $result->fetchAssoc();
-
-        return $row ? sprintf('%04d', $row['currentCode']) : null;
-    }
-
-    public function countRentedByUser(int $userId): int
-    {
-        $result = $this->db->query(
-            'SELECT count(*) as countRented FROM bikes WHERE currentUser = :userId',
-            ['userId' => $userId]
-        );
-
-        return (int)$result->fetchAssoc()['countRented'];
-    }
-
-    public function findCurrentStandId(int $bikeNum): ?int
-    {
-        $result = $this->db->query(
-            'SELECT currentStand FROM bikes WHERE bikeNum = :bikeNum',
-            ['bikeNum' => $bikeNum]
-        );
-        $row = $result->fetchAssoc();
-
-        return $row && $row['currentStand'] !== null ? (int)$row['currentStand'] : null;
-    }
-
     public function assignToUser(int $bikeNum, int $userId, string $newCode): void
     {
         $this->db->query(
@@ -393,40 +362,5 @@ class BikeRepository
                 'bikeNum' => $bikeNum,
             ]
         );
-    }
-
-    public function isRentedByUser(int $bikeNum, int $userId): bool
-    {
-        $result = $this->db->query(
-            'SELECT bikeNum FROM bikes WHERE currentUser = :userId AND bikeNum = :bikeNum',
-            [
-                'userId' => $userId,
-                'bikeNum' => $bikeNum,
-            ]
-        );
-
-        return $result->rowCount() > 0;
-    }
-
-    public function findCurrentUserId(int $bikeNum): ?int
-    {
-        $result = $this->db->query(
-            'SELECT currentUser FROM bikes WHERE bikeNum = :bikeNum AND currentUser IS NOT NULL',
-            ['bikeNum' => $bikeNum]
-        );
-
-        if (!$result->rowCount()) {
-            return null;
-        }
-
-        return (int)$result->fetchAssoc()['currentUser'];
-    }
-
-    public function findRentedBikeNumsByUser(int $userId): array
-    {
-        return $this->db->query(
-            'SELECT bikeNum FROM bikes WHERE currentUser = :userId ORDER BY bikeNum',
-            ['userId' => $userId]
-        )->fetchAllAssoc();
     }
 }

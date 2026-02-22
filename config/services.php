@@ -176,7 +176,6 @@ return static function (ContainerConfigurator $container): void {
         ->bind(
             '$watchesConfig',
             [
-                'stack' => env('int:WATCHES_STACK'),
                 'longrental' => env('int:WATCHES_LONG_RENTAL'),
                 'freetime' => env('int:WATCHES_FREE_TIME'),
                 'flatpricecycle' => env('int:WATCHES_FLAT_PRICE_CYCLE'),
@@ -184,6 +183,7 @@ return static function (ContainerConfigurator $container): void {
                 'doublepricecyclecap' => env('int:WATCHES_DOUBLE_PRICE_CYCLE_CAP'),
             ]
         )
+        ->bind('$stackWatchEnabled', env('bool:WATCHES_STACK'))
         ->bind('$forceStack', env('bool:FORCE_STACK'));
 
     $services->load('BikeShare\\SmsConnector\\', '../src/SmsConnector')
