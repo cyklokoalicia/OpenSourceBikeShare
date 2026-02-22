@@ -65,6 +65,8 @@ class BikeRepository
             'SELECT
                     bikes.bikeNum,
                     currentUser as userId,
+                    LPAD(currentCode, 4, \'0\') as currentCode,
+                    currentStand,
                     userName,
                     standName,
                     (standName REGEXP \'SERVIS$\') AS isServiceStand,
@@ -257,7 +259,6 @@ class BikeRepository
                 }
             }
         }
-
         unset($bike);
 
         return $bikes;
@@ -310,6 +311,55 @@ class BikeRepository
             [
                 'bikeNumber' => $bikeNumber,
                 'newCode' => $newCode,
+            ]
+        );
+    }
+
+    public function assignToUser(int $bikeNum, int $userId, string $newCode): void
+    {
+        $this->db->query(
+            'UPDATE bikes SET currentUser = :userId, currentCode = :newCode, currentStand = NULL
+             WHERE bikeNum = :bikeNum',
+            [
+                'userId' => $userId,
+                'newCode' => $newCode,
+                'bikeNum' => $bikeNum,
+            ]
+        );
+    }
+
+    public function returnToStand(int $bikeNum, int $standId, ?int $userId = null): void
+    {
+        if ($userId !== null) {
+            $this->db->query(
+                'UPDATE bikes SET currentUser = NULL, currentStand = :standId
+                 WHERE bikeNum = :bikeNum AND currentUser = :userId',
+                [
+                    'standId' => $standId,
+                    'bikeNum' => $bikeNum,
+                    'userId' => $userId,
+                ]
+            );
+        } else {
+            $this->db->query(
+                'UPDATE bikes SET currentUser = NULL, currentStand = :standId WHERE bikeNum = :bikeNum',
+                [
+                    'standId' => $standId,
+                    'bikeNum' => $bikeNum,
+                ]
+            );
+        }
+    }
+
+    public function revertToStand(int $bikeNum, int $standId, string $code): void
+    {
+        $this->db->query(
+            'UPDATE bikes SET currentUser = NULL, currentStand = :standId, currentCode = :code
+             WHERE bikeNum = :bikeNum',
+            [
+                'standId' => $standId,
+                'code' => $code,
+                'bikeNum' => $bikeNum,
             ]
         );
     }

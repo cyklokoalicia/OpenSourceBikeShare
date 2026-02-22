@@ -71,7 +71,7 @@ class NoteRepository
         );
     }
 
-    public function addNoteToBike(int $bikeNumber, int $userId, string $note): void
+    public function addNoteToBike(int $bikeNumber, int $userId, string $note): int
     {
         $this->db->query(
             'INSERT INTO notes (bikeNum, userId, note, time)
@@ -83,6 +83,8 @@ class NoteRepository
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
+
+        return $this->db->getLastInsertId();
     }
 
     public function deleteStandNote(int $standId, ?string $notePattern): int
