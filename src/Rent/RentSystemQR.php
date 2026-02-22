@@ -23,8 +23,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         string $standName,
         ?string $note = null,
         bool $force = false
-    ): RentSystemResult
-    {
+    ): RentSystemResult {
         $force = false; #return by qr code cannot be forced
         $note = ''; #note cannot be provided via qr code
 
@@ -37,34 +36,34 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
             );
         }
 
-        $rentedBikes = $this->bikeRepository->findRentedBikeNumsByUser($userId);
-        $bikeNumber = count($rentedBikes);
+        $rentedBikedByUser = $this->bikeRepository->findRentedBikesByUserId($userId);
+        $countRented = count($rentedBikedByUser);
 
-        if ($bikeNumber === 0) {
+        if ($countRented === 0) {
             return $this->error(
                 $this->translator->trans('You currently have no rented bikes.'),
                 'bike.return.error.no_rented_bikes'
             );
-        } elseif ($bikeNumber > 1) {
+        } elseif ($countRented > 1) {
             $message = $this->translator->trans(
                 'You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web or SMS to return the bikes.',
-                ['bikeNumber' => $bikeNumber]
+                ['bikeNumber' => $countRented]
             );
             if (!$this->isSmsSystemEnabled) {
                 $message = $this->translator->trans(
                     'You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web to return the bikes.',
-                    ['bikeNumber' => $bikeNumber]
+                    ['bikeNumber' => $countRented]
                 );
             }
 
             return $this->error(
                 $message,
                 'bike.return.error.multiple_rented_bikes',
-                ['bikeNumber' => $bikeNumber],
+                ['bikeNumber' => $countRented],
             );
         }
 
-        $bikeId = $rentedBikes[0]['bikeNum'];
+        $bikeId = $rentedBikedByUser[0]['bikeNum'];
 
         return parent::returnBike($userId, $bikeId, $standName, $note, $force);
     }

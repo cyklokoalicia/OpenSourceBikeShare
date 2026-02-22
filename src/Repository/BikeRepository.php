@@ -259,7 +259,6 @@ class BikeRepository
                 }
             }
         }
-
         unset($bike);
 
         return $bikes;
@@ -316,16 +315,6 @@ class BikeRepository
         );
     }
 
-    public function countRentedByUser(int $userId): int
-    {
-        $result = $this->db->query(
-            'SELECT count(*) as countRented FROM bikes WHERE currentUser = :userId',
-            ['userId' => $userId]
-        );
-
-        return (int)$result->fetchAssoc()['countRented'];
-    }
-
     public function assignToUser(int $bikeNum, int $userId, string $newCode): void
     {
         $this->db->query(
@@ -373,13 +362,5 @@ class BikeRepository
                 'bikeNum' => $bikeNum,
             ]
         );
-    }
-
-    public function findRentedBikeNumsByUser(int $userId): array
-    {
-        return $this->db->query(
-            'SELECT bikeNum FROM bikes WHERE currentUser = :userId ORDER BY bikeNum',
-            ['userId' => $userId]
-        )->fetchAllAssoc();
     }
 }

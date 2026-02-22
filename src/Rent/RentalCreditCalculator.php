@@ -9,9 +9,6 @@ use BikeShare\Enum\CreditChangeType;
 use BikeShare\Repository\HistoryRepository;
 use Symfony\Component\Clock\ClockInterface;
 
-/**
- * @phpcs:disable Generic.Files.LineLength
- */
 class RentalCreditCalculator
 {
     public function __construct(

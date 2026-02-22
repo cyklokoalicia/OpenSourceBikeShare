@@ -46,8 +46,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
     public function rentBike(int $userId, int $bikeId, bool $force = false): RentSystemResult
     {
-        $stacktopbike = false;
-
         $bike = $this->bikeRepository->findItem($bikeId);
         if (empty($bike)) {
             return $this->error(
@@ -57,7 +55,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             );
         }
 
-        if ($force == false) {
+        if ($force === false) {
             if ($bike['userId'] == $userId) {
                 $currentCode = $bike['currentCode'];
                 return $this->error(
@@ -95,9 +93,11 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 );
             }
 
-            $countRented = $this->bikeRepository->countRentedByUser($userId);
+            $rentedBikedByUser = $this->bikeRepository->findRentedBikesByUserId($userId);
+            $countRented = count($rentedBikedByUser);
+
             $user = $this->userRepository->findItem($userId);
-            $limit = (int)($user['userLimit'] ?? 0);
+            $limit = $user['userLimit'];
 
             if ($countRented >= $limit) {
                 if ($limit == 0) {
@@ -116,7 +116,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             if ($this->forceStack || $this->stackWatchEnabled) {
                 $standid = $bike['currentStand'];
-                $stacktopbike = $this->standRepository->findLastReturnedBikeOnStand((int)$standid);
+                $stackTopBike = $this->standRepository->findLastReturnedBikeOnStand((int)$standid);
 
                 $stand = $this->standRepository->findItem((int)$standid);
                 $serviceTag = $stand['serviceTag'] ?? 0;
@@ -128,33 +128,33 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     );
                 }
 
-                if ($this->stackWatchEnabled && $stacktopbike != $bikeId) {
+                if ($this->stackWatchEnabled && $stackTopBike != $bikeId) {
                     $standName = $stand['standName'] ?? '';
                     $userName = $user['userName'] ?? '';
                     $this->notifyAdmins(
                         $this->translator->trans(
                             'Bike {bikeNumber} rented out of stack by {userName}. {stackTopBike} was on the top of the stack at {standName}.',
-                            ['bikeNumber' => $bikeId, 'userName' => $userName, 'stackTopBike' => $stacktopbike, 'standName' => $standName]
+                            ['bikeNumber' => $bikeId, 'userName' => $userName, 'stackTopBike' => $stackTopBike, 'standName' => $standName]
                         ),
                         false, //bySms
                     );
                 }
 
-                if ($this->forceStack && $stacktopbike != $bikeId) {
+                if ($this->forceStack && $stackTopBike != $bikeId) {
                     return $this->error(
                         $this->translator->trans(
                             'Bike {bikeNumber} is not rentable now, you have to rent bike {stackTopBike} from this stand.',
-                            ['bikeNumber' => $bikeId, 'stackTopBike' => $stacktopbike]
+                            ['bikeNumber' => $bikeId, 'stackTopBike' => $stackTopBike]
                         ),
                         'bike.rent.error.stack_top_bike',
-                        ['bikeNumber' => $bikeId, 'stackTopBike' => $stacktopbike]
+                        ['bikeNumber' => $bikeId, 'stackTopBike' => $stackTopBike]
                     );
                 }
             }
         }
 
         $currentCode = $bike['currentCode'];
-        $note = $bike['notes'] ?? '';
+        $note = $bike['notes'];
 
         $newCode = sprintf('%04d', rand(100, 9900)); //do not create a code with more than one leading zero or more than two leading 9s (kind of unusual/unsafe).
 
@@ -191,8 +191,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         string $standName,
         ?string $note = null,
         bool $force = false
-    ): RentSystemResult
-    {
+    ): RentSystemResult {
         $stand = strtoupper($standName);
 
         $standData = $this->standRepository->findItemByName($stand);
@@ -211,8 +210,8 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $bike = $this->bikeRepository->findItem($bikeId);
 
-        if ($force == false) {
-            if (empty($bike) || (int)($bike['userId'] ?? 0) !== $userId) {
+        if ($force === false) {
+            if (empty($bike) || $bike['userId'] != $userId) {
                 return $this->error(
                     $this->translator->trans('You currently have no rented bikes.'),
                     'bike.return.error.no_rented_bikes'
@@ -220,7 +219,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             }
         }
 
-        $currentCode = $bike['currentCode'] ?? '';
+        $currentCode = $bike['currentCode'];
 
         $this->bikeRepository->returnToStand($bikeId, $standId, $force ? null : $userId);
 
