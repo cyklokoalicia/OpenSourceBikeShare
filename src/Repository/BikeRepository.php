@@ -20,7 +20,7 @@ class BikeRepository
                     userName,
                     standName,
                     (standName REGEXP \'SERVIS$\') AS isServiceStand,
-                    GROUP_CONCAT(note SEPARATOR \'; \') as notes,
+                    GROUP_CONCAT(notes.note SEPARATOR \'; \') as notes,
                     null as rentTime
                 FROM bikes
                          LEFT JOIN users ON bikes.currentUser=users.userId
@@ -70,7 +70,7 @@ class BikeRepository
                     userName,
                     standName,
                     (standName REGEXP \'SERVIS$\') AS isServiceStand,
-                    GROUP_CONCAT(note SEPARATOR \'; \') as notes,
+                    GROUP_CONCAT(notes.note SEPARATOR \'; \') as notes,
                     null as rentTime
                 FROM bikes
                          LEFT JOIN users ON bikes.currentUser=users.userId
@@ -113,7 +113,7 @@ class BikeRepository
     {
         $notes = $this->db->query(
             'SELECT 
-                 GROUP_CONCAT(note ORDER BY time SEPARATOR \'; \') as notes
+                 GROUP_CONCAT(notes.note ORDER BY notes.time SEPARATOR \'; \') as notes
              FROM notes 
              WHERE bikeNum = :bikeNumber
                  AND deleted IS NULL 

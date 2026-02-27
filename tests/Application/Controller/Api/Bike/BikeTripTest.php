@@ -28,11 +28,9 @@ class BikeTripTest extends BikeSharingWebTestCase
         $rentSystemFactory->rentBike($user->getUserId(), self::BIKE_NUMBER, true);
         $rentSystemFactory->returnBike($user->getUserId(), self::BIKE_NUMBER, self::STAND_NAME);
 
-        $this->client->request(Request::METHOD_GET, '/api/bike/' . self::BIKE_NUMBER . '/trip');
+        $this->client->request(Request::METHOD_GET, '/api/v1/admin/bikes/' . self::BIKE_NUMBER . '/trip');
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response);
-        $responseData = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $responseData = $this->decodeApiResponseData();
         foreach ($responseData as $trip) {
             $this->assertArrayHasKey('longitude', $trip);
             $this->assertArrayHasKey('latitude', $trip);
@@ -44,7 +42,7 @@ class BikeTripTest extends BikeSharingWebTestCase
             ['sender' => self::ADMIN_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/bike/' . self::BIKE_NUMBER . '/trip',
+            '/api/v1/admin/bikes/' . self::BIKE_NUMBER . '/trip',
             $received['sms_text'],
             'Received message is not logged'
         );

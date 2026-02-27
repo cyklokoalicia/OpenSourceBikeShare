@@ -119,13 +119,6 @@ $(document).ready(function () {
     });
 });
 
-function handleresponse(elementid, jsonobject, display) {
-    if (typeof display === 'undefined') {
-        const alertType = jsonobject.error === 1 ? 'danger' : 'success';
-        $('#' + elementid).html(`<div class="alert alert-${alertType}" role="alert">${jsonobject.message}</div>`).fadeIn();
-    }
-}
-
 function generateBikeCards(data) {
     const $container = $("#fleetconsole");
     const $template = $("#bike-card-template");
@@ -181,13 +174,19 @@ function generateBikeCards(data) {
 
 function bikeInfo(bikeNumber) {
     $.ajax({
-        url: "/api/bike" + (bikeNumber ? "/" + bikeNumber : ""),
+        url: bikeNumber ? ("/api/v1/admin/bikes/" + bikeNumber) : "/api/v1/admin/bikes",
         method: "GET",
         dataType: "json",
         success: function(response) {
+            response = apiData(response);
+            if (!Array.isArray(response)) {
+                response = response ? [response] : [];
+            }
+
             generateBikeCards(response);
         },
         error: function(xhr, status, error) {
+            handleApiError(xhr, 'Unable to load bike data.', 'fleetconsole');
             console.error("Error fetching bike data:", error);
         }
     });
@@ -195,10 +194,11 @@ function bikeInfo(bikeNumber) {
 
 function last(bikeNumber) {
     $.ajax({
-        url: "/api/bike/" + bikeNumber + "/lastUsage",
+        url: "/api/v1/admin/bikes/" + bikeNumber + "/last-usage",
         method: "GET",
         dataType: "json",
         success: function(data) {
+            data = apiData(data) || {};
             $container = $("#bikeLastUsage .modal-body");
             $container.empty();
 
@@ -234,6 +234,7 @@ function last(bikeNumber) {
             $('#bikeLastUsage').modal()
         },
         error: function(xhr, status, error) {
+            handleApiError(xhr, 'Unable to load bike history.', 'fleetconsole');
             console.error("Error fetching bike data:", error);
         }
     });
@@ -275,15 +276,26 @@ function generateStandCards(data) {
     });
 }
 
-function stands(standId) {
+function stands(standName) {
+    const hasStandName = standName !== undefined && standName !== null && standName !== '';
+    const url = hasStandName
+        ? ("/api/v1/admin/stands/" + encodeURIComponent(String(standName)))
+        : "/api/v1/admin/stands";
+
     $.ajax({
-        url: "/api/stand" + (standId ? "/" + standId : ""),
+        url: url,
         method: "GET",
         dataType: "json",
         success: function(response) {
+            response = apiData(response);
+            if (!Array.isArray(response)) {
+                response = response ? [response] : [];
+            }
+
             generateStandCards(response);
         },
         error: function(xhr, status, error) {
+            handleApiError(xhr, 'Unable to load stand data.', 'standsconsole');
             console.error("Error fetching stand data:", error);
         }
     });
@@ -294,8 +306,11 @@ function userlist() {
     let table = $('#user-table').DataTable({
         destroy: true,
         ajax: {
-            url: '/api/user',
-            dataSrc: '',
+            url: '/api/v1/admin/users',
+            dataSrc: function (response) {
+                const payload = apiData(response);
+                return Array.isArray(payload) ? payload : [];
+            },
             cache: true
         },
         layout: {
@@ -332,6 +347,7 @@ function userlist() {
             }
         ],
         error: function(xhr, error, code) {
+            handleApiError(xhr, 'Unable to load users.', 'userconsole');
             console.error('Error loading data:', error);
         }
     });
@@ -365,8 +381,11 @@ function userstats() {
         info: false,
         searching: false,
         ajax: {
-            url: '/api/report/user/',
-            dataSrc: '',
+            url: '/api/v1/admin/reports/users',
+            dataSrc: function (response) {
+                const payload = apiData(response);
+                return Array.isArray(payload) ? payload : [];
+            },
             cache: true,
         },
         order: [[3, 'desc']],
@@ -386,12 +405,13 @@ function userstats() {
             }
         ],
         error: function(xhr, error, code) {
+            handleApiError(xhr, 'Unable to load user report.', 'reportsconsole');
             console.error('Error loading daily report data:', error);
         }
     });
 
     $('#year').off('change.report-user').on('change.report-user', function() {
-        table.ajax.url('/api/report/user/' + $('#year').val());
+        table.ajax.url('/api/v1/admin/reports/users/' + $('#year').val());
         table.ajax.reload();
     });
 }
@@ -406,8 +426,11 @@ function usagestats() {
         info: false,
         searching: false,
         ajax: {
-            url: '/api/report/daily',
-            dataSrc: '',
+            url: '/api/v1/admin/reports/daily',
+            dataSrc: function (response) {
+                const payload = apiData(response);
+                return Array.isArray(payload) ? payload : [];
+            },
             cache: true,
         },
         order: [[0, 'desc']],
@@ -423,6 +446,7 @@ function usagestats() {
             }
         ],
         error: function(xhr, error, code) {
+            handleApiError(xhr, 'Unable to load usage report.', 'reportsconsole');
             console.error('Error loading user report data:', error);
         }
     });
@@ -438,8 +462,11 @@ function inactivebikesreport() {
         info: false,
         searching: false,
         ajax: {
-            url: '/api/report/inactiveBikes',
-            dataSrc: '',
+            url: '/api/v1/admin/reports/inactive-bikes',
+            dataSrc: function (response) {
+                const payload = apiData(response);
+                return Array.isArray(payload) ? payload : [];
+            },
             cache: true,
         },
         order: [[3, 'desc']],
@@ -455,6 +482,7 @@ function inactivebikesreport() {
             { data: 'inactiveDays' }
         ],
         error: function(xhr, error, code) {
+            handleApiError(xhr, 'Unable to load inactive bikes report.', 'reportsconsole');
             console.error('Error loading inactive bikes report data:', error);
         }
     });
@@ -462,10 +490,11 @@ function inactivebikesreport() {
 
 function edituser(userid) {
     $.ajax({
-        url: "/api/user/" + userid,
+        url: "/api/v1/admin/users/" + userid,
         method: "GET",
         dataType: "json",
         success: function(data) {
+            data = apiData(data) || {};
             $container = $("#edituser");
             $container.find('input').val('');
             $container.find('#userid').val(data.userId);
@@ -483,6 +512,7 @@ function edituser(userid) {
             }, 500);
         },
         error: function(xhr, status, error) {
+            handleApiError(xhr, 'Unable to load user details.', 'userconsole');
             console.error("Error fetching user data:", error);
         }
     });
@@ -492,8 +522,8 @@ function saveuser(userId) {
     if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-saveuser', userId);
 
     $.ajax({
-        url: "/api/user/" + userId,
-        method: "PUT",
+        url: "/api/v1/admin/users/" + userId,
+        method: "PATCH",
         dataType: "json",
         data: {
             'username': $('#username').val(),
@@ -508,6 +538,7 @@ function saveuser(userId) {
             userlist();
         },
         error: function(xhr, status, error) {
+            handleApiError(xhr, 'Unable to update user.', 'userconsole');
             console.error("Error update user data:", error);
         }
     });
@@ -517,11 +548,10 @@ function addcredit(userId, multiplier) {
     if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-addcredit', userId, multiplier);
 
     $.ajax({
-        url: "/api/credit",
+        url: "/api/v1/admin/users/" + userId + "/credit",
         method: "PUT",
         dataType: "json",
         data: {
-            'userId': userId,
             'multiplier': multiplier
         },
         success: function(data) {
@@ -529,6 +559,7 @@ function addcredit(userId, multiplier) {
             userlist();
         },
         error: function(xhr, status, error) {
+            handleApiError(xhr, 'Unable to add credit.', 'userconsole');
             console.error("Error update user data:", error);
         }
     });
@@ -536,10 +567,11 @@ function addcredit(userId, multiplier) {
 
 function couponlist() {
     $.ajax({
-        url: "/api/coupon",
+        url: "/api/v1/admin/coupons",
         method: "GET",
         dataType: "json",
         success: function(data) {
+            data = apiData(data) || [];
             const $container = $("#creditconsole");
             const $table = $('#coupon-table-template').clone();
             const $tableBody = $table.find('tbody');
@@ -559,6 +591,7 @@ function couponlist() {
             $container.append($table);
         },
         error: function(xhr, status, error) {
+            handleApiError(xhr, 'Unable to load coupons.', 'creditconsole');
             console.error("Error fetching coupon data:", error);
         }
     });
@@ -567,7 +600,7 @@ function couponlist() {
 function generatecoupons(multiplier) {
     if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-generatecoupons', multiplier);
     $.ajax({
-        url: "/api/coupon/generate",
+        url: "/api/v1/admin/coupons/generate",
         method: "POST",
         dataType: "json",
         data: {multiplier: multiplier},
@@ -575,6 +608,7 @@ function generatecoupons(multiplier) {
             couponlist();
         },
         error: function(xhr, status, error) {
+            handleApiError(xhr, 'Unable to generate coupons.', 'creditconsole');
             console.error("Error sell coupon:", error);
         }
     });
@@ -582,14 +616,14 @@ function generatecoupons(multiplier) {
 
 function sellcoupon(coupon) {
     $.ajax({
-        url: "/api/coupon/sell",
+        url: "/api/v1/admin/coupons/" + coupon + "/sell",
         method: "POST",
         dataType: "json",
-        data: {coupon: coupon},
         success: function() {
             couponlist();
         },
         error: function(xhr, status, error) {
+            handleApiError(xhr, 'Unable to sell coupon.', 'creditconsole');
             console.error("Error sell coupon:", error);
         }
     });
@@ -598,43 +632,45 @@ function sellcoupon(coupon) {
 function trips() {
     if (window.ga) ga('send', 'event', 'bikes', 'trips', $('#bikeNumber').val());
     $.ajax({
-        url: "/api/bike/" + $('#bikeNumber').val() + "/trip" ,
+        url: "/api/v1/admin/bikes/" + $('#bikeNumber').val() + "/trip",
         method: "GET",
         dataType: "json"
     }).done(function (jsonObject) {
-        if (jsonObject.error == 1) {
-            handleresponse(elementid, jsonObject);
-        } else {
-            var polylines = [];
-            for (const bikeNumber in jsonObject) {
-                const points = jsonObject[bikeNumber];
-                const path = [];
+        jsonObject = apiData(jsonObject) || {};
+        var polylines = [];
+        for (const bikeNumber in jsonObject) {
+            const points = jsonObject[bikeNumber];
+            const path = [];
 
-                for (let i = 0, len = points.length; i < len; i++) {
-                    const lat = Number(points[i].latitude);
-                    const lng = Number(points[i].longitude);
-                    if (lat && lng) {
-                        path.push([lat, lng]);
-                    }
-                }
-
-                if (path.length > 1) {
-                    const bikeColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-                    polylines[bikeNumber] = L.polyline(path, { color: bikeColor }).addTo(map);
+            for (let i = 0, len = points.length; i < len; i++) {
+                const lat = Number(points[i].latitude);
+                const lng = Number(points[i].longitude);
+                if (lat && lng) {
+                    path.push([lat, lng]);
                 }
             }
+
+            if (path.length > 1) {
+                const bikeColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+                polylines[bikeNumber] = L.polyline(path, { color: bikeColor }).addTo(map);
+            }
         }
+    }).fail(function (xhr) {
+        handleApiError(xhr, 'Unable to load bike trips.', 'fleetconsole');
     });
 }
 
 function revert(bikeNumber) {
     if (window.ga) ga('send', 'event', 'bikes', 'revert', bikeNumber);
     $.ajax({
-        url: "/api/bike/" + bikeNumber + "/revert",
-        method: "PUT",
+        url: "/api/v1/admin/reverts",
+        method: "POST",
         dataType: "json",
+        data: {bikeNumber: bikeNumber},
     }).done(function (jsonobject) {
-        handleresponse("fleetconsole", jsonobject);
+        handleApiResponse(jsonobject, 'fleetconsole');
+    }).fail(function (xhr) {
+        handleApiError(xhr, 'Unable to revert bike.', 'fleetconsole');
     });
 }
 
@@ -670,20 +706,16 @@ function submitSetCode() {
     $submitButton.prop('disabled', true);
 
     $.ajax({
-        url: "/api/bike/" + bikeNumber + "/code",
-        method: "PUT",
+        url: "/api/v1/admin/bikes/" + bikeNumber + "/lock-code",
+        method: "PATCH",
         dataType: "json",
         data: {code: code},
     }).done(function (jsonobject) {
         $('#setBikeCodeModal').modal('hide');
-        handleresponse("fleetconsole", jsonobject);
+        handleApiResponse(jsonobject, 'fleetconsole');
         bikeInfo();
     }).fail(function (xhr) {
-        var message = errorMessage;
-        if (xhr.responseJSON && xhr.responseJSON.message) {
-            message = xhr.responseJSON.message;
-        }
-
+        var message = apiProblemMessage(xhr.responseJSON, errorMessage);
         $alert.removeClass('d-none').text(message);
     }).always(function () {
         $submitButton.prop('disabled', false);
@@ -693,11 +725,13 @@ function submitSetCode() {
 function removeNote(bikeNumber) {
     if (window.ga) ga('send', 'event', 'bikes', 'remove-note', bikeNumber);
     $.ajax({
-        url: "/api/bike/" + bikeNumber + "/removeNote",
+        url: "/api/v1/admin/bikes/" + bikeNumber + "/notes",
         method: "DELETE",
         dataType: "json",
     }).done(function (jsonobject) {
-        handleresponse("fleetconsole", jsonobject);
+        handleApiResponse(jsonobject, 'fleetconsole');
         bikeInfo();
+    }).fail(function (xhr) {
+        handleApiError(xhr, 'Unable to remove note.', 'fleetconsole');
     });
 }

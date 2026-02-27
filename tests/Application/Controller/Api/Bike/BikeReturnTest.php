@@ -64,11 +64,13 @@ class BikeReturnTest extends BikeSharingWebTestCase
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);
 
-        $this->client->request(Request::METHOD_PUT, '/api/bike/' . self::BIKE_NUMBER . '/rent');
+        $this->client->request(
+            Request::METHOD_POST,
+            '/api/v1/rentals',
+            ['bikeNumber' => self::BIKE_NUMBER]
+        );
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertFalse($response['error'], 'Response with error: ' . $response['message']);
@@ -83,16 +85,16 @@ class BikeReturnTest extends BikeSharingWebTestCase
         );
 
         $this->client->request(
-            Request::METHOD_PUT,
-            '/api/bike/' . self::BIKE_NUMBER . '/return/' . self::STAND_NAME,
+            Request::METHOD_POST,
+            '/api/v1/returns',
             [
+                'bikeNumber' => self::BIKE_NUMBER,
+                'standName' => self::STAND_NAME,
                 'note' => 'Bike returned from api test',
             ]
         );
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertArrayHasKey('code', $response, 'Response does not contain code');
         $this->assertArrayHasKey('params', $response, 'Response does not contain params');
@@ -133,7 +135,7 @@ class BikeReturnTest extends BikeSharingWebTestCase
             ['sender' => self::USER_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/bike/' . self::BIKE_NUMBER . '/return/' . self::STAND_NAME,
+            '/api/v1/returns',
             $received['sms_text'],
             'Received message is not logged'
         );

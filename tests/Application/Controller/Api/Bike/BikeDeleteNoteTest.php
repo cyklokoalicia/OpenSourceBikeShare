@@ -21,11 +21,9 @@ class BikeDeleteNoteTest extends BikeSharingWebTestCase
             ->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
         $this->client->loginUser($admin);
 
-        $this->client->request(Request::METHOD_DELETE, '/api/bike/' . self::BIKE_NUMBER . '/removeNote');
+        $this->client->request(Request::METHOD_DELETE, '/api/v1/admin/bikes/' . self::BIKE_NUMBER . '/notes');
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
@@ -35,7 +33,7 @@ class BikeDeleteNoteTest extends BikeSharingWebTestCase
             ['sender' => self::ADMIN_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/bike/' . self::BIKE_NUMBER . '/removeNote',
+            '/api/v1/admin/bikes/' . self::BIKE_NUMBER . '/notes',
             $received['sms_text'],
             'Received message is not logged'
         );

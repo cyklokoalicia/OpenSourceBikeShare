@@ -72,6 +72,7 @@ class StandRepository
                     standPhoto,
                     serviceTag,
                     placeName,
+                    city,
                     longitude,
                     latitude
                 FROM stands
@@ -94,6 +95,7 @@ class StandRepository
                     standPhoto,
                     serviceTag,
                     placeName,
+                    city,
                     longitude,
                     latitude
                 FROM stands

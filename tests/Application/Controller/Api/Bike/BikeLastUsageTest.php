@@ -31,11 +31,9 @@ class BikeLastUsageTest extends BikeSharingWebTestCase
         $rentSystemFactory->rentBike($user->getUserId(), self::BIKE_NUMBER);
         $rentSystemFactory->revertBike($user->getUserId(), self::BIKE_NUMBER);
 
-        $this->client->request(Request::METHOD_GET, '/api/bike/' . self::BIKE_NUMBER . '/lastUsage');
+        $this->client->request(Request::METHOD_GET, '/api/v1/admin/bikes/' . self::BIKE_NUMBER . '/last-usage');
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response);
-        $responseData = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $responseData = $this->decodeApiResponseData();
 
         $this->assertArrayHasKey('notes', $responseData);
         $this->assertArrayHasKey('history', $responseData);
