@@ -84,8 +84,16 @@ class UsersController extends AbstractController
     {
         $userId = $this->getUser()->getUserId();
         $creditHistory = $creditSystem->getUserCreditHistory($userId);
+        $data = array_map(static function (array $entry): array {
+            return [
+                'date' => $entry['date']->format(\DateTimeInterface::ATOM),
+                'amount' => $entry['amount'],
+                'type' => $entry['type'],
+                'balance' => $entry['balance'],
+            ];
+        }, $creditHistory);
 
-        return $this->json($creditHistory);
+        return $this->json($data);
     }
 
     public function trips(HistoryRepository $historyRepository): Response
