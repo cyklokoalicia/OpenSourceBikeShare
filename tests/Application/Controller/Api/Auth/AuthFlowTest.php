@@ -29,6 +29,8 @@ class AuthFlowTest extends BikeSharingWebTestCase
         $this->assertArrayHasKey('accessToken', $tokenPayload);
         $this->assertArrayHasKey('refreshToken', $tokenPayload);
         $this->assertArrayHasKey('tokenType', $tokenPayload);
+        $this->assertArrayHasKey('phoneConfirmed', $tokenPayload);
+        $this->assertIsBool($tokenPayload['phoneConfirmed']);
         $this->assertSame('Bearer', $tokenPayload['tokenType']);
         $this->assertSame('v1', $this->getTokenHeaderField($tokenPayload['accessToken'], 'kid'));
 
@@ -53,6 +55,8 @@ class AuthFlowTest extends BikeSharingWebTestCase
 
         $this->assertArrayHasKey('accessToken', $refreshedPayload);
         $this->assertArrayHasKey('refreshToken', $refreshedPayload);
+        $this->assertArrayHasKey('phoneConfirmed', $refreshedPayload);
+        $this->assertIsBool($refreshedPayload['phoneConfirmed']);
         $this->assertNotSame($tokenPayload['accessToken'], $refreshedPayload['accessToken']);
         $this->assertNotSame($tokenPayload['refreshToken'], $refreshedPayload['refreshToken']);
     }

@@ -14,7 +14,7 @@ class LoginControllerTest extends BikeSharingWebTestCase
     private const USER_PHONE_NUMBER = '421951555555';
     private const USER_PHONE_PASSWORD = 'password';
 
-    protected function setup(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
