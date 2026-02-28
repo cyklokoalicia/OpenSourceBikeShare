@@ -325,4 +325,57 @@ class HistoryRepository
 
         return $result;
     }
+
+    /**
+     * Returns last N trips (rent then return) for a user.
+     * Each trip has: rentTime, bikeNumber, returnTime (null if not yet returned), standName (null if not returned).
+     *
+     * @return array<int, array{rentTime: string, bikeNumber: int, returnTime: string|null, standName: string|null}>
+     */
+    public function findUserTripHistory(int $userId, int $limit = 10): array
+    {
+        $rows = $this->db->query(
+            "SELECT
+              h.bikeNum AS bikeNumber,
+              h.time AS rentTime,
+              (SELECT r.time FROM history r
+               WHERE r.userId = h.userId AND r.bikeNum = h.bikeNum
+                 AND r.action IN (:returnAction, :forceReturnAction) AND r.time >= h.time
+               ORDER BY r.time ASC LIMIT 1) AS returnTime,
+              (SELECT s.standName FROM history r
+               LEFT JOIN stands s ON s.standId = r.parameter
+               WHERE r.userId = h.userId AND r.bikeNum = h.bikeNum
+                 AND r.action IN (:returnAction2, :forceReturnAction2) AND r.time >= h.time
+               ORDER BY r.time ASC LIMIT 1) AS standName
+            FROM history h
+            WHERE h.userId = :userId AND h.action IN (:rentAction, :forceRentAction)
+            ORDER BY h.time DESC, h.id DESC
+            LIMIT :limit",
+            [
+                'userId' => $userId,
+                'rentAction' => Action::RENT->value,
+                'forceRentAction' => Action::FORCE_RENT->value,
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
+                'returnAction2' => Action::RETURN->value,
+                'forceReturnAction2' => Action::FORCE_RETURN->value,
+                'limit' => $limit,
+            ]
+        )->fetchAllAssoc();
+
+        $trips = [];
+        foreach ($rows as $row) {
+            $standName = isset($row['standName']) && $row['standName'] !== null && $row['standName'] !== ''
+                ? $row['standName']
+                : null;
+            $trips[] = [
+                'rentTime' => $row['rentTime'],
+                'bikeNumber' => (int)$row['bikeNumber'],
+                'returnTime' => isset($row['returnTime']) && $row['returnTime'] !== null ? $row['returnTime'] : null,
+                'standName' => $standName,
+            ];
+        }
+
+        return $trips;
+    }
 }
