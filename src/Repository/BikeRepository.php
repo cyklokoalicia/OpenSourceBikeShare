@@ -31,6 +31,7 @@ class BikeRepository
         )->fetchAllAssoc();
 
         foreach ($bikes as &$bike) {
+            $bike['isServiceStand'] = (bool) $bike['isServiceStand'];
             /**
              * Should be optimized to one query
              */
@@ -82,6 +83,12 @@ class BikeRepository
                 'bikeNumber' => $bikeNumber,
             ]
         )->fetchAssoc();
+
+        if (empty($bike)) {
+            return [];
+        }
+
+        $bike['isServiceStand'] = (bool) $bike['isServiceStand'];
 
         /**
          * Should be optimized to one query

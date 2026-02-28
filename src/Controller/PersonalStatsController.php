@@ -31,7 +31,11 @@ class PersonalStatsController extends AbstractController
 
         $userId = $userRepository->findItemByPhoneNumber($this->getUser()->getUserIdentifier())['userId'];
         $stats = $statsRepository->getUserStatsForYear((int)$userId, (int)$year);
-        $stands = $standRepository->findAll();
+        $standsList = $standRepository->findAll();
+        $stands = [];
+        foreach ($standsList as $stand) {
+            $stands[$stand['standId']] = $stand;
+        }
 
         return $this->render('stats.html.twig', [
             'stats' => $stats,
