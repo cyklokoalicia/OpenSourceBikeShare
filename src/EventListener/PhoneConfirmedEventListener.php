@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\App\Entity\User;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -13,6 +14,8 @@ use Symfony\Bundle\SecurityBundle\Security;
 class PhoneConfirmedEventListener
 {
     private const ALLOWED_ROUTES = [
+        'api_v1_user_phone_confirm_request',
+        'api_v1_user_phone_confirm_verify',
         'sms_request',
         'sms_request_old',
         'user_confirm_email',
@@ -52,11 +55,24 @@ class PhoneConfirmedEventListener
             return;
         }
 
-        if (in_array($event->getRequest()->attributes->get('_route'), self::ALLOWED_ROUTES)) {
+        if ($user->isNumberConfirmed()) {
             return;
         }
 
-        if (!$user->isNumberConfirmed()) {
+        $request = $event->getRequest();
+        $path = $request->getPathInfo();
+        $route = $request->attributes->get('_route');
+
+        if (in_array($route, self::ALLOWED_ROUTES, true)) {
+            return;
+        }
+
+        if (str_starts_with($path, '/api/v1')) {
+            $event->setResponse(new JsonResponse(
+                ['detail' => 'Phone number must be confirmed.'],
+                JsonResponse::HTTP_FORBIDDEN
+            ));
+        } else {
             $redirectUrl = $this->urlGenerator->generate('user_confirm_phone');
             $event->setResponse(new RedirectResponse($redirectUrl));
         }

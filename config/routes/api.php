@@ -12,7 +12,12 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_v1_auth_logout', '/api/v1/auth/logout')
         ->methods(['POST'])
         ->controller([\BikeShare\Controller\Api\V1\AuthController::class, 'logout']);
-
+    $routes->add('api_v1_auth_register', '/api/v1/auth/register')
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\Api\V1\AuthController::class, 'register']);
+    $routes->add('api_v1_auth_cities', '/api/v1/auth/cities')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\V1\AuthController::class, 'cities']);
     $routes->add('api_v1_stands', '/api/v1/admin/stands')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\V1\Admin\StandsController::class, 'index']);
@@ -111,6 +116,12 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_v1_me_trips', '/api/v1/me/trips')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\V1\UsersController::class, 'trips']);
+    $routes->add('api_v1_user_phone_confirm_request', '/api/v1/user/phone-confirm/request')
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\Api\V1\UsersController::class, 'phoneConfirmRequest']);
+    $routes->add('api_v1_user_phone_confirm_verify', '/api/v1/user/phone-confirm/verify')
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\Api\V1\UsersController::class, 'phoneConfirmVerify']);
 
     $routes->add('api_v1_admin_user_credit_add', '/api/v1/admin/users/{userId}/credit')
         ->methods(['PUT'])
