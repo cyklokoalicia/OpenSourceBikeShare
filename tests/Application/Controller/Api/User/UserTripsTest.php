@@ -38,6 +38,7 @@ class UserTripsTest extends BikeSharingWebTestCase
             $this->assertArrayHasKey('bikeNumber', $first);
             $this->assertArrayHasKey('returnTime', $first);
             $this->assertArrayHasKey('standName', $first);
+            $this->assertArrayHasKey('fromStandName', $first);
         }
     }
 
