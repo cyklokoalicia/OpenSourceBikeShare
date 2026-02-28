@@ -10,16 +10,9 @@ use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 
 class PersonalStatsController extends AbstractController
 {
-    #[Route(
-        path: '/personalStats/year/{year}',
-        name: 'personal_stats_year',
-        requirements: ['year' => '\d+'],
-        methods: ['GET'],
-    )]
     public function yearStats(
         StatsRepository $statsRepository,
         StandRepository $standRepository,

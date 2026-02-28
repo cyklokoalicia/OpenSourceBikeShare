@@ -22,21 +22,17 @@ class StandDeleteNoteTest extends BikeSharingWebTestCase
             ->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
         $this->client->loginUser($admin);
 
-        $this->client->request(Request::METHOD_DELETE, '/api/stand/' . self::STAND_NAME . '/removeNote');
+        $this->client->request(Request::METHOD_DELETE, '/api/v1/admin/stands/' . self::STAND_NAME . '/notes');
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
-        $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
-        $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
 
         $received = $this->client->getContainer()->get(DbInterface::class)->query(
             'SELECT * FROM received WHERE sender = :sender ORDER BY receive_time DESC, id DESC LIMIT 1',
             ['sender' => self::ADMIN_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/stand/' . self::STAND_NAME . '/removeNote',
+            '/api/v1/admin/stands/' . self::STAND_NAME . '/notes',
             $received['sms_text'],
             'Received message is not logged'
         );

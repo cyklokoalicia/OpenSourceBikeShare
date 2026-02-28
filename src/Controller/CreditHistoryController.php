@@ -8,15 +8,9 @@ use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 
 class CreditHistoryController extends AbstractController
 {
-    #[Route(
-        path: '/credit/history',
-        name: 'credit_history',
-        methods: ['GET'],
-    )]
     public function history(
         CreditSystemInterface $creditSystem,
         UserRepository $userRepository,

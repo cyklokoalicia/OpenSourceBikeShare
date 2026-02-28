@@ -5,6 +5,7 @@ var sidebar;
 var firstrun = 1;
 var watchID, circle, polyline;
 var temp = "";
+
 $(document).ready(function () {
     $('#overlay').hide();
     $('#standactions').hide();
@@ -159,10 +160,11 @@ function mapinit() {
 function getmarkers() {
     $.ajax({
         global: false,
-        url: "/api/stand/markers",
+        url: "/api/v1/stands/markers",
         method: "GET",
         dataType: "json"
     }).done(function (jsonObject) {
+        jsonObject = apiData(jsonObject) || [];
         const body = $('body');
         const iconSizeArr = [iconsize, iconsize];
         const iconAnchorArr = [iconsize / 2, 0];
@@ -222,10 +224,11 @@ function getmarkers() {
 function getuserstatus() {
     $.ajax({
         global: false,
-        url: "/api/user/limit",
+        url: "/api/v1/me/limits",
         method: "GET",
         dataType: "json"
     }).done(function (jsonObject) {
+        jsonObject = apiData(jsonObject) || {};
         $('body').data('limit', jsonObject.limit);
         $('body').data('rented', jsonObject.rented);
         if ($('#userCredit').length) {
@@ -290,9 +293,10 @@ function showstand(e, clear) {
         }
         $.ajax({
             global: false,
-            url: "/api/stand/" + markerdata[standid].name + "/bike",
+            url: "/api/v1/stands/" + markerdata[standid].name + "/bikes",
             dataType: "json"
         }).done(function (jsonobject) {
+            jsonobject = apiData(jsonobject) || {};
             let bikeList = '';
             let bikes = jsonobject.bikesOnStand || [];
             let stackTopBike = jsonobject.stackTopBike;
@@ -356,6 +360,8 @@ function showstand(e, clear) {
                 $('#standcount').removeClass('badge badge-success').addClass('badge badge-danger');
                 resetstandbikes();
             }
+        }).fail(function (xhr) {
+            handleApiError(xhr, 'Unable to load stand bikes.');
         });
     } else {
         $('#standcount').html(window.translations['No bicycles']);
@@ -390,10 +396,11 @@ function showstand(e, clear) {
 function rentedbikes() {
     $.ajax({
         global: false,
-        url: "/api/user/bike",
+        url: "/api/v1/me/bikes",
         dataType: "json"
     }).done(function (jsonArray) {
-        handleresponse(jsonArray, 0);
+        jsonArray = apiData(jsonArray) || [];
+        handleApiResponse(jsonArray);
         var bikeList = "";
         if (jsonArray.length > 0) {
             for (var i = 0, len = jsonArray.length; i < len; i++) {
@@ -476,23 +483,25 @@ function rent() {
     if ($('#rent .bikenumber').html() == "") return false;
     if (window.ga) ga('send', 'event', 'bikes', 'rent', $('#rent .bikenumber').html());
     $.ajax({
-        url: "/api/bike/" + $('#rent .bikenumber').html() + "/rent",
-        method: "PUT",
-        dataType: "json"
+        url: "/api/v1/rentals",
+        method: "POST",
+        dataType: "json",
+        data: {
+            bikeNumber: $('#rent .bikenumber').html()
+        }
     }).done(function (jsonobject) {
-        handleresponse(jsonobject);
+        jsonobject = apiData(jsonobject) || {};
+        handleApiResponse(jsonobject);
         resetbutton("rent");
         $('body').data("limit", $('body').data("limit") - 1);
         if ($("body").data("limit") < 0) $("body").data("limit", 0);
         standid = $('#stands').val();
         markerdata = $('body').data('markerdata');
         standbiketotal = markerdata[standid].count;
-        if (jsonobject.error == 0) {
-            $('.b' + $('#rent .bikenumber').html()).remove();
-            standbiketotal = (standbiketotal * 1) - 1;
-            markerdata[standid].count = standbiketotal;
-            $('body').data('markerdata', markerdata);
-        }
+        $('.b' + $('#rent .bikenumber').html()).remove();
+        standbiketotal = (standbiketotal * 1) - 1;
+        markerdata[standid].count = standbiketotal;
+        $('body').data('markerdata', markerdata);
         if (standbiketotal == 0) {
             $('#standcount').removeClass('label-success').addClass('label-danger');
         } else {
@@ -503,6 +512,8 @@ function rent() {
         getmarkers();
         getuserstatus();
         showstand(standid, 0);
+    }).fail(function (xhr) {
+        handleApiError(xhr, 'Unable to rent bike.');
     });
 }
 
@@ -513,23 +524,24 @@ function returnbike() {
     if (window.ga) ga('send', 'event', 'bikes', 'return', $('#return .bikenumber').html());
     if (window.ga) ga('send', 'event', 'stands', 'return', standname);
     $.ajax({
-        url: "/api/bike/" + $('#return .bikenumber').html() + "/return/" + standname,
-        method: "PUT",
+        url: "/api/v1/returns",
+        method: "POST",
         dataType: "json",
         data: {
-            'note': $('#notetext').val()
+            bikeNumber: $('#return .bikenumber').html(),
+            standName: standname,
+            note: $('#notetext').val()
         }
     }).done(function (jsonobject) {
-        handleresponse(jsonobject);
+        jsonobject = apiData(jsonobject) || {};
+        handleApiResponse(jsonobject);
         $('.b' + $('#return .bikenumber').html()).remove();
         resetbutton("return");
         markerdata = $('body').data('markerdata');
         standbiketotal = markerdata[standid].count;
-        if (jsonobject.error == 0) {
-            standbiketotal = (standbiketotal * 1) + 1;
-            markerdata[standid].count = standbiketotal
-            $('body').data('markerdata', markerdata);
-        }
+        standbiketotal = (standbiketotal * 1) + 1;
+        markerdata[standid].count = standbiketotal
+        $('body').data('markerdata', markerdata);
         if (standbiketotal == 0) {
             $('#standcount').removeClass('label-success');
             $('#standcount').addClass('label-danger');
@@ -539,20 +551,25 @@ function returnbike() {
         getmarkers();
         getuserstatus();
         showstand(standid, 0);
+    }).fail(function (xhr) {
+        handleApiError(xhr, 'Unable to return bike.');
     });
 }
 
 function changecity() {
     $.ajax({
-        url: "/api/user/changeCity",
-        method: "PUT",
+        url: "/api/v1/me/city",
+        method: "PATCH",
         dataType: "json",
         data: {
             city: $('#citychange').val(),
         }
     }).done(function (jsonObject) {
+        jsonObject = apiData(jsonObject) || {};
         console.log(jsonObject);
         location.reload();
+    }).fail(function (xhr) {
+        handleApiError(xhr, 'Unable to change city.');
     });
 }
 
@@ -562,24 +579,33 @@ function validatecoupon() {
     var code = $input.val();
 
     $.ajax({
-        url: "/api/coupon/use",
+        url: "/api/v1/coupons/redeem",
         method: "POST",
         dataType: "json",
         data: { coupon: code }
     }).done(function (response) {
-        var alertClass = response.error == 1 ? 'alert-danger' : 'alert-success';
-        $message.html('<div class="alert ' + alertClass + '" role="alert">' + response.message + '</div>');
+        response = apiData(response) || {};
+        const successMessage = response.message || 'Coupon redeemed.';
+        const $alert = $('<div/>', {
+            class: 'alert alert-success',
+            role: 'alert'
+        }).text(successMessage);
+        $message.empty().append($alert);
 
-        if (response.error !== 1) {
-            getuserstatus();
-            setTimeout(function () {
-                $('#creditModal').modal('hide');
-                $input.val('');
-                $message.empty();
-            }, 2500);
-        }
-    }).fail(function () {
-        $message.html('<div class="alert alert-danger" role="alert">An error occurred. Please try again.</div>');
+        getuserstatus();
+        setTimeout(function () {
+            $('#creditModal').modal('hide');
+            $input.val('');
+            $message.empty();
+        }, 2500);
+    }).fail(function (xhr) {
+        const fallback = 'An error occurred. Please try again.';
+        const message = apiProblemMessage(xhr.responseJSON, fallback);
+        const $alert = $('<div/>', {
+            class: 'alert alert-danger',
+            role: 'alert'
+        }).text(message);
+        $message.empty().append($alert);
     });
 }
 
@@ -597,19 +623,6 @@ function checkonebikeattach() {
     if ($("#rentedbikes .btn-group").length == 1) {
         element = $("#rentedbikes .btn-group .btn");
         attachbicycleinfo(element, "return");
-    }
-}
-
-function handleresponse(jsonobject, display) {
-    if (display == undefined) {
-        if (jsonobject.error == 1) {
-            $('#console').html('<div class="alert alert-danger" role="alert">' + jsonobject.message + '</div>').fadeIn();
-        } else {
-            $('#console').html('<div class="alert alert-success" role="alert">' + jsonobject.message + '</div>');
-        }
-    }
-    if (jsonobject.limit) {
-        if (jsonobject.limit) $("body").data("limit", jsonobject.limit);
     }
 }
 

@@ -47,11 +47,9 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
         $admin = $this->client->getContainer()->get(UserProvider::class)
             ->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
         $this->client->loginUser($admin);
-        $this->client->request('POST', '/api/coupon/generate', ['multiplier' => 1]);
+        $this->client->request('POST', '/api/v1/admin/coupons/generate', ['multiplier' => 1]);
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse();
-        $this->assertJson($response->getContent());
-        $response = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
@@ -61,7 +59,7 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
             ['sender' => self::ADMIN_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/coupon/generate',
+            '/api/v1/admin/coupons/generate',
             $received['sms_text'],
             'Received message is not logged'
         );
@@ -79,11 +77,9 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
 
 
         #get coupons
-        $this->client->request('GET', '/api/coupon');
+        $this->client->request('GET', '/api/v1/admin/coupons');
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse();
-        $this->assertJson($response->getContent());
-        $response = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $coupon = $response[0]['coupon'] ?? null;
         $this->assertNotNull($coupon, 'Coupon not found in response');
 
@@ -92,7 +88,7 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
             ['sender' => self::ADMIN_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/coupon',
+            '/api/v1/admin/coupons',
             $received['sms_text'],
             'Received message is not logged'
         );
@@ -112,11 +108,9 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);
 
-        $this->client->request('POST', '/api/coupon/use', ['coupon' => $coupon]);
+        $this->client->request('POST', '/api/v1/coupons/redeem', ['coupon' => $coupon]);
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse();
-        $this->assertJson($response->getContent());
-        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $data = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $data, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $data, 'Response does not contain error key');
         $this->assertSame(0, $data['error'], 'Response with error: ' . $data['message']);
@@ -130,7 +124,7 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
             ['sender' => self::USER_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/coupon/use',
+            '/api/v1/coupons/redeem',
             $received['sms_text'],
             'Received message is not logged'
         );

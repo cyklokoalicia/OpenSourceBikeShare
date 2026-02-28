@@ -153,4 +153,31 @@ class NoteRepository
 
         return $result->rowCount();
     }
+
+    public function findActiveNotes(int $bikeNum): string
+    {
+        $result = $this->db->query(
+            'SELECT note FROM notes WHERE bikeNum = :bikeNum AND deleted IS NULL ORDER BY time DESC',
+            ['bikeNum' => $bikeNum]
+        );
+
+        $notes = '';
+        while ($row = $result->fetchAssoc()) {
+            $notes .= $row['note'] . '; ';
+        }
+
+        return $notes !== '' ? substr($notes, 0, -2) : '';
+    }
+
+    public function findLatestNote(int $bikeNum): ?string
+    {
+        $result = $this->db->query(
+            'SELECT note FROM notes WHERE bikeNum = :bikeNum AND deleted IS NULL ORDER BY time DESC LIMIT 1',
+            ['bikeNum' => $bikeNum]
+        );
+
+        $row = $result->fetchAssoc();
+
+        return $row['note'] ?? null;
+    }
 }

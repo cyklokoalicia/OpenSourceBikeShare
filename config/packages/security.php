@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use BikeShare\App\Security\ApiAccessDeniedHandler;
+use BikeShare\App\Security\ApiV1Authenticator;
 use BikeShare\App\Security\ApiServiceUserProvider;
-use BikeShare\App\Security\ApiTokenAuthenticator;
 use BikeShare\App\Security\TokenProvider;
 use BikeShare\App\Security\UserConfirmedEmailChecker;
 use BikeShare\App\Security\UserProvider;
@@ -42,20 +42,16 @@ return function (SecurityConfig $security) {
         ->pattern('^/(_(profiler|wdt)|css|images|js)/')
         ->security(false);
 
-    $apiFirewall = $security->firewall('api');
+    $apiFirewall = $security->firewall('api_v1');
     $apiFirewall
-        ->provider('api_service_user_provider')
+        ->provider('app_user_provider')
         ->security(true)
-        ->pattern('^/api')
+        ->pattern('^/api/v1')
         ->context('main')
         ->accessDeniedHandler(ApiAccessDeniedHandler::class)
-        ->entryPoint(ApiTokenAuthenticator::class);
+        ->entryPoint(ApiV1Authenticator::class);
     $apiFirewall
-        ->customAuthenticators([ApiTokenAuthenticator::class]);
-    $security
-        ->accessControl()
-        ->path('^/api')
-        ->roles(['ROLE_USER', 'ROLE_API']);
+        ->customAuthenticators([ApiV1Authenticator::class]);
 
     $mainFirewall = $security->firewall('main');
     $mainFirewall
@@ -90,6 +86,22 @@ return function (SecurityConfig $security) {
         ->path('^/admin/qrCodeGenerator')
         ->roles(['ROLE_SUPER_ADMIN']);
 
+    $security
+        ->accessControl()
+        ->path('^/api/v1/auth/(token|refresh|logout)$')
+        ->roles(['PUBLIC_ACCESS']);
+    $security
+        ->accessControl()
+        ->path('^/api/v1/admin')
+        ->roles(['ROLE_ADMIN']);
+    $security
+        ->accessControl()
+        ->path('^/api/v1/stands/markers$')
+        ->roles(['ROLE_USER', 'ROLE_API']);
+    $security
+        ->accessControl()
+        ->path('^/api/v1')
+        ->roles(['ROLE_USER']);
     $security
         ->accessControl()
         ->path('^/login$')

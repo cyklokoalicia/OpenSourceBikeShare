@@ -34,15 +34,13 @@ class BikeSetCodeTest extends BikeSharingWebTestCase
         }
 
         $this->client->request(
-            Request::METHOD_PUT,
-            '/api/bike/' . self::BIKE_NUMBER . '/code',
+            Request::METHOD_PATCH,
+            '/api/v1/admin/bikes/' . self::BIKE_NUMBER . '/lock-code',
             ['code' => $newCode],
         );
 
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
 
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
@@ -78,7 +76,7 @@ class BikeSetCodeTest extends BikeSharingWebTestCase
             ['sender' => self::ADMIN_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/bike/' . self::BIKE_NUMBER . '/code',
+            '/api/v1/admin/bikes/' . self::BIKE_NUMBER . '/lock-code',
             $received['sms_text'],
             'Received message is not logged'
         );

@@ -9,13 +9,11 @@ use BikeShare\Repository\StandRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use TCPDF;
 
 class QrCodeGeneratorController extends AbstractController
 {
-    #[Route('/admin/qrCodeGenerator', name: 'qr_code_generator')]
     public function index(
         string $appName,
         BikeRepository $bikeRepository,

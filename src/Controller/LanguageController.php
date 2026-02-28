@@ -10,7 +10,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class LanguageController extends AbstractController
@@ -22,12 +21,6 @@ class LanguageController extends AbstractController
     ) {
     }
 
-    #[Route(
-        path: '/switchLanguage/{locale}',
-        name: 'switch_language',
-        requirements: ['locale' => '[a-z]{2}'],
-        defaults: ['locale' => 'en']
-    )]
     public function switchLanguage(Request $request, string $locale): Response
     {
         if (in_array($locale, $this->enabledLocales, true)) {
@@ -48,7 +41,6 @@ class LanguageController extends AbstractController
         return $this->redirectToRoute('home');
     }
 
-    #[Route(path: '/js/translations.json', name: 'js_translations')]
     public function getTranslations(): JsonResponse
     {
         $keys = [

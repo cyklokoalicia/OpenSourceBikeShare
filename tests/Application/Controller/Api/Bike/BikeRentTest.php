@@ -75,11 +75,13 @@ class BikeRentTest extends BikeSharingWebTestCase
             }
         );
 
-        $this->client->request(Request::METHOD_PUT, '/api/bike/' . self::BIKE_NUMBER . '/rent');
+        $this->client->request(
+            Request::METHOD_POST,
+            '/api/v1/rentals',
+            ['bikeNumber' => self::BIKE_NUMBER]
+        );
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertArrayHasKey('code', $response, 'Response does not contain code');
@@ -127,7 +129,7 @@ class BikeRentTest extends BikeSharingWebTestCase
             ['sender' => self::USER_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/bike/' . self::BIKE_NUMBER . '/rent',
+            '/api/v1/rentals',
             $received['sms_text'],
             'Received message is not logged'
         );
@@ -148,5 +150,30 @@ class BikeRentTest extends BikeSharingWebTestCase
             $sent['text'],
             'Log record does not contain lock code'
         );
+    }
+
+    public function testRentConflictReturnsBusinessDetail(): void
+    {
+        $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
+        $this->client->loginUser($user);
+
+        $this->client->request(
+            Request::METHOD_POST,
+            '/api/v1/rentals',
+            ['bikeNumber' => self::BIKE_NUMBER]
+        );
+        $this->assertResponseIsSuccessful();
+
+        $this->client->request(
+            Request::METHOD_POST,
+            '/api/v1/rentals',
+            ['bikeNumber' => self::BIKE_NUMBER]
+        );
+
+        $this->assertResponseStatusCodeSame(409);
+        $payload = $this->decodeJsonResponse();
+        $this->assertArrayHasKey('detail', $payload);
+        $this->assertNotEmpty($payload['detail']);
+        $this->assertNotSame('Conflict', $payload['detail']);
     }
 }

@@ -54,11 +54,9 @@ class StandBikeListTest extends BikeSharingWebTestCase
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);
 
-        $this->client->request('GET', '/api/stand/' . self::STAND_NAME . '/bike');
+        $this->client->request('GET', '/api/v1/stands/' . self::STAND_NAME . '/bikes');
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse();
-        $this->assertJson($response->getContent());
-        $data = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $data = $this->decodeApiResponseData();
         $this->assertEquals($expectedStackTopBike, $data['stackTopBike']);
         foreach ($data['bikesOnStand'] as $bike) {
             $this->assertArrayHasKey('bikeNum', $bike);

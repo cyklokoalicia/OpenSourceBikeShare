@@ -9,7 +9,6 @@ use BikeShare\Repository\UserSettingsRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 
 class UserSettingsController extends AbstractController
 {
@@ -18,7 +17,6 @@ class UserSettingsController extends AbstractController
     ) {
     }
 
-    #[Route('/user/settings/geolocation', name: 'user_settings_geolocation', methods: ['PUT'])]
     public function saveGeolocation(
         Request $request,
     ): Response {
