@@ -330,7 +330,13 @@ class HistoryRepository
      * Returns last N trips (rent then return) for a user.
      * Each trip has: rentTime, bikeNumber, returnTime, standName (to), fromStandName (from).
      *
-     * @return array<int, array{rentTime: string, bikeNumber: int, returnTime: string|null, standName: string|null, fromStandName: string|null}>
+     * @return array<int, array{
+     *   rentTime: string,
+     *   bikeNumber: int,
+     *   returnTime: string|null,
+     *   standName: string|null,
+     *   fromStandName: string|null
+     * }>
      */
     public function findUserTripHistory(int $userId, int $limit = 10): array
     {
@@ -378,10 +384,11 @@ class HistoryRepository
             $fromStandName = isset($row['fromStandName']) && $row['fromStandName'] !== null && $row['fromStandName'] !== ''
                 ? $row['fromStandName']
                 : null;
+            $returnTime = isset($row['returnTime']) && $row['returnTime'] !== null ? $row['returnTime'] : null;
             $trips[] = [
                 'rentTime' => $row['rentTime'],
                 'bikeNumber' => (int)$row['bikeNumber'],
-                'returnTime' => isset($row['returnTime']) && $row['returnTime'] !== null ? $row['returnTime'] : null,
+                'returnTime' => $returnTime,
                 'standName' => $standName,
                 'fromStandName' => $fromStandName,
             ];
