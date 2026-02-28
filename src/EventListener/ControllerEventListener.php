@@ -37,6 +37,7 @@ class ControllerEventListener
         'api_v1_admin_bike_notes_delete',
         'api_v1_admin_bike_set_code',
         'api_v1_coupon_redeem',
+        'api_v1_me_city',
         'api_v1_bike_trip',
         // Scan routes used by the public flow.
         'scan_bike',
