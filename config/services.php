@@ -117,6 +117,9 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\Controller\Api\V1\StandsController::class)
         ->bind('$forceStack', env('bool:FORCE_STACK'));
 
+    $services->get(\BikeShare\Controller\Api\V1\UsersController::class)
+        ->bind('$freeTimeMinutes', env('int:WATCHES_FREE_TIME'));
+
     $services->get(\BikeShare\SmsCommand\CommandExecutor::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
 

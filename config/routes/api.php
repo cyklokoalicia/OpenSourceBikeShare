@@ -105,6 +105,12 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_v1_me_limits', '/api/v1/me/limits')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\V1\UsersController::class, 'userLimit']);
+    $routes->add('api_v1_me_credit_history', '/api/v1/me/credit-history')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\V1\UsersController::class, 'creditHistory']);
+    $routes->add('api_v1_me_trips', '/api/v1/me/trips')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\V1\UsersController::class, 'trips']);
 
     $routes->add('api_v1_admin_user_credit_add', '/api/v1/admin/users/{userId}/credit')
         ->methods(['PUT'])
