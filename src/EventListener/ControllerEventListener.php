@@ -14,7 +14,6 @@ class ControllerEventListener
     private const LOGGED_ROUTES = [
         'api_v1_stands',
         'api_v1_stand_bikes',
-        'api_v1_stand_markers',
         'api_v1_admin_stand_item',
         'api_v1_admin_stand_notes_delete',
         'api_v1_admin_bikes',
@@ -39,8 +38,6 @@ class ControllerEventListener
         'api_v1_admin_bike_set_code',
         'api_v1_coupon_redeem',
         'api_v1_me_city',
-        'api_v1_me_bikes',
-        'api_v1_me_limits',
         'api_v1_bike_trip',
         // Scan routes used by the public flow.
         'scan_bike',
