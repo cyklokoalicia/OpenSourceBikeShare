@@ -376,24 +376,6 @@ class HistoryRepository
             ]
         )->fetchAllAssoc();
 
-        $trips = [];
-        foreach ($rows as $row) {
-            $standName = isset($row['standName']) && $row['standName'] !== null && $row['standName'] !== ''
-                ? $row['standName']
-                : null;
-            $fromStandName = isset($row['fromStandName']) && $row['fromStandName'] !== null && $row['fromStandName'] !== ''
-                ? $row['fromStandName']
-                : null;
-            $returnTime = isset($row['returnTime']) && $row['returnTime'] !== null ? $row['returnTime'] : null;
-            $trips[] = [
-                'rentTime' => $row['rentTime'],
-                'bikeNumber' => (int)$row['bikeNumber'],
-                'returnTime' => $returnTime,
-                'standName' => $standName,
-                'fromStandName' => $fromStandName,
-            ];
-        }
-
-        return $trips;
+        return $rows;
     }
 }
