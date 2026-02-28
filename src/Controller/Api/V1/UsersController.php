@@ -7,6 +7,7 @@ namespace BikeShare\Controller\Api\V1;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\CityRepository;
+use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +15,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UsersController extends AbstractController
 {
+    public function __construct(
+        private readonly int $freeTimeMinutes = 30,
+    ) {
+    }
+
     public function changeCity(
         UserRepository $userRepository,
         CityRepository $cityRepository,
@@ -68,8 +74,25 @@ class UsersController extends AbstractController
             'limit' => $userInfo['userLimit'] - count($userBikes),
             'rented' => count($userBikes),
             'userCredit' => $userCredit,
+            'freeTimeMinutes' => $this->freeTimeMinutes,
         ];
 
         return $this->json($result);
+    }
+
+    public function creditHistory(CreditSystemInterface $creditSystem): Response
+    {
+        $userId = $this->getUser()->getUserId();
+        $creditHistory = $creditSystem->getUserCreditHistory($userId);
+
+        return $this->json($creditHistory);
+    }
+
+    public function trips(HistoryRepository $historyRepository): Response
+    {
+        $userId = $this->getUser()->getUserId();
+        $trips = $historyRepository->findUserTripHistory($userId, 10);
+
+        return $this->json($trips);
     }
 }
