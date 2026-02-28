@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\SmsConnector;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -70,7 +71,7 @@ class EuroSmsConnector extends AbstractConnector
 
         $statusCode = $response->getStatusCode();
 
-        if ($statusCode < 200 || $statusCode >= 300) {
+        if ($statusCode < Response::HTTP_OK || $statusCode >= Response::HTTP_MULTIPLE_CHOICES) {
             // Potentially log error response content: $response->getContent(false)
             throw new \RuntimeException('Failed to send SMS. API responded with status code: ' . $statusCode);
         }

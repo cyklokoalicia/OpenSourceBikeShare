@@ -123,6 +123,28 @@ CREATE TABLE `remember_me_token` (
   PRIMARY KEY (`series`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `api_refresh_tokens`;
+CREATE TABLE `api_refresh_tokens` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tokenHash` char(64) NOT NULL,
+  `userId` int(11) UNSIGNED NOT NULL,
+  `familyId` char(32) NOT NULL,
+  `parentTokenHash` char(64) DEFAULT NULL,
+  `replacedByHash` char(64) DEFAULT NULL,
+  `expiresAt` datetime NOT NULL,
+  `createdAt` datetime NOT NULL,
+  `lastUsedAt` datetime DEFAULT NULL,
+  `revokedAt` datetime DEFAULT NULL,
+  `userAgent` varchar(255) DEFAULT NULL,
+  `ipAddress` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tokenHash` (`tokenHash`),
+  KEY `userId` (`userId`),
+  KEY `familyId` (`familyId`),
+  KEY `revokedAt` (`revokedAt`),
+  KEY `expiresAt` (`expiresAt`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 DROP TABLE IF EXISTS `stands`;
 CREATE TABLE `stands` (

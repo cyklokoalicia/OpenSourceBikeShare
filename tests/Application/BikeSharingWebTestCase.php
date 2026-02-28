@@ -50,6 +50,25 @@ abstract class BikeSharingWebTestCase extends WebTestCase
         $this->expected[] = ['level' => $level, 'pattern' => $pattern];
     }
 
+    protected function decodeJsonResponse(): array
+    {
+        $content = $this->client->getResponse()->getContent();
+        self::assertIsString($content, 'Response content is not a string');
+        self::assertJson($content, 'Response is not valid JSON');
+
+        return json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    protected function decodeApiResponseData(): mixed
+    {
+        $decoded = $this->decodeJsonResponse();
+        if (array_key_exists('data', $decoded)) {
+            return $decoded['data'];
+        }
+
+        return $decoded;
+    }
+
     protected function tearDown(): void
     {
         $logHandler = $this->client->getContainer()->get('monolog.handler.test');

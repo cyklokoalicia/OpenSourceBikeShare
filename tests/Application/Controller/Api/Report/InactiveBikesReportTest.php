@@ -62,11 +62,11 @@ class InactiveBikesReportTest extends BikeSharingWebTestCase
                AND sms_text = :uri',
             [
                 'sender' => self::ADMIN_PHONE_NUMBER,
-                'uri' => '/api/report/inactiveBikes',
+                'uri' => '/api/v1/admin/reports/inactive-bikes',
             ]
         )->fetchAssoc()['total'];
 
-        $this->client->request(Request::METHOD_GET, '/api/report/inactiveBikes');
+        $this->client->request(Request::METHOD_GET, '/api/v1/admin/reports/inactive-bikes');
         $this->assertResponseIsSuccessful();
 
         $receivedLogsAfter = (int)$db->query(
@@ -76,14 +76,12 @@ class InactiveBikesReportTest extends BikeSharingWebTestCase
                AND sms_text = :uri',
             [
                 'sender' => self::ADMIN_PHONE_NUMBER,
-                'uri' => '/api/report/inactiveBikes',
+                'uri' => '/api/v1/admin/reports/inactive-bikes',
             ]
         )->fetchAssoc()['total'];
         $this->assertSame($receivedLogsBefore + 1, $receivedLogsAfter);
 
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response);
-        $responseData = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $responseData = $this->decodeApiResponseData();
 
         $this->assertGreaterThanOrEqual(2, count($responseData));
 

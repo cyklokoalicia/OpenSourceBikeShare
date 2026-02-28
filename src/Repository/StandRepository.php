@@ -29,12 +29,7 @@ class StandRepository
                 ORDER BY standName'
         )->fetchAllAssoc();
 
-        $stands = [];
-        foreach ($result as $stand) {
-            $stands[$stand['standId']] = $stand;
-        }
-
-        return $stands;
+        return $result;
     }
 
     public function findAllExtended($city = null): array
@@ -72,6 +67,7 @@ class StandRepository
                     standPhoto,
                     serviceTag,
                     placeName,
+                    city,
                     longitude,
                     latitude
                 FROM stands
@@ -94,6 +90,7 @@ class StandRepository
                     standPhoto,
                     serviceTag,
                     placeName,
+                    city,
                     longitude,
                     latitude
                 FROM stands

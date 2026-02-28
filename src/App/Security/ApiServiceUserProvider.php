@@ -14,7 +14,7 @@ class ApiServiceUserProvider implements UserProviderInterface
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         // This provider does not support loading users by identifier.
-        // ApiServiceUser is created by the ApiTokenAuthenticator.
+        // ApiServiceUser is created by the API authenticator.
         throw new \LogicException('Not implemented.');
     }
 

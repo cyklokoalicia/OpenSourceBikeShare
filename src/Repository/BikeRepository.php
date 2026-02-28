@@ -20,7 +20,7 @@ class BikeRepository
                     userName,
                     standName,
                     (standName REGEXP \'SERVIS$\') AS isServiceStand,
-                    GROUP_CONCAT(note SEPARATOR \'; \') as notes,
+                    GROUP_CONCAT(notes.note SEPARATOR \'; \') as notes,
                     null as rentTime
                 FROM bikes
                          LEFT JOIN users ON bikes.currentUser=users.userId
@@ -31,6 +31,7 @@ class BikeRepository
         )->fetchAllAssoc();
 
         foreach ($bikes as &$bike) {
+            $bike['isServiceStand'] = (bool) $bike['isServiceStand'];
             /**
              * Should be optimized to one query
              */
@@ -70,7 +71,7 @@ class BikeRepository
                     userName,
                     standName,
                     (standName REGEXP \'SERVIS$\') AS isServiceStand,
-                    GROUP_CONCAT(note SEPARATOR \'; \') as notes,
+                    GROUP_CONCAT(notes.note SEPARATOR \'; \') as notes,
                     null as rentTime
                 FROM bikes
                          LEFT JOIN users ON bikes.currentUser=users.userId
@@ -82,6 +83,12 @@ class BikeRepository
                 'bikeNumber' => $bikeNumber,
             ]
         )->fetchAssoc();
+
+        if (empty($bike)) {
+            return [];
+        }
+
+        $bike['isServiceStand'] = (bool) $bike['isServiceStand'];
 
         /**
          * Should be optimized to one query
@@ -113,7 +120,7 @@ class BikeRepository
     {
         $notes = $this->db->query(
             'SELECT 
-                 GROUP_CONCAT(note ORDER BY time SEPARATOR \'; \') as notes
+                 GROUP_CONCAT(notes.note ORDER BY notes.time SEPARATOR \'; \') as notes
              FROM notes 
              WHERE bikeNum = :bikeNumber
                  AND deleted IS NULL 

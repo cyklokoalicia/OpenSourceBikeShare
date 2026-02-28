@@ -17,11 +17,9 @@ class UserLimitTest extends BikeSharingWebTestCase
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);
 
-        $this->client->request(Request::METHOD_GET, '/api/user/limit');
+        $this->client->request(Request::METHOD_GET, '/api/v1/me/limits');
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response);
-        $data = json_decode($response, true);
+        $data = $this->decodeApiResponseData();
         $this->assertArrayHasKey('limit', $data);
         $this->assertArrayHasKey('rented', $data);
         $this->assertArrayHasKey('userCredit', $data);

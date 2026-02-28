@@ -51,11 +51,9 @@ class UserChangeCityTest extends BikeSharingWebTestCase
         $originalCity = $user->getCity();
         $this->assertSame('Default City', $originalCity, 'User is not in default city');
 
-        $this->client->request('PUT', '/api/user/changeCity', ['city' => 'Bratislava']);
+        $this->client->request('PATCH', '/api/v1/me/city', ['city' => 'Bratislava']);
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse();
-        $this->assertJson($response->getContent());
-        $response = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertSame(0, $response['error'], 'Response with error: ' . $response['message']);
@@ -68,7 +66,7 @@ class UserChangeCityTest extends BikeSharingWebTestCase
             ['sender' => self::USER_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/user/changeCity',
+            '/api/v1/me/city',
             $received['sms_text'],
             'Received message is not logged'
         );

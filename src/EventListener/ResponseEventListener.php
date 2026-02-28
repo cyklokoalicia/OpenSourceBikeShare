@@ -7,26 +7,27 @@ namespace BikeShare\EventListener;
 use BikeShare\Db\DbInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class ResponseEventListener
 {
     private const LOGGED_ROUTES = [
-        'api_coupon_sell',
-        'api_coupon_generate',
-        'api_user_item_update',
-        'api_credit_add',
-        'api_bike_force_rent',
-        'api_bike_force_return',
-        'api_bike_rent',
-        'api_bike_return',
-        'api_bike_revert',
-        'api_bike_remove_note',
-        'api_bike_set_code',
-        'api_coupon_use',
-        'api_user_change_city',
-        'api_stand_remove_note',
+        'api_v1_admin_coupon_sell',
+        'api_v1_admin_coupon_generate',
+        'api_v1_admin_user_item_update',
+        'api_v1_admin_user_credit_add',
+        'api_v1_admin_rentals_force',
+        'api_v1_admin_returns_force',
+        'api_v1_rentals',
+        'api_v1_returns',
+        'api_v1_admin_reverts',
+        'api_v1_admin_bike_notes_delete',
+        'api_v1_admin_bike_set_code',
+        'api_v1_coupon_redeem',
+        'api_v1_me_city',
+        'api_v1_admin_stand_notes_delete',
     ];
 
     public function __construct(
@@ -49,7 +50,24 @@ class ResponseEventListener
         $user = $this->security->getUser();
         $number = is_object($user) ? $user->getUserIdentifier() : 'guest';
         if ($event->getResponse() instanceof JsonResponse) {
-            $response = json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['message'];
+            $content = $event->getResponse()->getContent();
+            try {
+                $decoded = json_decode((string)$content, true, 512, JSON_THROW_ON_ERROR);
+            } catch (\JsonException) {
+                $decoded = null;
+            }
+
+            $statusCode = $event->getResponse()->getStatusCode();
+            if (is_array($decoded)) {
+                if ($statusCode >= Response::HTTP_BAD_REQUEST) {
+                    $response = (string)($decoded['detail'] ?? '');
+                } else {
+                    $data = isset($decoded['data']) && is_array($decoded['data']) ? $decoded['data'] : [];
+                    $response = (string)($data['message'] ?? '');
+                }
+            } else {
+                $response = (string)$content;
+            }
         } else {
             $response = $event->getResponse()->getContent();
         }

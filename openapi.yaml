@@ -1,0 +1,517 @@
+openapi: 3.1.0
+info:
+  title: OpenSourceBikeShare API
+  version: "1.0.0"
+  description: |
+    Public API contract for OpenSourceBikeShare v1.
+    All successful responses are wrapped as `{data, meta}`.
+    Errors use `application/problem+json`.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+paths:
+  /auth/token:
+    post:
+      summary: Issue access and refresh tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [number, password]
+              properties:
+                number:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Auth tokens
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+        "400":
+          $ref: "#/components/responses/Problem"
+        "401":
+          $ref: "#/components/responses/Problem"
+  /auth/refresh:
+    post:
+      summary: Rotate refresh token and return new tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        "200":
+          description: Rotated tokens
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+        "400":
+          $ref: "#/components/responses/Problem"
+        "401":
+          $ref: "#/components/responses/Problem"
+  /auth/logout:
+    post:
+      summary: Revoke refresh token family
+      security: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        "200":
+          description: Logout result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/stands:
+    get:
+      summary: List stands (admin)
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "401":
+          $ref: "#/components/responses/Problem"
+  /admin/stands/{standName}:
+    get:
+      summary: Get stand details by name (admin)
+      parameters:
+        - $ref: "#/components/parameters/StandName"
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "404":
+          $ref: "#/components/responses/Problem"
+  /stands/{standName}/bikes:
+    get:
+      summary: List bikes on stand
+      parameters:
+        - $ref: "#/components/parameters/StandName"
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "404":
+          $ref: "#/components/responses/Problem"
+  /stands/markers:
+    get:
+      summary: List stand markers
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/bikes/{bikeNumber}:
+    get:
+      summary: Bike details (admin)
+      parameters:
+        - $ref: "#/components/parameters/BikeNumber"
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "404":
+          $ref: "#/components/responses/Problem"
+  /admin/bikes/{bikeNumber}/last-usage:
+    get:
+      summary: Bike last usage details (admin)
+      parameters:
+        - $ref: "#/components/parameters/BikeNumber"
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/bikes/{bikeNumber}/trip:
+    get:
+      summary: Bike trip points (admin)
+      parameters:
+        - $ref: "#/components/parameters/BikeNumber"
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /rentals:
+    post:
+      summary: Rent bike
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bikeNumber]
+              properties:
+                bikeNumber:
+                  type: integer
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "409":
+          $ref: "#/components/responses/Problem"
+  /returns:
+    post:
+      summary: Return bike
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bikeNumber, standName]
+              properties:
+                bikeNumber:
+                  type: integer
+                standName:
+                  type: string
+                note:
+                  type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "409":
+          $ref: "#/components/responses/Problem"
+  /me/bikes:
+    get:
+      summary: List bikes rented by current user
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /me/limits:
+    get:
+      summary: Current user limits and credit
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /me/city:
+    patch:
+      summary: Change current user city
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [city]
+              properties:
+                city:
+                  type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "400":
+          $ref: "#/components/responses/Problem"
+  /coupons/redeem:
+    post:
+      summary: Redeem coupon
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [coupon]
+              properties:
+                coupon:
+                  type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "400":
+          $ref: "#/components/responses/Problem"
+  /admin/bikes:
+    get:
+      summary: List bikes (admin)
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/bikes/{bikeNumber}/lock-code:
+    patch:
+      summary: Update lock code (admin)
+      parameters:
+        - $ref: "#/components/parameters/BikeNumber"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  pattern: '^\d{4}$'
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "400":
+          $ref: "#/components/responses/Problem"
+  /admin/reverts:
+    post:
+      summary: Revert bike state (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bikeNumber]
+              properties:
+                bikeNumber:
+                  type: integer
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "409":
+          $ref: "#/components/responses/Problem"
+  /admin/bikes/{bikeNumber}/notes:
+    delete:
+      summary: Remove bike notes (admin)
+      parameters:
+        - $ref: "#/components/parameters/BikeNumber"
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/stands/{standName}/notes:
+    delete:
+      summary: Remove stand notes (admin)
+      parameters:
+        - $ref: "#/components/parameters/StandName"
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/rentals/force:
+    post:
+      summary: Force rent bike (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bikeNumber]
+              properties:
+                bikeNumber:
+                  type: integer
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/returns/force:
+    post:
+      summary: Force return bike (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bikeNumber, standName]
+              properties:
+                bikeNumber:
+                  type: integer
+                standName:
+                  type: string
+                note:
+                  type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/users:
+    get:
+      summary: List users (admin)
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/users/{userId}:
+    get:
+      summary: User details (admin)
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+    patch:
+      summary: Update user (admin)
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "400":
+          $ref: "#/components/responses/Problem"
+  /admin/users/{userId}/credit:
+    put:
+      summary: Add credit to user (admin)
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [multiplier]
+              properties:
+                multiplier:
+                  type: integer
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "400":
+          $ref: "#/components/responses/Problem"
+  /admin/coupons:
+    get:
+      summary: List active coupons (admin)
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/coupons/generate:
+    post:
+      summary: Generate coupons (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [multiplier]
+              properties:
+                multiplier:
+                  type: integer
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/coupons/{coupon}/sell:
+    post:
+      summary: Mark coupon as sold (admin)
+      parameters:
+        - name: coupon
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/reports/daily:
+    get:
+      summary: Daily usage report (admin)
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/reports/users:
+    get:
+      summary: User usage report for current year (admin)
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+  /admin/reports/users/{year}:
+    get:
+      summary: User usage report by year (admin)
+      parameters:
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "400":
+          $ref: "#/components/responses/Problem"
+  /admin/reports/inactive-bikes:
+    get:
+      summary: Inactive bikes report (admin)
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    BikeNumber:
+      name: bikeNumber
+      in: path
+      required: true
+      schema:
+        type: integer
+    StandName:
+      name: standName
+      in: path
+      required: true
+      schema:
+        type: string
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    Success:
+      description: Success response envelope
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SuccessEnvelope"
+    Problem:
+      description: Problem details response
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+  schemas:
+    SuccessEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data: {}
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ResponseMeta:
+      type: object
+      required: [requestId, timestamp]
+      properties:
+        requestId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    Problem:
+      type: object
+      required: [type, title, status, detail, instance, requestId]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        requestId:
+          type: string

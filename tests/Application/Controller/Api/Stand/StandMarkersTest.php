@@ -30,11 +30,9 @@ class StandMarkersTest extends BikeSharingWebTestCase
             ->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);
 
-        $this->client->request(Request::METHOD_GET, '/api/stand/markers');
+        $this->client->request(Request::METHOD_GET, '/api/v1/stands/markers');
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         foreach ($response as $marker) {
             $this->assertArrayHasKey('standId', $marker, 'Marker does not contain standId');
             $this->assertArrayHasKey('bikeCount', $marker, 'Marker does not contain bikeCount');
@@ -50,13 +48,11 @@ class StandMarkersTest extends BikeSharingWebTestCase
     {
         $this->client->request(
             Request::METHOD_GET,
-            '/api/stand/markers',
+            '/api/v1/stands/markers',
             server: ['HTTP_AUTHORIZATION' => 'Bearer test-token']
         );
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         foreach ($response as $marker) {
             $this->assertArrayHasKey('standId', $marker, 'Marker does not contain standId');
             $this->assertArrayHasKey('bikeCount', $marker, 'Marker does not contain bikeCount');
@@ -66,5 +62,18 @@ class StandMarkersTest extends BikeSharingWebTestCase
             $this->assertArrayHasKey('longitude', $marker, 'Marker does not contain longitude');
             $this->assertArrayHasKey('latitude', $marker, 'Marker does not contain latitude');
         }
+    }
+
+    public function testServiceTokenCannotAccessStandList(): void
+    {
+        $this->client->request(
+            Request::METHOD_GET,
+            '/api/v1/admin/stands',
+            server: ['HTTP_AUTHORIZATION' => 'Bearer test-token']
+        );
+
+        $this->assertResponseStatusCodeSame(403);
+        $payload = $this->decodeJsonResponse();
+        $this->assertSame('Access denied', $payload['detail'] ?? null);
     }
 }

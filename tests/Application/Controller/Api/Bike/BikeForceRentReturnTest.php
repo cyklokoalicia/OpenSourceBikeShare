@@ -51,11 +51,13 @@ class BikeForceRentReturnTest extends BikeSharingWebTestCase
             }
         );
 
-        $this->client->request(Request::METHOD_PUT, '/api/bike/' . self::BIKE_NUMBER . '/forceRent');
+        $this->client->request(
+            Request::METHOD_POST,
+            '/api/v1/admin/rentals/force',
+            ['bikeNumber' => self::BIKE_NUMBER]
+        );
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertArrayHasKey('code', $response, 'Response does not contain code');
@@ -102,7 +104,7 @@ class BikeForceRentReturnTest extends BikeSharingWebTestCase
             ['sender' => self::ADMIN_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/bike/' . self::BIKE_NUMBER . '/forceRent',
+            '/api/v1/admin/rentals/force',
             $received['sms_text'],
             'Received message is not logged'
         );
@@ -126,16 +128,16 @@ class BikeForceRentReturnTest extends BikeSharingWebTestCase
 
         //ForceReturn
         $this->client->request(
-            Request::METHOD_PUT,
-            '/api/bike/' . self::BIKE_NUMBER . '/forceReturn/' . self::STAND_NAME,
+            Request::METHOD_POST,
+            '/api/v1/admin/returns/force',
             [
+                'bikeNumber' => self::BIKE_NUMBER,
+                'standName' => self::STAND_NAME,
                 'note' => 'Bike returned from api test',
             ]
         );
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertArrayHasKey('code', $response, 'Response does not contain code');
@@ -177,7 +179,7 @@ class BikeForceRentReturnTest extends BikeSharingWebTestCase
             ['sender' => self::ADMIN_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/bike/' . self::BIKE_NUMBER . '/forceReturn/' . self::STAND_NAME,
+            '/api/v1/admin/returns/force',
             $received['sms_text'],
             'Received message is not logged'
         );

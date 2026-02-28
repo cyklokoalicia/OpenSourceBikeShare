@@ -64,11 +64,13 @@ class UserBikeTest extends BikeSharingWebTestCase
         $this->client->loginUser($user);
 
         #rent bike
-        $this->client->request(Request::METHOD_PUT, '/api/bike/' . self::BIKE_NUMBER . '/rent');
+        $this->client->request(
+            Request::METHOD_POST,
+            '/api/v1/rentals',
+            ['bikeNumber' => self::BIKE_NUMBER]
+        );
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertArrayHasKey('code', $response, 'Response does not contain code');
@@ -86,11 +88,9 @@ class UserBikeTest extends BikeSharingWebTestCase
         $newCode = $response['params']['newCode'];
 
         #get user bikes info
-        $this->client->request(Request::METHOD_GET, '/api/user/bike');
+        $this->client->request(Request::METHOD_GET, '/api/v1/me/bikes');
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertCount(1, $response, 'Invalid number of rented bikes');
         $this->assertEquals(self::BIKE_NUMBER, $response[0]['bikeNum'], 'Invalid bike number');
         $this->assertSame($newCode, $response[0]['currentCode'], 'Invalid bike code');

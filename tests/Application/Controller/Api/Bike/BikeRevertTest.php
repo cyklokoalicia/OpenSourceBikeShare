@@ -62,11 +62,13 @@ class BikeRevertTest extends BikeSharingWebTestCase
         $this->client->loginUser($user);
 
         #rent bike
-        $this->client->request(Request::METHOD_PUT, '/api/bike/' . self::BIKE_NUMBER . '/rent');
+        $this->client->request(
+            Request::METHOD_POST,
+            '/api/v1/rentals',
+            ['bikeNumber' => self::BIKE_NUMBER]
+        );
         $this->assertResponseIsSuccessful();
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('message', $response, 'Response does not contain message key');
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertArrayHasKey('code', $response, 'Response does not contain code');
@@ -91,11 +93,11 @@ class BikeRevertTest extends BikeSharingWebTestCase
             }
         );
 
-        $this->client->request(Request::METHOD_PUT, '/api/bike/' . self::BIKE_NUMBER . '/revert');
+        $this->client->request(Request::METHOD_POST, '/api/v1/admin/reverts', [
+            'bikeNumber' => self::BIKE_NUMBER,
+        ]);
 
-        $response = $this->client->getResponse()->getContent();
-        $this->assertJson($response, 'Response is not JSON');
-        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $response = $this->decodeApiResponseData();
         $this->assertArrayHasKey('error', $response, 'Response does not contain error key');
         $this->assertArrayHasKey('code', $response, 'Response does not contain code');
         $this->assertArrayHasKey('params', $response, 'Response does not contain params');
@@ -163,7 +165,7 @@ class BikeRevertTest extends BikeSharingWebTestCase
             ['sender' => self::ADMIN_PHONE_NUMBER]
         )->fetchAssoc();
         $this->assertSame(
-            '/api/bike/' . self::BIKE_NUMBER . '/revert',
+            '/api/v1/admin/reverts',
             $received['sms_text'],
             'Received message is not logged'
         );

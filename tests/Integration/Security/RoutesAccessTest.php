@@ -10,22 +10,25 @@ use Symfony\Component\HttpFoundation\Request;
 class RoutesAccessTest extends BikeSharingKernelTestCase
 {
     private const ADMIN_ROUTES = [
-        '/api/bike' => 'GET',
-        '/api/bike/1' => 'GET',
-        '/api/bike/1/lastUsage' => 'GET',
-        '/api/coupon' => 'GET',
-        '/api/coupon/sell/1' => 'POST',
-        '/api/coupon/generate' => 'POST',
-        '/api/credit' => 'PUT',
-        '/api/report/daily' => 'GET',
-        '/api/report/inactiveBikes' => 'GET',
-        '/api/report/user/2025' => 'GET',
-        '/api/stand' => 'GET',
-        '/api/user' => 'GET',
-        '/api/user/1' => 'GET',
+        '/api/v1/admin/bikes' => Request::METHOD_GET,
+        '/api/v1/admin/bikes/1' => Request::METHOD_GET,
+        '/api/v1/admin/bikes/1/last-usage' => Request::METHOD_GET,
+        '/api/v1/admin/coupons' => Request::METHOD_GET,
+        '/api/v1/admin/coupons/ABC123/sell' => Request::METHOD_POST,
+        '/api/v1/admin/coupons/generate' => Request::METHOD_POST,
+        '/api/v1/admin/users/1/credit' => Request::METHOD_PUT,
+        '/api/v1/admin/reports/daily' => Request::METHOD_GET,
+        '/api/v1/admin/reports/inactive-bikes' => Request::METHOD_GET,
+        '/api/v1/admin/reports/users/2025' => Request::METHOD_GET,
+        '/api/v1/admin/stands' => Request::METHOD_GET,
+        '/api/v1/admin/users' => Request::METHOD_GET,
+        '/api/v1/admin/users/1' => Request::METHOD_GET,
     ];
 
     private const PUBLIC_ROUTES = [
+        '/api/v1/auth/token' => [Request::METHOD_POST],
+        '/api/v1/auth/refresh' => [Request::METHOD_POST],
+        '/api/v1/auth/logout' => [Request::METHOD_POST],
         '/login' => [],
         '/sms/receive.php' => [],
         '/receive.php' => [],

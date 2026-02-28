@@ -35,7 +35,7 @@ class ApiAccessDeniedHandler implements AccessDeniedHandlerInterface
         );
 
         return new JsonResponse(
-            ['code' => Response::HTTP_FORBIDDEN, 'message' => 'Access denied'],
+            ['detail' => 'Access denied'],
             Response::HTTP_FORBIDDEN
         );
     }

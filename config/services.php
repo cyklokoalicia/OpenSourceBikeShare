@@ -78,8 +78,16 @@ return static function (ContainerConfigurator $container): void {
             '../src/Rent/Enum',
         ]);
 
+    $services->get(\BikeShare\App\Security\ApiV1Authenticator::class)
+        ->bind('$validTokens', env('json:SERVICE_API_TOKENS'));
     $services->get(\BikeShare\App\Security\ApiTokenAuthenticator::class)
         ->bind('$validTokens', env('json:SERVICE_API_TOKENS'));
+    $services->get(\BikeShare\App\Security\JwtTokenService::class)
+        ->bind('$secret', env('APP_SECRET'))
+        ->bind('$accessTtlSeconds', env('int:API_JWT_ACCESS_TTL'))
+        ->bind('$refreshTtlSeconds', env('int:API_JWT_REFRESH_TTL'))
+        ->bind('$activeKeyId', env('API_JWT_ACTIVE_KID'))
+        ->bind('$keys', env('json:API_JWT_KEYS'));
 
     $services->get(\BikeShare\Command\LongRentalCheckCommand::class)
         ->bind('$notifyUser', env('bool:NOTIFY_USER_ABOUT_LONG_RENTAL'))
@@ -106,7 +114,7 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\Controller\EmailConfirmController::class)
         ->bind('$userBikeLimitAfterRegistration', env('int:USER_BIKE_LIMIT_AFTER_REGISTRATION'));
 
-    $services->get(\BikeShare\Controller\Api\StandController::class)
+    $services->get(\BikeShare\Controller\Api\V1\StandsController::class)
         ->bind('$forceStack', env('bool:FORCE_STACK'));
 
     $services->get(\BikeShare\SmsCommand\CommandExecutor::class)

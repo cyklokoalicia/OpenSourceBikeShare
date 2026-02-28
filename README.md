@@ -63,3 +63,34 @@ We will talk to you about the expectations, situation, bicycle theft, potential 
 First consultation is free, **get in touch**: [consult@whitebikes.info](mailto:consult@whitebikes.info)
 
 Follow us on Twitter: [@OpenBikeShare](https://twitter.com/OpenBikeshare)
+
+API v1
+---------
+The project now exposes versioned API endpoints under `/api/v1` with:
+
+* JWT access tokens + refresh tokens (`/api/v1/auth/token`, `/api/v1/auth/refresh`)
+* unified success envelopes: `{ "data": ..., "meta": ... }`
+* unified error format: `application/problem+json`
+* JWT key rotation support via `API_JWT_ACTIVE_KID` + `API_JWT_KEYS`
+
+An OpenAPI contract is available in `openapi.yaml`.
+
+JWT key rotation (`v1` -> `v2`)
+---------
+If `API_JWT_KEYS={}`, the service uses `APP_SECRET` for the active `kid`.
+
+1. Generate a new secret (at least 32 bytes).
+2. Deploy config that starts signing with `v2` but still verifies `v1`.
+
+```
+API_JWT_ACTIVE_KID=v2
+API_JWT_KEYS={"v1":"old-secret","v2":"new-secret"}
+```
+
+3. Wait at least `API_JWT_REFRESH_TTL` so old refresh tokens expire.
+4. Remove `v1` from verification keys.
+
+```
+API_JWT_ACTIVE_KID=v2
+API_JWT_KEYS={"v2":"new-secret"}
+```
