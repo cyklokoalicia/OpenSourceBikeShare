@@ -328,9 +328,9 @@ class HistoryRepository
 
     /**
      * Returns last N trips (rent then return) for a user.
-     * Each trip has: rentTime, bikeNumber, returnTime (null if not yet returned), standName (null if not returned).
+     * Each trip has: rentTime, bikeNumber, returnTime, standName (to), fromStandName (from).
      *
-     * @return array<int, array{rentTime: string, bikeNumber: int, returnTime: string|null, standName: string|null}>
+     * @return array<int, array{rentTime: string, bikeNumber: int, returnTime: string|null, standName: string|null, fromStandName: string|null}>
      */
     public function findUserTripHistory(int $userId, int $limit = 10): array
     {
@@ -346,7 +346,12 @@ class HistoryRepository
                LEFT JOIN stands s ON s.standId = r.parameter
                WHERE r.userId = h.userId AND r.bikeNum = h.bikeNum
                  AND r.action IN (:returnAction2, :forceReturnAction2) AND r.time >= h.time
-               ORDER BY r.time ASC LIMIT 1) AS standName
+               ORDER BY r.time ASC LIMIT 1) AS standName,
+              (SELECT s2.standName FROM history r2
+               LEFT JOIN stands s2 ON s2.standId = r2.parameter
+               WHERE r2.bikeNum = h.bikeNum
+                 AND r2.action IN (:returnAction3, :forceReturnAction3) AND r2.time < h.time
+               ORDER BY r2.time DESC LIMIT 1) AS fromStandName
             FROM history h
             WHERE h.userId = :userId AND h.action IN (:rentAction, :forceRentAction)
             ORDER BY h.time DESC, h.id DESC
@@ -359,6 +364,8 @@ class HistoryRepository
                 'forceReturnAction' => Action::FORCE_RETURN->value,
                 'returnAction2' => Action::RETURN->value,
                 'forceReturnAction2' => Action::FORCE_RETURN->value,
+                'returnAction3' => Action::RETURN->value,
+                'forceReturnAction3' => Action::FORCE_RETURN->value,
                 'limit' => $limit,
             ]
         )->fetchAllAssoc();
@@ -368,11 +375,15 @@ class HistoryRepository
             $standName = isset($row['standName']) && $row['standName'] !== null && $row['standName'] !== ''
                 ? $row['standName']
                 : null;
+            $fromStandName = isset($row['fromStandName']) && $row['fromStandName'] !== null && $row['fromStandName'] !== ''
+                ? $row['fromStandName']
+                : null;
             $trips[] = [
                 'rentTime' => $row['rentTime'],
                 'bikeNumber' => (int)$row['bikeNumber'],
                 'returnTime' => isset($row['returnTime']) && $row['returnTime'] !== null ? $row['returnTime'] : null,
                 'standName' => $standName,
+                'fromStandName' => $fromStandName,
             ];
         }
 
