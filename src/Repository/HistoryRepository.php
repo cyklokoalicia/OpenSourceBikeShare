@@ -365,11 +365,14 @@ class HistoryRepository
 
         $trips = [];
         foreach ($rows as $row) {
+            $standName = isset($row['standName']) && $row['standName'] !== null && $row['standName'] !== ''
+                ? $row['standName']
+                : null;
             $trips[] = [
                 'rentTime' => $row['rentTime'],
                 'bikeNumber' => (int)$row['bikeNumber'],
                 'returnTime' => isset($row['returnTime']) && $row['returnTime'] !== null ? $row['returnTime'] : null,
-                'standName' => isset($row['standName']) && $row['standName'] !== null && $row['standName'] !== '' ? $row['standName'] : null,
+                'standName' => $standName,
             ];
         }
 
