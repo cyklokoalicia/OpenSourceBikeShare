@@ -31,7 +31,7 @@ jobs:
           mysql -e 'SELECT @@sql_mode;' -u$DB_USER -p$DB_PASSWORD
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
