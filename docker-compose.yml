@@ -9,14 +9,14 @@ services:
       #- ./docker-data/nginx/ssl/bikesharing.loc.crt:/etc/nginx/certs/bikesharing.loc.crt
       #- ./docker-data/nginx/ssl/bikesharing.loc.key:/etc/nginx/certs/bikesharing.loc.key
     ports:
-      - 80:80
+      - ${NGINX_PORT:-80}:80
       #- 443:443
     links:
       - web
   db:
     image: mariadb:10.3
     ports:
-      - 3306:3306
+      - ${DB_PORT:-3306}:3306
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: bikesharing
@@ -29,7 +29,7 @@ services:
   web:
     build: .
     ports:
-      - "8100:80"
+      - "${WEB_PORT:-8100}:80"
     volumes:
       - ./:/var/www/html/
       - ./docker-data/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
@@ -43,7 +43,7 @@ services:
     links:
       - db
     ports:
-      - 81:80
+      - ${PMA_PORT:-81}:80
     environment:
       - PMA_HOST=db
       - PMA_USER=root
