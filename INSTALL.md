@@ -25,6 +25,11 @@ cp .env.dist .env.dev
 docker compose up -d
 ```
 
+To avoid port conflicts, you can override host ports via environment variables:
+```bash
+DB_PORT=3308 WEB_PORT=8200 docker compose up -d
+```
+
 4. Install PHP dependencies:
 ```bash
 docker compose exec web composer install
@@ -38,12 +43,12 @@ The application will be available at:
 
 Services overview
 ----------
-| Service | Port | Description |
-|---------|------|-------------|
-| Nginx | 80 | Reverse proxy |
-| PHP 8.4 (Apache) | 8100 | Application server |
-| MariaDB 10.3 | 3306 | Database |
-| PHPMyAdmin | 81 | Database admin UI |
+| Service | Default port | Env variable | Description |
+|---------|-------------|--------------|-------------|
+| Nginx | 80 | `NGINX_PORT` | Reverse proxy |
+| PHP 8.4 (Apache) | 8100 | `WEB_PORT` | Application server |
+| MariaDB 10.3 | 3306 | `DB_PORT` | Database |
+| PHPMyAdmin | 81 | `PMA_PORT` | Database admin UI |
 
 Configuration (.env)
 ----------
