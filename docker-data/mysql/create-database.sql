@@ -68,8 +68,9 @@ CREATE TABLE `history` (
   KEY `userId` (`userId`),
   KEY `action` (`action`),
   KEY `standId` (`standId`),
-  KEY `pairActionId` (`pairActionId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  KEY `pairActionId` (`pairActionId`),
+  KEY `idx_time_action` (`time`, `action`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 -- THIS TABLE IS MISSED IN CODE, DO WE NEED IT?

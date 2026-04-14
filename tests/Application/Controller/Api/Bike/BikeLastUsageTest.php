@@ -59,7 +59,7 @@ class BikeLastUsageTest extends BikeSharingWebTestCase
 
         $this->assertSame(
             $responseData['history'][2]['parameter'], //REVERT
-            $responseData['history'][5]['parameter'], //RENT
+            $responseData['history'][3]['parameter'], //RENT (the one being reverted)
             'Incorrect code after revert. Full history' . json_encode($responseData['history'])
         );
     }

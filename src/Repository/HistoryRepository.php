@@ -62,6 +62,9 @@ class HistoryRepository
 
     public function userStats(int $year): array
     {
+        $yearStart = sprintf('%d-01-01 00:00:00', $year);
+        $yearEnd = sprintf('%d-01-01 00:00:00', $year + 1);
+
         $result = $this->db->query(
             "SELECT
                 users.userId,
@@ -69,14 +72,15 @@ class HistoryRepository
                 SUM(CASE WHEN action = :rentActionSum THEN 1 ELSE 0 END) AS rentCount,
                 SUM(CASE WHEN action = :returnActionSum THEN 1 ELSE 0 END) AS returnCount,
                 COUNT(action) AS totalActionCount
-            FROM users
-            LEFT JOIN history ON users.userId=history.userId
-            WHERE history.userId IS NOT NULL
-              AND YEAR(time) = :year
-            GROUP BY username
+            FROM history
+            JOIN users ON users.userId=history.userId
+            WHERE time >= :yearStart
+              AND time < :yearEnd
+            GROUP BY users.userId, users.userName
             ORDER BY totalActionCount DESC",
             [
-                'year' => $year,
+                'yearStart' => $yearStart,
+                'yearEnd' => $yearEnd,
                 'rentActionSum' => Action::RENT->value,
                 'returnActionSum' => Action::RETURN->value,
             ]
@@ -99,7 +103,7 @@ class HistoryRepository
             WHERE bikeNum = :bikeNumber
               AND userId = :userId
               AND action = :rentAction
-            ORDER BY time DESC
+            ORDER BY time DESC, id DESC
             LIMIT 1",
             [
                 'bikeNumber' => $bikeNumber,
@@ -144,7 +148,7 @@ class HistoryRepository
             WHERE action = :phoneConfirmRequestAction
               AND parameter = :checkCode
               AND userId = :userId
-            ORDER BY time DESC
+            ORDER BY time DESC, id DESC
             LIMIT 1",
             [
                 'checkCode' => $checkCode,
@@ -258,7 +262,7 @@ class HistoryRepository
              LEFT JOIN history ON stands.standId = parameter
              WHERE bikeNum = :bikeNum
                AND action IN (:returnAction, :forceReturnAction)
-             ORDER BY time DESC
+             ORDER BY time DESC, history.id DESC
              LIMIT 1",
             [
                 'bikeNum' => $bikeNum,
@@ -286,7 +290,7 @@ class HistoryRepository
              FROM history
              WHERE bikeNum = :bikeNum
                AND action IN (:rentAction, :forceRentAction)
-             ORDER BY time DESC
+             ORDER BY time DESC, id DESC
              LIMIT 1",
             [
                 'bikeNum' => $bikeNum,
@@ -347,17 +351,17 @@ class HistoryRepository
               (SELECT r.time FROM history r
                WHERE r.userId = h.userId AND r.bikeNum = h.bikeNum
                  AND r.action IN (:returnAction, :forceReturnAction) AND r.time >= h.time
-               ORDER BY r.time ASC LIMIT 1) AS returnTime,
+               ORDER BY r.time ASC, r.id ASC LIMIT 1) AS returnTime,
               (SELECT s.standName FROM history r
                LEFT JOIN stands s ON s.standId = r.parameter
                WHERE r.userId = h.userId AND r.bikeNum = h.bikeNum
                  AND r.action IN (:returnAction2, :forceReturnAction2) AND r.time >= h.time
-               ORDER BY r.time ASC LIMIT 1) AS standName,
+               ORDER BY r.time ASC, r.id ASC LIMIT 1) AS standName,
               (SELECT s2.standName FROM history r2
                LEFT JOIN stands s2 ON s2.standId = r2.parameter
                WHERE r2.bikeNum = h.bikeNum
                  AND r2.action IN (:returnAction3, :forceReturnAction3) AND r2.time < h.time
-               ORDER BY r2.time DESC LIMIT 1) AS fromStandName
+               ORDER BY r2.time DESC, r2.id DESC LIMIT 1) AS fromStandName
             FROM history h
             WHERE h.userId = :userId AND h.action IN (:rentAction, :forceRentAction)
             ORDER BY h.time DESC, h.id DESC
