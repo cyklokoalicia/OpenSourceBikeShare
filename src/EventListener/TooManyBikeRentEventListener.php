@@ -42,7 +42,7 @@ class TooManyBikeRentEventListener
             );
             $message .= PHP_EOL . $this->translator->trans(
                 '{userName} ({phone}) rented {count} bikes',
-                ['userName' => $user['username'], 'phone' => $user['number'], 'count' => $rentCount]
+                ['userName' => $user['userName'], 'phone' => $user['number'], 'count' => $rentCount]
             );
 
             $this->adminNotifier->notify($message, true, [$user['userId']]);

@@ -93,7 +93,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     );
                 } else {
                     $this->assertSame(
-                        $user['username'] . ': ' . $expectedMessage,
+                        $user['userName'] . ': ' . $expectedMessage,
                         $sentMessage['text'],
                         'Invalid message sent to admin'
                     );
@@ -120,7 +120,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
 
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertSame($user['username'] . ': ' . $expectedMessage, $sentMessage['message']);
+                $this->assertSame($user['userName'] . ': ' . $expectedMessage, $sentMessage['message']);
                 $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
@@ -219,7 +219,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     );
                 } else {
                     $this->assertSame(
-                        $user['username'] . ': ' . $expectedMessage,
+                        $user['userName'] . ': ' . $expectedMessage,
                         $sentMessage['text'],
                         'Invalid message sent to admin'
                     );
@@ -244,7 +244,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
 
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertSame($user['username'] . ': ' . $expectedMessage, $sentMessage['message']);
+                $this->assertSame($user['userName'] . ': ' . $expectedMessage, $sentMessage['message']);
                 $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }

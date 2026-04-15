@@ -108,7 +108,7 @@ class UsersController extends AbstractController
         $creditAmount = $minRequiredCredit * $multiplier;
         $creditSystem->increaseCredit((int)$userId, (float)$creditAmount, CreditChangeType::CREDIT_ADD);
 
-        $username = isset($user['username']) && is_string($user['username']) ? $user['username'] : ('#' . $userId);
+        $username = isset($user['userName']) && is_string($user['userName']) ? $user['userName'] : ('#' . $userId);
 
         return $this->json([
             'message' => 'Added ' . $creditAmount . $creditSystem->getCreditCurrency() . ' credit for '

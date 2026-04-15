@@ -17,7 +17,7 @@ class UserRepository
         $users = $this->db->query(
             'SELECT
                 users.userId,
-                username,
+                userName,
                 city,
                 mail,
                 number,
@@ -28,7 +28,7 @@ class UserRepository
                 registrationDate
             FROM users
             LEFT JOIN credit ON users.userId=credit.userId
-            ORDER BY username'
+            ORDER BY userName'
         )->fetchAllAssoc();
 
 
@@ -40,7 +40,7 @@ class UserRepository
         $user = $this->db->query(
             'SELECT
                 users.userId,
-                username,
+                userName,
                 city,
                 mail,
                 number,
@@ -65,7 +65,7 @@ class UserRepository
         $user = $this->db->query(
             'SELECT
                 users.userId,
-                username,
+                userName,
                 city,
                 mail,
                 number,
@@ -90,7 +90,7 @@ class UserRepository
         $user = $this->db->query(
             'SELECT
                 users.userId,
-                username,
+                userName,
                 city,
                 mail,
                 number,

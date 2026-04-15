@@ -71,7 +71,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
                 );
             } else {
                 $this->assertSame(
-                    $user['username'] . ': Note "' . $note . '" for bike ' . $bikeNumber . ' saved.',
+                    $user['userName'] . ': Note "' . $note . '" for bike ' . $bikeNumber . ' saved.',
                     $sentMessage['text'],
                     'Invalid message sent to admin'
                 );
@@ -90,7 +90,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
             $this->assertSame(
-                $user['username'] . ': Note "' . $note . '" for bike ' . $bikeNumber . ' saved.',
+                $user['userName'] . ': Note "' . $note . '" for bike ' . $bikeNumber . ' saved.',
                 $sentMessage['message']
             );
             $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
@@ -141,7 +141,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
                 );
             } else {
                 $this->assertSame(
-                    $user['username'] . ': Note "' . $note . '" for stand ' . $standName . ' saved.',
+                    $user['userName'] . ': Note "' . $note . '" for stand ' . $standName . ' saved.',
                     $sentMessage['text'],
                     'Invalid message sent to admin'
                 );
@@ -160,7 +160,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
             $this->assertSame(
-                $user['username'] . ': Note "' . $note . '" for stand ' . $standName . ' saved.',
+                $user['userName'] . ': Note "' . $note . '" for stand ' . $standName . ' saved.',
                 $sentMessage['message']
             );
             $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
