@@ -70,7 +70,7 @@ class TagCommandTest extends BikeSharingWebTestCase
                 );
             } else {
                 $this->assertSame(
-                    $user['username'] . ': All bikes on stand ' . $standName . ' tagged with note "' . $note . '".',
+                    $user['userName'] . ': All bikes on stand ' . $standName . ' tagged with note "' . $note . '".',
                     $sentMessage['text'],
                     'Invalid message sent to admin'
                 );
@@ -89,7 +89,7 @@ class TagCommandTest extends BikeSharingWebTestCase
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
             $this->assertSame(
-                $user['username'] . ': All bikes on stand ' . $standName . ' tagged with note "' . $note . '".',
+                $user['userName'] . ': All bikes on stand ' . $standName . ' tagged with note "' . $note . '".',
                 $sentMessage['message']
             );
             $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);

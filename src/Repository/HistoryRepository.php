@@ -68,7 +68,7 @@ class HistoryRepository
         $result = $this->db->query(
             "SELECT
                 users.userId,
-                username,
+                userName,
                 SUM(CASE WHEN action = :rentActionSum THEN 1 ELSE 0 END) AS rentCount,
                 SUM(CASE WHEN action = :returnActionSum THEN 1 ELSE 0 END) AS returnCount,
                 COUNT(action) AS totalActionCount

@@ -72,7 +72,7 @@ class AddCommandTest extends BikeSharingWebTestCase
         $this->assertNotEmpty($newUser, 'User was not added');
         $this->assertSame($email, $newUser['mail']);
         $this->assertSame($phoneNumber, $newUser['number']);
-        $this->assertSame($fullName, $newUser['username']);
+        $this->assertSame($fullName, $newUser['userName']);
         $this->assertSame(0, $newUser['privileges']);
         $this->assertSame(0, $newUser['isNumberConfirmed']);
         $this->assertSame(0, $newUser['userLimit']);

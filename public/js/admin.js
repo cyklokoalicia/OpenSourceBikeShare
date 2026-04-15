@@ -318,8 +318,8 @@ function userlist() {
         },
         columns: [
             {
-                data: 'username',
-                name: 'username',
+                data: 'userName',
+                name: 'userName',
                 render: function(data, type, row) {
                     return `<a href="#" class="edituser" data-userid="${row.userId}">${data}</a>` +
                         (isSmsSystemEnabled ? `<br />${row.number}` : '') +
@@ -391,8 +391,8 @@ function userstats() {
         order: [[3, 'desc']],
         columns: [
             {
-                data: 'username',
-                name: 'username',
+                data: 'userName',
+                name: 'userName',
             },
             {
                 data: 'rentCount',
@@ -498,7 +498,7 @@ function edituser(userid) {
             $container = $("#edituser");
             $container.find('input').val('');
             $container.find('#userid').val(data.userId);
-            $container.find('#username').val(data.username);
+            $container.find('#username').val(data.userName);
             $container.find('#email').val(data.mail);
             if ($container.find('#phone').length) {
                 $container.find('#phone').val(data.number);
