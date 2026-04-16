@@ -46,6 +46,11 @@ return static function (ContainerConfigurator $container): void {
     $services->instanceof(MailSenderInterface::class)->tag('mailSender');
     $services->instanceof(SmsConnectorInterface::class)->tag('smsConnector');
     $services->instanceof(SmsCommandInterface::class)->tag('smsCommand');
+    $services->instanceof(\BikeShare\App\Api\Compat\ApiResponseTransformInterface::class)
+        ->tag('app.api_compat_transform');
+
+    $services->set(\BikeShare\App\Api\Compat\ApiCompatTransformRegistry::class)
+        ->args([tagged_iterator('app.api_compat_transform')]);
 
     $services->alias('logger', 'monolog.logger');
 
@@ -74,6 +79,7 @@ return static function (ContainerConfigurator $container): void {
             '../src/Event',
             '../src/Command/LoadFixturesCommand.php',
             '../src/SmsCommand/*Command.php',
+            '../src/App/Api/Compat/ApiCompatTransformRegistry.php',
             '../src/Rent/DTO',
             '../src/Rent/Enum',
         ]);
