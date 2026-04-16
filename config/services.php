@@ -79,6 +79,7 @@ return static function (ContainerConfigurator $container): void {
             '../src/Event',
             '../src/Command/LoadFixturesCommand.php',
             '../src/SmsCommand/*Command.php',
+            '../src/App/Api/Compat/ApiCompatTransformRegistry.php',
             '../src/Rent/DTO',
             '../src/Rent/Enum',
         ]);
