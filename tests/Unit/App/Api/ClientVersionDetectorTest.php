@@ -19,28 +19,26 @@ class ClientVersionDetectorTest extends TestCase
     }
 
     #[DataProvider('userAgentProvider')]
-    public function testRequiresLegacyFieldNames(string $userAgent, bool $expectedLegacy): void
+    public function testGetClientVersion(string $userAgent, string $expectedVersion): void
     {
         $request = Request::create('/api/v1/admin/users');
         $request->headers->set('User-Agent', $userAgent);
 
-        $this->assertSame($expectedLegacy, $this->detector->requiresLegacyFieldNames($request));
+        $this->assertSame($expectedVersion, $this->detector->getClientVersion($request));
     }
 
     public static function userAgentProvider(): array
     {
         return [
-            'new Android 1.0.1' => ['BikeShare-Android/1.0.1 (2)', false],
-            'new Android 2.0.0' => ['BikeShare-Android/2.0.0 (5)', false],
-            'new Android 1.1.0' => ['BikeShare-Android/1.1.0 (3)', false],
-            'old Android 1.0.0' => ['BikeShare-Android/1.0.0 (1)', true],
-            'old Android 0.9.0' => ['BikeShare-Android/0.9.0 (1)', true],
-            'old Android okhttp' => ['okhttp/4.12.0', true],
-            'browser' => ['Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36', false],
-            'empty UA' => ['', false],
-            'curl' => ['curl/8.5.0', false],
-            'custom app name' => ['WhiteBikes-Android/1.0.1 (2)', false],
-            'custom app name old' => ['WhiteBikes-Android/1.0.0 (1)', true],
+            'Android 1.0.1' => ['BikeShare-Android/1.0.1 (2)', '1.0.1'],
+            'Android 2.0.0' => ['BikeShare-Android/2.0.0 (5)', '2.0.0'],
+            'Android 1.0.0' => ['BikeShare-Android/1.0.0 (1)', '1.0.0'],
+            'Android 0.9.0' => ['BikeShare-Android/0.9.0 (1)', '0.9.0'],
+            'custom app name' => ['WhiteBikes-Android/1.2.3 (4)', '1.2.3'],
+            'old Android okhttp' => ['okhttp/4.12.0', '0.0.0'],
+            'browser' => ['Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36', '999.0.0'],
+            'empty UA' => ['', '999.0.0'],
+            'curl' => ['curl/8.5.0', '999.0.0'],
         ];
     }
 
@@ -49,6 +47,6 @@ class ClientVersionDetectorTest extends TestCase
         $request = Request::create('/api/v1/admin/users');
         $request->headers->remove('User-Agent');
 
-        $this->assertFalse($this->detector->requiresLegacyFieldNames($request));
+        $this->assertSame('999.0.0', $this->detector->getClientVersion($request));
     }
 }

@@ -5,20 +5,19 @@ declare(strict_types=1);
 namespace BikeShare\App\EventListener;
 
 use BikeShare\App\Api\ClientVersionDetector;
+use BikeShare\App\Api\Compat\ApiCompatTransformRegistry;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-class ApiV1LegacyFieldSubscriber implements EventSubscriberInterface
+class ApiCompatSubscriber implements EventSubscriberInterface
 {
-    private const RENAMES = [
-        'userName' => 'username',
-    ];
-
-    public function __construct(private readonly ClientVersionDetector $clientVersionDetector)
-    {
+    public function __construct(
+        private readonly ClientVersionDetector $clientVersionDetector,
+        private readonly ApiCompatTransformRegistry $registry,
+    ) {
     }
 
     public static function getSubscribedEvents(): array
@@ -48,7 +47,11 @@ class ApiV1LegacyFieldSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (!$this->clientVersionDetector->requiresLegacyFieldNames($request)) {
+        $clientVersion = $this->clientVersionDetector->getClientVersion($request);
+        $routeName = $request->attributes->get('_route', '');
+        $transforms = $this->registry->getTransformsFor($clientVersion, $routeName);
+
+        if (empty($transforms)) {
             return;
         }
 
@@ -67,17 +70,10 @@ class ApiV1LegacyFieldSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $response->setData($this->renameKeys($data, self::RENAMES));
-    }
-
-    private function renameKeys(array $data, array $renames): array
-    {
-        $result = [];
-        foreach ($data as $key => $value) {
-            $newKey = $renames[$key] ?? $key;
-            $result[$newKey] = is_array($value) ? $this->renameKeys($value, $renames) : $value;
+        foreach ($transforms as $transform) {
+            $data = $transform->transform($data);
         }
 
-        return $result;
+        $response->setData($data);
     }
 }
