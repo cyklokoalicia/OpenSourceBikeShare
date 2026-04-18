@@ -9,8 +9,6 @@ use Psr\Log\LoggerInterface;
 
 class PHPMailerMailSender implements MailSenderInterface
 {
-    private array $sendLog = [];
-
     public function __construct(
         private readonly string $fromEmail,
         private readonly string $fromName,
@@ -26,10 +24,7 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->clearAllRecipients();
 
         $this->mailer->isSMTP(); // Set mailer to use SMTP
-        $this->mailer->SMTPDebug  = $this->debugLevel;
-        if ($this->debugLevel > 0 && $this->logger) {
-            $this->mailer->Debugoutput = $this->debugOutput(...);
-        }
+        $this->mailer->SMTPDebug = $this->debugLevel;
 
         $this->mailer->Host = $this->emailConfig["smtp_host"]; // Specify main and backup SMTP servers
         $this->mailer->Port = $this->emailConfig["smtp_port"]; // TCP port to connect to
@@ -44,23 +39,11 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->Subject = $subject;
         $this->mailer->Body = $message;
 
-        $this->sendLog = [];
         $this->mailer->send();
-        if ($this->debugLevel > 0 && $this->logger && $this->sendLog !== []) {
-            $this->saveSendLog();
-        }
-    }
 
-    /**
-     * @internal
-     */
-    public function debugOutput($str, $level): void
-    {
-        $this->sendLog[] = sprintf('[%s] %s', $level, $str);
-    }
-
-    private function saveSendLog(): void
-    {
-        $this->logger->notice('PhpMailer Debug', ['sendLog' => $this->sendLog]);
+        $this->logger?->info('Email sent', [
+            'recipient' => $recipient,
+            'subject' => $subject,
+        ]);
     }
 }
