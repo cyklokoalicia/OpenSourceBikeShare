@@ -39,7 +39,7 @@
     "symfony/dependency-injection": "^6.0",
     "symfony/dotenv": "^6.0",
     "symfony/event-dispatcher": "^6.0",
-    "symfony/expression-language": "^6.0",
+    "symfony/expression-language": "^8.0",
     "symfony/form": "^6.0",
     "symfony/framework-bundle": "^6.0",
     "symfony/http-client": "^6.4",
