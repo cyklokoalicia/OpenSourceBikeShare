@@ -85,7 +85,7 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
         $this->assertSame($phonePurifier->purify($userPhone), $sentMessages['number'], 'Invalid phone number');
         $this->assertInstanceOf(TranslatableMessage::class, $sentMessages['message']);
         $this->assertSame(
-            'Enter this code to verify your phone: {smsCode}',
+            'user.phone_confirm.sms_code',
             $sentMessages['message']->getMessage()
         );
         $smsCodeRaw = $sentMessages['message']->getParameters()['smsCode'] ?? '';

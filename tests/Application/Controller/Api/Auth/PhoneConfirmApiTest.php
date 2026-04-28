@@ -120,7 +120,7 @@ class PhoneConfirmApiTest extends BikeSharingWebTestCase
         $sent = $smsSender->getSentMessages()[0];
         $this->assertSame($purifiedPhone, $sent['number']);
         $this->assertInstanceOf(TranslatableMessage::class, $sent['message']);
-        $this->assertSame('Enter this code to verify your phone: {smsCode}', $sent['message']->getMessage());
+        $this->assertSame('user.phone_confirm.sms_code', $sent['message']->getMessage());
         $smsCodeRaw = $sent['message']->getParameters()['smsCode'] ?? '';
         $this->assertMatchesRegularExpression('/^[A-Z]{2} \d+$/', $smsCodeRaw);
         $smsCode = str_replace(' ', '', $smsCodeRaw);

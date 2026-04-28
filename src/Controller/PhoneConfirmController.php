@@ -54,7 +54,7 @@ class PhoneConfirmController extends AbstractController
                 $smsSender->send(
                     $number,
                     new TranslatableMessage(
-                        'Enter this code to verify your phone: {smsCode}',
+                        'user.phone_confirm.sms_code',
                         ['smsCode' => $smsCode]
                     )
                 );

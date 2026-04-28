@@ -164,7 +164,7 @@ return [
     'Total Actions' => 'Загальна кількість дій',
     'Year' => 'Рік',
     'View on Google Maps' => 'Переглянути на Google Maps',
-    'Enter this code to verify your phone: {smsCode}' => 'Введіть цей код, щоб підтвердити свій телефон: {smsCode}',
+    'user.phone_confirm.sms_code' => 'Введіть цей код, щоб підтвердити свій телефон: {smsCode}',
     'Invalid confirmation code.' => 'Недійсний код підтвердження.',
     'Phone confirmation' => 'Підтвердження телефону',
     'Send confirmation' => 'Надіслати підтвердження',

@@ -157,7 +157,7 @@ Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmU
     'Total Actions' => 'Gesamtaktionen',
     'Year' => 'Jahr',
     'View on Google Maps' => 'Auf Google Maps ansehen',
-    'Enter this code to verify your phone: {smsCode}' => 'Gib diesen Code ein, um dein Telefon zu verifizieren: {smsCode}',
+    'user.phone_confirm.sms_code' => 'Gib diesen Code ein, um dein Telefon zu verifizieren: {smsCode}',
     'Invalid confirmation code.' => 'Ungültiger Bestätigungscode.',
     'Phone confirmation' => 'Telefonbestätigung',
     'Send confirmation' => 'Bestätigung senden',

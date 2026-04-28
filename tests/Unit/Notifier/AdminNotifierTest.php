@@ -118,8 +118,10 @@ class AdminNotifierTest extends TestCase
         $this->userSettingsRepositoryMock->method('findByUserId')->willReturn(['locale' => 'en']);
         $this->translatorMock->method('trans')->willReturn('msg');
 
-        $this->smsSenderMock->expects($this->once())->method('send')->with('222');
-        $this->mailerMock->expects($this->once())->method('sendMail')->with('b@x');
+        $this->smsSenderMock->expects($this->once())->method('send')
+            ->with('222', $this->anything(), $this->anything());
+        $this->mailerMock->expects($this->once())->method('sendMail')
+            ->with('b@x', $this->anything(), $this->anything());
 
         $this->notifier->notify(new TranslatableMessage('admin.test'), true, [1]);
     }

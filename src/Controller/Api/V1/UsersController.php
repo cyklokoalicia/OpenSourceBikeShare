@@ -132,7 +132,7 @@ class UsersController extends AbstractController
         $this->smsSender->send(
             $number,
             new TranslatableMessage(
-                'Enter this code to verify your phone: {smsCode}',
+                'user.phone_confirm.sms_code',
                 ['smsCode' => $smsCode]
             )
         );
