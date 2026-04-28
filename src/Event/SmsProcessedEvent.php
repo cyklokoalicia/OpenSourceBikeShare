@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Event;
 
 use BikeShare\App\Entity\User;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class SmsProcessedEvent
 {
@@ -12,7 +13,7 @@ class SmsProcessedEvent
         private readonly User $user,
         private readonly string $commandName,
         private readonly array $commandArguments,
-        private readonly string $resultMessage,
+        private readonly TranslatableInterface $resultMessage,
     ) {
     }
 
@@ -21,7 +22,7 @@ class SmsProcessedEvent
         return $this->user;
     }
 
-    public function getResultMessage(): string
+    public function getResultMessage(): TranslatableInterface
     {
         return $this->resultMessage;
     }

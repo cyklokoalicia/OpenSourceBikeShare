@@ -8,9 +8,10 @@ use BikeShare\Rent\Enum\RentSystemType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class WhereCommandTest extends BikeSharingWebTestCase
 {
@@ -39,7 +40,8 @@ class WhereCommandTest extends BikeSharingWebTestCase
     #[DataProvider('whereCommandDataProvider')]
     public function testWhereCommand(
         string $startAction,
-        string $expectedMessagePattern
+        string $expectedCode,
+        bool $expectAdminAsCurrentUser
     ): void {
         $this->client->request(
             Request::METHOD_GET,
@@ -51,6 +53,7 @@ class WhereCommandTest extends BikeSharingWebTestCase
                 'time' => time(),
             ]
         );
+
         $this->client->request(
             Request::METHOD_GET,
             '/receive.php',
@@ -64,28 +67,50 @@ class WhereCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessage = $smsSender->getSentMessages()[0];
 
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $this->assertMatchesRegularExpression(
-            $expectedMessagePattern,
-            $sentMessage['text'],
-            'Invalid response sms text'
-        );
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+        $this->assertSame($expectedCode, $sentMessage['message']->getMessage());
+
+        if ($expectAdminAsCurrentUser) {
+            $admin = $this->client->getContainer()->get(UserRepository::class)
+                ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+            $this->assertSame(
+                [
+                    'bikeNumber' => self::BIKE_NUMBER,
+                    'userName' => $admin['userName'],
+                    'phone' => self::ADMIN_PHONE_NUMBER,
+                    'note' => '',
+                ],
+                $sentMessage['message']->getParameters()
+            );
+        } else {
+            $this->assertSame(
+                [
+                    'bikeNumber' => self::BIKE_NUMBER,
+                    'standName' => self::STAND_NAME,
+                    'note' => '',
+                ],
+                $sentMessage['message']->getParameters()
+            );
+        }
     }
 
     public static function whereCommandDataProvider(): iterable
     {
         yield 'not rented bike' => [
             'startAction' => 'FORCERETURN ' . self::BIKE_NUMBER . ' ' . self::STAND_NAME,
-            'expectedMessagePattern' => '/Bike ' . self::BIKE_NUMBER . ' is at stand ' . self::STAND_NAME . '/',
+            'expectedCode' => 'command.where.at_stand',
+            'expectAdminAsCurrentUser' => false,
         ];
         yield 'rented bike' => [
             'startAction' => 'FORCERENT ' . self::BIKE_NUMBER,
-            'expectedMessagePattern' => '/Bike ' . self::BIKE_NUMBER . ' is rented by .* \(\+\d*\)\./',
+            'expectedCode' => 'command.where.in_use',
+            'expectAdminAsCurrentUser' => true,
         ];
     }
 }

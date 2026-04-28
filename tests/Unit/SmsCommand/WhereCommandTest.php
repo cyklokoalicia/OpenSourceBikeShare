@@ -11,43 +11,29 @@ use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\SmsCommand\WhereCommand;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class WhereCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private BikeRepository&MockObject $bikeRepositoryMock;
     private NoteRepository&MockObject $noteRepositoryMock;
     private WhereCommand $command;
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->bikeRepositoryMock = $this->createMock(BikeRepository::class);
         $this->noteRepositoryMock = $this->createMock(NoteRepository::class);
-
-        $this->command = new WhereCommand(
-            $this->translatorMock,
-            $this->bikeRepositoryMock,
-            $this->noteRepositoryMock
-        );
+        $this->command = new WhereCommand($this->bikeRepositoryMock, $this->noteRepositoryMock);
     }
 
     protected function tearDown(): void
     {
-        unset(
-            $this->translatorMock,
-            $this->bikeRepositoryMock,
-            $this->noteRepositoryMock,
-            $this->command
-        );
+        unset($this->bikeRepositoryMock, $this->noteRepositoryMock, $this->command);
     }
 
     public function testBikeAtStand(): void
     {
-        $user = $this->createStub(User::class);
         $bikeNumber = 42;
-
         $this->bikeRepositoryMock
             ->expects($this->once())
             ->method('findItem')
@@ -67,23 +53,20 @@ class WhereCommandTest extends TestCase
                 'userName' => null,
                 'standName' => 'STAND1',
             ]);
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'Bike {bikeNumber} is at stand {standName}. {note}',
-                ['bikeNumber' => $bikeNumber, 'standName' => 'STAND1', 'note' => 'Flat tire']
-            )
-            ->willReturn('Bike 42 is at stand STAND1. Flat tire');
 
-        $this->assertEquals('Bike 42 is at stand STAND1. Flat tire', ($this->command)($user, $bikeNumber));
+        $result = ($this->command)($this->createStub(User::class), $bikeNumber);
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.where.at_stand', $result->getMessage());
+        $this->assertSame(
+            ['bikeNumber' => $bikeNumber, 'standName' => 'STAND1', 'note' => 'Flat tire'],
+            $result->getParameters()
+        );
     }
 
     public function testBikeRented(): void
     {
-        $user = $this->createStub(User::class);
         $bikeNumber = 42;
-
         $this->bikeRepositoryMock
             ->expects($this->once())
             ->method('findItem')
@@ -93,64 +76,48 @@ class WhereCommandTest extends TestCase
             ->expects($this->once())
             ->method('findBikeNote')
             ->with($bikeNumber)
-            ->willReturn([['note' => 'Broken chain']]);
+            ->willReturn([['note' => 'Broken']]);
         $this->bikeRepositoryMock
             ->expects($this->once())
             ->method('findBikeCurrentUsage')
-            ->with($bikeNumber)->willReturn([
+            ->with($bikeNumber)
+            ->willReturn([
                 'number' => '987654321',
-                'userName' => 'John Doe',
-                'standName' => null
+                'userName' => 'John',
+                'standName' => null,
             ]);
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('Bike {bikeNumber} is rented by {userName} (+{phone}). {note}', [
-                'bikeNumber' => $bikeNumber,
-                'userName' => 'John Doe',
-                'phone' => '987654321',
-                'note' => 'Broken chain'
-            ])
-            ->willReturn('Bike 42 is rented by John Doe (+987654321). Broken chain');
 
-        $this->assertEquals(
-            'Bike 42 is rented by John Doe (+987654321). Broken chain',
-            ($this->command)($user, $bikeNumber)
+        $result = ($this->command)($this->createStub(User::class), $bikeNumber);
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.where.in_use', $result->getMessage());
+        $this->assertSame(
+            [
+                'bikeNumber' => $bikeNumber,
+                'userName' => 'John',
+                'phone' => '987654321',
+                'note' => 'Broken',
+            ],
+            $result->getParameters()
         );
     }
 
     public function testBikeNotFoundThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $bikeNumber = 42;
-
+        $this->bikeRepositoryMock->expects($this->once())->method('findItem')->with(42)->willReturn([]);
         $this->noteRepositoryMock->expects($this->never())->method('findBikeNote');
-        $this->bikeRepositoryMock
-            ->expects($this->once())
-            ->method('findItem')
-            ->with($bikeNumber)
-            ->willReturn([]);
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('Bike {bikeNumber} does not exist.', ['bikeNumber' => $bikeNumber])
-            ->willReturn('Bike 42 does not exist.');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Bike 42 does not exist.');
 
-        ($this->command)($user, $bikeNumber);
+        ($this->command)($this->createStub(User::class), 42);
     }
 
     public function testGetHelpMessage(): void
     {
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->noteRepositoryMock->expects($this->never())->method('findBikeNote');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('with bike number: {example}', ['example' => 'WHERE 42'])
-            ->willReturn('with bike number: WHERE 42');
 
-        $this->assertEquals('with bike number: WHERE 42', $this->command->getHelpMessage());
+        $help = $this->command->getHelpMessage();
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.where.help', $help->getMessage());
     }
 }

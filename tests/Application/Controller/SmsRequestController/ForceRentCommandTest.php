@@ -8,8 +8,9 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Event\BikeRentEvent;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Translation\TranslatableResult;
 use Symfony\Component\HttpFoundation\Request;
 
 class ForceRentCommandTest extends BikeSharingWebTestCase
@@ -44,18 +45,19 @@ class ForceRentCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessage = $smsSender->getSentMessages()[0];
 
         $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.\s*Change code immediately to \d{4}\s*' .
-                '\(open, rotate metal part, set new code, rotate metal part back\)\./',
-            $sentMessage['text'],
-            'Invalid response sms text'
-        );
+        $this->assertInstanceOf(TranslatableResult::class, $sentMessage['message']);
+        $this->assertSame('bike.rent.success', $sentMessage['message']->getCode());
+        $params = $sentMessage['message']->getParams();
+        $this->assertSame(self::BIKE_NUMBER, $params['bikeNumber']);
+        $this->assertMatchesRegularExpression('/^\d{4}$/', (string)$params['currentCode']);
+        $this->assertMatchesRegularExpression('/^\d{4}$/', (string)$params['newCode']);
+        $this->assertNotSame($params['currentCode'], $params['newCode']);
 
         $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
 
@@ -72,10 +74,10 @@ class ForceRentCommandTest extends BikeSharingWebTestCase
 
         $this->assertSame($history['action'], 'FORCERENT', 'Invalid history action');
         $this->assertNotEmpty($history['parameter'], 'Missed lock code');
-        $this->assertStringContainsString(
-            'Change code immediately to ' . str_pad($history['parameter'], 4, '0', STR_PAD_LEFT),
-            $sentMessage['text'],
-            'Response sms does not contain lock code'
+        $this->assertSame(
+            str_pad((string)$history['parameter'], 4, '0', STR_PAD_LEFT),
+            (string)$params['newCode'],
+            'Response sms newCode does not match history'
         );
 
         $notCalledListeners = $this->client->getContainer()->get('event_dispatcher')->getNotCalledListeners();

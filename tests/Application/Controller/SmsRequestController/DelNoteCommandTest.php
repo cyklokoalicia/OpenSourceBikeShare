@@ -9,10 +9,11 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class DelNoteCommandTest extends BikeSharingWebTestCase
 {
@@ -42,7 +43,9 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
     #[DataProvider('standNotePatternDataProvider')]
     public function testDelNoteCommandForStand(
         ?string $pattern,
-        string $expectedMessage,
+        string $expectedCode,
+        array $expectedParams,
+        string $expectedMailMessage,
         int $expectedSmsCount,
         int $expectedMailCount,
         int $expectedRemainingNotes,
@@ -74,29 +77,41 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount($expectedSmsCount, $smsConnector->getSentMessages());
-        $sentMessages = $smsConnector->getSentMessages();
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount($expectedSmsCount, $smsSender->getSentMessages());
+        $sentMessages = $smsSender->getSentMessages();
 
         if ($expectedSmsCount === 1) {
             $sentMessage = $sentMessages[0];
-            $this->assertSame($expectedMessage, $sentMessage['text'], 'Invalid message text');
+            $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+            $this->assertSame($expectedCode, $sentMessage['message']->getMessage(), 'Invalid message code');
+            $this->assertSame($expectedParams, $sentMessage['message']->getParameters(), 'Invalid message params');
             $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid number');
         } elseif ($expectedSmsCount === 2) {
             $notifiedNumbers = [];
             foreach ($sentMessages as $sentMessage) {
+                $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
                 if ($sentMessage['number'] === self::ADMIN_PHONE_NUMBER) {
                     $this->assertSame(
-                        $expectedMessage,
-                        $sentMessage['text'],
+                        $expectedCode,
+                        $sentMessage['message']->getMessage(),
                         'Invalid message sent to user'
+                    );
+                    $this->assertSame(
+                        $expectedParams,
+                        $sentMessage['message']->getParameters()
                     );
                 } else {
                     $this->assertSame(
-                        $user['userName'] . ': ' . $expectedMessage,
-                        $sentMessage['text'],
-                        'Invalid message sent to admin'
+                        'admin.notification.sms_processed',
+                        $sentMessage['message']->getMessage(),
+                        'Invalid admin notification code'
                     );
+                    $params = $sentMessage['message']->getParameters();
+                    $this->assertSame($user['userName'], $params['userName']);
+                    $this->assertInstanceOf(TranslatableMessage::class, $params['message']);
+                    $this->assertSame($expectedCode, $params['message']->getMessage());
+                    $this->assertSame($expectedParams, $params['message']->getParameters());
                 }
 
                 $notifiedNumbers[] = $sentMessage['number'];
@@ -120,7 +135,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
 
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertSame($user['userName'] . ': ' . $expectedMessage, $sentMessage['message']);
+                $this->assertSame($user['userName'] . ': ' . $expectedMailMessage, $sentMessage['message']);
                 $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
@@ -139,7 +154,14 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         return [
             'No pattern' => [
                 'pattern' => null,
-                'expectedMessage' => 'All 2 notes for stand ' . self::STAND_NAME . ' were deleted.',
+                'expectedCode' => 'command.delnote.success_stand',
+                'expectedParams' => [
+                    'standName' => self::STAND_NAME,
+                    'count' => 2,
+                    'hasPattern' => 'false',
+                    'pattern' => '',
+                ],
+                'expectedMailMessage' => 'All 2 notes for stand ' . self::STAND_NAME . ' were deleted.',
                 'expectedSmsCount' => 2,
                 'expectedMailCount' => 1,
                 'expectedRemainingNotes' => 0,
@@ -147,7 +169,15 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
             ],
             'Valid pattern for one note' => [
                 'pattern' => 'test',
-                'expectedMessage' => 'One note matching pattern "test" for stand ' . self::STAND_NAME . ' was deleted.',
+                'expectedCode' => 'command.delnote.success_stand',
+                'expectedParams' => [
+                    'standName' => self::STAND_NAME,
+                    'count' => 1,
+                    'hasPattern' => 'true',
+                    'pattern' => 'test',
+                ],
+                'expectedMailMessage' => 'One note matching pattern "test" for stand '
+                    . self::STAND_NAME . ' was deleted.',
                 'expectedSmsCount' => 2,
                 'expectedMailCount' => 1,
                 'expectedRemainingNotes' => 1,
@@ -155,8 +185,13 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
             ],
             'Invalid pattern' => [
                 'pattern' => 'INVALID_PATTERN',
-                'expectedMessage' => 'No notes matching pattern INVALID_PATTERN found on stand '
-                    . self::STAND_NAME . ' to delete.',
+                'expectedCode' => 'command.delnote.error.no_stand_notes',
+                'expectedParams' => [
+                    'standName' => self::STAND_NAME,
+                    'hasPattern' => 'true',
+                    'pattern' => 'INVALID_PATTERN',
+                ],
+                'expectedMailMessage' => '',
                 'expectedSmsCount' => 1,
                 'expectedMailCount' => 0,
                 'expectedRemainingNotes' => 2,
@@ -168,7 +203,9 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
     #[DataProvider('bikeNotePatternDataProvider')]
     public function testDelNoteCommandForBike(
         ?string $pattern,
-        string $expectedMessage,
+        string $expectedCode,
+        array $expectedParams,
+        string $expectedMailMessage,
         int $expectedSmsCount,
         int $expectedMailCount,
         int $expectedRemainingNotes,
@@ -200,29 +237,41 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount($expectedSmsCount, $smsConnector->getSentMessages());
-        $sentMessages = $smsConnector->getSentMessages();
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount($expectedSmsCount, $smsSender->getSentMessages());
+        $sentMessages = $smsSender->getSentMessages();
 
         if ($expectedSmsCount === 1) {
             $sentMessage = $sentMessages[0];
-            $this->assertSame($expectedMessage, $sentMessage['text'], 'Invalid message sent to user');
+            $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+            $this->assertSame($expectedCode, $sentMessage['message']->getMessage(), 'Invalid message code');
+            $this->assertSame($expectedParams, $sentMessage['message']->getParameters(), 'Invalid message params');
             $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid number');
         } elseif ($expectedSmsCount === 2) {
             $notifiedNumbers = [];
             foreach ($sentMessages as $sentMessage) {
+                $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
                 if ($sentMessage['number'] === self::ADMIN_PHONE_NUMBER) {
                     $this->assertSame(
-                        $expectedMessage,
-                        $sentMessage['text'],
+                        $expectedCode,
+                        $sentMessage['message']->getMessage(),
                         'Invalid message sent to user'
+                    );
+                    $this->assertSame(
+                        $expectedParams,
+                        $sentMessage['message']->getParameters()
                     );
                 } else {
                     $this->assertSame(
-                        $user['userName'] . ': ' . $expectedMessage,
-                        $sentMessage['text'],
-                        'Invalid message sent to admin'
+                        'admin.notification.sms_processed',
+                        $sentMessage['message']->getMessage(),
+                        'Invalid admin notification code'
                     );
+                    $params = $sentMessage['message']->getParameters();
+                    $this->assertSame($user['userName'], $params['userName']);
+                    $this->assertInstanceOf(TranslatableMessage::class, $params['message']);
+                    $this->assertSame($expectedCode, $params['message']->getMessage());
+                    $this->assertSame($expectedParams, $params['message']->getParameters());
                 }
 
                 $notifiedNumbers[] = $sentMessage['number'];
@@ -244,7 +293,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
 
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertSame($user['userName'] . ': ' . $expectedMessage, $sentMessage['message']);
+                $this->assertSame($user['userName'] . ': ' . $expectedMailMessage, $sentMessage['message']);
                 $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
@@ -263,7 +312,14 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         return [
             'No pattern' => [
                 'pattern' => null,
-                'expectedMessage' => 'All 2 notes for bike ' . self::BIKE_NUMBER . ' were deleted.',
+                'expectedCode' => 'command.delnote.success_bike',
+                'expectedParams' => [
+                    'bikeNumber' => self::BIKE_NUMBER,
+                    'count' => 2,
+                    'hasPattern' => 'false',
+                    'pattern' => '',
+                ],
+                'expectedMailMessage' => 'All 2 notes for bike ' . self::BIKE_NUMBER . ' were deleted.',
                 'expectedSmsCount' => 2,
                 'expectedMailCount' => 1,
                 'expectedRemainingNotes' => 0,
@@ -271,7 +327,15 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
             ],
             'Valid pattern for one note' => [
                 'pattern' => 'test',
-                'expectedMessage' => 'One note matching pattern "test" for bike ' . self::BIKE_NUMBER . ' was deleted.',
+                'expectedCode' => 'command.delnote.success_bike',
+                'expectedParams' => [
+                    'bikeNumber' => self::BIKE_NUMBER,
+                    'count' => 1,
+                    'hasPattern' => 'true',
+                    'pattern' => 'test',
+                ],
+                'expectedMailMessage' => 'One note matching pattern "test" for bike '
+                    . self::BIKE_NUMBER . ' was deleted.',
                 'expectedSmsCount' => 2,
                 'expectedMailCount' => 1,
                 'expectedRemainingNotes' => 1,
@@ -279,8 +343,13 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
             ],
             'Invalid pattern' => [
                 'pattern' => 'INVALID_PATTERN',
-                'expectedMessage' => 'No notes matching pattern INVALID_PATTERN found for bike '
-                    . self::BIKE_NUMBER . ' to delete.',
+                'expectedCode' => 'command.delnote.error.no_bike_notes',
+                'expectedParams' => [
+                    'bikeNumber' => self::BIKE_NUMBER,
+                    'hasPattern' => 'true',
+                    'pattern' => 'INVALID_PATTERN',
+                ],
+                'expectedMailMessage' => '',
                 'expectedSmsCount' => 1,
                 'expectedMailCount' => 0,
                 'expectedRemainingNotes' => 2,

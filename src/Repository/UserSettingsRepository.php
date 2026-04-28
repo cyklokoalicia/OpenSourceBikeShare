@@ -44,9 +44,7 @@ class UserSettingsRepository
             );
         }
 
-        $settings = array_merge($this->defaultSettings, $settings);
-
-        return $settings;
+        return array_merge($this->defaultSettings, $settings);
     }
 
     public function saveLocale(int $userId, string $locale): void

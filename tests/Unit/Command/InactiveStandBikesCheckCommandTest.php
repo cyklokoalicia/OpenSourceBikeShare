@@ -13,6 +13,7 @@ use Psr\Clock\ClockInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class InactiveStandBikesCheckCommandTest extends TestCase
 {
@@ -80,32 +81,31 @@ class InactiveStandBikesCheckCommandTest extends TestCase
                 ]
             );
 
-        $notifiedMessage = '';
+        $notifiedKey = '';
+        $notifiedLines = '';
         $this->adminNotifier
             ->expects($this->once())
             ->method('notify')
-            ->with($this->isString(), false)
+            ->with($this->isInstanceOf(TranslatableMessage::class), false)
             ->willReturnCallback(
-                static function (string $message, bool $bySms) use (&$notifiedMessage): void {
-                    $notifiedMessage = $message;
+                static function (TranslatableMessage $message, bool $bySms) use (&$notifiedKey, &$notifiedLines): void {
+                    $notifiedKey = $message->getMessage();
+                    $notifiedLines = $message->getParameters()['lines'] ?? '';
                 }
             );
 
         $this->commandTester->execute([]);
         $this->assertSame(Command::SUCCESS, $this->commandTester->getStatusCode());
 
-        $this->assertStringContainsString(
-            'Inactive bikes on stands (service stands excluded, sorted by inactive days).',
-            $notifiedMessage
-        );
-        $this->assertStringContainsString('12 | STAND1 | Last move: 2026-02-01 08:00:00', $notifiedMessage);
-        $this->assertStringContainsString('27 | STAND2 | Last move: 2026-01-15 10:00:00', $notifiedMessage);
+        $this->assertSame('admin.notification.inactive_bikes', $notifiedKey);
+        $this->assertStringContainsString('12 | STAND1 | Last move: 2026-02-01 08:00:00', $notifiedLines);
+        $this->assertStringContainsString('27 | STAND2 | Last move: 2026-01-15 10:00:00', $notifiedLines);
 
         $this->assertLessThan(
-            strpos($notifiedMessage, '27 | STAND2'),
-            strpos($notifiedMessage, '12 | STAND1')
+            strpos($notifiedLines, '27 | STAND2'),
+            strpos($notifiedLines, '12 | STAND1')
         );
-        $this->assertSame(1, substr_count($notifiedMessage, '27 | STAND2'));
+        $this->assertSame(1, substr_count($notifiedLines, '27 | STAND2'));
 
         $this->assertStringContainsString(
             'Admin notification sent for 2 bikes.',

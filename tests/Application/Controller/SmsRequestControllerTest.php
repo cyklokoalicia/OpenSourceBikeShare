@@ -8,13 +8,14 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Db\DbInterface;
 use BikeShare\Repository\UserSettingsRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Monolog\Logger;
 use PHPUnit\Framework\Constraint\Callback;
 use PHPUnit\Framework\Constraint\Constraint;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SmsRequestControllerTest extends BikeSharingWebTestCase
 {
@@ -47,16 +48,18 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
         $this->assertResponseStatusCodeSame($expectedResponseCode, 'Invalid response code');
         $this->assertSame($expectedResponse, $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
         if (is_null($expectedSms)) {
-            $this->assertCount(0, $smsConnector->getSentMessages());
+            $this->assertCount(0, $smsSender->getSentMessages());
         } else {
-            $this->assertCount(1, $smsConnector->getSentMessages());
+            $this->assertCount(1, $smsSender->getSentMessages());
+            $translator = $this->client->getContainer()->get(TranslatorInterface::class);
+            $rendered = $smsSender->getSentMessages()[0]['message']->trans($translator);
             if (is_string($expectedSms)) {
-                $this->assertSame($expectedSms, $smsConnector->getSentMessages()[0]['text']);
+                $this->assertSame($expectedSms, $rendered);
             } else {
-                $this->assertThat($smsConnector->getSentMessages()[0]['text'], $expectedSms);
+                $this->assertThat($rendered, $expectedSms);
             }
         }
 
@@ -170,11 +173,14 @@ class SmsRequestControllerTest extends BikeSharingWebTestCase
 
         $this->assertResponseIsSuccessful();
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount(1, $smsConnector->getSentMessages());
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount(1, $smsSender->getSentMessages());
+        $sent = $smsSender->getSentMessages()[0];
+        $this->assertSame('de', $sent['locale']);
+        $translator = $this->client->getContainer()->get(TranslatorInterface::class);
         $this->assertMatchesRegularExpression(
             '/Fahrrad 1 befindet sich am Ständer STAND\d*./',
-            $smsConnector->getSentMessages()[0]['text']
+            $sent['message']->trans($translator, $sent['locale'])
         );
 
         //return language to default value

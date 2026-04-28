@@ -9,8 +9,9 @@ use BikeShare\Event\SmsProcessedEvent;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class CommandExecutor
 {
@@ -18,12 +19,11 @@ class CommandExecutor
         private readonly CommandDetector $commandDetector,
         private readonly ServiceLocator $commandLocator,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly TranslatorInterface $translator,
         private readonly LoggerInterface $logger,
     ) {
     }
 
-    public function execute(string $message, User $user): string
+    public function execute(string $message, User $user): TranslatableInterface
     {
         $commandInfo = $this->commandDetector->detect($message);
         if (
@@ -34,18 +34,16 @@ class CommandExecutor
             /* @var \Closure|SmsCommandInterface $possibleCommand */
             $possibleCommand = $this->commandLocator->get($commandInfo['possibleCommand']);
 
-            return $this->translator->trans(
-                'Error. More arguments needed, use command {command}',
-                [
-                    'command' => $possibleCommand->getHelpMessage()
-                ]
+            return new TranslatableMessage(
+                'command.error.more_arguments_needed',
+                ['command' => $possibleCommand->getHelpMessage()]
             );
         } elseif (!$this->commandLocator->has($commandInfo['command'])) {
             throw new \RuntimeException('Unknown command');
         }
 
+        $commandName = $commandInfo['command'];
         try {
-            $commandName = $commandInfo['command'];
             /* @var \Closure|SmsCommandInterface $command */
             $command = $this->commandLocator->get($commandName);
 
@@ -72,13 +70,13 @@ class CommandExecutor
                 'Validation error',
                 ['user' => $user, 'command' => $commandName, 'exception' => $e]
             );
-            $message = $e->getMessage();
+            $message = new TranslatableMessage($e->getMessage(), $e->getParameters());
         } catch (\Throwable $e) {
             $this->logger->error(
                 'Error executing command',
                 ['user' => $user, 'command' => $commandName, 'exception' => $e]
             );
-            $message = $this->translator->trans('An error occurred while processing your request.');
+            $message = new TranslatableMessage('command.error.processing_error');
         }
 
         return $message;

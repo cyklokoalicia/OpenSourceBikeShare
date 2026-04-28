@@ -11,9 +11,11 @@ use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Translation\TranslatableResult;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class RevertCommandTest extends BikeSharingWebTestCase
 {
@@ -82,18 +84,21 @@ class RevertCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessage = $smsSender->getSentMessages()[0];
 
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $pattern = '/Bike ' . self::BIKE_NUMBER . ': Open with code (?P<oldCode>\d{4})\.\s*' .
-            'Change code immediately to (?P<newCode>\d{4})\s*' .
-            '\(open, rotate metal part, set new code, rotate metal part back\)\./';
-        $this->assertMatchesRegularExpression($pattern, $sentMessage['text'], 'Invalid response sms text');
-        preg_match($pattern, $sentMessage['text'], $matches);
-        $this->assertNotSame($matches['oldCode'], $matches['newCode'], 'Invalid lock code');
+        $this->assertInstanceOf(TranslatableResult::class, $sentMessage['message']);
+        $this->assertSame('bike.rent.success', $sentMessage['message']->getCode());
+        $rentParams = $sentMessage['message']->getParams();
+        $this->assertSame(self::BIKE_NUMBER, $rentParams['bikeNumber']);
+        $this->assertMatchesRegularExpression('/^\d{4}$/', (string)$rentParams['currentCode']);
+        $this->assertMatchesRegularExpression('/^\d{4}$/', (string)$rentParams['newCode']);
+        $this->assertNotSame($rentParams['currentCode'], $rentParams['newCode'], 'Invalid lock code');
+
+        $newCode = $rentParams['newCode'];
 
         $this->client->request(
             Request::METHOD_GET,
@@ -108,24 +113,31 @@ class RevertCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-
-        $this->assertCount(2, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessages = $smsConnector->getSentMessages();
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount(2, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessages = $smsSender->getSentMessages();
 
         foreach ($sentMessages as $sentMessage) {
             if ($sentMessage['number'] === self::USER_PHONE_NUMBER) {
+                $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
                 $this->assertSame(
-                    'Bike ' . self::BIKE_NUMBER . ' has been returned. You can now rent a new bicycle.',
-                    $sentMessage['text'],
-                    'Invalid response sms text for user'
+                    'bike.revert.notification.previous_owner',
+                    $sentMessage['message']->getMessage()
+                );
+                $this->assertSame(
+                    ['bikeNumber' => self::BIKE_NUMBER],
+                    $sentMessage['message']->getParameters()
                 );
             } else {
+                $this->assertInstanceOf(TranslatableResult::class, $sentMessage['message']);
+                $this->assertSame('bike.revert.success', $sentMessage['message']->getCode());
                 $this->assertSame(
-                    'Bike ' . self::BIKE_NUMBER . ' reverted to ' . self::STAND_NAME .
-                        ' with code ' . $matches['newCode'] . '.',
-                    $sentMessage['text'],
-                    'Invalid response sms text for admin'
+                    [
+                        'bikeNumber' => self::BIKE_NUMBER,
+                        'standName' => self::STAND_NAME,
+                        'code' => $newCode,
+                    ],
+                    $sentMessage['message']->getParams()
                 );
             }
         }
@@ -153,14 +165,14 @@ class RevertCommandTest extends BikeSharingWebTestCase
 
         $this->assertSame('RENT', $history[1]['action'], 'Invalid history action');
         $this->assertEquals(
-            $matches['newCode'],
+            $newCode,
             $history[1]['parameter'],
             'Missed lock code'
         );
 
         $this->assertSame('REVERT', $history[2]['action'], 'Invalid history action');
         $this->assertEquals(
-            $stand['standId'] . '|' . $matches['newCode'],
+            $stand['standId'] . '|' . $newCode,
             $history[2]['parameter'],
             'Missed standId and lock code'
         );

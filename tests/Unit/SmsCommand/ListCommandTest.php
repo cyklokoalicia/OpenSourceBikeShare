@@ -4,207 +4,144 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Unit\SmsCommand;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\App\Entity\User;
 use BikeShare\Repository\StandRepository;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\SmsCommand\ListCommand;
-use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class ListCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private StandRepository&MockObject $standRepositoryMock;
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->standRepositoryMock = $this->createMock(StandRepository::class);
     }
 
     protected function tearDown(): void
     {
-        unset($this->translatorMock, $this->standRepositoryMock);
+        unset($this->standRepositoryMock);
     }
 
     public function testInvokeThrowsWhenStandNameIsInvalid(): void
     {
-        $standName = 'safko4zruseny';
-        $message = 'Stand name safko4zruseny has not been recognized. Stands are marked by CAPITALLETTERS.';
-        $command = new ListCommand($this->translatorMock, $this->standRepositoryMock);
-
+        $command = new ListCommand($this->standRepositoryMock);
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'Stand name {standName} has not been recognized. Stands are marked by CAPITALLETTERS.',
-                ['standName' => $standName]
-            )
-            ->willReturn($message);
-
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage($message);
 
-        ($command)($this->createStub(User::class), $standName);
+        ($command)($this->createStub(User::class), 'safko4zruseny');
     }
 
     public function testInvokeThrowsWhenStandDoesNotExist(): void
     {
-        $standName = 'MAINSQUARE';
-        $message = 'Stand MAINSQUARE does not exist.';
-        $command = new ListCommand($this->translatorMock, $this->standRepositoryMock);
-
-        $this->standRepositoryMock->expects($this->once())->method('findItemByName')->with($standName)->willReturn([]);
-        $this->translatorMock
+        $command = new ListCommand($this->standRepositoryMock);
+        $this->standRepositoryMock
             ->expects($this->once())
-            ->method('trans')
-            ->with('Stand {standName} does not exist.', ['standName' => $standName])
-            ->willReturn($message);
-
+            ->method('findItemByName')
+            ->with('MAINSQUARE')
+            ->willReturn([]);
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage($message);
 
-        ($command)($this->createStub(User::class), $standName);
+        ($command)($this->createStub(User::class), 'MAINSQUARE');
     }
 
-    #[DataProvider('invokeDataProvider')]
-    public function testInvoke(
-        bool $forceStack,
-        int $standRepositoryFindLastReturnedCallAmount,
-        ?int $standRepositoryFindLastReturnedCallResult,
-        array $standRepositoryFindBikesOnStandCallResult,
-        array $translatorCallParams,
-        array $translatorCallResult,
-        string $message
-    ): void {
+    public function testInvokeReturnsEmptyStand(): void
+    {
+        $command = new ListCommand($this->standRepositoryMock);
         $standName = 'ABC123';
-        $standId = 123;
-        $userMock = $this->createStub(User::class);
-        $command = new ListCommand($this->translatorMock, $this->standRepositoryMock, $forceStack);
-
         $this->standRepositoryMock
             ->expects($this->once())
             ->method('findItemByName')
             ->with($standName)
-            ->willReturn(['standId' => $standId]);
-        $this->standRepositoryMock
-            ->expects($this->exactly($standRepositoryFindLastReturnedCallAmount))
-            ->method('findLastReturnedBikeOnStand')
-            ->with($standId)
-            ->willReturn($standRepositoryFindLastReturnedCallResult);
+            ->willReturn(['standId' => 1]);
         $this->standRepositoryMock
             ->expects($this->once())
             ->method('findBikesOnStand')
-            ->with($standId)
-            ->willReturn($standRepositoryFindBikesOnStandCallResult);
-        $matcher = $this->exactly(count($translatorCallParams));
-        $this->translatorMock
-            ->expects($matcher)
-            ->method('trans')
-            ->willReturnCallback(
-                function (...$parameters) use ($matcher, $translatorCallParams, $translatorCallResult) {
-                    $this->assertSame($translatorCallParams[$matcher->numberOfInvocations() - 1], $parameters);
+            ->with(1)
+            ->willReturn([]);
 
-                    return $translatorCallResult[$matcher->numberOfInvocations() - 1];
-                }
-            );
+        $result = ($command)($this->createStub(User::class), $standName);
 
-        $this->assertSame($message, ($command)($userMock, $standName));
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.list.empty', $result->getMessage());
+        $this->assertSame(['standName' => $standName], $result->getParameters());
+    }
+
+    public function testInvokeWithForceStackAndFirstBike(): void
+    {
+        $command = new ListCommand($this->standRepositoryMock, true);
+        $standName = 'ABC123';
+        $this->standRepositoryMock
+            ->expects($this->once())
+            ->method('findItemByName')
+            ->with($standName)
+            ->willReturn(['standId' => 1]);
+        $this->standRepositoryMock
+            ->expects($this->once())
+            ->method('findBikesOnStand')
+            ->with(1)
+            ->willReturn([['bikeNum' => 456], ['bikeNum' => 789]]);
+        $this->standRepositoryMock
+            ->expects($this->once())
+            ->method('findLastReturnedBikeOnStand')
+            ->with(1)
+            ->willReturn(456);
+
+        $result = ($command)($this->createStub(User::class), $standName);
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.list.bikes', $result->getMessage());
+        $this->assertSame(
+            [
+                'standName' => $standName,
+                'hasFirstBike' => 'true',
+                'firstBike' => 456,
+                'otherBikes' => '789',
+            ],
+            $result->getParameters()
+        );
+    }
+
+    public function testInvokeWithoutForceStack(): void
+    {
+        $command = new ListCommand($this->standRepositoryMock);
+        $this->standRepositoryMock
+            ->expects($this->once())
+            ->method('findItemByName')
+            ->with('ABC123')
+            ->willReturn(['standId' => 1]);
+        $this->standRepositoryMock
+            ->expects($this->once())
+            ->method('findBikesOnStand')
+            ->with(1)
+            ->willReturn([['bikeNum' => 1], ['bikeNum' => 2]]);
+        $this->standRepositoryMock->expects($this->never())->method('findLastReturnedBikeOnStand');
+
+        $result = ($command)($this->createStub(User::class), 'ABC123');
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.list.bikes', $result->getMessage());
+        $this->assertSame(
+            [
+                'standName' => 'ABC123',
+                'hasFirstBike' => 'false',
+                'firstBike' => '',
+                'otherBikes' => '1, 2',
+            ],
+            $result->getParameters()
+        );
     }
 
     public function testGetHelpMessage(): void
     {
-        $message = 'with stand name: LIST MAINSQUARE';
-        $command = new ListCommand($this->translatorMock, $this->standRepositoryMock);
-
+        $command = new ListCommand($this->standRepositoryMock);
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('with stand name: {example}', ['example' => 'LIST MAINSQUARE'])
-            ->willReturn($message);
 
-        $this->assertEquals($message, $command->getHelpMessage());
-    }
-
-    public static function invokeDataProvider(): Generator
-    {
-        yield 'force stack is true and bikesOnStand empty' => [
-            'forceStack' => true,
-            'standRepositoryFindLastReturnedCallAmount' => 1,
-            'standRepositoryFindLastReturnedCallResult' => 456,
-            'standRepositoryFindBikesOnStandCallResult' => [],
-            'translatorCallParams' => [['Stand {standName} is empty.', ['standName' => 'ABC123'], null, null]],
-            'translatorCallResult' => ['Stand ABC123 is empty.'],
-            'message' => 'Stand ABC123 is empty.',
-        ];
-        yield 'force stack is true and stackTopBike is not null' => [
-            'forceStack' => true,
-            'standRepositoryFindLastReturnedCallAmount' => 1,
-            'standRepositoryFindLastReturnedCallResult' => 456,
-            'standRepositoryFindBikesOnStandCallResult' => [
-                ['bikeNum' => 456],
-                ['bikeNum' => 789],
-                ['bikeNum' => 10],
-                ['bikeNum' => 11],
-            ],
-            'translatorCallParams' => [
-                ['(first)', [], null, null],
-                [
-                    'Bikes on stand {standName}: {bikes}',
-                    ['standName' => 'ABC123', 'bikes' => '456 (first), 789, 10, 11'],
-                    null,
-                    null,
-                ],
-            ],
-            'translatorCallResult' => ['(first)', 'Bikes on stand ABC123: 456 (first), 789, 10, 11'],
-            'message' => 'Bikes on stand ABC123: 456 (first), 789, 10, 11',
-        ];
-        yield 'force stack is true and stackTopBike is null' => [
-            'forceStack' => true,
-            'standRepositoryFindLastReturnedCallAmount' => 1,
-            'standRepositoryFindLastReturnedCallResult' => null,
-            'standRepositoryFindBikesOnStandCallResult' => [
-                ['bikeNum' => 456],
-                ['bikeNum' => 789],
-                ['bikeNum' => 10],
-                ['bikeNum' => 11],
-            ],
-            'translatorCallParams' => [
-                [
-                    'Bikes on stand {standName}: {bikes}',
-                    ['standName' => 'ABC123', 'bikes' => '456, 789, 10, 11'],
-                    null,
-                    null,
-                ],
-            ],
-            'translatorCallResult' => ['Bikes on stand ABC123: 456, 789, 10, 11'],
-            'message' => 'Bikes on stand ABC123: 456, 789, 10, 11',
-        ];
-        yield 'force stack is false and stackTopBike is null' => [
-            'forceStack' => false,
-            'standRepositoryFindLastReturnedCallAmount' => 0,
-            'standRepositoryFindLastReturnedCallResult' => null,
-            'standRepositoryFindBikesOnStandCallResult' => [
-                ['bikeNum' => 456],
-                ['bikeNum' => 789],
-                ['bikeNum' => 10],
-                ['bikeNum' => 11],
-            ],
-            'translatorCallParams' => [
-                [
-                    'Bikes on stand {standName}: {bikes}',
-                    ['standName' => 'ABC123', 'bikes' => '456, 789, 10, 11'],
-                    null,
-                    null,
-                ],
-            ],
-            'translatorCallResult' => ['Bikes on stand ABC123: 456, 789, 10, 11'],
-            'message' => 'Bikes on stand ABC123: 456, 789, 10, 11',
-        ];
+        $help = $command->getHelpMessage();
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.list.help', $help->getMessage());
     }
 }

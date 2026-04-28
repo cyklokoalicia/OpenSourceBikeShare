@@ -9,8 +9,9 @@ use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Translation\TranslatableResult;
 use Symfony\Component\HttpFoundation\Request;
 
 class ForceReturnCommandTest extends BikeSharingWebTestCase
@@ -47,18 +48,18 @@ class ForceReturnCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessage = $smsSender->getSentMessages()[0];
 
         $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ' returned to stand ' . self::STAND_NAME . '\.\s*Lock with code \d{4}\.\s*' .
-                'Please, rotate the lockpad to 0000 when leaving\.\s*Wipe the bike clean if it is dirty, please\./',
-            $sentMessage['text'],
-            'Invalid response sms text'
-        );
+        $this->assertInstanceOf(TranslatableResult::class, $sentMessage['message']);
+        $this->assertSame('bike.return.success', $sentMessage['message']->getCode());
+        $params = $sentMessage['message']->getParams();
+        $this->assertSame(self::BIKE_NUMBER, $params['bikeNumber']);
+        $this->assertSame(self::STAND_NAME, $params['standName']);
+        $this->assertMatchesRegularExpression('/^\d{4}$/', (string)$params['currentCode']);
 
         $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
         $stand = $this->client->getContainer()->get(StandRepository::class)->findItemByName(self::STAND_NAME);

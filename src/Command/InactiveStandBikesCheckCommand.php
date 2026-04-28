@@ -12,6 +12,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Translation\TranslatableMessage;
 
 #[AsCommand(
     name: 'app:inactive_stand_bikes_check',
@@ -54,7 +55,7 @@ class InactiveStandBikesCheckCommand extends Command
             $lastMoveFormatted = $lastMoveTime->format('Y-m-d H:i:s');
 
             $lines[] = sprintf(
-                '%d | %s | Last move: %s | Inactive: %d days',
+                '- %d | %s | Last move: %s | Inactive: %d days',
                 $bikeNumber,
                 $standName,
                 $lastMoveFormatted,
@@ -70,7 +71,10 @@ class InactiveStandBikesCheckCommand extends Command
         }
 
         $this->adminNotifier->notify(
-            $this->buildAdminMessage($lines),
+            new TranslatableMessage(
+                'admin.notification.inactive_bikes',
+                ['lines' => implode("\n", $lines)]
+            ),
             false
         );
 
@@ -90,22 +94,5 @@ class InactiveStandBikesCheckCommand extends Command
         }
 
         return Command::SUCCESS;
-    }
-
-    private function buildAdminMessage(array $bikeLines): string
-    {
-        $lines = [
-            'Inactive bikes on stands (service stands excluded, sorted by inactive days).',
-            '',
-        ];
-        foreach ($bikeLines as $bikeLine) {
-            $lines[] = '- ' . $bikeLine;
-        }
-
-        if ([] === $bikeLines) {
-            $lines[] = '- none';
-        }
-
-        return implode(PHP_EOL, $lines);
     }
 }

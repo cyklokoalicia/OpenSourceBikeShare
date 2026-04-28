@@ -12,11 +12,10 @@ use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\SmsCommand\NoteCommand;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class NoteCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private BikeRepository&MockObject $bikeRepositoryMock;
     private StandRepository&MockObject $standRepositoryMock;
     private NoteRepository&MockObject $noteRepositoryMock;
@@ -24,13 +23,10 @@ class NoteCommandTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->bikeRepositoryMock = $this->createMock(BikeRepository::class);
         $this->standRepositoryMock = $this->createMock(StandRepository::class);
         $this->noteRepositoryMock = $this->createMock(NoteRepository::class);
-
         $this->command = new NoteCommand(
-            $this->translatorMock,
             $this->bikeRepositoryMock,
             $this->standRepositoryMock,
             $this->noteRepositoryMock
@@ -40,7 +36,6 @@ class NoteCommandTest extends TestCase
     protected function tearDown(): void
     {
         unset(
-            $this->translatorMock,
             $this->bikeRepositoryMock,
             $this->standRepositoryMock,
             $this->noteRepositoryMock,
@@ -50,212 +45,138 @@ class NoteCommandTest extends TestCase
 
     public function testAddBikeNoteSuccess(): void
     {
-        $user = $this->createStub(User::class);
-        $user->method('getUserId')->willReturn(1);
+        $userMock = $this->createMock(User::class);
+        $userMock->expects($this->once())->method('getUserId')->willReturn(1);
         $bikeNumber = 42;
-        $note = 'Flat tire';
 
-        $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->bikeRepositoryMock
             ->expects($this->once())
             ->method('findItem')
             ->with($bikeNumber)
             ->willReturn(['bikeNumber' => $bikeNumber]);
-        $this->noteRepositoryMock->expects($this->once())->method('addNoteToBike')->with($bikeNumber, 1, $note);
-        $this->translatorMock
+        $this->standRepositoryMock->expects($this->never())->method('findItemByName');
+        $this->noteRepositoryMock
             ->expects($this->once())
-            ->method('trans')
-            ->with('Note "{note}" for bike {bikeNumber} saved.', ['note' => $note, 'bikeNumber' => $bikeNumber])
-            ->willReturn('Note "Flat tire" for bike 42 saved.');
+            ->method('addNoteToBike')
+            ->with($bikeNumber, 1, 'Flat tire');
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToStand');
 
-        $this->assertEquals('Note "Flat tire" for bike 42 saved.', ($this->command)($user, $bikeNumber, null, $note));
+        $result = ($this->command)($userMock, $bikeNumber, null, 'Flat tire');
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.note.success_bike', $result->getMessage());
+        $this->assertSame(
+            ['note' => 'Flat tire', 'bikeNumber' => $bikeNumber],
+            $result->getParameters()
+        );
     }
 
     public function testAddBikeNoteEmptyNoteThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $bikeNumber = 42;
-
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock->expects($this->never())->method('addNoteToBike');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'Empty note for bike {bikeNumber} not saved, for deleting notes use DELNOTE (for admins).',
-                ['bikeNumber' => $bikeNumber]
-            )
-            ->willReturn('Empty note for bike 42 not saved.');
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToStand');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Empty note for bike 42 not saved.');
 
-        ($this->command)($user, $bikeNumber, null, '');
+        ($this->command)($this->createStub(User::class), 42, null, '');
     }
 
     public function testAddBikeNoteBikeNotFoundThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $bikeNumber = 99;
-
+        $this->bikeRepositoryMock->expects($this->once())->method('findItem')->with(99)->willReturn([]);
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock->expects($this->never())->method('addNoteToBike');
-        $this->bikeRepositoryMock->expects($this->once())->method('findItem')->with($bikeNumber)->willReturn([]);
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('Bike {bikeNumber} does not exist.', ['bikeNumber' => $bikeNumber])
-            ->willReturn('Bike 99 does not exist.');
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToStand');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Bike 99 does not exist.');
 
-        ($this->command)($user, $bikeNumber, null, 'Broken chain');
+        ($this->command)($this->createStub(User::class), 99, null, 'Broken chain');
     }
 
     public function testAddStandNoteSuccess(): void
     {
-        $user = $this->createStub(User::class);
-        $user->method('getUserId')->willReturn(2);
-        $stand = 'STAND1';
-        $note = 'No bikes available';
+        $userMock = $this->createMock(User::class);
+        $userMock->expects($this->once())->method('getUserId')->willReturn(2);
 
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->standRepositoryMock
             ->expects($this->once())
             ->method('findItemByName')
-            ->with($stand)
+            ->with('STAND1')
             ->willReturn(['standId' => 5]);
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToBike');
         $this->noteRepositoryMock
             ->expects($this->once())
             ->method('addNoteToStand')
-            ->with(5, 2, $note);
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('Note "{note}" for stand {standName} saved.', ['note' => $note, 'standName' => $stand])
-            ->willReturn('Note "No bikes available" for stand STAND1 saved.');
+            ->with(5, 2, 'Note');
 
-        $this->assertEquals(
-            'Note "No bikes available" for stand STAND1 saved.',
-            ($this->command)($user, null, $stand, $note),
+        $result = ($this->command)($userMock, null, 'STAND1', 'Note');
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.note.success_stand', $result->getMessage());
+        $this->assertSame(
+            ['note' => 'Note', 'standName' => 'STAND1'],
+            $result->getParameters()
         );
     }
 
     public function testAddStandNoteEmptyNoteThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $stand = 'STAND1';
-
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToBike');
         $this->noteRepositoryMock->expects($this->never())->method('addNoteToStand');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'Empty note for stand {standName} not saved, for deleting notes use DELNOTE (for admins).',
-                ['standName' => $stand]
-            )
-            ->willReturn('Empty note for stand STAND1 not saved.');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Empty note for stand STAND1 not saved.');
 
-        ($this->command)($user, null, $stand, '');
+        ($this->command)($this->createStub(User::class), null, 'STAND1', '');
     }
 
     public function testAddStandNoteInvalidStandNameThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $stand = 'stand#1';
-
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToBike');
         $this->noteRepositoryMock->expects($this->never())->method('addNoteToStand');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'Stand name {standName} has not been recognized. Stands are marked by CAPITALLETTERS.',
-                ['standName' => $stand]
-            )
-            ->willReturn('Stand name stand#1 has not been recognized.');
-
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Stand name stand#1 has not been recognized.');
 
-        ($this->command)($user, null, $stand, 'Something wrong');
+        ($this->command)($this->createStub(User::class), null, 'stand#1', 'Note');
     }
 
     public function testAddStandNoteStandNotFoundThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $stand = 'STAND2';
-
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
-        $this->noteRepositoryMock->expects($this->never())->method('addNoteToStand');
-        $this->standRepositoryMock->expects($this->once())->method('findItemByName')->with($stand)->willReturn(null);
-        $this->translatorMock
+        $this->standRepositoryMock
             ->expects($this->once())
-            ->method('trans')
-            ->with('Stand {standName} does not exist.', ['standName' => $stand])
-            ->willReturn('Stand STAND2 does not exist.');
+            ->method('findItemByName')
+            ->with('STAND2')
+            ->willReturn(null);
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToBike');
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToStand');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Stand STAND2 does not exist.');
 
-        ($this->command)($user, null, $stand, 'No lock');
+        ($this->command)($this->createStub(User::class), null, 'STAND2', 'Note');
     }
 
     public function testInvokeWithNoBikeOrStandThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $matcher = $this->exactly(2);
-
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock->expects($this->never())->method('addNoteToBike');
-        $this->translatorMock
-            ->expects($matcher)
-            ->method('trans')->willReturnCallback(function (...$parameters) use ($matcher) {
-                if ($matcher->numberOfInvocations() === 1) {
-                    $this->assertSame('Flat tire on front wheel', $parameters[0]);
-                    return 'Flat tire on front wheel';
-                }
-
-                if ($matcher->numberOfInvocations() === 2) {
-                    $this->assertSame('with bike number/stand name and problem description: {example}', $parameters[0]);
-                    return 'Help message';
-                }
-            });
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToStand');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Help message');
 
-        ($this->command)($user);
+        ($this->command)($this->createStub(User::class));
     }
 
     public function testGetHelpMessage(): void
     {
-        $matcher = $this->exactly(2);
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock->expects($this->never())->method('addNoteToBike');
-        $this->translatorMock
-            ->expects($matcher)
-            ->method('trans')->willReturnCallback(function (...$parameters) use ($matcher) {
-                if ($matcher->numberOfInvocations() === 1) {
-                    $this->assertSame('Flat tire on front wheel', $parameters[0]);
-                    return 'Flat tire on front wheel';
-                }
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToStand');
 
-                if ($matcher->numberOfInvocations() === 2) {
-                    $this->assertSame('with bike number/stand name and problem description: {example}', $parameters[0]);
-                    $this->assertSame(['example' => 'NOTE 42 Flat tire on front wheel'], $parameters[1]);
-                    return 'with bike number/stand name and problem description: NOTE 42 Flat tire on front wheel';
-                }
-            });
-
-        $this->assertEquals(
-            'with bike number/stand name and problem description: NOTE 42 Flat tire on front wheel',
-            $this->command->getHelpMessage()
-        );
+        $help = $this->command->getHelpMessage();
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.note.help', $help->getMessage());
     }
 }

@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Unit\SmsCommand;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\App\Entity\User;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\SmsCommand\AddCommand;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\User\UserRegistration;
-use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class AddCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private UserRegistration&MockObject $userRegistrationMock;
     private UserRepository&MockObject $userRepositoryMock;
     private PhonePurifierInterface&MockObject $phonePurifierMock;
@@ -26,13 +23,10 @@ class AddCommandTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->userRegistrationMock = $this->createMock(UserRegistration::class);
         $this->userRepositoryMock = $this->createMock(UserRepository::class);
         $this->phonePurifierMock = $this->createMock(PhonePurifierInterface::class);
-
         $this->command = new AddCommand(
-            $this->translatorMock,
             $this->userRegistrationMock,
             $this->userRepositoryMock,
             $this->phonePurifierMock
@@ -42,7 +36,6 @@ class AddCommandTest extends TestCase
     protected function tearDown(): void
     {
         unset(
-            $this->translatorMock,
             $this->userRegistrationMock,
             $this->userRepositoryMock,
             $this->phonePurifierMock,
@@ -50,153 +43,102 @@ class AddCommandTest extends TestCase
         );
     }
 
-    #[DataProvider('invokeThrowsValidationDataProvider')]
-    public function testInvokeThrowsValidation(
-        string $phonePurifierCallResult,
-        bool $isValid,
-        array $userRepositoryByPhoneCallParams,
-        ?array $userRepositoryByPhoneCallResult,
-        array $userRepositoryByEmailCallParams,
-        ?array $userRepositoryByEmailCallResult,
-        string $email,
-        string $message
-    ): void {
-        $userMock = $this->createMock(User::class);
-        $phone = '123456789';
-
-        $userMock->expects($this->never())->method('getCity');
+    public function testInvokeThrowsWhenInvalidPhone(): void
+    {
+        $this->phonePurifierMock->expects($this->once())->method('isValid')->with('123')->willReturn(false);
+        $this->phonePurifierMock->expects($this->never())->method('purify');
+        $this->userRepositoryMock->expects($this->never())->method('findItemByPhoneNumber');
+        $this->userRepositoryMock->expects($this->never())->method('findItemByEmail');
         $this->userRegistrationMock->expects($this->never())->method('register');
-        $this->phonePurifierMock
-            ->expects($this->once())
-            ->method('isValid')
-            ->with($phone)
-            ->willReturn($isValid);
-        $this->phonePurifierMock
-            ->expects($isValid ? $this->once() : $this->never())
-            ->method('purify')
-            ->with($phone)
-            ->willReturn($phonePurifierCallResult);
-        $this->userRepositoryMock
-            ->expects($this->exactly(count($userRepositoryByPhoneCallParams)))
-            ->method('findItemByPhoneNumber')
-            ->with($phonePurifierCallResult)
-            ->willReturn($userRepositoryByPhoneCallResult);
-        $this->userRepositoryMock
-            ->expects($this->exactly(count($userRepositoryByEmailCallParams)))
-            ->method('findItemByEmail')
-            ->with($email)
-            ->willReturn($userRepositoryByEmailCallResult);
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with($message)
-            ->willReturn($message);
-
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage($message);
 
-        ($this->command)($userMock, $email, $phone, 'Test User');
+        ($this->command)($this->createStub(User::class), 'a@b.com', '123', 'Test User');
+    }
+
+    public function testInvokeThrowsWhenInvalidEmail(): void
+    {
+        $this->phonePurifierMock->expects($this->once())->method('isValid')->with('123')->willReturn(true);
+        $this->phonePurifierMock->expects($this->once())->method('purify')->with('123')->willReturn('421123');
+        $this->userRepositoryMock->expects($this->never())->method('findItemByPhoneNumber');
+        $this->userRepositoryMock->expects($this->never())->method('findItemByEmail');
+        $this->userRegistrationMock->expects($this->never())->method('register');
+        $this->expectException(ValidationException::class);
+
+        ($this->command)($this->createStub(User::class), 'invalid', '123', 'Test User');
+    }
+
+    public function testInvokeThrowsWhenPhoneRegistered(): void
+    {
+        $this->phonePurifierMock->expects($this->once())->method('isValid')->with('123')->willReturn(true);
+        $this->phonePurifierMock->expects($this->once())->method('purify')->with('123')->willReturn('421123');
+        $this->userRepositoryMock
+            ->expects($this->once())
+            ->method('findItemByPhoneNumber')
+            ->with('421123')
+            ->willReturn(['id' => 1]);
+        $this->userRegistrationMock->expects($this->never())->method('register');
+        $this->expectException(ValidationException::class);
+
+        ($this->command)($this->createStub(User::class), 'a@b.com', '123', 'Test User');
+    }
+
+    public function testInvokeThrowsWhenEmailRegistered(): void
+    {
+        $this->phonePurifierMock->expects($this->once())->method('isValid')->with('123')->willReturn(true);
+        $this->phonePurifierMock->expects($this->once())->method('purify')->with('123')->willReturn('421123');
+        $this->userRepositoryMock
+            ->expects($this->once())
+            ->method('findItemByPhoneNumber')
+            ->with('421123')
+            ->willReturn(null);
+        $this->userRepositoryMock
+            ->expects($this->once())
+            ->method('findItemByEmail')
+            ->with('a@b.com')
+            ->willReturn(['id' => 1]);
+        $this->userRegistrationMock->expects($this->never())->method('register');
+        $this->expectException(ValidationException::class);
+
+        ($this->command)($this->createStub(User::class), 'a@b.com', '123', 'Test User');
     }
 
     public function testInvokeSuccessRegister(): void
     {
         $userMock = $this->createMock(User::class);
-        $phone = '123456789';
-        $email = 'test@example.com';
-        $purifiedPhone = '421123456789';
-        $city = 'Bratislava';
-        $fullName = 'Test User';
-        $newUser = $this->createStub(User::class);
-        $message = 'User Test User added. They need to read email and agree to rules before using the system.';
-
-        $userMock->expects($this->once())->method('getCity')->willReturn($city);
-        $this->phonePurifierMock->expects($this->once())->method('isValid')->with($phone)->willReturn(true);
-        $this->phonePurifierMock->expects($this->once())->method('purify')->with($phone)->willReturn($purifiedPhone);
+        $userMock->expects($this->once())->method('getCity')->willReturn('Bratislava');
+        $this->phonePurifierMock->expects($this->once())->method('isValid')->with('123')->willReturn(true);
+        $this->phonePurifierMock->expects($this->once())->method('purify')->with('123')->willReturn('421123456789');
         $this->userRepositoryMock
             ->expects($this->once())
             ->method('findItemByPhoneNumber')
-            ->with($purifiedPhone)
+            ->with('421123456789')
             ->willReturn(null);
-        $this->userRepositoryMock->expects($this->once())->method('findItemByEmail')->with($email)->willReturn(null);
-
+        $this->userRepositoryMock
+            ->expects($this->once())
+            ->method('findItemByEmail')
+            ->with('test@example.com')
+            ->willReturn(null);
         $this->userRegistrationMock
             ->expects($this->once())
             ->method('register')
-            ->with($purifiedPhone, $email, $this->anything(), $city, $fullName, 0)
-            ->willReturn($newUser);
+            ->with('421123456789', 'test@example.com', $this->isString(), 'Bratislava', 'Test User', 0);
 
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'User {userName} added. They need to read email and agree to rules before using the system.',
-                ['userName' => $fullName]
-            )
-            ->willReturn($message);
+        $result = ($this->command)($userMock, 'test@example.com', '123', 'Test User');
 
-        $this->assertEquals($message, ($this->command)($userMock, $email, $phone, $fullName));
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.add.success', $result->getMessage());
+        $this->assertSame(['userName' => 'Test User'], $result->getParameters());
     }
 
     public function testGetHelpMessage(): void
     {
-        $message = 'with email, phone, fullname: ADD king@earth.com 0901456789 Martin Luther King Jr.';
-
-        $this->userRegistrationMock->expects($this->never())->method('register');
-        $this->userRepositoryMock->expects($this->never())->method('findItemByPhoneNumber');
         $this->phonePurifierMock->expects($this->never())->method('isValid');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'with email, phone, fullname: {example}',
-                ['example' => 'ADD king@earth.com 0901456789 Martin Luther King Jr.']
-            )
-            ->willReturn($message);
+        $this->userRepositoryMock->expects($this->never())->method('findItemByPhoneNumber');
+        $this->userRepositoryMock->expects($this->never())->method('findItemByEmail');
+        $this->userRegistrationMock->expects($this->never())->method('register');
 
-        $this->assertEquals($message, $this->command->getHelpMessage());
-    }
-
-    public static function invokeThrowsValidationDataProvider(): Generator
-    {
-        yield 'phone number invalid' => [
-            'phonePurifierCallResult' => '420123456789',
-            'isValid' => false,
-            'userRepositoryByPhoneCallParams' => [],
-            'userRepositoryByPhoneCallResult' => null,
-            'userRepositoryByEmailCallParams' => [],
-            'userRepositoryByEmailCallResult' => null,
-            'email' => 'test@example.com',
-            'message' => 'Invalid phone number.',
-        ];
-        yield 'email invalid' => [
-            'phonePurifierCallResult' => '421123456789',
-            'isValid' => true,
-            'userRepositoryByPhoneCallParams' => [],
-            'userRepositoryByPhoneCallResult' => null,
-            'userRepositoryByEmailCallParams' => [],
-            'userRepositoryByEmailCallResult' => null,
-            'email' => 'abc',
-            'message' => 'Email address is incorrect.',
-        ];
-        yield 'user with phone already exists' => [
-            'phonePurifierCallResult' => '421123456789',
-            'isValid' => true,
-            'userRepositoryByPhoneCallParams' => ['421123456789'],
-            'userRepositoryByPhoneCallResult' => ['id' => 123],
-            'userRepositoryByEmailCallParams' => [],
-            'userRepositoryByEmailCallResult' => null,
-            'email' => 'test@example.com',
-            'message' => 'User with this phone number already registered.',
-        ];
-        yield 'user with email already exists' => [
-            'phonePurifierCallResult' => '421123456789',
-            'isValid' => true,
-            'userRepositoryByPhoneCallParams' => ['421123456789'],
-            'userRepositoryByPhoneCallResult' => null,
-            'userRepositoryByEmailCallParams' => ['test@example.com'],
-            'userRepositoryByEmailCallResult' => ['id' => 123],
-            'email' => 'test@example.com',
-            'message' => 'User with this email already registered.',
-        ];
+        $help = $this->command->getHelpMessage();
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.add.help', $help->getMessage());
     }
 }

@@ -7,6 +7,7 @@ namespace BikeShare\Command;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
+use BikeShare\Repository\UserSettingsRepository;
 use BikeShare\Sms\SmsSenderInterface;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
@@ -14,7 +15,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 #[AsCommand(name: 'app:long_rental_check', description: 'Check user which have long rental')]
 class LongRentalCheckCommand extends Command
@@ -25,10 +26,10 @@ class LongRentalCheckCommand extends Command
         private readonly BikeRepository $bikeRepository,
         private readonly HistoryRepository $historyRepository,
         private readonly SmsSenderInterface $smsSender,
-        private readonly TranslatorInterface $translator,
         private readonly AdminNotifier $adminNotifier,
         private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
+        private readonly UserSettingsRepository $userSettingsRepository,
     ) {
         parent::__construct();
     }
@@ -59,28 +60,31 @@ class LongRentalCheckCommand extends Command
                 ];
 
                 if ($this->notifyUser) {
+                    $userLocale = $this->userSettingsRepository->findByUserId($userId)['locale'] ?? null;
                     $this->smsSender->send(
                         $userPhone,
-                        $this->translator->trans(
-                            'Please, return your bike {bikeNumber} immediately to the closest stand! ' .
-                                'Ignoring this warning can get you banned from the system.',
-                            ['{bikeNumber}' => $bikeNumber]
-                        )
+                        new TranslatableMessage(
+                            'admin.notification.long_rental_user_warning',
+                            ['bikeNumber' => $bikeNumber]
+                        ),
+                        $userLocale
                     );
                 }
             }
         }
         if (!empty($abusers)) {
-            $message = $this->translator->trans(
-                'Bike rental exceed {hour} hours',
-                ['hour' => $this->longRentalHours]
-            );
+            $abuserLines = [];
             foreach ($abusers as $abuser) {
-                $message .= PHP_EOL . 'B' . $abuser['bikeNumber'] . ' '
+                $abuserLines[] = 'B' . $abuser['bikeNumber'] . ' '
                     . $abuser['userName'] . ' ' . $abuser['userPhone'];
             }
 
-            $this->adminNotifier->notify($message);
+            $this->adminNotifier->notify(
+                new TranslatableMessage(
+                    'admin.notification.long_rental',
+                    ['hour' => $this->longRentalHours, 'abusers' => implode(PHP_EOL, $abuserLines)]
+                )
+            );
         }
 
         return Command::SUCCESS;

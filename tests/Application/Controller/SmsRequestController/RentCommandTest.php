@@ -10,8 +10,9 @@ use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Sms\DebugSmsSender;
+use BikeShare\Translation\TranslatableResult;
 use Symfony\Component\HttpFoundation\Request;
 
 class RentCommandTest extends BikeSharingWebTestCase
@@ -39,6 +40,9 @@ class RentCommandTest extends BikeSharingWebTestCase
                 '',
                 true
             );
+
+        // Drop any setup-noise from the recording SMS sender so the test sees only what RENT produces.
+        $this->client->getContainer()->get(DebugSmsSender::class)->reset();
     }
 
     protected function tearDown(): void
@@ -88,18 +92,19 @@ class RentCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $sentMessages = $this->client->getContainer()->get(DebugSmsSender::class)->getSentMessages();
+        $this->assertCount(1, $sentMessages, 'Invalid number of sent messages');
+        $sentMessage = $sentMessages[0];
 
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $this->assertMatchesRegularExpression(
-            '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.\s*Change code immediately to \d{4}\s*' .
-                '\(open, rotate metal part, set new code, rotate metal part back\)\./',
-            $sentMessage['text'],
-            'Invalid response sms text'
-        );
+        $this->assertInstanceOf(TranslatableResult::class, $sentMessage['message']);
+        $this->assertSame('bike.rent.success', $sentMessage['message']->getCode());
+        $params = $sentMessage['message']->getParams();
+        $this->assertSame(self::BIKE_NUMBER, $params['bikeNumber']);
+        $this->assertMatchesRegularExpression('/^\d{4}$/', $params['currentCode']);
+        $this->assertMatchesRegularExpression('/^\d{4}$/', $params['newCode']);
+        $this->assertNotSame($params['currentCode'], $params['newCode']);
+        $this->assertSame('false', $params['hasNote']);
 
         $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
 
@@ -116,10 +121,10 @@ class RentCommandTest extends BikeSharingWebTestCase
 
         $this->assertSame($history['action'], 'RENT', 'Invalid history action');
         $this->assertNotEmpty($history['parameter'], 'Missed lock code');
-        $this->assertStringContainsString(
-            'Change code immediately to ' . str_pad($history['parameter'], 4, '0', STR_PAD_LEFT),
-            $sentMessage['text'],
-            'Response sms does not contain lock code'
+        $this->assertSame(
+            str_pad($history['parameter'], 4, '0', STR_PAD_LEFT),
+            $params['newCode'],
+            'History lock code does not match newCode in SMS params'
         );
 
         $notCalledListeners = $this->client->getContainer()->get('event_dispatcher')->getNotCalledListeners();

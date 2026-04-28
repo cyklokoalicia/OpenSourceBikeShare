@@ -11,8 +11,9 @@ use BikeShare\Enum\CreditChangeType;
 use BikeShare\Event\BikeRentEvent;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Translation\TranslatableResult;
 use Symfony\Component\HttpFoundation\Request;
 
 class RentCommandWithCreditTest extends BikeSharingWebTestCase
@@ -84,7 +85,7 @@ class RentCommandWithCreditTest extends BikeSharingWebTestCase
         bool $isCreditSystemEnabled,
         float $userCredit,
         bool $isSuccessRent,
-        string $expectedMessagePattern
+        string $expectedCode
     ): void {
         //We should not notify admin about too many rents in this testsuite
         $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999;
@@ -107,6 +108,9 @@ class RentCommandWithCreditTest extends BikeSharingWebTestCase
             }
         );
 
+        // Drop SMS noise from setUp's FORCERETURN so we only assert on RENT's response.
+        $this->client->getContainer()->get(DebugSmsSender::class)->reset();
+
         $this->client->request(
             Request::METHOD_GET,
             '/receive.php',
@@ -120,17 +124,14 @@ class RentCommandWithCreditTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessage = $smsSender->getSentMessages()[0];
 
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $this->assertMatchesRegularExpression(
-            $expectedMessagePattern,
-            $sentMessage['text'],
-            'Invalid response sms text'
-        );
+        $this->assertInstanceOf(TranslatableResult::class, $sentMessage['message']);
+        $this->assertSame($expectedCode, $sentMessage['message']->getCode(), 'Invalid response sms code');
 
         $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
 
@@ -148,10 +149,11 @@ class RentCommandWithCreditTest extends BikeSharingWebTestCase
 
             $this->assertSame($history['action'], 'RENT', 'Invalid history action');
             $this->assertNotEmpty($history['parameter'], 'Missed lock code');
-            $this->assertStringContainsString(
-                'Change code immediately to ' . str_pad($history['parameter'], 4, '0', STR_PAD_LEFT),
-                $sentMessage['text'],
-                'Response sms does not contain lock code'
+            $params = $sentMessage['message']->getParams();
+            $this->assertSame(
+                str_pad((string)$history['parameter'], 4, '0', STR_PAD_LEFT),
+                (string)$params['newCode'],
+                'Response sms newCode does not match history'
             );
         } else {
             $this->assertNotEquals($user['userId'], $bike['userId'], 'Bike should not be rented');
@@ -165,15 +167,13 @@ class RentCommandWithCreditTest extends BikeSharingWebTestCase
             'isCreditSystemEnabled' => true,
             'userCredit' => 0,
             'isSuccessRent' => false,
-            'expectedMessagePattern' => '/You are below required credit \d?.*\. Please, recharge your credit\./',
+            'expectedCode' => 'bike.rent.error.insufficient_credit',
         ];
         yield 'Credit system enabled and user have credits' => [
             'isCreditSystemEnabled' => true,
             'userCredit' => 100,
             'isSuccessRent' => true,
-            'expectedMessagePattern' => '/Bike ' . self::BIKE_NUMBER . ': Open with code \d{4}\.\s*' .
-                'Change code immediately to \d{4}\s*' .
-                '\(open, rotate metal part, set new code, rotate metal part back\)\./',
+            'expectedCode' => 'bike.rent.success',
         ];
     }
 }

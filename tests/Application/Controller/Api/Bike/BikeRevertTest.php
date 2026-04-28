@@ -12,9 +12,10 @@ use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class BikeRevertTest extends BikeSharingWebTestCase
 {
@@ -109,13 +110,19 @@ class BikeRevertTest extends BikeSharingWebTestCase
         $this->assertSame($response['params']['bikeNumber'], self::BIKE_NUMBER, 'Invalid bike number');
         $this->assertSame($response['params']['standName'], self::STAND_NAME, 'Invalid stand name');
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount(1, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessage = $smsSender->getSentMessages()[0];
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
         $this->assertSame(
-            'Bike ' . self::BIKE_NUMBER . ' has been returned. You can now rent a new bicycle.',
-            $sentMessage['text'],
-            'Invalid response sms text for user'
+            'bike.revert.notification.previous_owner',
+            $sentMessage['message']->getMessage(),
+            'Invalid response sms code for user'
+        );
+        $this->assertSame(
+            ['bikeNumber' => self::BIKE_NUMBER],
+            $sentMessage['message']->getParameters(),
+            'Invalid response sms params for user'
         );
 
         $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);

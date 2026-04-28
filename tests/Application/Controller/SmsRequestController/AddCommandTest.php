@@ -9,9 +9,10 @@ use BikeShare\Event\UserRegistrationEvent;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class AddCommandTest extends BikeSharingWebTestCase
 {
@@ -49,16 +50,14 @@ class AddCommandTest extends BikeSharingWebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages());
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages());
+        $sentMessage = $smsSender->getSentMessages()[0];
 
-        $this->assertSame(
-            'User ' . $fullName . ' added. They need to read email and agree to rules before using the system.',
-            $sentMessage['text'],
-            'User was not added'
-        );
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+        $this->assertSame('command.add.success', $sentMessage['message']->getMessage());
+        $this->assertSame(['userName' => $fullName], $sentMessage['message']->getParameters());
         $this->assertSame(
             self::ADMIN_PHONE_NUMBER,
             $sentMessage['number'],

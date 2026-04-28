@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Rent\DTO\RentSystemResult;
 use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
@@ -13,6 +14,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ScanController extends AbstractController
@@ -27,79 +30,70 @@ class ScanController extends AbstractController
     ) {
     }
 
-    public function rentBike(
-        string $bikeNumber,
-        Request $request
-    ): Response {
+    public function rentBike(string $bikeNumber, Request $request): Response
+    {
         $bikeNumber = (int)$bikeNumber;
         $bike = $this->bikeRepository->findItem($bikeNumber);
 
+        $error = null;
+        $result = null;
+
         if (empty($bike)) {
-            $error = $this->translator->trans('Bike {bikeNumber} does not exist.', ['bikeNumber' => $bikeNumber]);
+            $error = new TranslatableMessage('bike.error.not_found', ['bikeNumber' => $bikeNumber]);
         } elseif (empty($bike['standName'])) {
-            $error = $this->translator->trans('Bike {bikeNumber} already rented.', ['bikeNumber' => $bikeNumber]);
+            $error = new TranslatableMessage('bike.error.already_rented_short', ['bikeNumber' => $bikeNumber]);
         } elseif (
             $request->isMethod(Request::METHOD_POST)
             && $request->request->has('rent')
-            && $request->request->get('rent') === "yes"
+            && $request->request->get('rent') === 'yes'
         ) {
             $rentSystem = $this->rentSystemFactory->getRentSystem(RentSystemType::QR);
             $result = $rentSystem->rentBike($this->getUser()->getUserId(), $bikeNumber);
-            if ($result->isError()) {
-                $error = $result->getMessage();
-            } else {
-                $message = $result->getMessage();
-            }
-
-            $this->logResponse($result->getMessage());
+            $this->logResponse($result);
         }
 
         return $this->render('scan/rent.html.twig', [
             'bikeNumber' => $bikeNumber,
             'standName' => $bike['standName'] ?? null,
             'notes' => $bike['notes'] ?? null,
-            'error' => $error ?? null,
-            'message' => $message ?? false,
+            'error' => $error,
+            'result' => $result,
         ]);
     }
 
-    public function returnBike(
-        string $standName
-    ): Response {
+    public function returnBike(string $standName): Response
+    {
         $stand = $this->standRepository->findItemByName($standName);
 
+        $error = null;
+        $result = null;
+
         if (empty($stand)) {
-            $error = $this->translator->trans('Stand {standName} does not exist.', ['standName' => $standName]);
+            $error = new TranslatableMessage('stand.error.not_found', ['standName' => $standName]);
         } else {
             $rentSystem = $this->rentSystemFactory->getRentSystem(RentSystemType::QR);
             $result = $rentSystem->returnBike($this->getUser()->getUserId(), 0, $standName);
-            if ($result->isError()) {
-                $error = $result->getMessage();
-            } else {
-                $message = $result->getMessage();
-            }
-
-            $this->logResponse($result->getMessage());
+            $this->logResponse($result);
         }
 
         return $this->render('scan/return.html.twig', [
             'standName' => $standName,
-            'error' => $error ?? null,
-            'message' => $message ?? false,
+            'error' => $error,
+            'result' => $result,
         ]);
     }
 
-    private function logResponse(string $response): void
+    private function logResponse(TranslatableInterface $response): void
     {
         $this->db->query(
-            'INSERT INTO sent 
+            'INSERT INTO sent
                 SET number = :number,
                     text = :text,
                     time = :time
                 ',
             [
                 'number' => $this->getUser()->getUserIdentifier(),
-                'text' => strip_tags($response),
+                'text' => strip_tags($response->trans($this->translator)),
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );

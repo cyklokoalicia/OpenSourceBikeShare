@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Unit\SmsCommand;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\App\Entity\User;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\SmsCommand\DelNoteCommand;
 use BikeShare\SmsCommand\Exception\ValidationException;
-use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class DelNoteCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private BikeRepository&MockObject $bikeRepositoryMock;
     private StandRepository&MockObject $standRepositoryMock;
     private NoteRepository&MockObject $noteRepositoryMock;
@@ -26,12 +23,10 @@ class DelNoteCommandTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->bikeRepositoryMock = $this->createMock(BikeRepository::class);
         $this->standRepositoryMock = $this->createMock(StandRepository::class);
         $this->noteRepositoryMock = $this->createMock(NoteRepository::class);
         $this->command = new DelNoteCommand(
-            $this->translatorMock,
             $this->bikeRepositoryMock,
             $this->standRepositoryMock,
             $this->noteRepositoryMock
@@ -41,7 +36,6 @@ class DelNoteCommandTest extends TestCase
     protected function tearDown(): void
     {
         unset(
-            $this->translatorMock,
             $this->bikeRepositoryMock,
             $this->standRepositoryMock,
             $this->noteRepositoryMock,
@@ -49,339 +43,161 @@ class DelNoteCommandTest extends TestCase
         );
     }
 
-    #[DataProvider('invokeThrowsWhenBikeIsNullDataProvider')]
-    public function testInvokeThrowsWhenBikeNumberIsNull(
-        array $bikeRepositoryCallResult,
-        array $translatorCallParams,
-        string $translatorCallResult,
-        ?string $pattern,
-        array $noteRepositoryCallParams,
-        string $message
-    ): void {
-        $userMock = $this->createStub(User::class);
-        $bikeNumber = 123;
-
+    public function testInvokeThrowsWhenBikeNotFound(): void
+    {
+        $this->bikeRepositoryMock->expects($this->once())->method('findItem')->with(123)->willReturn([]);
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
+        $this->noteRepositoryMock->expects($this->never())->method('deleteBikeNote');
+        $this->noteRepositoryMock->expects($this->never())->method('deleteStandNote');
+        $this->expectException(ValidationException::class);
+
+        ($this->command)($this->createStub(User::class), 123);
+    }
+
+    public function testInvokeThrowsWhenNoBikeNotes(): void
+    {
         $this->bikeRepositoryMock
             ->expects($this->once())
             ->method('findItem')
-            ->with($bikeNumber)
-            ->willReturn($bikeRepositoryCallResult);
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(...$translatorCallParams)
-            ->willReturn($translatorCallResult);
+            ->with(123)
+            ->willReturn(['id' => 1]);
+        $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock
-            ->expects($this->exactly(count($noteRepositoryCallParams)))
+            ->expects($this->once())
             ->method('deleteBikeNote')
-            ->with($bikeNumber, $pattern)
+            ->with(123, null)
             ->willReturn(0);
-
+        $this->noteRepositoryMock->expects($this->never())->method('deleteStandNote');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage($message);
 
-        ($this->command)($userMock, $bikeNumber, null, $pattern);
+        ($this->command)($this->createStub(User::class), 123);
     }
 
-    #[DataProvider('invokeThrowsWhenStandNameIsNotNullDataProvider')]
-    public function testInvokeThrowsWhenStandNameIsNotNull(
-        string $standName,
-        array $translatorCallParams,
-        string $translatorCallResult,
-        array $standRepositoryCallParams,
-        array $standRepositoryCallResult,
-        array $noteRepositoryCallParams,
-        ?string $pattern,
-        string $message
-    ): void {
-        $userMock = $this->createStub(User::class);
-
-        $this->bikeRepositoryMock->expects($this->never())->method('findItem');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(...$translatorCallParams)
-            ->willReturn($translatorCallResult);
-        $this->standRepositoryMock
-            ->expects($this->exactly(count($standRepositoryCallParams)))
-            ->method('findItemByName')
-            ->with(...$standRepositoryCallParams)
-            ->willReturn($standRepositoryCallResult);
-        $matcher = $this->exactly(count($noteRepositoryCallParams));
-        $this->noteRepositoryMock
-            ->expects($matcher)
-            ->method('deleteStandNote')
-            ->willReturnCallback(function (...$parameters) use ($matcher, $noteRepositoryCallParams) {
-                $this->assertSame($noteRepositoryCallParams[$matcher->numberOfInvocations() - 1], $parameters);
-                return 0;
-            });
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage($message);
-
-        ($this->command)($userMock, null, $standName, $pattern);
-    }
-
-    public function testInvokeThrowsWhenBikeNumberAndStandNameIsNull(): void
+    public function testInvokeReturnsBikeNotesDeleted(): void
     {
-        $userMock = $this->createStub(User::class);
-        $message = 'exception message';
+        $this->bikeRepositoryMock
+            ->expects($this->once())
+            ->method('findItem')
+            ->with(123)
+            ->willReturn(['id' => 1]);
+        $this->standRepositoryMock->expects($this->never())->method('findItemByName');
+        $this->noteRepositoryMock
+            ->expects($this->once())
+            ->method('deleteBikeNote')
+            ->with(123, 'pattern')
+            ->willReturn(2);
+        $this->noteRepositoryMock->expects($this->never())->method('deleteStandNote');
 
+        $result = ($this->command)($this->createStub(User::class), 123, null, 'pattern');
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.delnote.success_bike', $result->getMessage());
+        $this->assertSame(
+            [
+                'bikeNumber' => 123,
+                'count' => 2,
+                'hasPattern' => 'true',
+                'pattern' => 'pattern',
+            ],
+            $result->getParameters()
+        );
+    }
+
+    public function testInvokeThrowsWhenStandInvalid(): void
+    {
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock->expects($this->never())->method('deleteBikeNote');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'with bike number and optional pattern. '
-                . 'All messages or notes matching pattern will be deleted: {example}',
-                ['example' => 'DELNOTE 42 wheel'],
-            )
-            ->willReturn($message);
-
+        $this->noteRepositoryMock->expects($this->never())->method('deleteStandNote');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage($message);
 
-        ($this->command)($userMock);
+        ($this->command)($this->createStub(User::class), null, 'stand#1');
     }
 
-    #[DataProvider('invokeReturnMessageDataProvider')]
-    public function testInvokeReturnMessage(
-        ?int $bikeNumber,
-        array $bikeRepositoryCallParams,
-        array $noteRepositoryDeleteBikeNoteCallParams,
-        array $noteRepositoryDeleteStandNoteCallParams,
-        array $standRepositoryCallParams,
-        array $translatorCallParams,
-        ?string $pattern,
-        string $message
-    ): void {
-        $userMock = $this->createStub(User::class);
-        $standName = 'ABC123';
-
-        $this->bikeRepositoryMock
-            ->expects($this->exactly(count($bikeRepositoryCallParams)))
-            ->method('findItem')
-            ->with($bikeNumber)
-            ->willReturn(['id' => 123]);
-        $matcher = $this->exactly(count($noteRepositoryDeleteBikeNoteCallParams));
-        $this->noteRepositoryMock
-            ->expects($matcher)
-            ->method('deleteBikeNote')
-            ->willReturnCallback(
-                function (...$parameters) use ($matcher, $noteRepositoryDeleteBikeNoteCallParams) {
-                    $this->assertSame(
-                        $noteRepositoryDeleteBikeNoteCallParams[$matcher->numberOfInvocations() - 1],
-                        $parameters
-                    );
-
-                    return 2;
-                }
-            );
-        $matcher = $this->exactly(count($noteRepositoryDeleteStandNoteCallParams));
-        $this->noteRepositoryMock
-            ->expects($matcher)
-            ->method('deleteStandNote')
-            ->willReturnCallback(
-                function (...$parameters) use ($matcher, $noteRepositoryDeleteStandNoteCallParams) {
-                    $this->assertSame(
-                        $noteRepositoryDeleteStandNoteCallParams[$matcher->numberOfInvocations() - 1],
-                        $parameters
-                    );
-
-                    return 2;
-                }
-            );
+    public function testInvokeThrowsWhenStandNotFound(): void
+    {
+        $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->standRepositoryMock
-            ->expects($this->exactly(count($standRepositoryCallParams)))
-            ->method('findItemByName')
-            ->with(...$standRepositoryCallParams)
-            ->willReturn(['standId' => 123]);
-        $this->translatorMock
             ->expects($this->once())
-            ->method('trans')
-            ->with(...$translatorCallParams)
-            ->willReturn($message);
+            ->method('findItemByName')
+            ->with('STANDX')
+            ->willReturn([]);
+        $this->noteRepositoryMock->expects($this->never())->method('deleteBikeNote');
+        $this->noteRepositoryMock->expects($this->never())->method('deleteStandNote');
+        $this->expectException(ValidationException::class);
 
-        ($this->command)($userMock, $bikeNumber, $standName, $pattern);
+        ($this->command)($this->createStub(User::class), null, 'STANDX');
+    }
+
+    public function testInvokeThrowsWhenNoStandNotes(): void
+    {
+        $this->bikeRepositoryMock->expects($this->never())->method('findItem');
+        $this->standRepositoryMock
+            ->expects($this->once())
+            ->method('findItemByName')
+            ->with('STANDX')
+            ->willReturn(['standId' => 1]);
+        $this->noteRepositoryMock->expects($this->never())->method('deleteBikeNote');
+        $this->noteRepositoryMock
+            ->expects($this->once())
+            ->method('deleteStandNote')
+            ->with(1, null)
+            ->willReturn(0);
+        $this->expectException(ValidationException::class);
+
+        ($this->command)($this->createStub(User::class), null, 'STANDX');
+    }
+
+    public function testInvokeReturnsStandNotesDeleted(): void
+    {
+        $this->bikeRepositoryMock->expects($this->never())->method('findItem');
+        $this->standRepositoryMock
+            ->expects($this->once())
+            ->method('findItemByName')
+            ->with('STANDX')
+            ->willReturn(['standId' => 1]);
+        $this->noteRepositoryMock->expects($this->never())->method('deleteBikeNote');
+        $this->noteRepositoryMock
+            ->expects($this->once())
+            ->method('deleteStandNote')
+            ->with(1, 'pat')
+            ->willReturn(3);
+
+        $result = ($this->command)($this->createStub(User::class), null, 'STANDX', 'pat');
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.delnote.success_stand', $result->getMessage());
+        $this->assertSame(
+            [
+                'standName' => 'STANDX',
+                'count' => 3,
+                'hasPattern' => 'true',
+                'pattern' => 'pat',
+            ],
+            $result->getParameters()
+        );
+    }
+
+    public function testInvokeThrowsWhenNoArgs(): void
+    {
+        $this->bikeRepositoryMock->expects($this->never())->method('findItem');
+        $this->standRepositoryMock->expects($this->never())->method('findItemByName');
+        $this->noteRepositoryMock->expects($this->never())->method('deleteBikeNote');
+        $this->noteRepositoryMock->expects($this->never())->method('deleteStandNote');
+        $this->expectException(ValidationException::class);
+
+        ($this->command)($this->createStub(User::class));
     }
 
     public function testGetHelpMessage(): void
     {
-        $translatedMessage = 'with bike number and optional pattern. '
-            . 'All messages or notes matching pattern will be deleted: DELNOTE 42 wheel';
-
         $this->bikeRepositoryMock->expects($this->never())->method('findItem');
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock->expects($this->never())->method('deleteBikeNote');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'with bike number and optional pattern. '
-                . 'All messages or notes matching pattern will be deleted: {example}',
-                ['example' => 'DELNOTE 42 wheel']
-            )
-            ->willReturn($translatedMessage);
+        $this->noteRepositoryMock->expects($this->never())->method('deleteStandNote');
 
-        $this->assertEquals($translatedMessage, $this->command->getHelpMessage());
-    }
-
-    public static function invokeThrowsWhenBikeIsNullDataProvider(): Generator
-    {
-        yield 'empty bikeInfo' => [
-            'bikeRepositoryCallResult' => [],
-            'translatorCallParams' => ['Bike {bikeNumber} does not exist.', ['bikeNumber' => 123], null, null],
-            'translatorCallResult' => 'Bike 123 does not exist.',
-            'pattern' => null,
-            'noteRepositoryCallParams' => [],
-            'message' => 'Bike 123 does not exist.',
-        ];
-        yield 'count is zero and pattern is null' => [
-            'bikeRepositoryCallResult' => ['id' => 123],
-            'translatorCallParams' => [
-                'No notes found for bike {bikeNumber} to delete.', ['bikeNumber' => 123], null, null
-            ],
-            'translatorCallResult' => 'No notes found for bike 123 to delete.',
-            'pattern' => null,
-            'noteRepositoryCallParams' => [[123, null]],
-            'message' => 'No notes found for bike 123 to delete.',
-        ];
-        yield 'count is zero and pattern is not null' => [
-            'bikeRepositoryCallResult' => ['id' => 123],
-            'translatorCallParams' => [
-                'No notes matching pattern {pattern} found for bike {bikeNumber} to delete.',
-                ['pattern' => 'abc', 'bikeNumber' => 123],
-                null,
-                null
-            ],
-            'translatorCallResult' => 'No notes matching pattern abc found for bike 123 to delete.',
-            'pattern' => 'abc',
-            'noteRepositoryCallParams' => [[123, 'abc']],
-            'message' => 'No notes matching pattern abc found for bike 123 to delete.',
-        ];
-    }
-
-    public static function invokeThrowsWhenStandNameIsNotNullDataProvider(): Generator
-    {
-        yield 'unrecognized standName' => [
-            'standName' => 'SAFKO4ZRUSENY',
-            'translatorCallParams' => [
-                'Stand name {standName} has not been recognized. Stands are marked by CAPITALLETTERS.',
-                ['standName' => 'SAFKO4ZRUSENY'],
-                null,
-                null,
-            ],
-            'translatorCallResult' => 'Stand name SAFKO4ZRUSENY has not been recognized. '
-                . 'Stands are marked by CAPITALLETTERS.',
-            'standRepositoryCallParams' => [],
-            'standRepositoryCallResult' => [],
-            'noteRepositoryCallParams' => [],
-            'pattern' => null,
-            'message' => 'Stand name SAFKO4ZRUSENY has not been recognized. Stands are marked by CAPITALLETTERS.',
-        ];
-        yield 'empty standInfo' => [
-            'standName' => 'ABCD1234',
-            'translatorCallParams' => ['Stand {standName} does not exist.', ['standName' => 'ABCD1234'], null, null],
-            'translatorCallResult' => 'Stand ABCD1234 does not exist.',
-            'standRepositoryCallParams' => ['ABCD1234'],
-            'standRepositoryCallResult' => [],
-            'noteRepositoryCallParams' => [],
-            'pattern' => null,
-            'message' => 'Stand ABCD1234 does not exist.',
-        ];
-        yield 'count is zero and pattern is null' => [
-            'standName' => 'ABCD1234',
-            'translatorCallParams' => [
-                'No notes found for stand {standName} to delete.', ['standName' => 'ABCD1234'], null, null
-            ],
-            'translatorCallResult' => 'No notes found for stand ABCD1234 to delete.',
-            'standRepositoryCallParams' => ['ABCD1234'],
-            'standRepositoryCallResult' => ['standId' => '123'],
-            'noteRepositoryCallParams' => [[123, null]],
-            'pattern' => null,
-            'message' => 'No notes found for stand ABCD1234 to delete.',
-        ];
-        yield 'count is zero and pattern is not null' => [
-            'standName' => 'ABCD1234',
-            'translatorCallParams' => [
-                'No notes matching pattern {pattern} found on stand {standName} to delete.',
-                ['pattern' => 'abc', 'standName' => 'ABCD1234'],
-                null,
-                null,
-            ],
-            'translatorCallResult' => 'No notes matching pattern abc found on stand ABCD1234 to delete.',
-            'standRepositoryCallParams' => ['ABCD1234'],
-            'standRepositoryCallResult' => ['standId' => '123'],
-            'noteRepositoryCallParams' => [[123, 'abc']],
-            'pattern' => 'abc',
-            'message' => 'No notes matching pattern abc found on stand ABCD1234 to delete.',
-        ];
-    }
-
-    public static function invokeReturnMessageDataProvider(): Generator
-    {
-        yield 'bikeNumber is not null and pattern is null' => [
-            'bikeNumber' => 123,
-            'bikeRepositoryCallParams' => [123],
-            'noteRepositoryDeleteBikeNoteCallParams' => [[123, null]],
-            'noteRepositoryDeleteStandNoteCallParams' => [],
-            'standRepositoryCallParams' => [],
-            'translatorCallParams' => [
-                'All {count} notes for bike {bikeNumber} were deleted.',
-                ['bikeNumber' => 123, 'count' => 2],
-                null,
-                null,
-            ],
-            'pattern' => null,
-            'message' => 'All 2 notes for bike 123 were deleted.',
-        ];
-        yield 'bikeNumber is not null and pattern is not null' => [
-            'bikeNumber' => 123,
-            'bikeRepositoryCallParams' => [123],
-            'noteRepositoryDeleteBikeNoteCallParams' => [[123, 'abc']],
-            'noteRepositoryDeleteStandNoteCallParams' => [],
-            'standRepositoryCallParams' => [],
-            'translatorCallParams' => [
-                '{count} notes matching pattern "{pattern}" for bike {bikeNumber} were deleted.',
-                ['bikeNumber' => 123, 'pattern' => 'abc', 'count' => 2],
-                null,
-                null,
-            ],
-            'pattern' => 'abc',
-            'message' => 'All 2 notes for bike 123 were deleted.',
-        ];
-        yield 'bikeNumber is null and standName is not null and pattern is null' => [
-            'bikeNumber' => null,
-            'bikeRepositoryCallParams' => [],
-            'noteRepositoryDeleteBikeNoteCallParams' => [],
-            'noteRepositoryDeleteStandNoteCallParams' => [[123, null]],
-            'standRepositoryCallParams' => ['ABC123'],
-            'translatorCallParams' => [
-                'All {count} notes for stand {standName} were deleted.',
-                ['standName' => 'ABC123', 'count' => 2],
-                null,
-                null,
-            ],
-            'pattern' => null,
-            'message' => 'All 2 notes for stand ABC123 were deleted.',
-        ];
-        yield 'bikeNumber is null and standName is not null and pattern is not null' => [
-            'bikeNumber' => null,
-            'bikeRepositoryCallParams' => [],
-            'noteRepositoryDeleteBikeNoteCallParams' => [],
-            'noteRepositoryDeleteStandNoteCallParams' => [[123, 'abc']],
-            'standRepositoryCallParams' => ['ABC123'],
-            'translatorCallParams' => [
-                '{count} notes matching pattern "{pattern}" for stand {standName} were deleted.',
-                ['standName' => 'ABC123', 'pattern' => 'abc', 'count' => 2],
-                null,
-                null,
-            ],
-            'pattern' => 'abc',
-            'message' => '2 notes matching pattern "{pattern}" for stand {standName} were deleted.',
-        ];
+        $help = $this->command->getHelpMessage();
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.delnote.help', $help->getMessage());
     }
 }

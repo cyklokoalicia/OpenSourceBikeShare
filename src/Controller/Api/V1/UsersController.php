@@ -14,6 +14,7 @@ use BikeShare\Sms\SmsSenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class UsersController extends AbstractController
 {
@@ -128,8 +129,13 @@ class UsersController extends AbstractController
         $sanitizedSmsCode = str_replace(' ', '', $smsCode);
         $checkCode = md5('WB' . $number . $sanitizedSmsCode);
 
-        $text = 'Enter this code to verify your phone: ' . $smsCode;
-        $this->smsSender->send($number, $text);
+        $this->smsSender->send(
+            $number,
+            new TranslatableMessage(
+                'Enter this code to verify your phone: {smsCode}',
+                ['smsCode' => $smsCode]
+            )
+        );
         $this->historyRepository->addItem(
             $user->getUserId(),
             0,

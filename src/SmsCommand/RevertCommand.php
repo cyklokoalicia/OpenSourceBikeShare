@@ -6,7 +6,8 @@ namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Rent\RentSystemInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class RevertCommand extends AbstractCommand implements SmsCommandInterface
 {
@@ -14,21 +15,17 @@ class RevertCommand extends AbstractCommand implements SmsCommandInterface
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly RentSystemInterface $rentSystem
     ) {
-        parent::__construct($translator);
     }
 
-    public function __invoke(User $user, int $bikeNumber): string
+    public function __invoke(User $user, int $bikeNumber): TranslatableInterface
     {
-        $response = $this->rentSystem->revertBike($user->getUserId(), $bikeNumber);
-
-        return $response->getMessage();
+        return $this->rentSystem->revertBike($user->getUserId(), $bikeNumber);
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return $this->translator->trans('with bike number: {example}', ['example' => 'REVERT 42']);
+        return new TranslatableMessage('command.revert.help');
     }
 }

@@ -9,7 +9,7 @@ use BikeShare\Notifier\AdminNotifier;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class SmsControllerEventListener
 {
@@ -17,7 +17,6 @@ class SmsControllerEventListener
         private readonly DbInterface $db,
         private readonly SmsConnectorInterface $smsConnector,
         private readonly AdminNotifier $adminNotifier,
-        private readonly TranslatorInterface $translator,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -52,7 +51,10 @@ class SmsControllerEventListener
             // sms already exists in DB, possible problem
             $this->logger->error("SMS already exists in DB", ['sms_uuid' => $sms_uuid]);
             $this->adminNotifier->notify(
-                $this->translator->trans('Problem with SMS') . $sms_uuid,
+                new TranslatableMessage(
+                    'admin.notification.duplicate_sms',
+                    ['uuid' => $sms_uuid]
+                ),
                 false
             );
         } else {

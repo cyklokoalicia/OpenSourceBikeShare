@@ -6,7 +6,10 @@ namespace BikeShare\Notifier;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
+use BikeShare\Repository\UserSettingsRepository;
 use BikeShare\Sms\SmsSenderInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AdminNotifier
@@ -17,11 +20,17 @@ class AdminNotifier
         private readonly MailSenderInterface $mailer,
         private readonly SmsSenderInterface $smsSender,
         private readonly TranslatorInterface $translator,
+        private readonly UserSettingsRepository $userSettingsRepository,
     ) {
     }
 
-    public function notify(string $message, bool $bySms = true, $excludedAdminIds = []): void
-    {
+    public function notify(
+        TranslatableInterface $message,
+        bool $bySms = true,
+        array $excludedAdminIds = []
+    ): void {
+        $subjectMessage = new TranslatableMessage('admin.notification.subject', ['appName' => $this->appName]);
+
         $admins = $this->db
             ->query('SELECT userId, number,mail FROM users where privileges & 2 != 0')
             ->fetchAllAssoc();
@@ -30,12 +39,17 @@ class AdminNotifier
                 continue;
             }
 
+            $locale = $this->userSettingsRepository->findByUserId((int) $admin['userId'])['locale'] ?? null;
+
             if ($bySms) {
-                $this->smsSender->send($admin['number'], $message);
+                $this->smsSender->send($admin['number'], $message, $locale);
             }
 
-            $subject = $this->translator->trans('{appName} notification', ['appName' => $this->appName]);
-            $this->mailer->sendMail($admin['mail'], $subject, $message);
+            $this->mailer->sendMail(
+                $admin['mail'],
+                $subjectMessage->trans($this->translator, $locale),
+                $message->trans($this->translator, $locale),
+            );
         }
     }
 }

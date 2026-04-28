@@ -11,24 +11,22 @@ use BikeShare\Rent\RentSystemInterface;
 use BikeShare\SmsCommand\ReturnCommand;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class ReturnCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private RentSystemInterface&MockObject $rentSystemMock;
     private ReturnCommand $command;
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->rentSystemMock = $this->createMock(RentSystemInterface::class);
-        $this->command = new ReturnCommand($this->translatorMock, $this->rentSystemMock);
+        $this->command = new ReturnCommand($this->rentSystemMock);
     }
 
     protected function tearDown(): void
     {
-        unset($this->translatorMock, $this->rentSystemMock, $this->command);
+        unset($this->rentSystemMock, $this->command);
     }
 
     public function testInvoke(): void
@@ -38,29 +36,29 @@ class ReturnCommandTest extends TestCase
         $bikeNumber = 456;
         $standName = 'MAIN_SQUARE';
         $note = 'no issues';
-        $expectedMessage = 'Bike rented successfully.';
+        $expected = new RentSystemResult(
+            false,
+            'bike.return.success',
+            RentSystemType::SMS,
+            ['bikeNumber' => $bikeNumber]
+        );
 
-        $this->translatorMock->expects($this->never())->method('trans');
         $userMock->expects($this->once())->method('getUserId')->willReturn($userId);
         $this->rentSystemMock
             ->expects($this->once())
             ->method('returnBike')
             ->with($userId, $bikeNumber, $standName, $note)
-            ->willReturn(new RentSystemResult(false, $expectedMessage, 'bike.return.success', RentSystemType::SMS, []));
+            ->willReturn($expected);
 
-        $this->assertSame($expectedMessage, ($this->command)($userMock, $bikeNumber, $standName, $note));
+        $this->assertSame($expected, ($this->command)($userMock, $bikeNumber, $standName, $note));
     }
 
     public function testGetHelpMessage(): void
     {
-        $expectedMessage = 'with bike number: RETURN 42 MAINSQUARE note';
         $this->rentSystemMock->expects($this->never())->method('returnBike');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('with bike number: {example}', ['example' => 'RETURN 42 MAINSQUARE note'])
-            ->willReturn($expectedMessage);
+        $help = $this->command->getHelpMessage();
 
-        $this->assertSame($expectedMessage, $this->command->getHelpMessage());
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.return.help', $help->getMessage());
     }
 }

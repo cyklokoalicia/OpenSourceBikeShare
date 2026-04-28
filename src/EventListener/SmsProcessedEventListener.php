@@ -6,6 +6,7 @@ namespace BikeShare\EventListener;
 
 use BikeShare\Event\SmsProcessedEvent;
 use BikeShare\Notifier\AdminNotifier;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class SmsProcessedEventListener
 {
@@ -13,7 +14,7 @@ class SmsProcessedEventListener
     {
     }
 
-    public function __invoke(SmsProcessedEvent $event)
+    public function __invoke(SmsProcessedEvent $event): void
     {
         switch ($event->getCommandName()) {
             case 'NOTE':
@@ -21,7 +22,13 @@ class SmsProcessedEventListener
             case 'TAG':
             case 'UNTAG':
                 $this->adminNotifier->notify(
-                    $event->getUser()->getUsername() . ': ' . $event->getResultMessage(),
+                    new TranslatableMessage(
+                        'admin.notification.sms_processed',
+                        [
+                            'userName' => $event->getUser()->getUsername(),
+                            'message' => $event->getResultMessage(),
+                        ]
+                    ),
                     true,
                     [$event->getUser()->getUserId()]
                 );

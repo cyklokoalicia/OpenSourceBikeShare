@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
 use BikeShare\Credit\CreditSystemInterface;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class CreditCommandTest extends BikeSharingWebTestCase
 {
@@ -45,17 +46,20 @@ class CreditCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount(1, $smsConnector->getSentMessages());
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount(1, $smsSender->getSentMessages());
+        $sentMessage = $smsSender->getSentMessages()[0];
 
         $creditSystem = $this->client->getContainer()->get(CreditSystemInterface::class);
 
-        $this->assertSame('Your remaining credit: 0€', $sentMessage['text'], 'Invalid response sms text');
-        $this->assertStringEndsWith(
-            $creditSystem->getCreditCurrency(),
-            $sentMessage['text'],
-            'Invalid response sms text currency'
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+        $this->assertSame('command.credit.message', $sentMessage['message']->getMessage());
+        $this->assertSame(
+            [
+                'credit' => 0.0,
+                'creditCurrency' => $creditSystem->getCreditCurrency(),
+            ],
+            $sentMessage['message']->getParameters()
         );
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
     }
@@ -77,14 +81,15 @@ class CreditCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount(1, $smsConnector->getSentMessages());
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount(1, $smsSender->getSentMessages());
+        $sentMessage = $smsSender->getSentMessages()[0];
 
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+        $this->assertSame('command.error.unknown_command', $sentMessage['message']->getMessage());
         $this->assertSame(
-            'Error. The command CREDIT does not exist. If you need help, send: HELP',
-            $sentMessage['text'],
-            'Invalid response sms text'
+            ['badCommand' => 'CREDIT', 'helpCommand' => 'HELP'],
+            $sentMessage['message']->getParameters()
         );
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms recipient');
         $this->expectLog(Logger::WARNING, '/Validation error/');
