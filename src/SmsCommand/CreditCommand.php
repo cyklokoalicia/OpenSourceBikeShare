@@ -7,43 +7,38 @@ namespace BikeShare\SmsCommand;
 use BikeShare\App\Entity\User;
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\SmsCommand\Exception\ValidationException;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class CreditCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'CREDIT';
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly CreditSystemInterface $creditSystem
     ) {
-        parent::__construct($translator);
     }
 
-    public function __invoke(User $user): string
+    public function __invoke(User $user): TranslatableInterface
     {
         if (!$this->creditSystem->isEnabled()) {
             throw new ValidationException(
-                $this->translator->trans(
-                    'Error. The command {badCommand} does not exist. If you need help, send: {helpCommand}',
-                    [
-                        'badCommand' => self::COMMAND_NAME,
-                        'helpCommand' => 'HELP'
-                    ]
-                )
+                'command.error.unknown_command',
+                ['badCommand' => self::COMMAND_NAME, 'helpCommand' => 'HELP']
             );
         }
 
-        $userRemainingCredit = $this->creditSystem->getUserCredit($user->getUserId())
-            . $this->creditSystem->getCreditCurrency();
-
-        $message = $this->translator->trans('Your remaining credit: {credit}', ['credit' => $userRemainingCredit]);
-
-        return $message;
+        return new TranslatableMessage(
+            'command.credit.message',
+            [
+                'credit' => $this->creditSystem->getUserCredit($user->getUserId()),
+                'creditCurrency' => $this->creditSystem->getCreditCurrency(),
+            ]
+        );
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return '';
+        return new TranslatableMessage('command.credit.help');
     }
 }

@@ -4,13 +4,17 @@
 
 {% block body %}
     <div class="page-header">&nbsp;</div>
-    {% if message %}
+    {% if result and not result.error %}
         <div class="alert alert-success">
-            {{ message|raw }}
+            {{ rent_result_html(result) }}
+        </div>
+    {% elseif result and result.error %}
+        <div class="alert alert-danger">
+            {{ rent_result_html(result) }}
         </div>
     {% elseif error %}
         <div class="alert alert-danger">
-            {{ error }}
+            {{ error|trans }}
         </div>
     {% endif %}
 {% endblock %}

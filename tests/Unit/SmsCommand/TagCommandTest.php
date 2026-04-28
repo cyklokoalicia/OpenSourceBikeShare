@@ -11,38 +11,30 @@ use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\SmsCommand\TagCommand;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class TagCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private StandRepository&MockObject $standRepositoryMock;
     private NoteRepository&MockObject $noteRepositoryMock;
     private TagCommand $command;
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->standRepositoryMock = $this->createMock(StandRepository::class);
         $this->noteRepositoryMock = $this->createMock(NoteRepository::class);
-
-        $this->command = new TagCommand($this->translatorMock, $this->standRepositoryMock, $this->noteRepositoryMock);
+        $this->command = new TagCommand($this->standRepositoryMock, $this->noteRepositoryMock);
     }
 
     protected function tearDown(): void
     {
-        unset(
-            $this->translatorMock,
-            $this->standRepositoryMock,
-            $this->noteRepositoryMock,
-            $this->command
-        );
+        unset($this->standRepositoryMock, $this->noteRepositoryMock, $this->command);
     }
 
     public function testTagStandSuccess(): void
     {
-        $user = $this->createStub(User::class);
-        $user->method('getUserId')->willReturn(10);
+        $userMock = $this->createMock(User::class);
+        $userMock->expects($this->once())->method('getUserId')->willReturn(10);
         $standName = 'MAINSTAND';
         $note = 'vandalism';
 
@@ -51,107 +43,56 @@ class TagCommandTest extends TestCase
             ->method('findItemByName')
             ->with($standName)
             ->willReturn(['standId' => 5]);
-        $this->noteRepositoryMock->expects($this->once())->method('addNoteToAllBikesOnStand')->with(5, 10, $note);
-        $this->translatorMock
+        $this->noteRepositoryMock
             ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'All bikes on stand {standName} tagged with note "{note}".',
-                ['standName' => $standName, 'note' => $note]
-            )
-            ->willReturn('All bikes on stand MAINSTAND tagged with note "vandalism".');
+            ->method('addNoteToAllBikesOnStand')
+            ->with(5, 10, $note);
 
-        $this->assertEquals(
-            'All bikes on stand MAINSTAND tagged with note "vandalism".',
-            ($this->command)($user, $standName, $note)
-        );
+        $result = ($this->command)($userMock, $standName, $note);
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.tag.success', $result->getMessage());
+        $this->assertSame(['standName' => $standName, 'note' => $note], $result->getParameters());
     }
 
     public function testTagStandEmptyNoteThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $standName = 'MAINSTAND';
-        $message = 'Empty tag for stand {standName} not saved, '
-            . 'for deleting notes for all bikes on stand use UNTAG (for admins).';
-
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock->expects($this->never())->method('addNoteToAllBikesOnStand');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with($message, ['standName' => $standName])
-            ->willReturn('Empty tag for stand MAINSTAND not saved.');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Empty tag for stand MAINSTAND not saved.');
 
-        ($this->command)($user, $standName, '');
+        ($this->command)($this->createStub(User::class), 'MAINSTAND', '');
     }
 
     public function testTagStandInvalidStandNameThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $standName = 'stand#1';
-
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock->expects($this->never())->method('addNoteToAllBikesOnStand');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with(
-                'Stand name {standName} has not been recognized. Stands are marked by CAPITALLETTERS.',
-                ['standName' => $standName]
-            )
-            ->willReturn('Stand name stand#1 has not been recognized.');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Stand name stand#1 has not been recognized.');
 
-        ($this->command)($user, $standName, 'vandalism');
+        ($this->command)($this->createStub(User::class), 'stand#1', 'vandalism');
     }
 
     public function testTagStandNotFoundThrows(): void
     {
-        $user = $this->createStub(User::class);
-        $standName = 'UNKNOWNSTAND';
-
-        $this->noteRepositoryMock->expects($this->never())->method('addNoteToAllBikesOnStand');
         $this->standRepositoryMock
             ->expects($this->once())
             ->method('findItemByName')
-            ->with($standName)->willReturn(null);
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('Stand {standName} does not exist.', ['standName' => $standName])
-            ->willReturn('Stand UNKNOWNSTAND does not exist.');
+            ->with('UNKNOWNSTAND')
+            ->willReturn(null);
+        $this->noteRepositoryMock->expects($this->never())->method('addNoteToAllBikesOnStand');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Stand UNKNOWNSTAND does not exist.');
 
-        ($this->command)($user, $standName, 'vandalism');
+        ($this->command)($this->createStub(User::class), 'UNKNOWNSTAND', 'vandalism');
     }
 
     public function testGetHelpMessage(): void
     {
-        $matcher = $this->exactly(2);
         $this->standRepositoryMock->expects($this->never())->method('findItemByName');
         $this->noteRepositoryMock->expects($this->never())->method('addNoteToAllBikesOnStand');
-        $this->translatorMock
-            ->expects($matcher)
-            ->method('trans')->willReturnCallback(function (...$parameters) use ($matcher) {
-                if ($matcher->numberOfInvocations() === 1) {
-                    $this->assertSame('vandalism', $parameters[0]);
-                    return 'vandalism';
-                }
 
-                if ($matcher->numberOfInvocations() === 2) {
-                    $this->assertSame('with stand name and problem description: {example}', $parameters[0]);
-                    $this->assertSame(['example' => 'TAG MAINSQUARE vandalism'], $parameters[1]);
-                    return 'with stand name and problem description: TAG MAINSQUARE vandalism';
-                }
-            });
-
-        $this->assertEquals(
-            'with stand name and problem description: TAG MAINSQUARE vandalism',
-            $this->command->getHelpMessage()
-        );
+        $help = $this->command->getHelpMessage();
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.tag.help', $help->getMessage());
     }
 }

@@ -9,9 +9,10 @@ use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class TagCommandTest extends BikeSharingWebTestCase
 {
@@ -56,23 +57,29 @@ class TagCommandTest extends BikeSharingWebTestCase
         $this->assertSame('', $this->client->getResponse()->getContent());
 
         #One message is sent to admin, one to user
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount(2, $smsConnector->getSentMessages());
-        $sentMessages = $smsConnector->getSentMessages();
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount(2, $smsSender->getSentMessages());
+        $sentMessages = $smsSender->getSentMessages();
 
         $notifiedNumbers = [];
         foreach ($sentMessages as $sentMessage) {
+            $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
             if ($sentMessage['number'] === self::USER_PHONE_NUMBER) {
+                $this->assertSame('command.tag.success', $sentMessage['message']->getMessage());
                 $this->assertSame(
-                    'All bikes on stand ' . $standName . ' tagged with note "' . $note . '".',
-                    $sentMessage['text'],
+                    ['standName' => $standName, 'note' => $note],
+                    $sentMessage['message']->getParameters(),
                     'Invalid message sent to user'
                 );
             } else {
+                $this->assertSame('admin.notification.sms_processed', $sentMessage['message']->getMessage());
+                $params = $sentMessage['message']->getParameters();
+                $this->assertSame($user['userName'], $params['userName']);
+                $this->assertInstanceOf(TranslatableMessage::class, $params['message']);
+                $this->assertSame('command.tag.success', $params['message']->getMessage());
                 $this->assertSame(
-                    $user['userName'] . ': All bikes on stand ' . $standName . ' tagged with note "' . $note . '".',
-                    $sentMessage['text'],
-                    'Invalid message sent to admin'
+                    ['standName' => $standName, 'note' => $note],
+                    $params['message']->getParameters()
                 );
             }
 

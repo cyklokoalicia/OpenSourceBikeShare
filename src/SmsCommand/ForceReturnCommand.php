@@ -6,7 +6,8 @@ namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Rent\RentSystemInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class ForceReturnCommand extends AbstractCommand implements SmsCommandInterface
 {
@@ -14,21 +15,21 @@ class ForceReturnCommand extends AbstractCommand implements SmsCommandInterface
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly RentSystemInterface $rentSystem
     ) {
-        parent::__construct($translator);
     }
 
-    public function __invoke(User $user, int $bikeNumber, string $standName, ?string $note = null): string
-    {
-        $response = $this->rentSystem->returnBike($user->getUserId(), $bikeNumber, $standName, $note, true);
-
-        return $response->getMessage();
+    public function __invoke(
+        User $user,
+        int $bikeNumber,
+        string $standName,
+        ?string $note = null,
+    ): TranslatableInterface {
+        return $this->rentSystem->returnBike($user->getUserId(), $bikeNumber, $standName, $note, true);
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return $this->translator->trans('with bike number: {example}', ['example' => 'FORCERETURN 42 MAINSQUARE note']);
+        return new TranslatableMessage('command.force_return.help');
     }
 }

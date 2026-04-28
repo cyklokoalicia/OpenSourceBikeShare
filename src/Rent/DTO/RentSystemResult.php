@@ -5,33 +5,32 @@ declare(strict_types=1);
 namespace BikeShare\Rent\DTO;
 
 use BikeShare\Rent\Enum\RentSystemType;
+use BikeShare\Translation\TranslatableResult;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-class RentSystemResult implements \JsonSerializable
+class RentSystemResult implements TranslatableResult, \JsonSerializable
 {
     public function __construct(
         private readonly bool $error,
-        private readonly string $message,
         private readonly string $code,
         private readonly RentSystemType $systemType,
         private readonly array $params = [],
     ) {
-        if (trim($this->message) === '') {
-            throw new \InvalidArgumentException('message cannot be empty.');
-        }
-
         if (trim($this->code) === '') {
             throw new \InvalidArgumentException('code cannot be empty.');
         }
     }
 
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
+    {
+        // Delegate to TranslatableMessage so nested TranslatableInterface params get rendered recursively.
+        return (new TranslatableMessage($this->code, $this->params))->trans($translator, $locale);
+    }
+
     public function isError(): bool
     {
         return $this->error;
-    }
-
-    public function getMessage(): string
-    {
-        return $this->message;
     }
 
     public function getCode(): string
@@ -53,9 +52,8 @@ class RentSystemResult implements \JsonSerializable
     {
         return [
             'error' => $this->error,
-            'message' => $this->message,
             'code' => $this->code,
-            'params' => $this->params,
+            'params' => (object)$this->params,
         ];
     }
 }

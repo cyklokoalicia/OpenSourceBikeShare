@@ -9,7 +9,7 @@ use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Clock\ClockInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class TooManyBikeRentEventListener
 {
@@ -18,7 +18,6 @@ class TooManyBikeRentEventListener
         private readonly int $numberToMany,
         private readonly UserRepository $userRepository,
         private readonly HistoryRepository $historyRepository,
-        private readonly TranslatorInterface $translator,
         private readonly AdminNotifier $adminNotifier,
         private readonly ClockInterface $clock,
     ) {
@@ -36,16 +35,19 @@ class TooManyBikeRentEventListener
 
         $rentCount = $this->historyRepository->findRentCountByUser($event->getUserId(), $offsetTime);
         if ($rentCount >= ($user['userLimit'] + $this->numberToMany)) {
-            $message = $this->translator->trans(
-                'Bike rental over limit in {hour} hours',
-                ['hour' => $this->timeTooManyHours]
+            $this->adminNotifier->notify(
+                new TranslatableMessage(
+                    'admin.notification.too_many_rents',
+                    [
+                        'hour' => $this->timeTooManyHours,
+                        'userName' => $user['userName'],
+                        'phone' => $user['number'],
+                        'count' => $rentCount,
+                    ]
+                ),
+                true,
+                [$user['userId']]
             );
-            $message .= PHP_EOL . $this->translator->trans(
-                '{userName} ({phone}) rented {count} bikes',
-                ['userName' => $user['userName'], 'phone' => $user['number'], 'count' => $rentCount]
-            );
-
-            $this->adminNotifier->notify($message, true, [$user['userId']]);
         }
     }
 }

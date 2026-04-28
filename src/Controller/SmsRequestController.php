@@ -15,20 +15,17 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
-use Symfony\Component\Translation\LocaleSwitcher;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class SmsRequestController extends AbstractController
 {
     public function __construct(
-        private readonly LocaleSwitcher $localeSwitcher,
         private readonly PhonePurifierInterface $phonePurifier,
         private readonly SmsConnectorInterface $smsConnector,
         private readonly SmsSenderInterface $smsSender,
         private readonly UserProvider $userProvider,
         private readonly LoggerInterface $logger,
         private readonly AdminNotifier $adminNotifier,
-        private readonly TranslatorInterface $translator,
         private readonly CommandExecutor $commandExecutor,
         private readonly UserSettingsRepository $userSettingsRepository,
     ) {
@@ -59,11 +56,14 @@ class SmsRequestController extends AbstractController
         }
 
         $userSettings = $this->userSettingsRepository->findByUserId($user->getUserId());
-        $this->localeSwitcher->setLocale($userSettings['locale']);
 
         try {
             $message = $this->commandExecutor->execute($this->smsConnector->getProcessedMessage(), $user);
-            $this->smsSender->send($this->smsConnector->getNumber(), $message);
+            $this->smsSender->send(
+                $this->smsConnector->getNumber(),
+                $message,
+                $userSettings['locale'] ?? null
+            );
         } catch (\Throwable $exception) {
             $this->logger->error(
                 "Error processing SMS",
@@ -74,8 +74,13 @@ class SmsRequestController extends AbstractController
                 ]
             );
             $this->adminNotifier->notify(
-                $this->translator->trans('Problem with SMS') . ': '
-                    . $this->smsConnector->getNumber() . '-' . $this->smsConnector->getProcessedMessage(),
+                new TranslatableMessage(
+                    'admin.notification.sms_problem',
+                    [
+                        'number' => $this->smsConnector->getNumber(),
+                        'sms' => $this->smsConnector->getProcessedMessage(),
+                    ]
+                ),
                 false
             );
         }

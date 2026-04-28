@@ -9,13 +9,17 @@ use BikeShare\Rent\RentSystemFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ReturnsController extends AbstractController
 {
     use RentSystemResponseTrait;
 
-    public function create(Request $request, RentSystemFactory $rentSystemFactory): Response
-    {
+    public function create(
+        Request $request,
+        RentSystemFactory $rentSystemFactory,
+        TranslatorInterface $translator,
+    ): Response {
         $payload = $request->getPayload()->all();
         $bikeNumber = isset($payload['bikeNumber']) && is_numeric($payload['bikeNumber'])
             ? (int)$payload['bikeNumber']
@@ -39,6 +43,6 @@ class ReturnsController extends AbstractController
             $note
         );
 
-        return $this->jsonRentSystemResult($response);
+        return $this->jsonRentSystemResult($response, $translator);
     }
 }

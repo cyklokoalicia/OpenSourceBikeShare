@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class HelpCommandTest extends BikeSharingWebTestCase
 {
@@ -49,23 +50,30 @@ class HelpCommandTest extends BikeSharingWebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages());
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages());
+        $sentMessage = $smsSender->getSentMessages()[0];
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+        $this->assertSame('command.help.message', $sentMessage['message']->getMessage());
+
+        $params = $sentMessage['message']->getParameters();
+        $this->assertArrayHasKey('commands', $params);
+        $commandsList = $params['commands'];
+
         foreach ($expectedCommands as $command) {
             $this->assertStringContainsString(
                 $command,
-                $sentMessage['text'],
-                'Response sms text does not contain expected command'
+                $commandsList,
+                'Help commands list does not contain expected command'
             );
         }
 
         foreach ($notExpectedCommands as $command) {
             $this->assertStringNotContainsString(
                 $command,
-                $sentMessage['text'],
-                'Response sms text contains unexpected command'
+                $commandsList,
+                'Help commands list contains unexpected command'
             );
         }
 

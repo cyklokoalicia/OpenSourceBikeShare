@@ -9,7 +9,8 @@ use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use BikeShare\User\UserRegistration;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class AddCommand extends AbstractCommand implements SmsCommandInterface
 {
@@ -17,68 +18,51 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly UserRegistration $userRegistration,
         private readonly UserRepository $userRepository,
         private readonly PhonePurifierInterface $phonePurifier
     ) {
-        parent::__construct($translator);
     }
 
-    public function __invoke(User $user, string $email, string $phone, string $fullName): string
+    public function __invoke(User $user, string $email, string $phone, string $fullName): TranslatableInterface
     {
         if (!$this->phonePurifier->isValid($phone)) {
-            throw new ValidationException(
-                $this->translator->trans('Invalid phone number.')
-            );
+            throw new ValidationException('user.error.invalid_phone');
         }
 
         $phone = $this->phonePurifier->purify($phone);
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new ValidationException(
-                $this->translator->trans('Email address is incorrect.')
-            );
+            throw new ValidationException('user.error.invalid_email');
         }
 
         $fullName = strip_tags($fullName);
 
-        $registeredUser = $this->userRepository->findItemByPhoneNumber($phone);
-        if (!is_null($registeredUser)) {
-            throw new ValidationException(
-                $this->translator->trans('User with this phone number already registered.')
-            );
+        if (!is_null($this->userRepository->findItemByPhoneNumber($phone))) {
+            throw new ValidationException('user.error.phone_already_registered');
         }
 
-        $registeredUser = $this->userRepository->findItemByEmail($email);
-        if (!is_null($registeredUser)) {
-            throw new ValidationException(
-                $this->translator->trans('User with this email already registered.')
-            );
+        if (!is_null($this->userRepository->findItemByEmail($email))) {
+            throw new ValidationException('user.error.email_already_registered');
         }
 
-        $user = $this->userRegistration->register(
+        $this->userRegistration->register(
             $phone,
             $email,
             substr(md5(mt_rand() . microtime() . $fullName), 0, 8),
-            $user->getCity(), //register user in the same city as the admin who added him
+            $user->getCity(),
             $fullName,
-            0 // privileges level
+            0
         );
 
-        $message = $this->translator->trans(
-            'User {userName} added. They need to read email and agree to rules before using the system.',
+        return new TranslatableMessage(
+            'command.add.success',
             ['userName' => $fullName]
         );
-
-        return $message;
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return $this->translator->trans(
-            'with email, phone, fullname: {example}',
-            ['example' => 'ADD king@earth.com 0901456789 Martin Luther King Jr.']
-        );
+        return new TranslatableMessage('command.add.help');
     }
 }

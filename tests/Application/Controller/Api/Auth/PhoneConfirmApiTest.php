@@ -13,9 +13,10 @@ use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class PhoneConfirmApiTest extends BikeSharingWebTestCase
 {
@@ -114,13 +115,15 @@ class PhoneConfirmApiTest extends BikeSharingWebTestCase
         $this->assertArrayHasKey('checkCode', $requestData);
         $checkCode = $requestData['checkCode'];
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount(1, $smsConnector->getSentMessages());
-        $sent = $smsConnector->getSentMessages()[0];
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount(1, $smsSender->getSentMessages());
+        $sent = $smsSender->getSentMessages()[0];
         $this->assertSame($purifiedPhone, $sent['number']);
-        preg_match('/Enter this code to verify your phone: ([A-Z]{2} \d+)/', $sent['text'], $smsMatches);
-        $this->assertNotEmpty($smsMatches[1] ?? null);
-        $smsCode = str_replace(' ', '', $smsMatches[1]);
+        $this->assertInstanceOf(TranslatableMessage::class, $sent['message']);
+        $this->assertSame('user.phone_confirm.sms_code', $sent['message']->getMessage());
+        $smsCodeRaw = $sent['message']->getParameters()['smsCode'] ?? '';
+        $this->assertMatchesRegularExpression('/^[A-Z]{2} \d+$/', $smsCodeRaw);
+        $smsCode = str_replace(' ', '', $smsCodeRaw);
 
         $this->client->request(
             Request::METHOD_POST,

@@ -6,28 +6,25 @@ namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Rent\RentSystemInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class RentCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'RENT';
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly RentSystemInterface $rentSystem
     ) {
-        parent::__construct($translator);
     }
 
-    public function __invoke(User $user, int $bikeNumber): string
+    public function __invoke(User $user, int $bikeNumber): TranslatableInterface
     {
-        $response = $this->rentSystem->rentBike($user->getUserId(), $bikeNumber);
-
-        return $response->getMessage();
+        return $this->rentSystem->rentBike($user->getUserId(), $bikeNumber);
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return $this->translator->trans('with bike number: {example}', ['example' => 'RENT 42']);
+        return new TranslatableMessage('command.rent.help');
     }
 }

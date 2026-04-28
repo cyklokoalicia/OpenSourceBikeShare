@@ -6,63 +6,65 @@ namespace BikeShare\SmsCommand;
 
 use BikeShare\App\Entity\User;
 use BikeShare\Credit\CreditSystemInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class HelpCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'HELP';
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly CreditSystemInterface $creditSystem
     ) {
-        parent::__construct($translator);
     }
 
-    public function __invoke(User $user): string
+    public function __invoke(User $user): TranslatableInterface
     {
         $availableCommands = [
-            'HELP' => 0,
-            'CREDIT' => 0,
-            'FREE' => 0,
-            'RENT bikeNumber' => 0,
-            'RETURN bikeNumber standName' => 0,
-            'WHERE bikeNumber' => 0,
-            'INFO standName' => 0,
-            'NOTE bikeNumber problem' => 0,
-            'NOTE standName problem' => 0,
+            'HELP',
+            'CREDIT',
+            'FREE',
+            'RENT bikeNumber',
+            'RETURN bikeNumber standName',
+            'WHERE bikeNumber',
+            'INFO standName',
+            'NOTE bikeNumber problem',
+            'NOTE standName problem',
         ];
         if (!$this->creditSystem->isEnabled()) {
-            unset($availableCommands['CREDIT']);
+            $availableCommands = array_values(array_filter(
+                $availableCommands,
+                static fn(string $cmd): bool => $cmd !== 'CREDIT'
+            ));
         }
 
-        $message = 'Commands:' . PHP_EOL;
         if ($user->getPrivileges() > 0) {
             $availableCommands = array_merge(
                 $availableCommands,
                 [
-                    'FORCERENT bikeNumber' => 0,
-                    'FORCERETURN bikeNumber standName' => 0,
-                    'LIST standName' => 0,
-                    'LAST bikeNumber' => 0,
-                    'REVERT bikeNumber' => 0,
-                    'CODE bikeNumber code' => 0,
-                    'ADD email phone fullname' => 0,
-                    'DELNOTE bikeNumber [pattern]' => 0,
-                    'DELNOTE standName [pattern]' => 0,
-                    'TAG standName note for all bikes' => 0,
-                    'UNTAG standName [pattern]' => 0,
+                    'FORCERENT bikeNumber',
+                    'FORCERETURN bikeNumber standName',
+                    'LIST standName',
+                    'LAST bikeNumber',
+                    'REVERT bikeNumber',
+                    'CODE bikeNumber code',
+                    'ADD email phone fullname',
+                    'DELNOTE bikeNumber [pattern]',
+                    'DELNOTE standName [pattern]',
+                    'TAG standName note for all bikes',
+                    'UNTAG standName [pattern]',
                 ]
             );
         }
 
-        $message .= implode(PHP_EOL, array_keys($availableCommands));
-
-        return $message;
+        return new TranslatableMessage(
+            'command.help.message',
+            ['commands' => implode("\n", $availableCommands)]
+        );
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return '';
+        return new TranslatableMessage('command.help.help');
     }
 }

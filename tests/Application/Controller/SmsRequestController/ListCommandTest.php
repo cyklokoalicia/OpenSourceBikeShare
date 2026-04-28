@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class ListCommandTest extends BikeSharingWebTestCase
 {
@@ -66,24 +67,24 @@ class ListCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessage = $smsSender->getSentMessages()[0];
 
         $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $this->assertStringStartsWith(
-            'Bikes on stand ' . self::STAND_NAME . ':',
-            $sentMessage['text'],
-            'Invalid response sms text'
-        );
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+        $this->assertSame('command.list.bikes', $sentMessage['message']->getMessage());
+        $params = $sentMessage['message']->getParameters();
+        $this->assertSame(self::STAND_NAME, $params['standName']);
         if ($forceStack) {
-            $this->assertStringContainsString(
-                '(first)',
-                $sentMessage['text'],
-                'There is no information about first bike on stand'
-            );
+            $this->assertSame('true', $params['hasFirstBike']);
+            $this->assertNotEmpty($params['firstBike']);
+        } else {
+            $this->assertSame('false', $params['hasFirstBike']);
+            $this->assertSame('', $params['firstBike']);
         }
+        $this->assertArrayHasKey('otherBikes', $params);
     }
 
     public static function listCommandDataProvider(): iterable

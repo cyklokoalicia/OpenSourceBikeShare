@@ -8,9 +8,10 @@ use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class RegistrationFlowTest extends BikeSharingWebTestCase
 {
@@ -77,13 +78,19 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
         $this->client->submitForm('formSubmit');
 
         // Get SMS code from history
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
         $phonePurifier = $this->client->getContainer()->get(PhonePurifierInterface::class);
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'More than one SMS was sent');
-        $sentMessages = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages(), 'More than one SMS was sent');
+        $sentMessages = $smsSender->getSentMessages()[0];
         $this->assertSame($phonePurifier->purify($userPhone), $sentMessages['number'], 'Invalid phone number');
-        preg_match('/Enter this code to verify your phone: ([A-Z]{2} \d*)/', $sentMessages['text'], $matches);
-        $smsCode = str_replace(' ', '', $matches[1] ?? '');
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessages['message']);
+        $this->assertSame(
+            'user.phone_confirm.sms_code',
+            $sentMessages['message']->getMessage()
+        );
+        $smsCodeRaw = $sentMessages['message']->getParameters()['smsCode'] ?? '';
+        $this->assertMatchesRegularExpression('/^[A-Z]{2} \d+$/', $smsCodeRaw);
+        $smsCode = str_replace(' ', '', $smsCodeRaw);
         $this->assertNotEmpty($smsCode, 'SMS code not found in the sent message');
 
         $this->assertResponseRedirects('/user/confirm/phone');

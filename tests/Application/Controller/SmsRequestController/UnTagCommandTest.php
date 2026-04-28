@@ -10,10 +10,11 @@ use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class UnTagCommandTest extends BikeSharingWebTestCase
 {
@@ -39,7 +40,9 @@ class UnTagCommandTest extends BikeSharingWebTestCase
     #[DataProvider('unTagPatternDataProvider')]
     public function testUnTagCommandForStand(
         ?string $pattern,
-        string $expectedMessage,
+        string $expectedCode,
+        array $expectedParams,
+        string $expectedMailMessagePattern,
         int $expectedSmsCount,
         int $expectedMailCount,
         int $expectedRemainingNotes,
@@ -71,29 +74,41 @@ class UnTagCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount($expectedSmsCount, $smsConnector->getSentMessages());
-        $sentMessages = $smsConnector->getSentMessages();
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount($expectedSmsCount, $smsSender->getSentMessages());
+        $sentMessages = $smsSender->getSentMessages();
 
         if ($expectedSmsCount === 1) {
             $sentMessage = $sentMessages[0];
-            $this->assertMatchesRegularExpression($expectedMessage, $sentMessage['text'], 'Invalid message text');
+            $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+            $this->assertSame($expectedCode, $sentMessage['message']->getMessage(), 'Invalid message code');
+            $this->assertSame($expectedParams, $sentMessage['message']->getParameters(), 'Invalid message params');
             $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid number');
         } elseif ($expectedSmsCount === 2) {
             $notifiedNumbers = [];
             foreach ($sentMessages as $sentMessage) {
+                $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
                 if ($sentMessage['number'] === self::ADMIN_PHONE_NUMBER) {
-                    $this->assertMatchesRegularExpression(
-                        $expectedMessage,
-                        $sentMessage['text'],
+                    $this->assertSame(
+                        $expectedCode,
+                        $sentMessage['message']->getMessage(),
                         'Invalid message sent to user'
                     );
-                } else {
-                    $this->assertMatchesRegularExpression(
-                        $expectedMessage,
-                        $sentMessage['text'],
-                        'Invalid message sent to admin'
+                    $this->assertSame(
+                        $expectedParams,
+                        $sentMessage['message']->getParameters()
                     );
+                } else {
+                    $this->assertSame(
+                        'admin.notification.sms_processed',
+                        $sentMessage['message']->getMessage(),
+                        'Invalid admin notification code'
+                    );
+                    $params = $sentMessage['message']->getParameters();
+                    $this->assertSame($user['userName'], $params['userName']);
+                    $this->assertInstanceOf(TranslatableMessage::class, $params['message']);
+                    $this->assertSame($expectedCode, $params['message']->getMessage());
+                    $this->assertSame($expectedParams, $params['message']->getParameters());
                 }
 
                 $notifiedNumbers[] = $sentMessage['number'];
@@ -115,7 +130,7 @@ class UnTagCommandTest extends BikeSharingWebTestCase
 
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertMatchesRegularExpression($expectedMessage, $sentMessage['message']);
+                $this->assertMatchesRegularExpression($expectedMailMessagePattern, $sentMessage['message']);
                 $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
@@ -137,7 +152,14 @@ class UnTagCommandTest extends BikeSharingWebTestCase
         return [
             'No pattern' => [
                 'pattern' => null,
-                'expectedMessage' => '/note(s)? for bikes on stand ' . self::STAND_NAME . ' \w* deleted\./',
+                'expectedCode' => 'command.untag.success',
+                'expectedParams' => [
+                    'standName' => self::STAND_NAME,
+                    'count' => 2,
+                    'hasPattern' => 'false',
+                    'pattern' => '',
+                ],
+                'expectedMailMessagePattern' => '/note(s)? for bikes on stand ' . self::STAND_NAME . ' \w* deleted\./',
                 'expectedSmsCount' => 2,
                 'expectedMailCount' => 1,
                 'expectedRemainingNotes' => 0,
@@ -145,7 +167,14 @@ class UnTagCommandTest extends BikeSharingWebTestCase
             ],
             'Valid pattern for part of notes' => [
                 'pattern' => 'test',
-                'expectedMessage' => '/note(s)? matching pattern \"test\" for bikes on stand ' .
+                'expectedCode' => 'command.untag.success',
+                'expectedParams' => [
+                    'standName' => self::STAND_NAME,
+                    'count' => 1,
+                    'hasPattern' => 'true',
+                    'pattern' => 'test',
+                ],
+                'expectedMailMessagePattern' => '/note(s)? matching pattern \"test\" for bikes on stand ' .
                     self::STAND_NAME . ' \w* deleted\./',
                 'expectedSmsCount' => 2,
                 'expectedMailCount' => 1,
@@ -154,8 +183,14 @@ class UnTagCommandTest extends BikeSharingWebTestCase
             ],
             'Invalid pattern' => [
                 'pattern' => 'INVALID_PATTERN',
-                'expectedMessage' => '/No notes matching pattern \"INVALID_PATTERN\" found for bikes on stand '
-                    . self::STAND_NAME . ' to delete\./',
+                'expectedCode' => 'command.untag.error.no_notes',
+                'expectedParams' => [
+                    'standName' => self::STAND_NAME,
+                    'hasPattern' => 'true',
+                    'pattern' => 'INVALID_PATTERN',
+                ],
+                'expectedMailMessagePattern' => '/No notes matching pattern \"INVALID_PATTERN\" '
+                    . 'found for bikes on stand ' . self::STAND_NAME . ' to delete\./',
                 'expectedSmsCount' => 1,
                 'expectedMailCount' => 0,
                 'expectedRemainingNotes' => 2,

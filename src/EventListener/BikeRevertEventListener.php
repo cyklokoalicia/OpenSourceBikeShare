@@ -6,15 +6,16 @@ namespace BikeShare\EventListener;
 
 use BikeShare\Event\BikeRevertEvent;
 use BikeShare\Repository\UserRepository;
+use BikeShare\Repository\UserSettingsRepository;
 use BikeShare\Sms\SmsSenderInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class BikeRevertEventListener
 {
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly SmsSenderInterface $smsSender,
-        private readonly TranslatorInterface $translator,
+        private readonly UserSettingsRepository $userSettingsRepository,
     ) {
     }
 
@@ -26,12 +27,14 @@ class BikeRevertEventListener
             !is_null($phoneNumber)
             && $event->getPreviousOwnerId() !== $event->getRevertedByUserId()
         ) {
+            $locale = $this->userSettingsRepository->findByUserId($event->getPreviousOwnerId())['locale'] ?? null;
             $this->smsSender->send(
                 $phoneNumber,
-                $this->translator->trans(
-                    'Bike {bikeNumber} has been returned. You can now rent a new bicycle.',
+                new TranslatableMessage(
+                    'bike.revert.notification.previous_owner',
                     ['bikeNumber' => $event->getBikeNumber()]
-                )
+                ),
+                $locale
             );
         }
     }

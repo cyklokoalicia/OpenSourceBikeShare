@@ -7,9 +7,10 @@ namespace BikeShare\Test\Application\Controller\SmsRequestController;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class FreeCommandTest extends BikeSharingWebTestCase
 {
@@ -19,7 +20,7 @@ class FreeCommandTest extends BikeSharingWebTestCase
     public function testFreeCommand(
         array $findFreeBikesResult,
         array $findFreeStandsResult,
-        string $expectedMessage
+        array $expectedParams
     ): void {
         $bikeRepositoryMock = $this->createMock(BikeRepository::class);
         $bikeRepositoryMock
@@ -49,13 +50,15 @@ class FreeCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
 
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $this->assertCount(1, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessage = $smsSender->getSentMessages()[0];
 
         $this->assertSame(self::USER_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $this->assertSame($expectedMessage, $sentMessage['text'], 'Invalid response sms text');
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+        $this->assertSame('command.free.message', $sentMessage['message']->getMessage());
+        $this->assertSame($expectedParams, $sentMessage['message']->getParameters());
     }
 
     public static function freeCommandDataProvider(): iterable
@@ -63,7 +66,12 @@ class FreeCommandTest extends BikeSharingWebTestCase
         yield 'no free bikes' => [
             'findFreeBikesResult' => [],
             'findFreeStandsResult' => [],
-            'expectedMessage' => 'No free bikes.',
+            'expectedParams' => [
+                'hasBikes' => 'false',
+                'bikesList' => '',
+                'hasEmptyStands' => 'false',
+                'standsList' => '',
+            ],
         ];
         yield 'one stand with free bikes' => [
             'findFreeBikesResult' => [
@@ -73,8 +81,12 @@ class FreeCommandTest extends BikeSharingWebTestCase
                 ],
             ],
             'findFreeStandsResult' => [],
-            'expectedMessage' => 'Free bikes counts:' . PHP_EOL .
-                'STAND1: 1',
+            'expectedParams' => [
+                'hasBikes' => 'true',
+                'bikesList' => 'STAND1: 1',
+                'hasEmptyStands' => 'false',
+                'standsList' => '',
+            ],
         ];
         yield 'two stand with free bikes' => [
             'findFreeBikesResult' => [
@@ -88,9 +100,12 @@ class FreeCommandTest extends BikeSharingWebTestCase
                 ],
             ],
             'findFreeStandsResult' => [],
-            'expectedMessage' => 'Free bikes counts:' . PHP_EOL .
-                'STAND1: 1' . PHP_EOL .
-                'STAND2: 2',
+            'expectedParams' => [
+                'hasBikes' => 'true',
+                'bikesList' => "STAND1: 1\nSTAND2: 2",
+                'hasEmptyStands' => 'false',
+                'standsList' => '',
+            ],
         ];
         yield 'empty stands' => [
             'findFreeBikesResult' => [
@@ -105,11 +120,12 @@ class FreeCommandTest extends BikeSharingWebTestCase
                     'bikeCount' => 1,
                 ]
             ],
-            'expectedMessage' => 'Free bikes counts:' . PHP_EOL .
-                'STAND1: 1' . PHP_EOL .
-                PHP_EOL .
-                'Empty stands:'  . PHP_EOL .
-                'STAND3',
+            'expectedParams' => [
+                'hasBikes' => 'true',
+                'bikesList' => 'STAND1: 1',
+                'hasEmptyStands' => 'true',
+                'standsList' => 'STAND3',
+            ],
         ];
     }
 }

@@ -9,19 +9,18 @@ use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\SmsCommand\Exception\ValidationException;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class NoteCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'NOTE';
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly BikeRepository $bikeRepository,
         private readonly StandRepository $standRepository,
         private readonly NoteRepository $noteRepository
     ) {
-        parent::__construct($translator);
     }
 
     public function __invoke(
@@ -29,81 +28,61 @@ class NoteCommand extends AbstractCommand implements SmsCommandInterface
         ?int $bikeNumber = null,
         ?string $standName = null,
         ?string $note = null
-    ): string {
+    ): TranslatableInterface {
         if (!is_null($bikeNumber)) {
-            return $this->addBikeNote($user, $bikeNumber, $note);
-        } elseif (!is_null($standName)) {
-            return $this->addStandNote($user, $standName, $note);
-        } else {
-            throw new ValidationException($this->getHelpMessage());
+            return $this->addBikeNote($user, $bikeNumber, $note ?? '');
         }
+        if (!is_null($standName)) {
+            return $this->addStandNote($user, $standName, $note ?? '');
+        }
+
+        throw new ValidationException('command.note.help');
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return $this->translator->trans(
-            'with bike number/stand name and problem description: {example}',
-            ['example' => 'NOTE 42 ' . $this->translator->trans('Flat tire on front wheel')]
-        );
+        return new TranslatableMessage('command.note.help');
     }
 
-    private function addBikeNote(User $user, int $bikeNumber, string $note): string
+    private function addBikeNote(User $user, int $bikeNumber, string $note): TranslatableInterface
     {
-        if (empty($note)) {
+        if ($note === '') {
             throw new ValidationException(
-                $this->translator->trans(
-                    'Empty note for bike {bikeNumber} not saved, for deleting notes use DELNOTE (for admins).',
-                    ['bikeNumber' => $bikeNumber]
-                )
+                'command.note.error.empty_bike_note',
+                ['bikeNumber' => $bikeNumber]
             );
         }
 
         $bikeInfo = $this->bikeRepository->findItem($bikeNumber);
         if (empty($bikeInfo)) {
-            throw new ValidationException(
-                $this->translator->trans('Bike {bikeNumber} does not exist.', ['bikeNumber' => $bikeNumber])
-            );
+            throw new ValidationException('bike.error.not_found', ['bikeNumber' => $bikeNumber]);
         }
 
-        $this->noteRepository->addNoteToBike(
-            $bikeNumber,
-            $user->getUserId(),
-            $note
-        );
+        $this->noteRepository->addNoteToBike($bikeNumber, $user->getUserId(), $note);
 
-        return $this->translator->trans(
-            'Note "{note}" for bike {bikeNumber} saved.',
+        return new TranslatableMessage(
+            'command.note.success_bike',
             ['note' => $note, 'bikeNumber' => $bikeNumber]
         );
     }
 
-    private function addStandNote(User $user, string $standName, string $note)
+    private function addStandNote(User $user, string $standName, string $note): TranslatableInterface
     {
-        if (empty($note)) {
+        if ($note === '') {
             throw new ValidationException(
-                $this->translator->trans(
-                    'Empty note for stand {standName} not saved, for deleting notes use DELNOTE (for admins).',
-                    ['standName' => $standName]
-                )
+                'command.note.error.empty_stand_note',
+                ['standName' => $standName]
             );
         }
 
         //SAFKO4ZRUSENY will not be recognized
         if (!preg_match("/^[A-Z]+[0-9]*$/", $standName)) {
-            throw new ValidationException(
-                $this->translator->trans(
-                    'Stand name {standName} has not been recognized. Stands are marked by CAPITALLETTERS.',
-                    ['standName' => $standName]
-                )
-            );
+            throw new ValidationException('stand.error.unrecognized', ['standName' => $standName]);
         }
 
         $standInfo = $this->standRepository->findItemByName($standName);
-
         if (empty($standInfo)) {
-            throw new ValidationException(
-                $this->translator->trans('Stand {standName} does not exist.', ['standName' => $standName])
-            );
+            throw new ValidationException('stand.error.not_found', ['standName' => $standName]);
         }
 
         $this->noteRepository->addNoteToStand(
@@ -112,8 +91,8 @@ class NoteCommand extends AbstractCommand implements SmsCommandInterface
             $note
         );
 
-        return $this->translator->trans(
-            'Note "{note}" for stand {standName} saved.',
+        return new TranslatableMessage(
+            'command.note.success_stand',
             ['note' => $note, 'standName' => $standName]
         );
     }

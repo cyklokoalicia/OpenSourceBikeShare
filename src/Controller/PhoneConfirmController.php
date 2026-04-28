@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PhoneConfirmController extends AbstractController
@@ -50,8 +51,13 @@ class PhoneConfirmController extends AbstractController
                 $checkCode = md5('WB' . $number . $sanitizedSmsCode);
 
                 // Send SMS
-                $text = $translator->trans('Enter this code to verify your phone: {smsCode}', ['smsCode' => $smsCode]);
-                $smsSender->send($number, $text);
+                $smsSender->send(
+                    $number,
+                    new TranslatableMessage(
+                        'user.phone_confirm.sms_code',
+                        ['smsCode' => $smsCode]
+                    )
+                );
                 $historyRepository->addItem(
                     $user->getUserId(),
                     0,

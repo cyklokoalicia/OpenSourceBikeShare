@@ -17,6 +17,7 @@ use BikeShare\Mail\PHPMailerMailSender;
 use BikeShare\Purifier\PhonePurifier;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Rent\RentSystemInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Sms\SmsSender;
 use BikeShare\Sms\SmsSenderInterface;
 use BikeShare\SmsCommand\SmsCommandInterface;
@@ -79,9 +80,11 @@ return static function (ContainerConfigurator $container): void {
             '../src/Event',
             '../src/Command/LoadFixturesCommand.php',
             '../src/SmsCommand/*Command.php',
+            '../src/SmsCommand/Exception',
             '../src/App/Api/Compat/ApiCompatTransformRegistry.php',
             '../src/Rent/DTO',
             '../src/Rent/Enum',
+            '../src/Translation',
         ]);
 
     $services->get(\BikeShare\App\Security\ApiV1Authenticator::class)
@@ -105,6 +108,7 @@ return static function (ContainerConfigurator $container): void {
             ->bind('$projectDir', param('kernel.project_dir'))
             ->bind('$dbDatabase', env('DB_DATABASE'))
             ->bind('$fixturesLoader', service('nelmio_alice.file_loader.simple'));
+
     }
 
     $services->get(\BikeShare\Controller\SmsRequestController::class)
@@ -210,6 +214,9 @@ return static function (ContainerConfigurator $container): void {
         ->arg('$connectorName', env('SMS_CONNECTOR'));
 
     $services->alias(SmsSenderInterface::class, SmsSender::class);
+    if ($container->env() === 'test') {
+        $services->alias(SmsSenderInterface::class, DebugSmsSender::class)->public();
+    }
 
     $services->alias(CodeGeneratorInterface::class, CodeGenerator::class);
 

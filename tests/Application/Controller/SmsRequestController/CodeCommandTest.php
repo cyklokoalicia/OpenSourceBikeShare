@@ -6,9 +6,10 @@ namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Repository\UserRepository;
-use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class CodeCommandTest extends BikeSharingWebTestCase
 {
@@ -45,15 +46,16 @@ class CodeCommandTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
 
-        $smsConnector = $this->client->getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount(1, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
-        $sentMessage = $smsConnector->getSentMessages()[0];
+        $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
+        $this->assertCount(1, $smsSender->getSentMessages(), 'Invalid number of sent messages');
+        $sentMessage = $smsSender->getSentMessages()[0];
 
         $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid response sms number');
-        $this->assertStringContainsString(
-            sprintf('Bike %d code updated to %d.', self::BIKE_NUMBER, $newCode),
-            $sentMessage['text'],
-            'Invalid response sms text'
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+        $this->assertSame('command.code.success', $sentMessage['message']->getMessage());
+        $this->assertSame(
+            ['bikeNumber' => self::BIKE_NUMBER, 'code' => $newCode],
+            $sentMessage['message']->getParameters()
         );
 
         $updatedBike = $db->query(

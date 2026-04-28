@@ -10,72 +10,55 @@ use BikeShare\SmsCommand\CreditCommand;
 use BikeShare\SmsCommand\Exception\ValidationException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class CreditCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private CreditSystemInterface&MockObject $creditSystemMock;
     private CreditCommand $command;
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->creditSystemMock = $this->createMock(CreditSystemInterface::class);
-
-        $this->command = new CreditCommand($this->translatorMock, $this->creditSystemMock);
+        $this->command = new CreditCommand($this->creditSystemMock);
     }
 
     protected function tearDown(): void
     {
-        unset($this->translatorMock, $this->creditSystemMock, $this->command);
+        unset($this->creditSystemMock, $this->command);
     }
 
     public function testInvokeReturnsUserCredit(): void
     {
-        $userMock = $this->createMock(User::class);
         $userId = 123;
-        $expectedMessage = 'Your remaining credit: 15.5 EUR';
-
+        $userMock = $this->createMock(User::class);
         $userMock->expects($this->once())->method('getUserId')->willReturn($userId);
         $this->creditSystemMock->expects($this->once())->method('isEnabled')->willReturn(true);
         $this->creditSystemMock->expects($this->once())->method('getUserCredit')->with($userId)->willReturn(15.5);
         $this->creditSystemMock->expects($this->once())->method('getCreditCurrency')->willReturn('EUR');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('Your remaining credit: {credit}', ['credit' => '15.5EUR'])
-            ->willReturn($expectedMessage);
 
-        $this->assertSame($expectedMessage, ($this->command)($userMock));
+        $result = ($this->command)($userMock);
+
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.credit.message', $result->getMessage());
+        $this->assertSame(['credit' => 15.5, 'creditCurrency' => 'EUR'], $result->getParameters());
     }
 
     public function testInvokeThrowsWhenCreditDisabled(): void
     {
-        $userMock = $this->createStub(User::class);
-        $expectedMessage = 'Error. The command CREDIT does not exist. If you need help, send: HELP';
-
         $this->creditSystemMock->expects($this->once())->method('isEnabled')->willReturn(false);
-        $this->translatorMock
-            ->method('trans')
-            ->with(
-                'Error. The command {badCommand} does not exist. If you need help, send: {helpCommand}',
-                [
-                    'badCommand' => 'CREDIT',
-                    'helpCommand' => 'HELP'
-                ]
-            )
-            ->willReturn($expectedMessage);
+        $this->creditSystemMock->expects($this->never())->method('getUserCredit');
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage($expectedMessage);
 
-        ($this->command)($userMock);
+        ($this->command)($this->createStub(User::class));
     }
 
     public function testGetHelpMessage(): void
     {
-        $this->translatorMock->expects($this->never())->method('trans');
         $this->creditSystemMock->expects($this->never())->method('isEnabled');
-        $this->assertSame('', $this->command->getHelpMessage());
+
+        $help = $this->command->getHelpMessage();
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.credit.help', $help->getMessage());
     }
 }

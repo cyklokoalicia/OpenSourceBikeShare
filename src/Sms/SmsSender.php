@@ -6,6 +6,8 @@ use BikeShare\Db\DbInterface;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use BikeShare\SmsTextNormalizer\SmsTextNormalizerInterface;
 use Symfony\Component\Clock\ClockInterface;
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SmsSender implements SmsSenderInterface
 {
@@ -14,12 +16,13 @@ class SmsSender implements SmsSenderInterface
         private readonly SmsTextNormalizerInterface $smsTextNormalizer,
         private readonly DbInterface $db,
         private readonly ClockInterface $clock,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
-    public function send($number, $message)
+    public function send(string $number, TranslatableInterface $message, ?string $locale = null): void
     {
-        $message = $this->smsTextNormalizer->normalize($message);
+        $message = $this->smsTextNormalizer->normalize($message->trans($this->translator, $locale));
         $maxMessageLength = $this->smsConnector->getMaxMessageLength();
         if (strlen($message) > $maxMessageLength) {
             $messageParts = str_split($message, $maxMessageLength);
@@ -36,7 +39,7 @@ class SmsSender implements SmsSenderInterface
         }
     }
 
-    private function log($number, $message)
+    private function log(string $number, string $message): void
     {
         $this->db->query(
             'INSERT INTO sent SET number = :number, text = :message, time = :time',

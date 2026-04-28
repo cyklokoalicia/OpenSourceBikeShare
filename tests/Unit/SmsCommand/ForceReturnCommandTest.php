@@ -11,24 +11,22 @@ use BikeShare\Rent\RentSystemInterface;
 use BikeShare\SmsCommand\ForceReturnCommand;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class ForceReturnCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private RentSystemInterface&MockObject $rentSystemMock;
     private ForceReturnCommand $command;
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->rentSystemMock = $this->createMock(RentSystemInterface::class);
-        $this->command = new ForceReturnCommand($this->translatorMock, $this->rentSystemMock);
+        $this->command = new ForceReturnCommand($this->rentSystemMock);
     }
 
     protected function tearDown(): void
     {
-        unset($this->translatorMock, $this->rentSystemMock, $this->command);
+        unset($this->rentSystemMock, $this->command);
     }
 
     public function testInvokeReturnBikeWithAllArguments(): void
@@ -38,17 +36,21 @@ class ForceReturnCommandTest extends TestCase
         $bikeNumber = 456;
         $standName = 'MAINSQUARE';
         $note = 'note';
-        $expectedMessage = 'Return successful';
+        $expected = new RentSystemResult(
+            false,
+            'bike.return.success',
+            RentSystemType::SMS,
+            ['bikeNumber' => $bikeNumber]
+        );
 
-        $this->translatorMock->expects($this->never())->method('trans');
         $userMock->expects($this->once())->method('getUserId')->willReturn($userId);
         $this->rentSystemMock
             ->expects($this->once())
             ->method('returnBike')
             ->with($userId, $bikeNumber, $standName, $note, true)
-            ->willReturn(new RentSystemResult(false, $expectedMessage, 'bike.return.success', RentSystemType::SMS, []));
+            ->willReturn($expected);
 
-        $this->assertSame($expectedMessage, ($this->command)($userMock, $bikeNumber, $standName, $note));
+        $this->assertSame($expected, ($this->command)($userMock, $bikeNumber, $standName, $note));
     }
 
     public function testInvokeReturnBikeWithoutNote(): void
@@ -57,29 +59,29 @@ class ForceReturnCommandTest extends TestCase
         $userId = 123;
         $bikeNumber = 456;
         $standName = 'CENTRALPARK';
-        $expectedMessage = 'Returned without note';
+        $expected = new RentSystemResult(
+            false,
+            'bike.return.success',
+            RentSystemType::SMS,
+            ['bikeNumber' => $bikeNumber]
+        );
 
-        $this->translatorMock->expects($this->never())->method('trans');
         $userMock->expects($this->once())->method('getUserId')->willReturn($userId);
         $this->rentSystemMock
             ->expects($this->once())
             ->method('returnBike')
             ->with($userId, $bikeNumber, $standName, null, true)
-            ->willReturn(new RentSystemResult(false, $expectedMessage, 'bike.return.success', RentSystemType::SMS, []));
+            ->willReturn($expected);
 
-        $this->assertSame($expectedMessage, ($this->command)($userMock, $bikeNumber, $standName));
+        $this->assertSame($expected, ($this->command)($userMock, $bikeNumber, $standName));
     }
 
     public function testGetHelpMessage(): void
     {
-        $expectedMessage = 'Translated help text';
         $this->rentSystemMock->expects($this->never())->method('returnBike');
-        $this->translatorMock
-            ->expects($this->once())
-            ->method('trans')
-            ->with('with bike number: {example}', ['example' => 'FORCERETURN 42 MAINSQUARE note'])
-            ->willReturn($expectedMessage);
+        $help = $this->command->getHelpMessage();
 
-        $this->assertSame($expectedMessage, $this->command->getHelpMessage());
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.force_return.help', $help->getMessage());
     }
 }

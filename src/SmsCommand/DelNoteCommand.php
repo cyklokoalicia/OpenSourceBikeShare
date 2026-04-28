@@ -9,7 +9,8 @@ use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\SmsCommand\Exception\ValidationException;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
 {
@@ -17,12 +18,10 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly BikeRepository $bikeRepository,
         private readonly StandRepository $standRepository,
         private readonly NoteRepository $noteRepository
     ) {
-        parent::__construct($translator);
     }
 
     public function __invoke(
@@ -30,119 +29,86 @@ class DelNoteCommand extends AbstractCommand implements SmsCommandInterface
         ?int $bikeNumber = null,
         ?string $standName = null,
         ?string $pattern = null
-    ): string {
+    ): TranslatableInterface {
         if (!is_null($bikeNumber)) {
-            return $this->deleteBikeNote($user, $bikeNumber, $pattern);
-        } elseif (!is_null($standName)) {
-            return $this->deleteStandNote($user, $standName, $pattern);
-        } else {
-            throw new ValidationException($this->getHelpMessage());
+            return $this->deleteBikeNote($bikeNumber, $pattern);
         }
+        if (!is_null($standName)) {
+            return $this->deleteStandNote($standName, $pattern);
+        }
+
+        throw new ValidationException('command.delnote.help');
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return $this->translator->trans(
-            'with bike number and optional pattern. All messages or notes matching pattern will be deleted: {example}',
-            ['example' => 'DELNOTE 42 wheel']
-        );
+        return new TranslatableMessage('command.delnote.help');
     }
 
-    private function deleteBikeNote(User $user, int $bikeNumber, ?string $pattern): string
+    private function deleteBikeNote(int $bikeNumber, ?string $pattern): TranslatableInterface
     {
         $bikeInfo = $this->bikeRepository->findItem($bikeNumber);
         if (empty($bikeInfo)) {
-            throw new ValidationException(
-                $this->translator->trans('Bike {bikeNumber} does not exist.', ['bikeNumber' => $bikeNumber])
-            );
+            throw new ValidationException('bike.error.not_found', ['bikeNumber' => $bikeNumber]);
         }
 
-        $count = $this->noteRepository->deleteBikeNote(
-            $bikeNumber,
-            $pattern
-        );
+        $count = $this->noteRepository->deleteBikeNote($bikeNumber, $pattern);
 
         if ($count === 0) {
-            if (is_null($pattern)) {
-                throw new ValidationException(
-                    $this->translator->trans(
-                        'No notes found for bike {bikeNumber} to delete.',
-                        ['bikeNumber' => $bikeNumber]
-                    )
-                );
-            } else {
-                throw new ValidationException(
-                    $this->translator->trans(
-                        'No notes matching pattern {pattern} found for bike {bikeNumber} to delete.',
-                        ['pattern' => $pattern, 'bikeNumber' => $bikeNumber]
-                    )
-                );
-            }
-        } elseif (is_null($pattern)) {
-            $message = $this->translator->trans(
-                'All {count} notes for bike {bikeNumber} were deleted.',
-                ['bikeNumber' => $bikeNumber, 'count' => $count]
-            );
-        } else {
-            $message = $this->translator->trans(
-                '{count} notes matching pattern "{pattern}" for bike {bikeNumber} were deleted.',
-                ['bikeNumber' => $bikeNumber, 'pattern' => $pattern, 'count' => $count]
+            throw new ValidationException(
+                'command.delnote.error.no_bike_notes',
+                [
+                    'bikeNumber' => $bikeNumber,
+                    'hasPattern' => is_null($pattern) ? 'false' : 'true',
+                    'pattern' => $pattern ?? '',
+                ]
             );
         }
 
-        return $message;
+        return new TranslatableMessage(
+            'command.delnote.success_bike',
+            [
+                'bikeNumber' => $bikeNumber,
+                'count' => $count,
+                'hasPattern' => is_null($pattern) ? 'false' : 'true',
+                'pattern' => $pattern ?? '',
+            ]
+        );
     }
 
-    private function deleteStandNote(User $user, string $standName, ?string $pattern): string
+    private function deleteStandNote(string $standName, ?string $pattern): TranslatableInterface
     {
         //SAFKO4ZRUSENY will not be recognized
         if (!preg_match("/^[A-Z]+[0-9]*$/", $standName)) {
-            throw new ValidationException(
-                $this->translator->trans(
-                    'Stand name {standName} has not been recognized. Stands are marked by CAPITALLETTERS.',
-                    ['standName' => $standName]
-                )
-            );
+            throw new ValidationException('stand.error.unrecognized', ['standName' => $standName]);
         }
 
         $standInfo = $this->standRepository->findItemByName($standName);
-
         if (empty($standInfo)) {
-            throw new ValidationException(
-                $this->translator->trans('Stand {standName} does not exist.', ['standName' => $standName])
-            );
+            throw new ValidationException('stand.error.not_found', ['standName' => $standName]);
         }
 
-        $count = $this->noteRepository->deleteStandNote((int)$standInfo["standId"], $pattern);
+        $count = $this->noteRepository->deleteStandNote((int)$standInfo['standId'], $pattern);
 
         if ($count === 0) {
-            if (is_null($pattern)) {
-                throw new ValidationException(
-                    $this->translator->trans(
-                        'No notes found for stand {standName} to delete.',
-                        ['standName' => $standName]
-                    )
-                );
-            } else {
-                throw new ValidationException(
-                    $this->translator->trans(
-                        'No notes matching pattern {pattern} found on stand {standName} to delete.',
-                        ['pattern' => $pattern, 'standName' => $standName]
-                    )
-                );
-            }
-        } elseif (is_null($pattern)) {
-            $message = $this->translator->trans(
-                'All {count} notes for stand {standName} were deleted.',
-                ['standName' => $standName, 'count' => $count]
-            );
-        } else {
-            $message = $this->translator->trans(
-                '{count} notes matching pattern "{pattern}" for stand {standName} were deleted.',
-                ['standName' => $standName, 'pattern' => $pattern, 'count' => $count]
+            throw new ValidationException(
+                'command.delnote.error.no_stand_notes',
+                [
+                    'standName' => $standName,
+                    'hasPattern' => is_null($pattern) ? 'false' : 'true',
+                    'pattern' => $pattern ?? '',
+                ]
             );
         }
 
-        return $message;
+        return new TranslatableMessage(
+            'command.delnote.success_stand',
+            [
+                'standName' => $standName,
+                'count' => $count,
+                'hasPattern' => is_null($pattern) ? 'false' : 'true',
+                'pattern' => $pattern ?? '',
+            ]
+        );
     }
 }

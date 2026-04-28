@@ -9,7 +9,8 @@ use BikeShare\Enum\Action;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\SmsCommand\Exception\ValidationException;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class CodeCommand extends AbstractCommand implements SmsCommandInterface
 {
@@ -17,21 +18,19 @@ class CodeCommand extends AbstractCommand implements SmsCommandInterface
     protected const MIN_PRIVILEGES_LEVEL = 1;
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly BikeRepository $bikeRepository,
         private readonly HistoryRepository $historyRepository,
     ) {
-        parent::__construct($translator);
     }
 
-    public function __invoke(User $user, int $bikeNumber, string $code): string
+    public function __invoke(User $user, int $bikeNumber, string $code): TranslatableInterface
     {
         if ($bikeNumber <= 0) {
-            throw new ValidationException($this->translator->trans('Invalid bike number'));
+            throw new ValidationException('bike.error.invalid_number');
         }
 
         if (!preg_match('/^\d{4}$/', $code)) {
-            throw new ValidationException($this->translator->trans('Invalid code format. Use four digits.'));
+            throw new ValidationException('bike.error.invalid_code_format');
         }
 
         $formattedCode = sprintf('%04d', (int) $code);
@@ -45,17 +44,14 @@ class CodeCommand extends AbstractCommand implements SmsCommandInterface
             $formattedCode,
         );
 
-        return $this->translator->trans(
-            'Bike {bikeNumber} code updated to {code}.',
-            [
-                'bikeNumber' => $bikeNumber,
-                'code' => $formattedCode,
-            ]
+        return new TranslatableMessage(
+            'command.code.success',
+            ['bikeNumber' => $bikeNumber, 'code' => $formattedCode]
         );
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return $this->translator->trans('with bike number and code: {example}', ['example' => 'CODE 42 1234']);
+        return new TranslatableMessage('command.code.help');
     }
 }

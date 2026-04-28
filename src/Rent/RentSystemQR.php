@@ -5,9 +5,6 @@ namespace BikeShare\Rent;
 use BikeShare\Rent\DTO\RentSystemResult;
 use BikeShare\Rent\Enum\RentSystemType;
 
-/**
- * @phpcs:disable Generic.Files.LineLength
- */
 class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 {
     public function rentBike(int $userId, int $bikeId, bool $force = false): RentSystemResult
@@ -30,36 +27,23 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
         if ($bikeId !== 0) {
             $this->logger->error("Bike number could not be provided via QR code", ["userId" => $userId]);
 
-            return $this->error(
-                $this->translator->trans('Invalid bike number'),
-                'bike.return.error.invalid_bike_number'
-            );
+            return $this->error('bike.return.error.invalid_bike_number');
         }
 
         $rentedBikedByUser = $this->bikeRepository->findRentedBikesByUserId($userId);
         $countRented = count($rentedBikedByUser);
 
         if ($countRented === 0) {
-            return $this->error(
-                $this->translator->trans('You currently have no rented bikes.'),
-                'bike.return.error.no_rented_bikes'
-            );
-        } elseif ($countRented > 1) {
-            $message = $this->translator->trans(
-                'You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web or SMS to return the bikes.',
-                ['bikeNumber' => $countRented]
-            );
-            if (!$this->isSmsSystemEnabled) {
-                $message = $this->translator->trans(
-                    'You have {bikeNumber} rented bikes currently. QR code return can be used only when 1 bike is rented. Please, use web to return the bikes.',
-                    ['bikeNumber' => $countRented]
-                );
-            }
+            return $this->error('bike.return.error.no_rented_bikes');
+        }
 
+        if ($countRented > 1) {
             return $this->error(
-                $message,
                 'bike.return.error.multiple_rented_bikes',
-                ['bikeNumber' => $countRented],
+                [
+                    'bikeNumber' => $countRented,
+                    'hasSms' => $this->isSmsSystemEnabled ? 'true' : 'false',
+                ]
             );
         }
 
@@ -70,10 +54,7 @@ class RentSystemQR extends AbstractRentSystem implements RentSystemInterface
 
     public function revertBike(int $userId, int $bikeId): RentSystemResult
     {
-        return $this->error(
-            $this->translator->trans('Revert is not supported for QR code'),
-            'bike.revert.error.not_supported'
-        );
+        return $this->error('bike.revert.error.not_supported');
     }
 
     public static function getType(): RentSystemType

@@ -11,45 +11,44 @@ use BikeShare\SmsCommand\HelpCommand;
 use Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class HelpCommandTest extends TestCase
 {
-    private TranslatorInterface&MockObject $translatorMock;
     private CreditSystemInterface&MockObject $creditSystemMock;
     private HelpCommand $command;
 
     protected function setUp(): void
     {
-        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->creditSystemMock = $this->createMock(CreditSystemInterface::class);
-        $this->command = new HelpCommand($this->translatorMock, $this->creditSystemMock);
+        $this->command = new HelpCommand($this->creditSystemMock);
     }
 
     protected function tearDown(): void
     {
-        unset($this->translatorMock, $this->creditSystemMock, $this->command);
+        unset($this->creditSystemMock, $this->command);
     }
 
     #[DataProvider('invokeDataProvider')]
-    public function testInvoke(bool $creditSystemCallResult, int $userCallResult, string $message): void
+    public function testInvoke(bool $creditEnabled, int $privileges, string $expectedCommands): void
     {
         $userMock = $this->createMock(User::class);
+        $userMock->expects($this->once())->method('getPrivileges')->willReturn($privileges);
+        $this->creditSystemMock->expects($this->once())->method('isEnabled')->willReturn($creditEnabled);
 
-        $this->translatorMock->expects($this->never())->method('trans');
-        $this->creditSystemMock->expects($this->once())->method('isEnabled')->willReturn($creditSystemCallResult);
-        $userMock->expects($this->once())->method('getPrivileges')->willReturn($userCallResult);
+        $result = ($this->command)($userMock);
 
-        $this->assertSame($message, ($this->command)($userMock));
+        $this->assertInstanceOf(TranslatableMessage::class, $result);
+        $this->assertSame('command.help.message', $result->getMessage());
+        $this->assertSame(['commands' => $expectedCommands], $result->getParameters());
     }
 
     public static function invokeDataProvider(): Generator
     {
         yield 'credit system disabled user privileges zero' => [
-            'creditSystemCallResult' => false,
-            'userCallResult' => 0,
-            'message' => implode(PHP_EOL, [
-                'Commands:',
+            'creditEnabled' => false,
+            'privileges' => 0,
+            'expectedCommands' => implode("\n", [
                 'HELP',
                 'FREE',
                 'RENT bikeNumber',
@@ -61,10 +60,9 @@ class HelpCommandTest extends TestCase
             ]),
         ];
         yield 'credit system enabled user privileges zero' => [
-            'creditSystemCallResult' => true,
-            'userCallResult' => 0,
-            'message' => implode(PHP_EOL, [
-                'Commands:',
+            'creditEnabled' => true,
+            'privileges' => 0,
+            'expectedCommands' => implode("\n", [
                 'HELP',
                 'CREDIT',
                 'FREE',
@@ -77,10 +75,9 @@ class HelpCommandTest extends TestCase
             ]),
         ];
         yield 'credit system enabled user privileges greater zero' => [
-            'creditSystemCallResult' => true,
-            'userCallResult' => 1,
-            'message' => implode(PHP_EOL, [
-                'Commands:',
+            'creditEnabled' => true,
+            'privileges' => 1,
+            'expectedCommands' => implode("\n", [
                 'HELP',
                 'CREDIT',
                 'FREE',
@@ -107,8 +104,10 @@ class HelpCommandTest extends TestCase
 
     public function testGetHelpMessage(): void
     {
-        $this->translatorMock->expects($this->never())->method('trans');
         $this->creditSystemMock->expects($this->never())->method('isEnabled');
-        $this->assertSame('', $this->command->getHelpMessage());
+
+        $help = $this->command->getHelpMessage();
+        $this->assertInstanceOf(TranslatableMessage::class, $help);
+        $this->assertSame('command.help.help', $help->getMessage());
     }
 }

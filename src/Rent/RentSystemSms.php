@@ -12,9 +12,4 @@ class RentSystemSms extends AbstractRentSystem implements RentSystemInterface
     {
         return RentSystemType::SMS;
     }
-
-    protected function normalizeMessage(string $message): string
-    {
-        return strip_tags($message);
-    }
 }

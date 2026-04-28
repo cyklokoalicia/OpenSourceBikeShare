@@ -7,47 +7,58 @@ namespace BikeShare\SmsCommand;
 use BikeShare\App\Entity\User;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class FreeCommand extends AbstractCommand implements SmsCommandInterface
 {
     protected const COMMAND_NAME = 'FREE';
 
     public function __construct(
-        TranslatorInterface $translator,
         private readonly BikeRepository $bikeRepository,
         private readonly StandRepository $standRepository
     ) {
-        parent::__construct($translator);
     }
 
-    public function __invoke(User $user): string
+    public function __invoke(User $user): TranslatableInterface
     {
         $freeBikes = $this->bikeRepository->findFreeBikes();
-
         if (empty($freeBikes)) {
-            return $this->translator->trans('No free bikes.');
+            return new TranslatableMessage(
+                'command.free.message',
+                [
+                    'hasBikes' => 'false',
+                    'bikesList' => '',
+                    'hasEmptyStands' => 'false',
+                    'standsList' => '',
+                ]
+            );
         }
 
-        $message = $this->translator->trans('Free bikes counts') . ':';
+        $bikesList = [];
         foreach ($freeBikes as $row) {
-            $message .= PHP_EOL . $row['standName'] . ': ' . $row["bikeCount"];
+            $bikesList[] = $row['standName'] . ': ' . $row['bikeCount'];
         }
 
         $freeStands = $this->standRepository->findFreeStands();
-
-        if (!empty($freeStands)) {
-            $message .= PHP_EOL . PHP_EOL . $this->translator->trans('Empty stands') . ":";
-            foreach ($freeStands as $row) {
-                $message .= PHP_EOL . $row['standName'];
-            }
+        $standsList = [];
+        foreach ($freeStands as $row) {
+            $standsList[] = $row['standName'];
         }
 
-        return $message;
+        return new TranslatableMessage(
+            'command.free.message',
+            [
+                'hasBikes' => 'true',
+                'bikesList' => implode("\n", $bikesList),
+                'hasEmptyStands' => empty($freeStands) ? 'false' : 'true',
+                'standsList' => implode("\n", $standsList),
+            ]
+        );
     }
 
-    public function getHelpMessage(): string
+    public function getHelpMessage(): TranslatableInterface
     {
-        return '';
+        return new TranslatableMessage('command.free.help');
     }
 }
