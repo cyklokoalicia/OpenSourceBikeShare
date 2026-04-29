@@ -24,12 +24,13 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
     public function testBikeRentSuccessWithoutNote(): void
     {
         $rendered = $this->translator->trans('bike.rent.success', [
+            'channel' => 'sms',
             'bikeNumber' => 42,
             'currentCode' => '1234',
             'newCode' => '5678',
             'hasNote' => 'false',
             'note' => '',
-        ], null, 'en');
+        ], 'rentSystem', 'en');
 
         $this->assertStringContainsString('Bike 42', $rendered);
         $this->assertStringContainsString('1234', $rendered);
@@ -40,12 +41,13 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
     public function testBikeRentSuccessWithNote(): void
     {
         $rendered = $this->translator->trans('bike.rent.success', [
+            'channel' => 'sms',
             'bikeNumber' => 42,
             'currentCode' => '1234',
             'newCode' => '5678',
             'hasNote' => 'true',
             'note' => 'Flat tire',
-        ], null, 'en');
+        ], 'rentSystem', 'en');
 
         $this->assertStringContainsString('Bike 42', $rendered);
         $this->assertStringContainsString('Reported issue: Flat tire', $rendered);
@@ -54,6 +56,7 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
     public function testBikeReturnSuccessNoNoteNoCreditChange(): void
     {
         $rendered = $this->translator->trans('bike.return.success', [
+            'channel' => 'sms',
             'bikeNumber' => 42,
             'standName' => 'STAND1',
             'currentCode' => '1234',
@@ -62,7 +65,7 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
             'hasCreditChange' => 'false',
             'creditChange' => 0,
             'creditCurrency' => 'EUR',
-        ], null, 'en');
+        ], 'rentSystem', 'en');
 
         $this->assertStringContainsString('Bike 42', $rendered);
         $this->assertStringContainsString('STAND1', $rendered);
@@ -73,6 +76,7 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
     public function testBikeReturnSuccessWithNoteOnly(): void
     {
         $rendered = $this->translator->trans('bike.return.success', [
+            'channel' => 'sms',
             'bikeNumber' => 42,
             'standName' => 'STAND1',
             'currentCode' => '1234',
@@ -81,7 +85,7 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
             'hasCreditChange' => 'false',
             'creditChange' => 0,
             'creditCurrency' => 'EUR',
-        ], null, 'en');
+        ], 'rentSystem', 'en');
 
         $this->assertStringContainsString('reported this problem: Broken chain.', $rendered);
         $this->assertStringNotContainsString('Credit change', $rendered);
@@ -90,6 +94,7 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
     public function testBikeReturnSuccessWithCreditChangeOnly(): void
     {
         $rendered = $this->translator->trans('bike.return.success', [
+            'channel' => 'sms',
             'bikeNumber' => 42,
             'standName' => 'STAND1',
             'currentCode' => '1234',
@@ -98,7 +103,7 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
             'hasCreditChange' => 'true',
             'creditChange' => 5,
             'creditCurrency' => 'EUR',
-        ], null, 'en');
+        ], 'rentSystem', 'en');
 
         $this->assertStringContainsString('Credit change: -5EUR.', $rendered);
         $this->assertStringNotContainsString('reported this problem', $rendered);
@@ -107,6 +112,7 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
     public function testBikeReturnSuccessWithBothAppendixBlocks(): void
     {
         $rendered = $this->translator->trans('bike.return.success', [
+            'channel' => 'sms',
             'bikeNumber' => 42,
             'standName' => 'STAND1',
             'currentCode' => '1234',
@@ -115,7 +121,7 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
             'hasCreditChange' => 'true',
             'creditChange' => 5,
             'creditCurrency' => 'EUR',
-        ], null, 'en');
+        ], 'rentSystem', 'en');
 
         $this->assertStringContainsString('Bike 42', $rendered);
         $this->assertStringContainsString('reported this problem: Broken chain.', $rendered);
@@ -156,11 +162,11 @@ class IcuTemplateTest extends BikeSharingKernelTestCase
         $withSms = $this->translator->trans('bike.return.error.multiple_rented_bikes', [
             'bikeNumber' => 3,
             'hasSms' => 'true',
-        ], null, 'en');
+        ], 'rentSystem', 'en');
         $withoutSms = $this->translator->trans('bike.return.error.multiple_rented_bikes', [
             'bikeNumber' => 3,
             'hasSms' => 'false',
-        ], null, 'en');
+        ], 'rentSystem', 'en');
 
         $this->assertStringContainsString('web or SMS', $withSms);
         $this->assertStringContainsString('web', $withoutSms);
