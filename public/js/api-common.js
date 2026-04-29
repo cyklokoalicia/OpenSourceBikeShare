@@ -3,7 +3,7 @@ function apiData(payload) {
 }
 
 function apiProblemMessage(payload, fallback) {
-    if (payload && typeof payload === 'object' && payload.detail) {
+    if (payload && typeof payload === 'object' && typeof payload.detail === 'string') {
         return payload.detail;
     }
 
@@ -18,15 +18,13 @@ function renderAlert(alertType, message, elementId = 'console') {
     const $alert = $('<div/>', {
         class: 'alert alert-' + alertType,
         role: 'alert'
-    }).text(message);
+    }).html(message);
 
     $('#' + elementId).empty().append($alert).fadeIn();
 }
 
 function handleApiError(xhr, fallback, elementId = 'console') {
-    const payload = xhr && xhr.responseJSON ? xhr.responseJSON : null;
-    const message = apiProblemMessage(payload, fallback);
-    renderAlert('danger', message, elementId);
+    renderAlert('danger', apiProblemMessage(xhr && xhr.responseJSON, fallback), elementId);
 }
 
 function handleApiResponse(jsonobject, elementId = 'console') {

@@ -6,11 +6,11 @@
     <div class="page-header">&nbsp;</div>
     {% if result and not result.error %}
         <div class="alert alert-success">
-            {{ rent_result_html(result) }}
+            {{ result|trans|raw }}
         </div>
     {% elseif result and result.error %}
         <div class="alert alert-danger">
-            {{ rent_result_html(result) }}
+            {{ result|trans|raw }}
         </div>
     {% elseif error %}
         <div class="alert alert-danger">

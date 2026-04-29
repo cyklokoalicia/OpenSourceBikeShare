@@ -23,8 +23,21 @@ class RentSystemResponseTraitTest extends TestCase
         $translator
             ->expects($this->once())
             ->method('trans')
-            ->with('bike.rent.success', ['bikeNumber' => 42])
-            ->willReturn('Bike 42 rented');
+            ->willReturnCallback(function (
+                string $code,
+                array $params = [],
+                ?string $domain = null,
+                ?string $locale = null,
+            ): string {
+                $this->assertSame('bike.rent.success', $code);
+                $this->assertSame('rentSystem', $domain);
+                // Channel is auto-injected from systemType so the translation template can branch
+                // on it. Param values are htmlspecialchars-escaped (no HTML wrapping at the PHP
+                // level — the translation template embeds the badge spans itself).
+                $this->assertSame('web', $params['channel']);
+                $this->assertSame('42', $params['bikeNumber']);
+                return 'Bike <span class="badge badge-primary">42</span> rented';
+            });
 
         $result = new RentSystemResult(
             false,
@@ -40,7 +53,7 @@ class RentSystemResponseTraitTest extends TestCase
 
         $data = json_decode($response->getContent(), true);
         $this->assertSame(false, $data['error']);
-        $this->assertSame('Bike 42 rented', $data['message']);
+        $this->assertSame('Bike <span class="badge badge-primary">42</span> rented', $data['message']);
         $this->assertSame('bike.rent.success', $data['code']);
         $this->assertSame(['bikeNumber' => 42], $data['params']);
     }
@@ -52,8 +65,20 @@ class RentSystemResponseTraitTest extends TestCase
         $translator
             ->expects($this->once())
             ->method('trans')
-            ->with('bike.rent.error.already_rented', ['bikeNumber' => 1])
-            ->willReturn('Bike 1 is already rented.');
+            ->willReturnCallback(function (
+                string $code,
+                array $params = [],
+                ?string $domain = null,
+                ?string $locale = null,
+            ): string {
+                $this->assertSame('bike.rent.error.already_rented', $code);
+                $this->assertSame('rentSystem', $domain);
+                // Scalars are htmlspecialchars-escaped before interpolation on every path
+                // (errors included) so user-controlled string params can't smuggle markup
+                // through `detail` into .html() / |raw consumers.
+                $this->assertSame('1', $params['bikeNumber']);
+                return 'Bike 1 is already rented.';
+            });
 
         $result = new RentSystemResult(
             true,
