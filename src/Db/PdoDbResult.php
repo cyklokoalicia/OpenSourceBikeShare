@@ -55,32 +55,4 @@ class PdoDbResult implements DbResultInterface
     {
         return $this->result ? (int)$this->result->rowCount() : 0;
     }
-
-    /**
-     * @TODO temporary solution, should be removed
-     */
-    public function __call($name, $arguments)
-    {
-        if (method_exists($this->result, $name)) {
-            return call_user_func_array([$this->result, $name], $arguments);
-        } else {
-            throw new \Exception(sprintf('Method %s not found', $name));
-        }
-    }
-
-    /**
-     * @TODO temporary solution, should be removed
-     */
-    public function __get($name)
-    {
-        if ($name === 'num_rows') {
-            return $this->rowCount();
-        } elseif (property_exists($this->result, $name)) {
-            return $this->result->$name;
-        } elseif (property_exists($this, $name)) {
-            return $this->$name;
-        } else {
-            throw new \Exception(sprintf('Property %s not found', $name));
-        }
-    }
 }
