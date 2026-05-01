@@ -217,16 +217,16 @@ function last(bikeNumber) {
                 hour12: false,
             });
 
+            const $template = $("#bike-card-last_usage_template");
             $.each(data.history, function (index, item) {
-                const $template = $("#bike-card-last_usage_template");
-                const $history = $template.clone().removeClass("d-none");
+                const $history = $template.clone().removeAttr("id").removeClass("d-none");
                 const date = new Date(item.time);
-                $history.find("#time").text(isNaN(date.getTime()) ? item.time : dateTimeFormatter.format(date));
-                $history.find("#standName").text(item.standName);
-                $history.find("#userName").text(item.userName);
-                $history.find("#parameter").text(item.parameter ?? '');
-                $history.find("#action i").addClass("d-none");
-                $history.find("#action ." + item.action).removeClass("d-none");
+                $history.find(".time").text(isNaN(date.getTime()) ? item.time : dateTimeFormatter.format(date));
+                $history.find(".standName").text(item.standName ?? '');
+                $history.find(".userName").text(item.userName ?? '');
+                $history.find(".parameter").text(item.parameter ?? '');
+                $history.find(".action i").addClass("d-none");
+                $history.find(".action ." + item.action).removeClass("d-none");
 
                 $container.append($history);
             });
