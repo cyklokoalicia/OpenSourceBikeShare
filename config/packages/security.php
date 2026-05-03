@@ -128,6 +128,10 @@ return function (SecurityConfig $security) {
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
+        ->path('^/\.well-known/assetlinks\.json$')
+        ->roles(['PUBLIC_ACCESS']);
+    $security
+        ->accessControl()
         ->path('^/switchLanguage')
         ->roles(['PUBLIC_ACCESS']);
     $security

@@ -121,6 +121,10 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\Controller\LanguageController::class)
         ->bind('$enabledLocales', '%kernel.enabled_locales%');
 
+    $services->get(\BikeShare\Controller\WellKnownController::class)
+        ->bind('$packageName', env('ANDROID_APP_PACKAGE_NAME'))
+        ->bind('$fingerprintsCsv', env('ANDROID_APP_LINKS_FINGERPRINTS'));
+
     $services->get(\BikeShare\Controller\EmailConfirmController::class)
         ->bind('$userBikeLimitAfterRegistration', env('int:USER_BIKE_LIMIT_AFTER_REGISTRATION'));
 
