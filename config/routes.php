@@ -11,6 +11,9 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\LanguageController::class, 'getTranslations']);
     $routes->add('home', '/')
         ->controller([\BikeShare\Controller\HomeController::class, 'index']);
+    $routes->add('well_known_assetlinks', '/.well-known/assetlinks.json')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\WellKnownController::class, 'assetLinks']);
     $routes->add('scan_bike', '/scan.php/rent/{bikeNumber}')
         ->requirements(['bikeNumber' => '\d+'])
         ->controller([\BikeShare\Controller\ScanController::class, 'rentBike']);
