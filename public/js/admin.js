@@ -240,21 +240,22 @@ function last(bikeNumber) {
     });
 }
 
-const STAND_STATUS_BORDER = {
-    active: 'border-success',
-    technical: 'border-warning',
-    hidden: 'border-info',
-    inactive: 'border-secondary',
+const STAND_STATUS_HEADER = {
+    active: 'bg-success text-white',
+    technical: 'bg-warning text-dark',
+    hidden: 'bg-info text-white',
+    inactive: 'bg-secondary text-white',
 };
-const STAND_STATUS_BORDER_CLASSES = Object.values(STAND_STATUS_BORDER).join(' ');
+const STAND_STATUS_HEADER_CLASSES = Object.values(STAND_STATUS_HEADER).join(' ');
 const STAND_STATUS_DIMMED_SELECTOR = '.card-header, .stand-description';
 const STAND_STATUS_FILTER_STORAGE_KEY = 'admin.stands.statusFilter';
 
 function applyStandStatusToCard($card, status) {
-    $card.removeClass(STAND_STATUS_BORDER_CLASSES);
+    const $header = $card.find('.card-header');
+    $header.removeClass(STAND_STATUS_HEADER_CLASSES);
     $card.find(STAND_STATUS_DIMMED_SELECTOR).removeClass('opacity-50');
-    if (STAND_STATUS_BORDER[status]) {
-        $card.addClass(STAND_STATUS_BORDER[status]);
+    if (STAND_STATUS_HEADER[status]) {
+        $header.addClass(STAND_STATUS_HEADER[status]);
     }
     if (status === 'inactive') {
         $card.find(STAND_STATUS_DIMMED_SELECTOR).addClass('opacity-50');
