@@ -23,9 +23,11 @@ class InactiveStandBikesCheckCommandTest extends BikeSharingKernelTestCase
     private const BIKE_INACTIVE_SHORT = 21;
     private const BIKE_INACTIVE_LONG = 22;
     private const BIKE_ON_SERVICE_STAND = 23;
+    private const BIKE_ON_HIDDEN_STAND = 24;
     private const STAND1_NAME = 'STAND1';
     private const STAND2_NAME = 'STAND2';
     private const SERVICE_STAND_NAME = 'SERVICE_STAND';
+    private const HIDDEN_STAND_NAME = 'HIDDEN_STAND';
 
     private int $adminUserId;
 
@@ -40,6 +42,7 @@ class InactiveStandBikesCheckCommandTest extends BikeSharingKernelTestCase
         $this->simulateBikeActivity(self::BIKE_INACTIVE_SHORT, self::STAND1_NAME, '2030-02-05 10:00:00');
         $this->simulateBikeActivity(self::BIKE_INACTIVE_LONG, self::STAND2_NAME, '2030-01-15 10:00:00');
         $this->simulateBikeActivity(self::BIKE_ON_SERVICE_STAND, self::SERVICE_STAND_NAME, '2030-01-20 10:00:00');
+        $this->simulateBikeActivity(self::BIKE_ON_HIDDEN_STAND, self::HIDDEN_STAND_NAME, '2030-01-25 10:00:00');
         static::mockTime('2030-02-15 12:00:00');
     }
 
@@ -73,6 +76,11 @@ class InactiveStandBikesCheckCommandTest extends BikeSharingKernelTestCase
             strpos($message, self::BIKE_INACTIVE_SHORT . ' | STAND1')
         );
 
+        $this->assertStringContainsString(
+            self::BIKE_ON_HIDDEN_STAND . ' | ' . self::HIDDEN_STAND_NAME,
+            $message,
+            'Bikes on hidden stands should be reported'
+        );
         $this->assertStringNotContainsString('- ' . self::BIKE_ON_SERVICE_STAND . ' |', $message);
 
         $smsConnector = self::getContainer()->get(SmsConnectorInterface::class);
@@ -113,7 +121,13 @@ class InactiveStandBikesCheckCommandTest extends BikeSharingKernelTestCase
         static::mockTime('2000-01-01 00:00:00');
 
         $rentSystem = self::getContainer()->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB);
-        foreach ([self::BIKE_INACTIVE_SHORT, self::BIKE_INACTIVE_LONG, self::BIKE_ON_SERVICE_STAND] as $bikeNumber) {
+        $bikes = [
+            self::BIKE_INACTIVE_SHORT,
+            self::BIKE_INACTIVE_LONG,
+            self::BIKE_ON_SERVICE_STAND,
+            self::BIKE_ON_HIDDEN_STAND,
+        ];
+        foreach ($bikes as $bikeNumber) {
             $rentSystem->returnBike($this->adminUserId, $bikeNumber, self::SERVICE_STAND_NAME, '', true);
         }
     }

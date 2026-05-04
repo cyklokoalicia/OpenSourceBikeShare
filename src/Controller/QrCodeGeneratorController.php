@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
+use BikeShare\Enum\StandStatus;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\StandRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -63,7 +64,7 @@ class QrCodeGeneratorController extends AbstractController
 
         $stands = $standRepository->findAll();
         foreach ($stands as $stand) {
-            if ($stand["serviceTag"] != 0) {
+            if (StandStatus::from($stand["status"]) !== StandStatus::ACTIVE) {
                 continue;
             }
 

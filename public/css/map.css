@@ -31,17 +31,24 @@ html, body {
       height: 60px;
       width: 60px;
    }
-   .none {
+   .stand-empty {
       background: url(../img/icon-none.png);
       background-position: 0 0;
       background-size: 60px 60px;
       background-repeat: none;
    }
-   .special {
+   .stand-technical {
       background: url(../img/icon-repair.png);
       background-position: 0 0;
       background-size: 60px 60px;
       background-repeat: none;
+   }
+   .stand-hidden {
+      background: url(../img/icon.png);
+      background-position: 0 0;
+      background-size: 60px 60px;
+      background-repeat: none;
+      filter: hue-rotate(220deg) saturate(2);
    }
 
    .bikecount {

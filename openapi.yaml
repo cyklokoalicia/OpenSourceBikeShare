@@ -101,6 +101,46 @@ paths:
           $ref: "#/components/responses/Success"
         "404":
           $ref: "#/components/responses/Problem"
+  /admin/stands/{standId}:
+    get:
+      summary: Get stand details by id (admin)
+      parameters:
+        - name: standId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "404":
+          $ref: "#/components/responses/Problem"
+    patch:
+      summary: Update stand status (admin)
+      parameters:
+        - name: standId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [active, technical, hidden, inactive]
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "400":
+          $ref: "#/components/responses/Problem"
+        "404":
+          $ref: "#/components/responses/Problem"
   /stands/{standName}/bikes:
     get:
       summary: List bikes on stand

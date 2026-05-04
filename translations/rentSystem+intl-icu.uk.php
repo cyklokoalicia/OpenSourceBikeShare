@@ -23,6 +23,7 @@ other {<h3>Велосипед <span class="badge badge-primary">{bikeNumber}</sp
     'bike.rent.error.zero_limit' => 'Ви не можете орендувати велосипеди. Зверніться до адміністраторів, щоб зняти заборону.',
     'bike.rent.error.limit' => 'Ви можете орендувати одночасно лише {count, plural, one {# велосипед} few {# велосипеди} other {# велосипедів}}.',
     'bike.rent.error.service_stand' => 'Оренда зі сервісних стоянок не дозволена: велосипед, ймовірно, чекає на ремонт.',
+    'bike.rent.error.inactive_stand' => 'Оренда з неактивних стоянок не дозволена.',
     'bike.rent.error.stack_top_bike' => 'Велосипед {bikeNumber} зараз неможливо орендувати, ви маєте орендувати велосипед {stackTopBike} з цієї стоянки.',
 
     'bike.return.error.stand_not_found' => 'Назва стоянки \'{standName}\' не існує. Стоянки позначені ВЕЛИКИМИ ЛІТЕРАМИ.',

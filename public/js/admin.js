@@ -248,6 +248,7 @@ function generateStandCards(data) {
     $.each(data, function (index, item) {
         const $card = $template.clone().removeAttr("id").removeClass("d-none");
 
+        $card.find(".stand-card").attr("data-stand-id", item.standId);
         $card.find(".stand-name").text(item.standName);
 
         const $photo = $card.find(".stand-photo");
@@ -266,15 +267,58 @@ function generateStandCards(data) {
                 .attr("href", googleMapsUrl);
         }
 
-        if (item.standName.toLowerCase().includes("servis")) {
+        if (item.status === 'technical') {
             $card.find(".service-stand").removeClass("d-none");
-        } else if (item.standName.toLowerCase().includes("zruseny")) {
+        } else if (item.status === 'hidden') {
+            $card.find(".hidden-stand").removeClass("d-none");
+        } else if (item.status === 'inactive') {
             $card.find(".removed-stand").removeClass("d-none");
         }
+
+        $card.find(".stand-status").val(item.status || 'active');
 
         $container.append($card);
     });
 }
+
+$(document).on('click', '.stand-status-save', function () {
+    const $card = $(this).closest('.stand-card');
+    const standId = $card.attr('data-stand-id');
+    const status = $card.find('.stand-status').val();
+    const $feedback = $card.find('.stand-status-feedback');
+
+    $.ajax({
+        url: '/api/v1/admin/stands/' + encodeURIComponent(standId),
+        method: 'PATCH',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({status: status}),
+        success: function (response) {
+            const newStatus = (apiData(response) || {}).status || status;
+            $card.find('.service-stand, .hidden-stand, .removed-stand').addClass('d-none');
+            if (newStatus === 'technical') {
+                $card.find('.service-stand').removeClass('d-none');
+            } else if (newStatus === 'hidden') {
+                $card.find('.hidden-stand').removeClass('d-none');
+            } else if (newStatus === 'inactive') {
+                $card.find('.removed-stand').removeClass('d-none');
+            }
+            $feedback
+                .removeClass('d-none text-danger')
+                .addClass('text-success')
+                .text('Saved');
+        },
+        error: function (xhr) {
+            const detail = xhr.responseJSON && xhr.responseJSON.detail
+                ? xhr.responseJSON.detail
+                : 'Failed to save status';
+            $feedback
+                .removeClass('d-none text-success')
+                .addClass('text-danger')
+                .text(detail);
+        }
+    });
+});
 
 function stands(standName) {
     const hasStandName = standName !== undefined && standName !== null && standName !== '';

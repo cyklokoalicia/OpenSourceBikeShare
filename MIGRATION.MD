@@ -26,4 +26,8 @@ CREATE TABLE `userSettings` (
     UNIQUE KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `stands`
+    ADD COLUMN `status` ENUM('active','technical','hidden','inactive') NOT NULL DEFAULT 'active' AFTER `serviceTag`;
+UPDATE `stands` SET `status` = 'technical' WHERE `serviceTag` <> 0;
+ALTER TABLE `stands` DROP COLUMN `serviceTag`;
 ```

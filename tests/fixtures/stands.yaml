@@ -5,7 +5,7 @@ stdClass:
     standName (unique): 'Default Stand'
     standDescription: 'Default Stand Description'
     standPhoto: ''
-    serviceTag: '0'
+    status: 'active'
     placeName: 'Default Place'
     longitude (unique): '<latitude(17.05, 17.15)>'
     latitude (unique): '<longitude(48.10, 48.20)>'
@@ -20,4 +20,16 @@ stdClass:
     standId: '6'
     standName: 'SERVICE_STAND'
     standDescription: '<streetName()>'
-    serviceTag: '1'
+    status: 'technical'
+
+  stand_hidden (extends defaultStand):
+    standId: '7'
+    standName: 'HIDDEN_STAND'
+    standDescription: '<streetName()>'
+    status: 'hidden'
+
+  stand_inactive (extends defaultStand):
+    standId: '8'
+    standName: 'INACTIVE_STAND'
+    standDescription: '<streetName()>'
+    status: 'inactive'

@@ -28,6 +28,7 @@ class ResponseEventListener
         'api_v1_coupon_redeem',
         'api_v1_me_city',
         'api_v1_admin_stand_notes_delete',
+        'api_v1_admin_stand_item_update',
     ];
 
     public function __construct(

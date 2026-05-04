@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api\V1\Admin;
 
+use BikeShare\Enum\StandStatus;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,6 +33,43 @@ class StandsController extends AbstractController
         }
 
         return $this->json($stand);
+    }
+
+    public function itemById(int $standId): Response
+    {
+        $stand = $this->standRepository->findItem($standId);
+        if (empty($stand)) {
+            return $this->json(['detail' => 'Stand not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($stand);
+    }
+
+    public function update(int $standId, Request $request): Response
+    {
+        $stand = $this->standRepository->findItem($standId);
+        if (empty($stand)) {
+            return $this->json(['detail' => 'Stand not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $payload = $request->getPayload()->all();
+        $status = StandStatus::tryFrom($payload['status'] ?? '');
+        if ($status === null) {
+            return $this->json(['detail' => 'Invalid status'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $previousStatus = $stand['status'];
+        $this->standRepository->updateStatus($standId, $status);
+
+        return $this->json([
+            'message' => sprintf(
+                'Stand %s status changed: %s -> %s',
+                $stand['standName'],
+                $previousStatus,
+                $status->value
+            ),
+            'status' => $status->value,
+        ]);
     }
 
     public function removeNote(

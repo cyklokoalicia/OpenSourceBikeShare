@@ -6,6 +6,7 @@ namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Enum\Action;
+use BikeShare\Enum\StandStatus;
 
 class StandRepository
 {
@@ -16,42 +17,59 @@ class StandRepository
     public function findAll(): array
     {
         $result = $this->db->query(
-            'SELECT
-                    standId,
-                    standName,
-                    standDescription,
-                    standPhoto,
-                    serviceTag,
-                    placeName,
-                    longitude,
-                    latitude
-                FROM stands 
-                ORDER BY standName'
+            "SELECT
+                standId,
+                standName,
+                standDescription,
+                standPhoto,
+                status,
+                placeName,
+                longitude,
+                latitude
+            FROM stands
+            ORDER BY standName"
         )->fetchAllAssoc();
 
         return $result;
     }
 
-    public function findAllExtended($city = null): array
+    /**
+     * @param StandStatus[] $statuses Statuses to include. Defaults to publicly visible (active + technical).
+     */
+    public function findAllExtended(?string $city = null, array $statuses = []): array
     {
+        if (empty($statuses)) {
+            $statuses = [StandStatus::ACTIVE, StandStatus::TECHNICAL];
+        }
+
+        $statusParams = [];
+        $statusPlaceholders = [];
+        foreach ($statuses as $i => $status) {
+            $key = 'status' . $i;
+            $statusParams[$key] = $status->value;
+            $statusPlaceholders[] = ':' . $key;
+        }
+
         $result = $this->db->query(
-            'SELECT
-                 standId,
-                 count(bikeNum) AS bikeCount,
-                 standName,
-                 standDescription,
-                 standPhoto,
-                 longitude,
-                 latitude
-             FROM stands 
-             LEFT JOIN bikes ON bikes.currentStand=stands.standId
-             WHERE stands.serviceTag = 0 ' .
-            (is_null($city) ? ' AND standId != :city ' : ' AND city = :city ') .
-            'GROUP BY standName 
-                 ORDER BY standName',
-            [
-                'city' => (string)$city,
-            ]
+            "SELECT
+                standId,
+                count(bikeNum) AS bikeCount,
+                standName,
+                standDescription,
+                standPhoto,
+                status,
+                longitude,
+                latitude
+            FROM stands
+            LEFT JOIN bikes ON bikes.currentStand=stands.standId
+            WHERE stands.status IN (" . implode(', ', $statusPlaceholders) . ") " .
+            (is_null($city) ? " AND standId != :city " : " AND city = :city ") .
+            "GROUP BY standName
+            ORDER BY standName",
+            array_merge(
+                $statusParams,
+                ['city' => (string)$city]
+            )
         )->fetchAllAssoc();
 
         return $result;
@@ -60,18 +78,18 @@ class StandRepository
     public function findItem(int $standId): ?array
     {
         $stand = $this->db->query(
-            'SELECT
-                    standId,
-                    standName,
-                    standDescription,
-                    standPhoto,
-                    serviceTag,
-                    placeName,
-                    city,
-                    longitude,
-                    latitude
-                FROM stands
-                WHERE standId = :standId',
+            "SELECT
+                standId,
+                standName,
+                standDescription,
+                standPhoto,
+                status,
+                placeName,
+                city,
+                longitude,
+                latitude
+            FROM stands
+            WHERE standId = :standId",
             [
                 'standId' => $standId,
             ]
@@ -83,18 +101,18 @@ class StandRepository
     public function findItemByName(string $standName): ?array
     {
         $stand = $this->db->query(
-            'SELECT
-                    standId,
-                    standName,
-                    standDescription,
-                    standPhoto,
-                    serviceTag,
-                    placeName,
-                    city,
-                    longitude,
-                    latitude
-                FROM stands
-                WHERE standName = :standName LIMIT 1',
+            "SELECT
+                standId,
+                standName,
+                standDescription,
+                standPhoto,
+                status,
+                placeName,
+                city,
+                longitude,
+                latitude
+            FROM stands
+            WHERE standName = :standName LIMIT 1",
             [
                 'standName' => $standName,
             ]
@@ -106,15 +124,16 @@ class StandRepository
     public function findFreeStands(): array
     {
         $result = $this->db->query(
-            "SELECT 
-              count(bikes.bikeNum) as bikeCount,
-              standName
-              FROM stands
-              LEFT JOIN bikes ON bikes.currentStand = stands.standId
-              WHERE stands.serviceTag=0
-              GROUP BY standName
-              HAVING bikeCount = 0
-              ORDER BY 2"
+            "SELECT
+                count(bikes.bikeNum) as bikeCount,
+                standName
+            FROM stands
+            LEFT JOIN bikes ON bikes.currentStand = stands.standId
+            WHERE stands.status = :statusActive
+            GROUP BY standName
+            HAVING bikeCount = 0
+            ORDER BY 2",
+            ['statusActive' => StandStatus::ACTIVE->value]
         )->fetchAllAssoc();
 
         return $result;
@@ -123,7 +142,7 @@ class StandRepository
     public function findLastReturnedBikeOnStand(int $standId): ?int
     {
         $bikesOnStand = $this->db->query(
-            "SELECT bikeNum FROM stands 
+            "SELECT bikeNum FROM stands
             LEFT JOIN bikes ON bikes.currentStand=stands.standId
             WHERE standId=:standId",
             ['standId' => $standId]
@@ -161,12 +180,23 @@ class StandRepository
     public function findBikesOnStand(int $standId): array
     {
         $result = $this->db->query(
-            "SELECT bikeNum FROM bikes 
-             WHERE currentStand=:standId
-             ORDER BY bikeNum",
+            "SELECT bikeNum FROM bikes
+            WHERE currentStand=:standId
+            ORDER BY bikeNum",
             ['standId' => $standId]
         )->fetchAllAssoc();
 
         return $result;
+    }
+
+    public function updateStatus(int $standId, StandStatus $status): void
+    {
+        $this->db->query(
+            "UPDATE stands SET status = :status WHERE standId = :standId",
+            [
+                'status' => $status->value,
+                'standId' => $standId,
+            ]
+        );
     }
 }

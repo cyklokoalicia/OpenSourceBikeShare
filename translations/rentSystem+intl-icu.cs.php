@@ -23,6 +23,7 @@ other {<h3>Kolo <span class="badge badge-primary">{bikeNumber}</span> vráceno n
     'bike.rent.error.zero_limit' => 'Nemůžete si půjčit žádná kola. Kontaktujte administrátory, aby zrušili zákaz.',
     'bike.rent.error.limit' => 'Můžete si najednou půjčit pouze {count, plural, one {# kolo} few {# kola} other {# kol}}.',
     'bike.rent.error.service_stand' => 'Půjčování ze servisních stojanů není povoleno: Kolo pravděpodobně čeká na opravu.',
+    'bike.rent.error.inactive_stand' => 'Půjčování z neaktivních stojanů není povoleno.',
     'bike.rent.error.stack_top_bike' => 'Kolo {bikeNumber} není momentálně možné si půjčit, musíte si půjčit kolo {stackTopBike} z tohoto stojanu.',
 
     'bike.return.error.stand_not_found' => 'Název stojanu \'{standName}\' neexistuje. Stojany jsou označeny VELKÝMI PÍSMENY.',
