@@ -153,7 +153,7 @@ CREATE TABLE `stands` (
   `standName` varchar(50) NOT NULL,
   `standDescription` varchar(255),
   `standPhoto` varchar(255),
-  `serviceTag` int(10),
+  `status` ENUM('active','technical','hidden','inactive') NOT NULL DEFAULT 'active',
   `placeName` varchar(50) NOT NULL,
   `longitude` double(20,17),
   `latitude` double(20,17),

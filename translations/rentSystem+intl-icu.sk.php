@@ -23,6 +23,7 @@ other {<h3>Bicykel <span class="badge badge-primary">{bikeNumber}</span> vráten
     'bike.rent.error.zero_limit' => 'Nemôžete si požičať žiadne bicykle. Kontaktujte administrátorov, aby zrušili zákaz.',
     'bike.rent.error.limit' => 'Môžete si naraz požičať len {count, plural, one {# bicykel} few {# bicykle} other {# bicyklov}}.',
     'bike.rent.error.service_stand' => 'Požičiavanie zo servisných stojanov nie je povolené: Bicykel pravdepodobne čaká na opravu.',
+    'bike.rent.error.inactive_stand' => 'Požičiavanie z neaktívnych stojanov nie je povolené.',
     'bike.rent.error.stack_top_bike' => 'Bicykel {bikeNumber} momentálne nie je možné si požičať, musíte si požičať bicykel {stackTopBike} z tohto stojanu.',
 
     'bike.return.error.stand_not_found' => 'Názov stojanu \'{standName}\' neexistuje. Stojany sú označené VEĽKÝMI PÍSMENAMI.',

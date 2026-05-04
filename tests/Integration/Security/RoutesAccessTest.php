@@ -21,6 +21,7 @@ class RoutesAccessTest extends BikeSharingKernelTestCase
         '/api/v1/admin/reports/inactive-bikes' => Request::METHOD_GET,
         '/api/v1/admin/reports/users/2025' => Request::METHOD_GET,
         '/api/v1/admin/stands' => Request::METHOD_GET,
+        '/api/v1/admin/stands/1' => Request::METHOD_PATCH,
         '/api/v1/admin/users' => Request::METHOD_GET,
         '/api/v1/admin/users/1' => Request::METHOD_GET,
     ];

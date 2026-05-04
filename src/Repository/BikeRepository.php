@@ -4,6 +4,7 @@ namespace BikeShare\Repository;
 
 use BikeShare\Db\DbInterface;
 use BikeShare\Enum\Action;
+use BikeShare\Enum\StandStatus;
 
 class BikeRepository
 {
@@ -197,15 +198,16 @@ class BikeRepository
     public function findFreeBikes(): array
     {
         $result = $this->db->query(
-            "SELECT 
+            "SELECT
               count(*) as bikeCount,
               standName
             FROM bikes
-            JOIN stands on bikes.currentStand=stands.standId 
-            WHERE stands.serviceTag=0
-            GROUP BY standName 
-            HAVING bikeCount > 0 
-            ORDER BY 2"
+            JOIN stands on bikes.currentStand=stands.standId
+            WHERE stands.status = :statusActive
+            GROUP BY standName
+            HAVING bikeCount > 0
+            ORDER BY 2",
+            ['statusActive' => StandStatus::ACTIVE->value]
         )->fetchAllAssoc();
 
         return $result;
@@ -295,7 +297,7 @@ class BikeRepository
                 GROUP BY bikeNum
             ) AS movement ON movement.bikeNum = bikes.bikeNum
             WHERE bikes.currentStand IS NOT NULL
-                AND stands.serviceTag = 0
+                AND stands.status IN (:statusActive, :statusHidden)
                 AND movement.lastMoveTime <= :thresholdTime
             ORDER BY movement.lastMoveTime DESC, bikes.bikeNum ASC",
             [
@@ -305,6 +307,8 @@ class BikeRepository
                 'forceRentAction' => Action::FORCE_RENT->value,
                 'forceReturnAction' => Action::FORCE_RETURN->value,
                 'thresholdTime' => $thresholdTime->format('Y-m-d H:i:s'),
+                'statusActive' => StandStatus::ACTIVE->value,
+                'statusHidden' => StandStatus::HIDDEN->value,
             ]
         )->fetchAllAssoc();
 

@@ -177,14 +177,17 @@ function getmarkers() {
                 standPhoto,
                 bikeCount,
                 longitude,
-                latitude
+                latitude,
+                status
             } = jsonObject[i];
 
             let iconClass = 'icondesc';
-            if (standName.includes('SERVIS')) {
-                iconClass += ' special';
+            if (status === 'technical') {
+                iconClass += ' stand-technical';
+            } else if (status === 'hidden') {
+                iconClass += ' stand-hidden';
             } else if (bikeCount === 0) {
-                iconClass += ' none';
+                iconClass += ' stand-empty';
             }
 
             const iconHTML = `

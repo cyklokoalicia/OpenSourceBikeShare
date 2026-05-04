@@ -21,6 +21,14 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_v1_stands', '/api/v1/admin/stands')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\V1\Admin\StandsController::class, 'index']);
+    $routes->add('api_v1_admin_stand_item_by_id', '/api/v1/admin/stands/{standId}')
+        ->requirements(['standId' => '\d+'])
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\V1\Admin\StandsController::class, 'itemById']);
+    $routes->add('api_v1_admin_stand_item_update', '/api/v1/admin/stands/{standId}')
+        ->requirements(['standId' => '\d+'])
+        ->methods(['PATCH'])
+        ->controller([\BikeShare\Controller\Api\V1\Admin\StandsController::class, 'update']);
     $routes->add('api_v1_admin_stand_item', '/api/v1/admin/stands/{standName}')
         ->requirements(['standName' => '\w+'])
         ->methods(['GET'])

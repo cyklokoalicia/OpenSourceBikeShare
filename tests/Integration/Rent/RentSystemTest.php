@@ -390,4 +390,60 @@ class RentSystemTest extends BikeSharingKernelTestCase
             true
         );
     }
+
+    public function testAdminCanRentBikeFromHiddenStand(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+        $rentSystemFactory = $container->get(RentSystemFactory::class);
+        $userRepository = $container->get(UserRepository::class);
+
+        $admin = $userRepository->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+
+        $rentSystem = $rentSystemFactory->getRentSystem(RentSystemType::WEB);
+        $rentSystem->returnBike($admin['userId'], self::BIKE_NUMBER, 'HIDDEN_STAND', '', true);
+
+        $userResponse = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.error.service_stand', $userResponse->getCode());
+
+        $adminWebResponse = $rentSystem->rentBike($admin['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.success', $adminWebResponse->getCode());
+
+        $rentSystem->returnBike(
+            $admin['userId'],
+            self::BIKE_NUMBER,
+            self::STAND_NAME,
+            '',
+            true
+        );
+    }
+
+    public function testNobodyCanRentBikeFromInactiveStand(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+        $rentSystemFactory = $container->get(RentSystemFactory::class);
+        $userRepository = $container->get(UserRepository::class);
+
+        $admin = $userRepository->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+
+        $rentSystem = $rentSystemFactory->getRentSystem(RentSystemType::WEB);
+        $rentSystem->returnBike($admin['userId'], self::BIKE_NUMBER, 'INACTIVE_STAND', '', true);
+
+        $userResponse = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.error.inactive_stand', $userResponse->getCode());
+
+        $adminResponse = $rentSystem->rentBike($admin['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.error.inactive_stand', $adminResponse->getCode());
+
+        $rentSystem->returnBike(
+            $admin['userId'],
+            self::BIKE_NUMBER,
+            self::STAND_NAME,
+            '',
+            true
+        );
+    }
 }

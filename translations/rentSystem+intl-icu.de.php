@@ -23,6 +23,7 @@ other {<h3>Fahrrad <span class="badge badge-primary">{bikeNumber}</span> wurde z
     'bike.rent.error.zero_limit' => 'Du kannst keine Fahrräder ausleihen. Wende dich an die Administratoren, um die Sperre aufzuheben.',
     'bike.rent.error.limit' => 'Du kannst nur {count, plural, one {# Fahrrad} other {# Fahrräder}} gleichzeitig ausleihen.',
     'bike.rent.error.service_stand' => 'Ausleihen von Service-Ständern ist nicht erlaubt: Das Fahrrad wartet wahrscheinlich auf eine Reparatur.',
+    'bike.rent.error.inactive_stand' => 'Ausleihen von inaktiven Ständern ist nicht erlaubt.',
     'bike.rent.error.stack_top_bike' => 'Fahrrad {bikeNumber} kann derzeit nicht ausgeliehen werden, du musst Fahrrad {stackTopBike} von diesem Ständer ausleihen.',
 
     'bike.return.error.stand_not_found' => 'Standname \'{standName}\' existiert nicht. Stände sind mit GROSSBUCHSTABEN markiert.',

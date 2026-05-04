@@ -15,6 +15,7 @@ use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Enum\Action;
+use BikeShare\Enum\StandStatus;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -87,9 +88,15 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $stackTopBike = $this->standRepository->findLastReturnedBikeOnStand((int)$standid);
 
                 $stand = $this->standRepository->findItem((int)$standid);
-                $serviceTag = $stand['serviceTag'] ?? 0;
+                if (empty($stand)) {
+                    return $this->error('bike.rent.error.not_found', ['bikeNumber' => $bikeId]);
+                }
+                $status = StandStatus::from($stand['status']);
 
-                if ($serviceTag != 0 && ($user['privileges'] ?? 0) < 1) {
+                if ($status === StandStatus::INACTIVE) {
+                    return $this->error('bike.rent.error.inactive_stand');
+                }
+                if (!$status->isRentablePublic() && $user['privileges'] < 1) {
                     return $this->error('bike.rent.error.service_stand');
                 }
 

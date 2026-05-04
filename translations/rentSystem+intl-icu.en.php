@@ -29,6 +29,7 @@ other {<h3>Bike <span class="badge badge-primary">{bikeNumber}</span> reverted t
     'bike.rent.error.zero_limit' => 'You can not rent any bikes. Contact the admins to lift the ban.',
     'bike.rent.error.limit' => 'You can only rent {count, plural, one {# bike} other {# bikes}} at once.',
     'bike.rent.error.service_stand' => 'Renting from service stands is not allowed: The bike probably waits for a repair.',
+    'bike.rent.error.inactive_stand' => 'Renting from inactive stands is not allowed.',
     'bike.rent.error.stack_top_bike' => 'Bike {bikeNumber} is not rentable now, you have to rent bike {stackTopBike} from this stand.',
 
     'bike.return.error.stand_not_found' => 'Stand name \'{standName}\' does not exist. Stands are marked by CAPITALLETTERS.',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api\V1;
 
+use BikeShare\Enum\StandStatus;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -54,10 +55,15 @@ class StandsController extends AbstractController
 
     public function markers(): Response
     {
+        $statuses = [StandStatus::ACTIVE, StandStatus::TECHNICAL];
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $statuses[] = StandStatus::HIDDEN;
+        }
+
         if ($this->isGranted('ROLE_API') && !$this->isGranted('ROLE_USER')) {
-            $stands = $this->standRepository->findAllExtended();
+            $stands = $this->standRepository->findAllExtended(null, $statuses);
         } else {
-            $stands = $this->standRepository->findAllExtended($this->getUser()->getCity());
+            $stands = $this->standRepository->findAllExtended($this->getUser()->getCity(), $statuses);
         }
 
         return $this->json($stands);
