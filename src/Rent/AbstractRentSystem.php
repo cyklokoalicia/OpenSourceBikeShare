@@ -88,7 +88,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $stackTopBike = $this->standRepository->findLastReturnedBikeOnStand((int)$standid);
 
                 $stand = $this->standRepository->findItem((int)$standid);
-                $status = StandStatus::tryFrom($stand['status'] ?? '') ?? StandStatus::ACTIVE;
+                if (empty($stand)) {
+                    return $this->error('bike.rent.error.not_found', ['bikeNumber' => $bikeId]);
+                }
+                $status = StandStatus::from($stand['status']);
 
                 if ($status === StandStatus::INACTIVE) {
                     return $this->error('bike.rent.error.inactive_stand');
