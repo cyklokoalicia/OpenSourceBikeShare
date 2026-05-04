@@ -246,15 +246,19 @@ const STAND_STATUS_BORDER = {
     hidden: 'border-info',
     inactive: 'border-secondary',
 };
+const STAND_STATUS_BORDER_CLASSES = Object.values(STAND_STATUS_BORDER).join(' ');
+const STAND_STATUS_DIMMED_SELECTOR = '.card-header, .stand-description';
+const STAND_STATUS_FILTER_STORAGE_KEY = 'admin.stands.statusFilter';
 
 function applyStandStatusToCard($card, status) {
-    Object.values(STAND_STATUS_BORDER).forEach(cls => $card.removeClass(cls));
-    $card.removeClass('opacity-50');
-    $card.addClass(STAND_STATUS_BORDER[status] || STAND_STATUS_BORDER.active);
-    if (status === 'inactive') {
-        $card.addClass('opacity-50');
+    $card.removeClass(STAND_STATUS_BORDER_CLASSES);
+    $card.find(STAND_STATUS_DIMMED_SELECTOR).removeClass('opacity-50');
+    if (STAND_STATUS_BORDER[status]) {
+        $card.addClass(STAND_STATUS_BORDER[status]);
     }
-    $card.attr('data-status', status);
+    if (status === 'inactive') {
+        $card.find(STAND_STATUS_DIMMED_SELECTOR).addClass('opacity-50');
+    }
 
     $card.find('.service-stand, .hidden-stand, .removed-stand').addClass('d-none');
     if (status === 'technical') {
@@ -270,13 +274,42 @@ function applyStandStatusFilter() {
     const enabled = $('.stand-status-filter .btn-check:checked')
         .map(function () { return this.value; })
         .get();
-    $('#standsconsole > .col-md-4').each(function () {
-        const status = $(this).find('.stand-card').attr('data-status') || 'active';
+    $('#standsconsole > .stand-col').each(function () {
+        const status = $(this).find('.stand-status').val() || 'active';
         $(this).toggle(enabled.includes(status));
     });
 }
 
-$(document).on('change', '.stand-status-filter .btn-check', applyStandStatusFilter);
+function loadStandStatusFilter() {
+    const saved = localStorage.getItem(STAND_STATUS_FILTER_STORAGE_KEY);
+    if (saved === null) return;
+    let enabled;
+    try {
+        enabled = JSON.parse(saved);
+    } catch (e) {
+        return;
+    }
+    if (!Array.isArray(enabled)) return;
+    $('.stand-status-filter .btn-check').each(function () {
+        $(this).prop('checked', enabled.includes(this.value));
+    });
+}
+
+function saveStandStatusFilter() {
+    const enabled = $('.stand-status-filter .btn-check:checked')
+        .map(function () { return this.value; })
+        .get();
+    localStorage.setItem(STAND_STATUS_FILTER_STORAGE_KEY, JSON.stringify(enabled));
+}
+
+$(document).on('change', '.stand-status-filter .btn-check', function () {
+    saveStandStatusFilter();
+    applyStandStatusFilter();
+});
+
+$(function () {
+    loadStandStatusFilter();
+});
 
 function generateStandCards(data) {
     const $container = $("#standsconsole");
