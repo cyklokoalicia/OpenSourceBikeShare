@@ -1,11 +1,24 @@
 {% block stands %}
     <div class="row">
         <div class="col-lg-12 mt-3">
+            <div class="btn-group btn-group-sm mb-3 stand-status-filter" role="group">
+                <input type="checkbox" class="btn-check" id="stand-filter-active" value="active" checked>
+                <label class="btn btn-outline-success" for="stand-filter-active">{{ 'Active'|trans }}</label>
+
+                <input type="checkbox" class="btn-check" id="stand-filter-technical" value="technical" checked>
+                <label class="btn btn-outline-warning" for="stand-filter-technical">{{ 'Technical'|trans }}</label>
+
+                <input type="checkbox" class="btn-check" id="stand-filter-hidden" value="hidden" checked>
+                <label class="btn btn-outline-info" for="stand-filter-hidden">{{ 'Hidden (testing)'|trans }}</label>
+
+                <input type="checkbox" class="btn-check" id="stand-filter-inactive" value="inactive" checked>
+                <label class="btn btn-outline-secondary" for="stand-filter-inactive">{{ 'Inactive'|trans }}</label>
+            </div>
             <div class="row" id="standsconsole">
 
             </div>
             {# stand card#}
-            <div id="stand-card-template" class="d-none col-md-4 mb-4">
+            <div id="stand-card-template" class="d-none col-md-4 mb-4 stand-col">
                 <div class="card stand-card border" data-stand-id="">
                     <div class="card-header">
                         <span class="stand-name"></span>
