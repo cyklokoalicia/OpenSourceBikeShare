@@ -240,45 +240,80 @@ function last(bikeNumber) {
     });
 }
 
+const STAND_STATUS_BORDER = {
+    active: 'border-success',
+    technical: 'border-warning',
+    hidden: 'border-info',
+    inactive: 'border-secondary',
+};
+
+function applyStandStatusToCard($card, status) {
+    Object.values(STAND_STATUS_BORDER).forEach(cls => $card.removeClass(cls));
+    $card.removeClass('opacity-50');
+    $card.addClass(STAND_STATUS_BORDER[status] || STAND_STATUS_BORDER.active);
+    if (status === 'inactive') {
+        $card.addClass('opacity-50');
+    }
+    $card.attr('data-status', status);
+
+    $card.find('.service-stand, .hidden-stand, .removed-stand').addClass('d-none');
+    if (status === 'technical') {
+        $card.find('.service-stand').removeClass('d-none');
+    } else if (status === 'hidden') {
+        $card.find('.hidden-stand').removeClass('d-none');
+    } else if (status === 'inactive') {
+        $card.find('.removed-stand').removeClass('d-none');
+    }
+}
+
+function applyStandStatusFilter() {
+    const enabled = $('.stand-status-filter .btn-check:checked')
+        .map(function () { return this.value; })
+        .get();
+    $('#standsconsole > .col-md-4').each(function () {
+        const status = $(this).find('.stand-card').attr('data-status') || 'active';
+        $(this).toggle(enabled.includes(status));
+    });
+}
+
+$(document).on('change', '.stand-status-filter .btn-check', applyStandStatusFilter);
+
 function generateStandCards(data) {
     const $container = $("#standsconsole");
     const $template = $("#stand-card-template");
     $container.empty();
 
     $.each(data, function (index, item) {
-        const $card = $template.clone().removeAttr("id").removeClass("d-none");
+        const $col = $template.clone().removeAttr("id").removeClass("d-none");
+        const $card = $col.find('.stand-card');
+        const status = item.status || 'active';
 
-        $card.find(".stand-card").attr("data-stand-id", item.standId);
-        $card.find(".stand-name").text(item.standName);
+        $card.attr("data-stand-id", item.standId);
+        $col.find(".stand-name").text(item.standName);
 
-        const $photo = $card.find(".stand-photo");
+        const $photo = $col.find(".stand-photo");
         if (item.standPhoto) {
             $photo.attr("src", item.standPhoto).removeClass("d-none");
         } else {
             $photo.addClass("d-none");
         }
 
-        $card.find(".stand-description").text(item.standDescription);
+        $col.find(".stand-description").text(item.standDescription);
 
         if (parseInt(item.latitude) !== 0 && parseInt(item.longitude) !== 0) {
             const googleMapsUrl = `https://www.google.com/maps?q=${item.latitude},${item.longitude}`;
-            $card.find(".stand-location")
+            $col.find(".stand-location")
                 .removeClass("d-none")
                 .attr("href", googleMapsUrl);
         }
 
-        if (item.status === 'technical') {
-            $card.find(".service-stand").removeClass("d-none");
-        } else if (item.status === 'hidden') {
-            $card.find(".hidden-stand").removeClass("d-none");
-        } else if (item.status === 'inactive') {
-            $card.find(".removed-stand").removeClass("d-none");
-        }
+        applyStandStatusToCard($card, status);
+        $col.find(".stand-status").val(status);
 
-        $card.find(".stand-status").val(item.status || 'active');
-
-        $container.append($card);
+        $container.append($col);
     });
+
+    applyStandStatusFilter();
 }
 
 $(document).on('click', '.stand-status-save', function () {
@@ -295,14 +330,8 @@ $(document).on('click', '.stand-status-save', function () {
         data: JSON.stringify({status: status}),
         success: function (response) {
             const newStatus = (apiData(response) || {}).status || status;
-            $card.find('.service-stand, .hidden-stand, .removed-stand').addClass('d-none');
-            if (newStatus === 'technical') {
-                $card.find('.service-stand').removeClass('d-none');
-            } else if (newStatus === 'hidden') {
-                $card.find('.hidden-stand').removeClass('d-none');
-            } else if (newStatus === 'inactive') {
-                $card.find('.removed-stand').removeClass('d-none');
-            }
+            applyStandStatusToCard($card, newStatus);
+            applyStandStatusFilter();
             $feedback
                 .removeClass('d-none text-danger')
                 .addClass('text-success')
