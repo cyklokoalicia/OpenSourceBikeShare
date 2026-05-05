@@ -64,7 +64,7 @@ class QrCodeGeneratorController extends AbstractController
 
         $stands = $standRepository->findAll();
         foreach ($stands as $stand) {
-            if (StandStatus::from($stand["status"]) !== StandStatus::ACTIVE) {
+            if (!StandStatus::from($stand["status"])->isRentablePublic()) {
                 continue;
             }
 

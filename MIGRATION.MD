@@ -30,4 +30,7 @@ ALTER TABLE `stands`
     ADD COLUMN `status` ENUM('active','technical','hidden','inactive') NOT NULL DEFAULT 'active' AFTER `serviceTag`;
 UPDATE `stands` SET `status` = 'technical' WHERE `serviceTag` <> 0;
 ALTER TABLE `stands` DROP COLUMN `serviceTag`;
+
+ALTER TABLE `stands`
+    MODIFY COLUMN `status` ENUM('active','technical','hidden','inactive','virtual') NOT NULL DEFAULT 'active';
 ```

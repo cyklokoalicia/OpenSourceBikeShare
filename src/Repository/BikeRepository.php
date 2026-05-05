@@ -297,7 +297,7 @@ class BikeRepository
                 GROUP BY bikeNum
             ) AS movement ON movement.bikeNum = bikes.bikeNum
             WHERE bikes.currentStand IS NOT NULL
-                AND stands.status IN (:statusActive, :statusHidden)
+                AND stands.status IN (:statusActive, :statusHidden, :statusVirtual)
                 AND movement.lastMoveTime <= :thresholdTime
             ORDER BY movement.lastMoveTime DESC, bikes.bikeNum ASC",
             [
@@ -309,6 +309,7 @@ class BikeRepository
                 'thresholdTime' => $thresholdTime->format('Y-m-d H:i:s'),
                 'statusActive' => StandStatus::ACTIVE->value,
                 'statusHidden' => StandStatus::HIDDEN->value,
+                'statusVirtual' => StandStatus::VIRTUAL->value,
             ]
         )->fetchAllAssoc();
 

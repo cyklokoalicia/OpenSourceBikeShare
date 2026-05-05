@@ -1,18 +1,19 @@
+{% set standStatuses = [
+    {value: 'active', color: 'success', label: 'Active'},
+    {value: 'technical', color: 'warning', label: 'Technical'},
+    {value: 'hidden', color: 'info', label: 'Hidden (testing)'},
+    {value: 'inactive', color: 'secondary', label: 'Inactive'},
+    {value: 'virtual', color: 'primary', label: 'Virtual'},
+] %}
 {% block stands %}
     <div class="row">
         <div class="col-lg-12 mt-3">
-            <div class="btn-group btn-group-sm mb-3 stand-status-filter" role="group">
-                <input type="checkbox" class="btn-check" id="stand-filter-active" value="active" checked>
-                <label class="btn btn-outline-success" for="stand-filter-active">{{ 'Active'|trans }}</label>
-
-                <input type="checkbox" class="btn-check" id="stand-filter-technical" value="technical" checked>
-                <label class="btn btn-outline-warning" for="stand-filter-technical">{{ 'Technical'|trans }}</label>
-
-                <input type="checkbox" class="btn-check" id="stand-filter-hidden" value="hidden" checked>
-                <label class="btn btn-outline-info" for="stand-filter-hidden">{{ 'Hidden (testing)'|trans }}</label>
-
-                <input type="checkbox" class="btn-check" id="stand-filter-inactive" value="inactive" checked>
-                <label class="btn btn-outline-secondary" for="stand-filter-inactive">{{ 'Inactive'|trans }}</label>
+            <div class="btn-group btn-group-sm btn-group-toggle mb-3 stand-status-filter" data-toggle="buttons">
+                {% for status in standStatuses %}
+                    <label class="btn btn-outline-{{ status.color }} active">
+                        <input type="checkbox" autocomplete="off" value="{{ status.value }}" checked> {{ status.label|trans }}
+                    </label>
+                {% endfor %}
             </div>
             <div class="row" id="standsconsole">
 
@@ -25,6 +26,7 @@
                         <i class="fas fa-exclamation-triangle d-none service-stand"></i>
                         <i class="fas fa-eye-slash d-none hidden-stand"></i>
                         <i class="fas fa-ban d-none removed-stand"></i>
+                        <i class="fas fa-globe d-none virtual-stand"></i>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
@@ -38,11 +40,10 @@
                         <div class="mt-3">
                             <label class="form-label small mb-1">{{ 'Status'|trans }}</label>
                             <div class="input-group input-group-sm">
-                                <select class="stand-status form-select form-select-sm">
-                                    <option value="active">{{ 'Active'|trans }}</option>
-                                    <option value="technical">{{ 'Technical'|trans }}</option>
-                                    <option value="hidden">{{ 'Hidden (testing)'|trans }}</option>
-                                    <option value="inactive">{{ 'Inactive'|trans }}</option>
+                                <select class="stand-status form-control form-control-sm">
+                                    {% for status in standStatuses %}
+                                        <option value="{{ status.value }}">{{ status.label|trans }}</option>
+                                    {% endfor %}
                                 </select>
                                 <button type="button" class="btn btn-primary stand-status-save">
                                     {{ 'Save'|trans }}

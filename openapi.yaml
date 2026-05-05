@@ -133,7 +133,7 @@ paths:
               properties:
                 status:
                   type: string
-                  enum: [active, technical, hidden, inactive]
+                  enum: [active, technical, hidden, inactive, virtual]
       responses:
         "200":
           $ref: "#/components/responses/Success"

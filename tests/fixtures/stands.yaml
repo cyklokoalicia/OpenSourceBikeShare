@@ -33,3 +33,9 @@ stdClass:
     standName: 'INACTIVE_STAND'
     standDescription: '<streetName()>'
     status: 'inactive'
+
+  stand_virtual (extends defaultStand):
+    standId: '9'
+    standName: 'VIRTUAL_STAND'
+    standDescription: '<streetName()>'
+    status: 'virtual'

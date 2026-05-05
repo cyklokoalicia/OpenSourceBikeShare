@@ -10,9 +10,10 @@ enum StandStatus: string
     case TECHNICAL = 'technical';
     case HIDDEN = 'hidden';
     case INACTIVE = 'inactive';
+    case VIRTUAL = 'virtual';
 
     public function isRentablePublic(): bool
     {
-        return $this === self::ACTIVE;
+        return $this === self::ACTIVE || $this === self::VIRTUAL;
     }
 }
