@@ -75,7 +75,7 @@ class StandUpdateStatusTest extends BikeSharingWebTestCase
             ->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
         $this->client->loginUser($admin);
 
-        foreach (['technical', 'hidden', 'inactive', 'active'] as $status) {
+        foreach (['technical', 'hidden', 'inactive', 'virtual', 'active'] as $status) {
             $this->client->request(
                 Request::METHOD_PATCH,
                 '/api/v1/admin/stands/' . self::STAND_ID,

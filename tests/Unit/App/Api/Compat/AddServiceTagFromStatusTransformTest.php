@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Test\Unit\App\Api\Compat;
 
 use BikeShare\App\Api\Compat\AddServiceTagFromStatusTransform;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class AddServiceTagFromStatusTransformTest extends TestCase
@@ -30,30 +31,24 @@ class AddServiceTagFromStatusTransformTest extends TestCase
         $this->assertContains('api_v1_admin_stand_item', $routes);
     }
 
-    public function testActiveStatusMapsToZeroServiceTag(): void
+    #[DataProvider('statusToServiceTagProvider')]
+    public function testStatusMapsToServiceTag(string $status, int $expectedServiceTag): void
     {
-        $data = [
-            ['standId' => 1, 'standName' => 'STAND1', 'status' => 'active'],
-        ];
+        $data = [['standId' => 1, 'status' => $status]];
 
         $result = $this->transform->transform($data);
 
-        $this->assertSame(0, $result[0]['serviceTag']);
-        $this->assertSame('active', $result[0]['status']);
+        $this->assertSame($expectedServiceTag, $result[0]['serviceTag']);
+        $this->assertSame($status, $result[0]['status']);
     }
 
-    public function testTechnicalStatusMapsToOne(): void
+    public static function statusToServiceTagProvider(): iterable
     {
-        $data = [['standId' => 6, 'status' => 'technical']];
-        $result = $this->transform->transform($data);
-        $this->assertSame(1, $result[0]['serviceTag']);
-    }
-
-    public function testHiddenStatusMapsToOne(): void
-    {
-        $data = [['standId' => 7, 'status' => 'hidden']];
-        $result = $this->transform->transform($data);
-        $this->assertSame(1, $result[0]['serviceTag']);
+        yield 'active' => ['active', 0];
+        yield 'technical' => ['technical', 1];
+        yield 'hidden' => ['hidden', 1];
+        yield 'inactive' => ['inactive', 0];
+        yield 'virtual' => ['virtual', 0];
     }
 
     public function testSingleObjectIsTransformed(): void

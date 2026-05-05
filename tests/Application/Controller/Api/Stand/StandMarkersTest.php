@@ -47,12 +47,13 @@ class StandMarkersTest extends BikeSharingWebTestCase
             $this->assertContains(
                 $marker['status'],
                 ['active', 'technical'],
-                'Regular user should not see hidden or inactive stands'
+                'Regular user should not see hidden, inactive or virtual stands'
             );
             $standNames[] = $marker['standName'];
         }
         $this->assertNotContains('HIDDEN_STAND', $standNames);
         $this->assertNotContains('INACTIVE_STAND', $standNames);
+        $this->assertNotContains('VIRTUAL_STAND', $standNames);
     }
 
     public function testMarkersByAdminIncludeHiddenButNotInactive(): void
@@ -74,6 +75,7 @@ class StandMarkersTest extends BikeSharingWebTestCase
         $this->assertArrayHasKey('HIDDEN_STAND', $byName, 'Admin should see hidden stand');
         $this->assertSame('hidden', $byName['HIDDEN_STAND']['status']);
         $this->assertArrayNotHasKey('INACTIVE_STAND', $byName, 'Admin should not see inactive stand');
+        $this->assertArrayNotHasKey('VIRTUAL_STAND', $byName, 'Admin map should not include virtual stands either');
     }
 
     public function testMarkersByToken(): void

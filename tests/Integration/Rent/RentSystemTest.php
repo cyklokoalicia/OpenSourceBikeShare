@@ -446,4 +446,34 @@ class RentSystemTest extends BikeSharingKernelTestCase
             true
         );
     }
+
+    public function testAnyoneCanRentBikeFromVirtualStand(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+        $rentSystemFactory = $container->get(RentSystemFactory::class);
+        $userRepository = $container->get(UserRepository::class);
+
+        $admin = $userRepository->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+
+        $rentSystem = $rentSystemFactory->getRentSystem(RentSystemType::WEB);
+        $rentSystem->returnBike($admin['userId'], self::BIKE_NUMBER, 'VIRTUAL_STAND', '', true);
+
+        $userResponse = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.success', $userResponse->getCode());
+
+        $rentSystem->returnBike($user['userId'], self::BIKE_NUMBER, 'VIRTUAL_STAND', '', true);
+
+        $adminResponse = $rentSystem->rentBike($admin['userId'], self::BIKE_NUMBER);
+        $this->assertSame('bike.rent.success', $adminResponse->getCode());
+
+        $rentSystem->returnBike(
+            $admin['userId'],
+            self::BIKE_NUMBER,
+            self::STAND_NAME,
+            '',
+            true
+        );
+    }
 }

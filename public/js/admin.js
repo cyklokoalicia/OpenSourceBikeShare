@@ -245,8 +245,16 @@ const STAND_STATUS_HEADER = {
     technical: 'bg-warning text-dark',
     hidden: 'bg-info text-white',
     inactive: 'bg-secondary text-white',
+    virtual: 'bg-primary text-white',
 };
 const STAND_STATUS_HEADER_CLASSES = Object.values(STAND_STATUS_HEADER).join(' ');
+const STAND_STATUS_BADGE = {
+    technical: '.service-stand',
+    hidden: '.hidden-stand',
+    inactive: '.removed-stand',
+    virtual: '.virtual-stand',
+};
+const STAND_STATUS_BADGE_SELECTOR = Object.values(STAND_STATUS_BADGE).join(', ');
 const STAND_STATUS_DIMMED_SELECTOR = '.card-header, .stand-description';
 const STAND_STATUS_FILTER_STORAGE_KEY = 'admin.stands.statusFilter';
 
@@ -261,18 +269,14 @@ function applyStandStatusToCard($card, status) {
         $card.find(STAND_STATUS_DIMMED_SELECTOR).addClass('opacity-50');
     }
 
-    $card.find('.service-stand, .hidden-stand, .removed-stand').addClass('d-none');
-    if (status === 'technical') {
-        $card.find('.service-stand').removeClass('d-none');
-    } else if (status === 'hidden') {
-        $card.find('.hidden-stand').removeClass('d-none');
-    } else if (status === 'inactive') {
-        $card.find('.removed-stand').removeClass('d-none');
+    $card.find(STAND_STATUS_BADGE_SELECTOR).addClass('d-none');
+    if (STAND_STATUS_BADGE[status]) {
+        $card.find(STAND_STATUS_BADGE[status]).removeClass('d-none');
     }
 }
 
 function applyStandStatusFilter() {
-    const enabled = $('.stand-status-filter .btn-check:checked')
+    const enabled = $('.stand-status-filter input[type="checkbox"]:checked')
         .map(function () { return this.value; })
         .get();
     $('#standsconsole > .stand-col').each(function () {
@@ -291,19 +295,21 @@ function loadStandStatusFilter() {
         return;
     }
     if (!Array.isArray(enabled)) return;
-    $('.stand-status-filter .btn-check').each(function () {
-        $(this).prop('checked', enabled.includes(this.value));
+    $('.stand-status-filter input[type="checkbox"]').each(function () {
+        const isChecked = enabled.includes(this.value);
+        $(this).prop('checked', isChecked);
+        $(this).closest('label').toggleClass('active', isChecked);
     });
 }
 
 function saveStandStatusFilter() {
-    const enabled = $('.stand-status-filter .btn-check:checked')
+    const enabled = $('.stand-status-filter input[type="checkbox"]:checked')
         .map(function () { return this.value; })
         .get();
     localStorage.setItem(STAND_STATUS_FILTER_STORAGE_KEY, JSON.stringify(enabled));
 }
 
-$(document).on('change', '.stand-status-filter .btn-check', function () {
+$(document).on('change', '.stand-status-filter input[type="checkbox"]', function () {
     saveStandStatusFilter();
     applyStandStatusFilter();
 });
