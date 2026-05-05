@@ -41,14 +41,16 @@
                         <div class="mt-3">
                             <label class="form-label small mb-1">{{ 'Status'|trans }}</label>
                             <div class="input-group input-group-sm">
-                                <select class="stand-status form-control form-control-sm">
+                                <select class="stand-status custom-select custom-select-sm">
                                     {% for status in standStatuses %}
                                         <option value="{{ status.value }}">{{ status.label|trans }}</option>
                                     {% endfor %}
                                 </select>
-                                <button type="button" class="btn btn-primary stand-status-save">
-                                    {{ 'Save'|trans }}
-                                </button>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-primary stand-status-save">
+                                        {{ 'Save'|trans }}
+                                    </button>
+                                </div>
                             </div>
                             <p class="stand-status-feedback small mt-1 mb-0 d-none"></p>
                         </div>
