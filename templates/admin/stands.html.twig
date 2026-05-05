@@ -1,9 +1,9 @@
 {% set standStatuses = [
-    {value: 'active', color: 'success', label: 'Active'},
-    {value: 'technical', color: 'warning', label: 'Technical'},
-    {value: 'hidden', color: 'info', label: 'Hidden (testing)'},
-    {value: 'inactive', color: 'secondary', label: 'Inactive'},
-    {value: 'virtual', color: 'primary', label: 'Virtual'},
+    {value: 'active', color: 'success', label: 'Active', icon: null, badgeClass: null},
+    {value: 'technical', color: 'warning', label: 'Technical', icon: 'fa-exclamation-triangle', badgeClass: 'service-stand'},
+    {value: 'hidden', color: 'info', label: 'Hidden (testing)', icon: 'fa-eye-slash', badgeClass: 'hidden-stand'},
+    {value: 'inactive', color: 'secondary', label: 'Inactive', icon: 'fa-ban', badgeClass: 'removed-stand'},
+    {value: 'virtual', color: 'primary', label: 'Virtual', icon: 'fa-globe', badgeClass: 'virtual-stand'},
 ] %}
 {% block stands %}
     <div class="row">
@@ -11,7 +11,9 @@
             <div class="btn-group btn-group-sm btn-group-toggle mb-3 stand-status-filter" data-toggle="buttons">
                 {% for status in standStatuses %}
                     <label class="btn btn-outline-{{ status.color }} active">
-                        <input type="checkbox" autocomplete="off" value="{{ status.value }}" checked> {{ status.label|trans }}
+                        <input type="checkbox" autocomplete="off" value="{{ status.value }}" checked>
+                        {% if status.icon %}<i class="fas {{ status.icon }}"></i>{% endif %}
+                        {{ status.label|trans }}
                     </label>
                 {% endfor %}
             </div>
@@ -23,10 +25,9 @@
                 <div class="card stand-card border" data-stand-id="">
                     <div class="card-header">
                         <span class="stand-name"></span>
-                        <i class="fas fa-exclamation-triangle d-none service-stand"></i>
-                        <i class="fas fa-eye-slash d-none hidden-stand"></i>
-                        <i class="fas fa-ban d-none removed-stand"></i>
-                        <i class="fas fa-globe d-none virtual-stand"></i>
+                        {% for status in standStatuses if status.badgeClass %}
+                            <i class="fas {{ status.icon }} d-none {{ status.badgeClass }}"></i>
+                        {% endfor %}
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
