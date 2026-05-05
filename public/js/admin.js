@@ -3,6 +3,12 @@ $(document).ready(function () {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-where');
         bikeInfo($('#bikeNumber').val());
     });
+    $("#bikeNumber").on('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            $("#where").click();
+        }
+    });
     $("#fleetconsole").on('click', '.bike-revert', function (event) {
         if (window.ga) ga('send', 'event', 'buttons', 'click', 'admin-revert');
         revert($(this).data('bike-number'));
@@ -128,13 +134,18 @@ function generateBikeCards(data) {
         const $card = $template.clone().removeAttr("id").removeClass("d-none");
 
         const $bikeCard = $card.find(".bike-card");
+        let bikeStatus;
         if (item.userName !== null) {
+            bikeStatus = 'rented';
             $bikeCard.addClass("bg-success text-white border-success");
         } else if (item.notes !== null) {
+            bikeStatus = 'problematic';
             $bikeCard.addClass("bg-warning text-dark border-warning");
         } else {
+            bikeStatus = 'ok';
             $bikeCard.addClass("bg-light text-dark border-light");
         }
+        $card.attr("data-bike-status", bikeStatus);
         $card.attr("data-bike-number", item.bikeNum);
         $card.find(".bike-last-usage").attr("data-bike-number", item.bikeNum);
         $card.find(".bike-revert").attr("data-bike-number", item.bikeNum);
@@ -170,6 +181,8 @@ function generateBikeCards(data) {
 
         $container.append($card);
     });
+
+    applyBikeStatusFilter();
 }
 
 function bikeInfo(bikeNumber) {
@@ -286,10 +299,10 @@ function applyStandStatusFilter() {
 }
 
 function loadStandStatusFilter() {
-    const saved = localStorage.getItem(STAND_STATUS_FILTER_STORAGE_KEY);
-    if (saved === null) return;
     let enabled;
     try {
+        const saved = localStorage.getItem(STAND_STATUS_FILTER_STORAGE_KEY);
+        if (saved === null) return;
         enabled = JSON.parse(saved);
     } catch (e) {
         return;
@@ -306,7 +319,11 @@ function saveStandStatusFilter() {
     const enabled = $('.stand-status-filter input[type="checkbox"]:checked')
         .map(function () { return this.value; })
         .get();
-    localStorage.setItem(STAND_STATUS_FILTER_STORAGE_KEY, JSON.stringify(enabled));
+    try {
+        localStorage.setItem(STAND_STATUS_FILTER_STORAGE_KEY, JSON.stringify(enabled));
+    } catch (e) {
+        // localStorage unavailable (private mode, quota) — filter still works in-session
+    }
 }
 
 $(document).on('change', '.stand-status-filter input[type="checkbox"]', function () {
@@ -314,8 +331,54 @@ $(document).on('change', '.stand-status-filter input[type="checkbox"]', function
     applyStandStatusFilter();
 });
 
+const BIKE_STATUS_FILTER_STORAGE_KEY = 'admin.bikes.statusFilter';
+
+function applyBikeStatusFilter() {
+    const enabled = $('.bike-status-filter input[type="checkbox"]:checked')
+        .map(function () { return this.value; })
+        .get();
+    $('#fleetconsole > .bike-col').each(function () {
+        const status = $(this).attr('data-bike-status') || 'ok';
+        $(this).toggle(enabled.includes(status));
+    });
+}
+
+function loadBikeStatusFilter() {
+    let enabled;
+    try {
+        const saved = localStorage.getItem(BIKE_STATUS_FILTER_STORAGE_KEY);
+        if (saved === null) return;
+        enabled = JSON.parse(saved);
+    } catch (e) {
+        return;
+    }
+    if (!Array.isArray(enabled)) return;
+    $('.bike-status-filter input[type="checkbox"]').each(function () {
+        const isChecked = enabled.includes(this.value);
+        $(this).prop('checked', isChecked);
+        $(this).closest('label').toggleClass('active', isChecked);
+    });
+}
+
+function saveBikeStatusFilter() {
+    const enabled = $('.bike-status-filter input[type="checkbox"]:checked')
+        .map(function () { return this.value; })
+        .get();
+    try {
+        localStorage.setItem(BIKE_STATUS_FILTER_STORAGE_KEY, JSON.stringify(enabled));
+    } catch (e) {
+        // localStorage unavailable (private mode, quota) — filter still works in-session
+    }
+}
+
+$(document).on('change', '.bike-status-filter input[type="checkbox"]', function () {
+    saveBikeStatusFilter();
+    applyBikeStatusFilter();
+});
+
 $(function () {
     loadStandStatusFilter();
+    loadBikeStatusFilter();
 });
 
 function generateStandCards(data) {
