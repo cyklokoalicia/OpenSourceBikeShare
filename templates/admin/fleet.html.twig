@@ -1,6 +1,20 @@
+{% set bikeStatuses = [
+    {value: 'problematic', color: 'warning',   label: 'Problematic', icon: 'fa-exclamation-triangle'},
+    {value: 'rented',      color: 'success',   label: 'Rented',      icon: 'fa-user'},
+    {value: 'ok',          color: 'secondary', label: 'OK',          icon: null},
+] %}
 {% block fleet %}
 <div class="row">
     <div class="col-lg-12">
+        <div class="btn-group btn-group-sm btn-group-toggle mb-2 bike-status-filter" data-toggle="buttons">
+            {% for status in bikeStatuses %}
+                <label class="btn btn-outline-{{ status.color }} active">
+                    <input type="checkbox" autocomplete="off" value="{{ status.value }}" checked>
+                    {% if status.icon %}<i class="fas {{ status.icon }}"></i>{% endif %}
+                    {{ status.label|trans }}
+                </label>
+            {% endfor %}
+        </div>
         <div class="input-group mb-2">
             <input type="number" name="bikeNumber" id="bikeNumber" class="form-control" placeholder="{{ 'Enter bike number'|trans }}" />
             <div class="input-group-append">
@@ -15,7 +29,7 @@
 
         </div>
         {# bike card#}
-        <div class="col-md-4 mb-4 d-none" id="bike-card-template" data-bike-number="">
+        <div class="col-md-4 mb-4 d-none bike-col" id="bike-card-template" data-bike-number="">
             <div class="card bike-card border">
                 <div class="card-body">
                     <h5 class="card-title">{{ 'Bike'|trans }}: <span class="bike-number"></span></h5>
