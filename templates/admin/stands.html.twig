@@ -25,7 +25,7 @@
                 <div class="card stand-card border" data-stand-id="">
                     <div class="card-header">
                         <span class="stand-name"></span>
-                        {% for status in standStatuses if status.badgeClass %}
+                        {% for status in standStatuses|filter(s => s.badgeClass) %}
                             <i class="fas {{ status.icon }} d-none {{ status.badgeClass }}"></i>
                         {% endfor %}
                     </div>
