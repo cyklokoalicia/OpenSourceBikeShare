@@ -36,7 +36,10 @@ return static function (ContainerConfigurator $container): void {
         ->public()
         ->autoconfigure()
         ->autowire()
-        ->bind('$isSmsSystemEnabled', expr("container.getEnv('SMS_CONNECTOR') ? true : false"))
+        ->bind(
+            '$isSmsSystemEnabled',
+            expr("container.getEnv('SMS_CONNECTOR') and container.getEnv('SMS_CONNECTOR') != 'disabled'")
+        )
         ->bind('$appName', env('APP_NAME'))
         ->bind('$systemRules', env('SYSTEM_RULES'))
         ->bind('$defaultLocale', '%kernel.default_locale%')

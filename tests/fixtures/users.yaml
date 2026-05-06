@@ -35,6 +35,7 @@ stdClass:
   superAdmin (extends defaultUser):
     userId: 7
     privileges: 7
+    number: 421951777777
     userLimit: 7
 
   userForRegistrationTest (extends defaultUser):
@@ -54,4 +55,12 @@ stdClass:
     privileges: 0
     number: 421951555555
     userLimit: 0
+    password: '<(password_hash("password", PASSWORD_BCRYPT, ["cost" => 13]))>'
+
+  userForApiPhoneConfirmTest (extends defaultUser):
+    userId: 11
+    privileges: 0
+    number: 421951666666
+    userLimit: 0
+    isNumberConfirmed: 0
     password: '<(password_hash("password", PASSWORD_BCRYPT, ["cost" => 13]))>'

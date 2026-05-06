@@ -227,6 +227,10 @@ return [
     'user.error.phone_already_registered' => 'Користувача з таким номером телефону вже зареєстровано.',
     'user.error.email_already_registered' => 'Користувача з таким email вже зареєстровано.',
     'admin.notification.subject' => '{appName} сповіщення',
+    'admin.notification.new_verified_user' => 'Новий користувач щойно підтвердив email і телефон. Будь ласка, зв\'яжіться з ним для привітання / онбордингу.
+Ім\'я: {userName}
+Email: {email}
+Телефон: {phone}',
     'admin.notification.sms_problem' => 'Проблема з SMS: {number}-{sms}',
     'admin.notification.sms_processed' => '{userName}: {message}',
     'admin.notification.duplicate_sms' => 'Проблема з SMS: {uuid}',

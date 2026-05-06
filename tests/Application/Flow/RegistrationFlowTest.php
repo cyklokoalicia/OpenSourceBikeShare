@@ -15,6 +15,8 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 class RegistrationFlowTest extends BikeSharingWebTestCase
 {
+    private const SUPER_ADMIN_PHONE_NUMBER = '421951777777';
+
     public function testFullRegistrationFlow(): void
     {
         $userEmail = 'test_' . time() . '@example.com';
@@ -102,6 +104,11 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
             'form[smscode]' => $smsCode,
         ]);
         $this->assertResponseRedirects();
+
+        // Re-fetch mail sender — kernel reboots between requests, replacing the DebugMailSender instance.
+        // Capture BEFORE followRedirect (next request resets the buffer).
+        $emailsAfterPhoneConfirm = static::getContainer()->get(MailSenderInterface::class)->getSentMessages();
+
         $this->client->followRedirect();
         $this->assertRouteSame('home');
 
@@ -109,5 +116,18 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
         $user = $userRepository->findItemByEmail($userEmail);
         $this->assertNotNull($user);
         $this->assertSame(1, $user['isNumberConfirmed'], 'User phone number is not confirmed');
+
+        // Admins were notified about the newly fully-verified user.
+        $this->assertCount(
+            1,
+            $emailsAfterPhoneConfirm,
+            'Expected one admin notification email after phone confirmation'
+        );
+
+        $superAdmin = $userRepository->findItemByPhoneNumber(self::SUPER_ADMIN_PHONE_NUMBER);
+        $adminEmail = $emailsAfterPhoneConfirm[0];
+        $this->assertSame($superAdmin['mail'], $adminEmail['recipient']);
+        $this->assertStringContainsString($userEmail, $adminEmail['message']);
+        $this->assertStringContainsString($phonePurifier->purify($userPhone), $adminEmail['message']);
     }
 }

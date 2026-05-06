@@ -227,6 +227,10 @@ Kliknutím na nasledujúci odkaz potvrdíte svoj e-mail: {emailConfirmURL}',
     'user.error.phone_already_registered' => 'Používateľ s týmto telefónnym číslom je už registrovaný.',
     'user.error.email_already_registered' => 'Používateľ s týmto e-mailom je už registrovaný.',
     'admin.notification.subject' => '{appName} oznámenie',
+    'admin.notification.new_verified_user' => 'Nový používateľ práve potvrdil e-mail a telefón. Prosím, kontaktujte ho na uvítací / onboarding hovor.
+Meno: {userName}
+E-mail: {email}
+Telefón: {phone}',
     'admin.notification.sms_problem' => 'Problém s SMS: {number}-{sms}',
     'admin.notification.sms_processed' => '{userName}: {message}',
     'admin.notification.duplicate_sms' => 'Problém s SMS: {uuid}',
