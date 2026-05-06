@@ -6,11 +6,13 @@ namespace BikeShare\Controller\Api\V1;
 
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Enum\Action;
+use BikeShare\Event\UserVerificationCompletedEvent;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\CityRepository;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\SmsSenderInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +24,7 @@ class UsersController extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly HistoryRepository $historyRepository,
         private readonly SmsSenderInterface $smsSender,
+        private readonly EventDispatcherInterface $eventDispatcher,
         private readonly int $freeTimeMinutes = 30,
         private readonly bool $isSmsSystemEnabled = false,
     ) {
@@ -174,6 +177,10 @@ class UsersController extends AbstractController
 
         $this->userRepository->confirmUserNumber($user->getUserId());
         $this->historyRepository->addItem($user->getUserId(), 0, Action::PHONE_CONFIRMED, '');
+
+        $this->eventDispatcher->dispatch(
+            new UserVerificationCompletedEvent($user->getUserId())
+        );
 
         return $this->json(['message' => 'Phone number confirmed successfully.']);
     }

@@ -221,6 +221,10 @@ By clicking the following link you will confirm your email: {emailConfirmURL}',
   'user.error.phone_already_registered' => 'User with this phone number already registered.',
   'user.error.email_already_registered' => 'User with this email already registered.',
   'admin.notification.subject' => '{appName} notification',
+  'admin.notification.new_verified_user' => 'New user has just verified email and phone. Please contact them for the welcome / onboarding call.
+Name: {userName}
+Email: {email}
+Phone: {phone}',
   'admin.notification.sms_problem' => 'Problem with SMS: {number}-{sms}',
   'admin.notification.sms_processed' => '{userName}: {message}',
   'admin.notification.duplicate_sms' => 'Problem with SMS: {uuid}',

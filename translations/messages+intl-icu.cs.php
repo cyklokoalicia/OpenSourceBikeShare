@@ -217,6 +217,10 @@ Kliknutím na následující odkaz potvrdíte svůj e-mail: {emailConfirmURL}',
     'user.error.phone_already_registered' => 'Uživatel s tímto telefonním číslem je již registrován.',
     'user.error.email_already_registered' => 'Uživatel s tímto e-mailem je již registrován.',
     'admin.notification.subject' => '{appName} oznámení',
+    'admin.notification.new_verified_user' => 'Nový uživatel právě potvrdil e-mail a telefon. Prosím, kontaktujte ho na uvítací / onboarding hovor.
+Jméno: {userName}
+E-mail: {email}
+Telefon: {phone}',
     'admin.notification.sms_problem' => 'Problém s SMS: {number}-{sms}',
     'admin.notification.sms_processed' => '{userName}: {message}',
     'admin.notification.duplicate_sms' => 'Problém s SMS: {uuid}',

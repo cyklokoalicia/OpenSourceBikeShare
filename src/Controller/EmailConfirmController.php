@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\Enum\Action;
+use BikeShare\Event\UserVerificationCompletedEvent;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -20,6 +22,7 @@ class EmailConfirmController extends AbstractController
         UserRepository $userRepository,
         HistoryRepository $historyRepository,
         TranslatorInterface $translator,
+        EventDispatcherInterface $eventDispatcher,
         int $userBikeLimitAfterRegistration = 0
     ): Response {
         if (!empty($key)) {
@@ -39,6 +42,10 @@ class EmailConfirmController extends AbstractController
                     0,
                     Action::EMAIL_CONFIRMED,
                     ''
+                );
+
+                $eventDispatcher->dispatch(
+                    new UserVerificationCompletedEvent((int)$registration['userId'])
                 );
 
                 $this->addFlash(

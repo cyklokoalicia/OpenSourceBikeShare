@@ -220,6 +220,10 @@ Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmU
     'user.error.phone_already_registered' => 'Benutzer mit dieser Telefonnummer ist bereits registriert.',
     'user.error.email_already_registered' => 'Benutzer mit dieser E-Mail ist bereits registriert.',
     'admin.notification.subject' => '{appName} Benachrichtigung',
+    'admin.notification.new_verified_user' => 'Ein neuer Benutzer hat gerade E-Mail und Telefon bestätigt. Bitte kontaktiere ihn für das Willkommens- / Onboarding-Gespräch.
+Name: {userName}
+E-Mail: {email}
+Telefon: {phone}',
     'admin.notification.sms_problem' => 'Problem mit SMS: {number}-{sms}',
     'admin.notification.sms_processed' => '{userName}: {message}',
     'admin.notification.duplicate_sms' => 'Problem mit SMS: {uuid}',

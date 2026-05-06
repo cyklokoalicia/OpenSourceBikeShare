@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\Enum\Action;
+use BikeShare\Event\UserVerificationCompletedEvent;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\SmsSenderInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +27,8 @@ class PhoneConfirmController extends AbstractController
         Request $request,
         SessionInterface $session,
         TranslatorInterface $translator,
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        EventDispatcherInterface $eventDispatcher
     ): Response {
         // Only logged users can verify their phone
         $user = $this->getUser();
@@ -93,6 +96,10 @@ class PhoneConfirmController extends AbstractController
                 if ($history) {
                     $userRepository->confirmUserNumber($user->getUserId());
                     $historyRepository->addItem($user->getUserId(), 0, Action::PHONE_CONFIRMED, '');
+
+                    $eventDispatcher->dispatch(
+                        new UserVerificationCompletedEvent($user->getUserId())
+                    );
 
                     $session->remove('phoneCheckCode');
                     $session->remove('phoneVerificationStep');
