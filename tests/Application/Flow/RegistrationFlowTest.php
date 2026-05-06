@@ -116,7 +116,11 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
         $this->assertSame(1, $user['isNumberConfirmed'], 'User phone number is not confirmed');
 
         // Admins were notified about the newly fully-verified user.
-        $this->assertCount(1, $emailsAfterPhoneConfirm, 'Expected one admin notification email after phone confirmation');
+        $this->assertCount(
+            1,
+            $emailsAfterPhoneConfirm,
+            'Expected one admin notification email after phone confirmation'
+        );
 
         // Fixture defines superAdmin (userId=7, privileges=7) — only user matching `privileges & 2 != 0`.
         $superAdmin = $userRepository->findItem(7);

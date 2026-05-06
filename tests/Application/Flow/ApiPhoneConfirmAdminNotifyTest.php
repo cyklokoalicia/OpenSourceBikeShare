@@ -96,7 +96,11 @@ class ApiPhoneConfirmAdminNotifyTest extends BikeSharingWebTestCase
         // Capture admin emails BEFORE any subsequent request (DebugMailSender resets per request).
         $emailsAfterVerify = static::getContainer()->get(MailSenderInterface::class)->getSentMessages();
 
-        $this->assertCount(1, $emailsAfterVerify, 'Expected exactly one admin notification email after API phone confirmation');
+        $this->assertCount(
+            1,
+            $emailsAfterVerify,
+            'Expected exactly one admin notification email after API phone confirmation'
+        );
 
         $userRepository = static::getContainer()->get(UserRepository::class);
         $user = $userRepository->findItem(self::USER_ID);
