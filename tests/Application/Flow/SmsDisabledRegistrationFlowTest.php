@@ -8,42 +8,29 @@ use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
-use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 
 class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
 {
     private const SUPER_ADMIN_PHONE_NUMBER = '421951777777';
 
-    private ?string $originalSmsConnector = null;
+    private string $originalSmsConnector;
 
     protected function setUp(): void
     {
-        $this->originalSmsConnector = $_SERVER['SMS_CONNECTOR'] ?? null;
-        $_SERVER['SMS_CONNECTOR'] = '';
-        $_ENV['SMS_CONNECTOR'] = '';
+        $this->originalSmsConnector = $_ENV['SMS_CONNECTOR'];
+        $_ENV['SMS_CONNECTOR'] = 'disabled';
         parent::setUp();
     }
 
     protected function tearDown(): void
     {
-        // Restore env BEFORE parent's log assertions — if parent throws, env still gets restored
-        // and won't leak SMS_CONNECTOR='' into the next test class.
-        if ($this->originalSmsConnector === null) {
-            unset($_SERVER['SMS_CONNECTOR'], $_ENV['SMS_CONNECTOR']);
-        } else {
-            $_SERVER['SMS_CONNECTOR'] = $this->originalSmsConnector;
-            $_ENV['SMS_CONNECTOR'] = $this->originalSmsConnector;
-        }
+        $_ENV['SMS_CONNECTOR'] = $this->originalSmsConnector;
         parent::tearDown();
     }
 
     public function testAdminNotifiedRightAfterEmailConfirmWhenSmsDisabled(): void
     {
-        // SmsConnectorFactory falls back to DisabledConnector when SMS_CONNECTOR is empty
-        // and logs an error. We tolerate it — the fallback is the project's own design.
-        $this->expectLog(Logger::ERROR, '/Error creating SMS connector/');
-
         $userEmail = 'test_sms_disabled_' . time() . '@example.com';
         $userPhone = '+421901' . rand(100000, 999999);
 
