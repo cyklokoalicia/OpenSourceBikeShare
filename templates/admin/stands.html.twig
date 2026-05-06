@@ -10,8 +10,8 @@
         <div class="col-lg-12 mt-3">
             <div class="btn-group btn-group-sm btn-group-toggle mb-3 stand-status-filter" data-toggle="buttons">
                 {% for status in standStatuses %}
-                    <label class="btn btn-outline-{{ status.color }} active">
-                        <input type="checkbox" autocomplete="off" value="{{ status.value }}" checked>
+                    <label class="btn btn-outline-{{ status.color }}">
+                        <input type="checkbox" autocomplete="off" value="{{ status.value }}">
                         {% if status.icon %}<i class="fas {{ status.icon }}"></i>{% endif %}
                         {{ status.label|trans }}
                     </label>

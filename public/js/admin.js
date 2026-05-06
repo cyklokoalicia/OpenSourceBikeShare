@@ -289,12 +289,13 @@ function applyStandStatusToCard($card, status) {
 }
 
 function applyStandStatusFilter() {
-    const enabled = $('.stand-status-filter input[type="checkbox"]:checked')
+    const selected = $('.stand-status-filter input[type="checkbox"]:checked')
         .map(function () { return this.value; })
         .get();
+    const showAll = selected.length === 0;
     $('#standsconsole > .stand-col').each(function () {
         const status = $(this).find('.stand-status').val() || 'active';
-        $(this).toggle(enabled.includes(status));
+        $(this).toggle(showAll || selected.includes(status));
     });
 }
 
@@ -334,12 +335,13 @@ $(document).on('change', '.stand-status-filter input[type="checkbox"]', function
 const BIKE_STATUS_FILTER_STORAGE_KEY = 'admin.bikes.statusFilter';
 
 function applyBikeStatusFilter() {
-    const enabled = $('.bike-status-filter input[type="checkbox"]:checked')
+    const selected = $('.bike-status-filter input[type="checkbox"]:checked')
         .map(function () { return this.value; })
         .get();
+    const showAll = selected.length === 0;
     $('#fleetconsole > .bike-col').each(function () {
         const status = $(this).attr('data-bike-status') || 'ok';
-        $(this).toggle(enabled.includes(status));
+        $(this).toggle(showAll || selected.includes(status));
     });
 }
 
