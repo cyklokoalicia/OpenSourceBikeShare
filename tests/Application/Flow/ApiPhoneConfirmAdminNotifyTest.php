@@ -13,8 +13,8 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 class ApiPhoneConfirmAdminNotifyTest extends BikeSharingWebTestCase
 {
-    private const USER_ID = 11;
     private const USER_PHONE_NUMBER = '421951666666';
+    private const SUPER_ADMIN_PHONE_NUMBER = '421951777777';
     private const USER_PASSWORD = 'password';
 
     public function testAdminNotifiedAfterApiPhoneConfirmVerify(): void
@@ -75,11 +75,10 @@ class ApiPhoneConfirmAdminNotifyTest extends BikeSharingWebTestCase
         );
 
         $userRepository = static::getContainer()->get(UserRepository::class);
-        $user = $userRepository->findItem(self::USER_ID);
+        $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
         $this->assertSame(1, (int)$user['isNumberConfirmed'], 'Phone should be confirmed after verify');
 
-        // Fixture defines superAdmin (userId=7, privileges=7) — only user matching `privileges & 2 != 0`.
-        $superAdmin = $userRepository->findItem(7);
+        $superAdmin = $userRepository->findItemByPhoneNumber(self::SUPER_ADMIN_PHONE_NUMBER);
         $adminEmail = $emailsAfterVerify[0];
         $this->assertSame($superAdmin['mail'], $adminEmail['recipient']);
         $this->assertStringContainsString($user['mail'], $adminEmail['message']);

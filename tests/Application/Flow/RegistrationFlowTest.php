@@ -15,6 +15,8 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 class RegistrationFlowTest extends BikeSharingWebTestCase
 {
+    private const SUPER_ADMIN_PHONE_NUMBER = '421951777777';
+
     public function testFullRegistrationFlow(): void
     {
         $userEmail = 'test_' . time() . '@example.com';
@@ -122,8 +124,7 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
             'Expected one admin notification email after phone confirmation'
         );
 
-        // Fixture defines superAdmin (userId=7, privileges=7) — only user matching `privileges & 2 != 0`.
-        $superAdmin = $userRepository->findItem(7);
+        $superAdmin = $userRepository->findItemByPhoneNumber(self::SUPER_ADMIN_PHONE_NUMBER);
         $adminEmail = $emailsAfterPhoneConfirm[0];
         $this->assertSame($superAdmin['mail'], $adminEmail['recipient']);
         $this->assertStringContainsString($userEmail, $adminEmail['message']);

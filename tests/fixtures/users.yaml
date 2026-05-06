@@ -35,6 +35,7 @@ stdClass:
   superAdmin (extends defaultUser):
     userId: 7
     privileges: 7
+    number: 421951777777
     userLimit: 7
 
   userForRegistrationTest (extends defaultUser):

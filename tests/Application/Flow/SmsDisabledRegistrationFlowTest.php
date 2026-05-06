@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
 {
+    private const SUPER_ADMIN_PHONE_NUMBER = '421951777777';
+
     private ?string $originalSmsConnector = null;
 
     protected function setUp(): void
@@ -90,8 +92,7 @@ class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
             'Registration row should be deleted after email confirmation'
         );
 
-        // Fixture defines superAdmin (userId=7, privileges=7) — only user matching `privileges & 2 != 0`.
-        $superAdmin = $userRepository->findItem(7);
+        $superAdmin = $userRepository->findItemByPhoneNumber(self::SUPER_ADMIN_PHONE_NUMBER);
         $adminEmail = $emailsAfterEmailConfirm[0];
         $this->assertSame($superAdmin['mail'], $adminEmail['recipient']);
         $this->assertStringContainsString($userEmail, $adminEmail['message']);
