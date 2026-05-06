@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Flow;
 
-use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
@@ -14,36 +13,9 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 class ApiPhoneConfirmAdminNotifyTest extends BikeSharingWebTestCase
 {
-    private const USER_ID = 10;
-    private const USER_PHONE_NUMBER = '421951555555';
+    private const USER_ID = 11;
+    private const USER_PHONE_NUMBER = '421951666666';
     private const USER_PASSWORD = 'password';
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        // Mark phone as unconfirmed so we exercise the phone-confirm flow.
-        // Also reset the password — UserControllerTest::testChangePassword may have changed it
-        // depending on test discovery order.
-        $db = $this->client->getContainer()->get(DbInterface::class);
-        $db->query(
-            'UPDATE users SET isNumberConfirmed = 0, password = :password WHERE userId = :userId',
-            [
-                'userId' => self::USER_ID,
-                'password' => password_hash(self::USER_PASSWORD, PASSWORD_BCRYPT, ['cost' => 13]),
-            ]
-        );
-    }
-
-    protected function tearDown(): void
-    {
-        // Restore the fixture state so other tests aren't affected.
-        $db = $this->client->getContainer()->get(DbInterface::class);
-        $db->query(
-            'UPDATE users SET isNumberConfirmed = 1 WHERE userId = :userId',
-            ['userId' => self::USER_ID]
-        );
-        parent::tearDown();
-    }
 
     public function testAdminNotifiedAfterApiPhoneConfirmVerify(): void
     {
