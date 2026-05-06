@@ -382,6 +382,7 @@ function clearBikeStatusFilter() {
         $(this).closest('label').removeClass('active');
     });
     saveBikeStatusFilter();
+    applyBikeStatusFilter();
 }
 
 $(document).on('change', '.bike-status-filter input[type="checkbox"]', function () {
