@@ -186,6 +186,9 @@ function generateBikeCards(data) {
 }
 
 function bikeInfo(bikeNumber) {
+    if (bikeNumber) {
+        clearBikeStatusFilter();
+    }
     $.ajax({
         url: bikeNumber ? ("/api/v1/admin/bikes/" + bikeNumber) : "/api/v1/admin/bikes",
         method: "GET",
@@ -371,6 +374,15 @@ function saveBikeStatusFilter() {
     } catch (e) {
         // localStorage unavailable (private mode, quota) — filter still works in-session
     }
+}
+
+function clearBikeStatusFilter() {
+    $('.bike-status-filter input[type="checkbox"]').each(function () {
+        $(this).prop('checked', false);
+        $(this).closest('label').removeClass('active');
+    });
+    saveBikeStatusFilter();
+    applyBikeStatusFilter();
 }
 
 $(document).on('change', '.bike-status-filter input[type="checkbox"]', function () {
