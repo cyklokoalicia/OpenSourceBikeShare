@@ -6,6 +6,7 @@ namespace BikeShare\Controller\Api\V1\Admin;
 
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Enum\CreditChangeType;
+use BikeShare\Repository\UserClientRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +24,8 @@ class UsersController extends AbstractController
 
     public function item(
         string $userId,
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        UserClientRepository $userClientRepository
     ): Response {
         if (empty($userId) || !is_numeric($userId)) {
             return $this->json(['detail' => 'Invalid user id'], Response::HTTP_BAD_REQUEST);
@@ -33,6 +35,8 @@ class UsersController extends AbstractController
         if ($user === null) {
             return $this->json(['detail' => 'User not found'], Response::HTTP_NOT_FOUND);
         }
+
+        $user['clients'] = $userClientRepository->findByUserId((int)$userId);
 
         return $this->json($user);
     }

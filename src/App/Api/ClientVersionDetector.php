@@ -17,6 +17,11 @@ class ClientVersionDetector
     // Clients at this version get all transforms applied
     private const VERSION_OLDEST = '0.0.0';
 
+    public function isParsedAndroidVersion(string $version): bool
+    {
+        return $version !== self::VERSION_LATEST && $version !== self::VERSION_OLDEST;
+    }
+
     /**
      * Returns the detected client version as a semver string.
      *

@@ -90,6 +90,9 @@ return static function (ContainerConfigurator $container): void {
             '../src/Translation',
         ]);
 
+    $services->get(\BikeShare\App\EventListener\AndroidVersionSubscriber::class)
+        ->bind('$isAndroidAppEnabled', env('bool:ANDROID_APP_ENABLED'));
+
     $services->get(\BikeShare\App\Security\ApiV1Authenticator::class)
         ->bind('$validTokens', env('json:SERVICE_API_TOKENS'));
     $services->get(\BikeShare\App\Security\ApiTokenAuthenticator::class)
