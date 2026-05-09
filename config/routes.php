@@ -14,6 +14,25 @@ return function (RoutingConfigurator $routes) {
     $routes->add('well_known_assetlinks', '/.well-known/assetlinks.json')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\WellKnownController::class, 'assetLinks']);
+    $routes->add('gbfs_manifest', '/gbfs.json')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\GbfsController::class, 'manifest']);
+    $routes->add('gbfs_system_information', '/gbfs/{locale}/system_information.json')
+        ->methods(['GET'])
+        ->requirements(['locale' => '[a-z]{2}'])
+        ->controller([\BikeShare\Controller\GbfsController::class, 'systemInformation']);
+    $routes->add('gbfs_station_information', '/gbfs/{locale}/station_information.json')
+        ->methods(['GET'])
+        ->requirements(['locale' => '[a-z]{2}'])
+        ->controller([\BikeShare\Controller\GbfsController::class, 'stationInformation']);
+    $routes->add('gbfs_station_status', '/gbfs/{locale}/station_status.json')
+        ->methods(['GET'])
+        ->requirements(['locale' => '[a-z]{2}'])
+        ->controller([\BikeShare\Controller\GbfsController::class, 'stationStatus']);
+    $routes->add('gbfs_vehicle_types', '/gbfs/{locale}/vehicle_types.json')
+        ->methods(['GET'])
+        ->requirements(['locale' => '[a-z]{2}'])
+        ->controller([\BikeShare\Controller\GbfsController::class, 'vehicleTypes']);
     $routes->add('scan_bike', '/scan.php/rent/{bikeNumber}')
         ->requirements(['bikeNumber' => '\d+'])
         ->controller([\BikeShare\Controller\ScanController::class, 'rentBike']);
