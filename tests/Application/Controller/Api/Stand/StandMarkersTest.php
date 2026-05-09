@@ -13,18 +13,6 @@ class StandMarkersTest extends BikeSharingWebTestCase
     private const USER_PHONE_NUMBER = '421951111111';
     private const ADMIN_PHONE_NUMBER = '421951222222';
 
-    protected function setUp(): void
-    {
-        $_ENV['SERVICE_API_TOKENS'] = '{"test-token": "testService"}';
-        parent::setUp();
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV['SERVICE_API_TOKENS'] = "{}";
-        parent::tearDown();
-    }
-
     public function testMarkersByUser(): void
     {
         $user = $this->client->getContainer()->get(UserProvider::class)
@@ -78,27 +66,6 @@ class StandMarkersTest extends BikeSharingWebTestCase
         $this->assertArrayNotHasKey('VIRTUAL_STAND', $byName, 'Admin map should not include virtual stands either');
     }
 
-    public function testMarkersByToken(): void
-    {
-        $this->client->request(
-            Request::METHOD_GET,
-            '/api/v1/stands/markers',
-            server: ['HTTP_AUTHORIZATION' => 'Bearer test-token']
-        );
-        $this->assertResponseIsSuccessful();
-        $response = $this->decodeApiResponseData();
-        foreach ($response as $marker) {
-            $this->assertArrayHasKey('standId', $marker, 'Marker does not contain standId');
-            $this->assertArrayHasKey('bikeCount', $marker, 'Marker does not contain bikeCount');
-            $this->assertArrayHasKey('standName', $marker, 'Marker does not contain standName');
-            $this->assertArrayHasKey('standDescription', $marker, 'Marker does not contain standDescription');
-            $this->assertArrayHasKey('standPhoto', $marker, 'Marker does not contain standPhoto');
-            $this->assertArrayHasKey('longitude', $marker, 'Marker does not contain longitude');
-            $this->assertArrayHasKey('latitude', $marker, 'Marker does not contain latitude');
-            $this->assertArrayHasKey('status', $marker, 'Marker does not contain status');
-        }
-    }
-
     public function testLegacyAndroidClientReceivesServiceTagBackport(): void
     {
         $user = $this->client->getContainer()->get(UserProvider::class)
@@ -144,16 +111,4 @@ class StandMarkersTest extends BikeSharingWebTestCase
         }
     }
 
-    public function testServiceTokenCannotAccessStandList(): void
-    {
-        $this->client->request(
-            Request::METHOD_GET,
-            '/api/v1/admin/stands',
-            server: ['HTTP_AUTHORIZATION' => 'Bearer test-token']
-        );
-
-        $this->assertResponseStatusCodeSame(403);
-        $payload = $this->decodeJsonResponse();
-        $this->assertSame('Access denied', $payload['detail'] ?? null);
-    }
 }

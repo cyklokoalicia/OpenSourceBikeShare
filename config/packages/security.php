@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use BikeShare\App\Security\ApiAccessDeniedHandler;
 use BikeShare\App\Security\ApiV1Authenticator;
-use BikeShare\App\Security\ApiServiceUserProvider;
 use BikeShare\App\Security\TokenProvider;
 use BikeShare\App\Security\UserConfirmedEmailChecker;
 use BikeShare\App\Security\UserProvider;
@@ -32,10 +31,6 @@ return function (SecurityConfig $security) {
     $security
         ->provider('app_user_provider')
         ->id(UserProvider::class);
-
-    $security
-        ->provider('api_service_user_provider')
-        ->id(ApiServiceUserProvider::class);
 
     $security
         ->firewall('dev')
@@ -94,10 +89,6 @@ return function (SecurityConfig $security) {
         ->accessControl()
         ->path('^/api/v1/admin')
         ->roles(['ROLE_ADMIN']);
-    $security
-        ->accessControl()
-        ->path('^/api/v1/stands/markers$')
-        ->roles(['ROLE_USER', 'ROLE_API']);
     $security
         ->accessControl()
         ->path('^/api/v1')

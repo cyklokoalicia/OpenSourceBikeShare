@@ -95,7 +95,6 @@ Configuration is managed via environment variables in `.env.dev` (development) o
 - `SYSTEM_ZOOM` — default map zoom level.
 - `SYSTEM_RULES` — URL to the system rules page.
 - `USER_BIKE_LIMIT_AFTER_REGISTRATION` — number of bikes a new user can rent (`0` recommended for community systems).
-- `SERVICE_API_TOKENS` — JSON object of API tokens for service access, e.g. `{"token123": "service_name"}`.
 
 Database setup
 ----------
