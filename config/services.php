@@ -93,6 +93,17 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\App\EventListener\AndroidVersionSubscriber::class)
         ->bind('$isAndroidAppEnabled', env('bool:ANDROID_APP_ENABLED'));
 
+    $services->get(\BikeShare\Controller\GbfsController::class)
+        ->bind('$isGbfsEnabled', env('bool:GBFS_ENABLED'));
+
+    $services->get(\BikeShare\Gbfs\GbfsFeedBuilder::class)
+        ->bind('$systemId', env('GBFS_SYSTEM_ID'))
+        ->bind('$systemName', env('APP_NAME'))
+        ->bind('$timezone', env('GBFS_TIMEZONE'))
+        ->bind('$contactEmail', env('GBFS_FEED_CONTACT_EMAIL'))
+        ->bind('$defaultLocale', '%kernel.default_locale%')
+        ->bind('$enabledLocales', '%kernel.enabled_locales%');
+
     $services->get(\BikeShare\App\Security\ApiV1Authenticator::class)
         ->bind('$validTokens', env('json:SERVICE_API_TOKENS'));
     $services->get(\BikeShare\App\Security\ApiTokenAuthenticator::class)
