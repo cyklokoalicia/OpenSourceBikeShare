@@ -33,4 +33,29 @@ ALTER TABLE `stands` DROP COLUMN `serviceTag`;
 
 ALTER TABLE `stands`
     MODIFY COLUMN `status` ENUM('active','technical','hidden','inactive','virtual') NOT NULL DEFAULT 'active';
+
+CREATE TABLE `userClient` (
+    `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+    `userId` INT(11) UNSIGNED NOT NULL,
+    `platform` ENUM('android','ios') NOT NULL,
+    `version` VARCHAR(20) NOT NULL,
+    `lastSeenAt` DATETIME NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `userId_platform` (`userId`, `platform`),
+    KEY `lastSeenAt` (`lastSeenAt`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
+
+## Environment Changes
+
+Add the following to your `.env` (see `.env.dist` for the canonical default):
+
+```
+ANDROID_APP_ENABLED=true
+```
+
+Set to `false` on SMS-only or web-only deployments to skip per-request client-version
+writes and hide the "Apps last seen on" section in the admin user editor.
+Symfony will fail to boot if this variable is undefined.
+
+When iOS support is added, a parallel `IOS_APP_ENABLED` variable will be introduced.

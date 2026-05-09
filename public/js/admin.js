@@ -678,6 +678,24 @@ function inactivebikesreport() {
     });
 }
 
+function renderUserClients($list, clients) {
+    $list.empty();
+    if (!clients.length) {
+        $list.append($('<li>').addClass('text-muted').text('—'));
+        return;
+    }
+    clients.forEach(function (client) {
+        $list.append(
+            $('<li>')
+                .append($('<strong>').text(client.platform))
+                .append(document.createTextNode(' '))
+                .append(document.createTextNode(client.version))
+                .append(document.createTextNode(' · '))
+                .append($('<small>').addClass('text-muted').text(client.lastSeenAt))
+        );
+    });
+}
+
 function edituser(userid) {
     $.ajax({
         url: "/api/v1/admin/users/" + userid,
@@ -696,6 +714,7 @@ function edituser(userid) {
             $container.find('#privileges').val(data.privileges);
             $container.find('#limit').val(data.userLimit);
             $container.find('#registrationDate').val(data.registrationDate);
+            renderUserClients($container.find('#userClients'), data.clients || []);
             $container.removeClass('d-none');
             $('html, body').animate({
                 scrollTop: $container.offset().top

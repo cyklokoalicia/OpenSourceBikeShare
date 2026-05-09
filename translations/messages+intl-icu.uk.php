@@ -182,6 +182,7 @@ return [
     'Invalid current password.' => 'Невірний поточний пароль.',
     'Password updated successfully.' => 'Пароль успішно оновлено.',
     'Registration Date' => 'Дата реєстрації',
+    'Last app activity' => 'Остання дата використання додатку',
     'Profile' => 'Профіль',
     'User Profile' => 'Профіль користувача',
     'User Information' => 'Інформація про користувача',

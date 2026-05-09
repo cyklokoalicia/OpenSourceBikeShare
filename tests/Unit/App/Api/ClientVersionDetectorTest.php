@@ -49,4 +49,20 @@ class ClientVersionDetectorTest extends TestCase
 
         $this->assertSame('999.0.0', $this->detector->getClientVersion($request));
     }
+
+    #[DataProvider('isParsedAndroidVersionProvider')]
+    public function testIsParsedAndroidVersion(string $version, bool $expected): void
+    {
+        $this->assertSame($expected, $this->detector->isParsedAndroidVersion($version));
+    }
+
+    public static function isParsedAndroidVersionProvider(): array
+    {
+        return [
+            'parsed semver' => ['1.2.3', true],
+            'parsed semver zero' => ['0.0.1', true],
+            'old okhttp sentinel' => ['0.0.0', false],
+            'browser sentinel' => ['999.0.0', false],
+        ];
+    }
 }

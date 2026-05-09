@@ -175,6 +175,7 @@ Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmU
     'Invalid current password.' => 'Ungültiges aktuelles Passwort.',
     'Password updated successfully.' => 'Passwort erfolgreich aktualisiert.',
     'Registration Date' => 'Registrierungsdatum',
+    'Last app activity' => 'Letzte App-Aktivität',
     'Profile' => 'Profil',
     'User Profile' => 'Benutzerprofil',
     'User Information' => 'Benutzerinformationen',

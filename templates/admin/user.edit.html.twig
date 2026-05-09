@@ -26,6 +26,10 @@
             <label for="registrationDate">{{ 'Registration Date'|trans }}</label>
             <input type="text" class="form-control" id="registrationDate" disabled/>
         </div>
+        <div class="form-group">
+            <label>{{ 'Last app activity'|trans }}</label>
+            <ul id="userClients" class="list-unstyled mb-0"></ul>
+        </div>
         <input type="hidden" name="userid" id="userid" value=""/>
         <button type="button" id="saveuser" class="btn btn-primary">{{ 'Save'|trans }}</button>
         <button type="button" class="cancel btn btn-secondary">{{ 'Cancel'|trans }}</button>

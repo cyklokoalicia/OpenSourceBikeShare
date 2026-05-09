@@ -186,5 +186,17 @@ CREATE TABLE `users` (
   PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `userClient`;
+CREATE TABLE `userClient` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userId` int(11) UNSIGNED NOT NULL,
+  `platform` ENUM('android','ios') NOT NULL,
+  `version` varchar(20) NOT NULL,
+  `lastSeenAt` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `userId_platform` (`userId`, `platform`),
+  KEY `lastSeenAt` (`lastSeenAt`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 -- 2014-11-20 11:19:49
