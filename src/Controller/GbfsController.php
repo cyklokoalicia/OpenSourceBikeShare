@@ -14,6 +14,8 @@ class GbfsController extends AbstractController
     public function __construct(
         private readonly bool $isGbfsEnabled,
         private readonly GbfsFeedBuilder $feedBuilder,
+        /** @var list<string> */
+        private readonly array $enabledLocales,
     ) {
     }
 
@@ -26,30 +28,39 @@ class GbfsController extends AbstractController
 
     public function systemInformation(string $locale): JsonResponse
     {
-        $this->guardEnabled();
+        $this->guard($locale);
 
         return new JsonResponse($this->feedBuilder->buildSystemInformation($locale));
     }
 
-    public function stationInformation(): JsonResponse
+    public function stationInformation(string $locale): JsonResponse
     {
-        $this->guardEnabled();
+        $this->guard($locale);
 
         return new JsonResponse($this->feedBuilder->buildStationInformation());
     }
 
-    public function stationStatus(): JsonResponse
+    public function stationStatus(string $locale): JsonResponse
     {
-        $this->guardEnabled();
+        $this->guard($locale);
 
         return new JsonResponse($this->feedBuilder->buildStationStatus());
     }
 
-    public function vehicleTypes(): JsonResponse
+    public function vehicleTypes(string $locale): JsonResponse
+    {
+        $this->guard($locale);
+
+        return new JsonResponse($this->feedBuilder->buildVehicleTypes());
+    }
+
+    private function guard(string $locale): void
     {
         $this->guardEnabled();
 
-        return new JsonResponse($this->feedBuilder->buildVehicleTypes());
+        if (!in_array($locale, $this->enabledLocales, true)) {
+            throw new NotFoundHttpException();
+        }
     }
 
     private function guardEnabled(): void

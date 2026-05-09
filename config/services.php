@@ -94,7 +94,8 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$isAndroidAppEnabled', env('bool:ANDROID_APP_ENABLED'));
 
     $services->get(\BikeShare\Controller\GbfsController::class)
-        ->bind('$isGbfsEnabled', env('bool:GBFS_ENABLED'));
+        ->bind('$isGbfsEnabled', env('bool:GBFS_ENABLED'))
+        ->bind('$enabledLocales', '%kernel.enabled_locales%');
 
     $services->get(\BikeShare\Gbfs\GbfsFeedBuilder::class)
         ->bind('$systemId', env('GBFS_SYSTEM_ID'))

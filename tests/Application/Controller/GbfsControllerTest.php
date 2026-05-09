@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Test\Application\Controller;
 
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Request;
 
 class GbfsControllerTest extends BikeSharingWebTestCase
@@ -111,5 +112,26 @@ class GbfsControllerTest extends BikeSharingWebTestCase
     {
         $this->client->request(Request::METHOD_GET, '/gbfs/xyz/system_information.json');
         $this->assertResponseStatusCodeSame(404);
+    }
+
+    /**
+     * `fr` passes the route's `[a-z]{2}` regex but is not in `kernel.enabled_locales`,
+     * so the manifest doesn't advertise it and the per-locale endpoints must reject it.
+     */
+    #[DataProvider('localeScopedFeedProvider')]
+    public function testNonEnabledLocaleReturns404(string $url): void
+    {
+        $this->client->request(Request::METHOD_GET, $url);
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    public static function localeScopedFeedProvider(): array
+    {
+        return [
+            'system_information' => ['/gbfs/fr/system_information.json'],
+            'station_information' => ['/gbfs/fr/station_information.json'],
+            'station_status' => ['/gbfs/fr/station_status.json'],
+            'vehicle_types' => ['/gbfs/fr/vehicle_types.json'],
+        ];
     }
 }
