@@ -128,7 +128,11 @@ return function (SecurityConfig $security) {
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
-        ->path('^/gbfs(\.json|/)')
+        ->path('^/gbfs\.json$')
+        ->roles(['PUBLIC_ACCESS']);
+    $security
+        ->accessControl()
+        ->path('^/gbfs/')
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
