@@ -59,9 +59,14 @@ class GbfsControllerTest extends BikeSharingWebTestCase
         }
 
         $names = array_column($stations, 'name');
-        $this->assertNotContains('SERVICE_STAND', $names);
+        $this->assertContains(
+            'SERVICE_STAND',
+            $names,
+            'Maintenance stand must be advertised so clients can show it as out-of-service',
+        );
         $this->assertNotContains('HIDDEN_STAND', $names);
         $this->assertNotContains('INACTIVE_STAND', $names);
+        $this->assertNotContains('VIRTUAL_STAND', $names);
     }
 
     public function testStationStatusReportsBikeCounts(): void
@@ -78,10 +83,44 @@ class GbfsControllerTest extends BikeSharingWebTestCase
             $this->assertGreaterThanOrEqual(0, $station['num_bikes_available']);
             $this->assertNull($station['num_docks_available']);
             $this->assertTrue($station['is_installed']);
-            $this->assertTrue($station['is_renting']);
-            $this->assertTrue($station['is_returning']);
+            $this->assertIsBool($station['is_renting']);
+            $this->assertTrue($station['is_returning'], 'Every published stand accepts returns');
             $this->assertIsInt($station['last_reported']);
         }
+    }
+
+    public function testStationStatusMarksMaintenanceStandsNonRentable(): void
+    {
+        $this->client->request(Request::METHOD_GET, '/gbfs/en/station_information.json');
+        $this->assertResponseIsSuccessful();
+        $infoByStationId = [];
+        foreach ($this->decodeJsonResponse()['data']['stations'] as $info) {
+            $infoByStationId[$info['station_id']] = $info;
+        }
+
+        $this->client->request(Request::METHOD_GET, '/gbfs/en/station_status.json');
+        $this->assertResponseIsSuccessful();
+        $statuses = $this->decodeJsonResponse()['data']['stations'];
+
+        $serviceStandStatus = null;
+        $activeStandStatus = null;
+        foreach ($statuses as $status) {
+            $name = $infoByStationId[$status['station_id']]['name'] ?? null;
+            if ($name === 'SERVICE_STAND') {
+                $serviceStandStatus = $status;
+            } elseif ($name === 'STAND1') {
+                $activeStandStatus = $status;
+            }
+        }
+
+        $this->assertNotNull($serviceStandStatus, 'SERVICE_STAND must appear in station_status');
+        $this->assertTrue($serviceStandStatus['is_installed'], 'Maintenance stand stays physically installed');
+        $this->assertFalse($serviceStandStatus['is_renting'], 'Maintenance stand must not be rentable');
+        $this->assertTrue($serviceStandStatus['is_returning'], 'Maintenance stand still accepts returns');
+
+        $this->assertNotNull($activeStandStatus, 'Sanity: active stand should appear too');
+        $this->assertTrue($activeStandStatus['is_renting']);
+        $this->assertTrue($activeStandStatus['is_returning']);
     }
 
     public function testVehicleTypesAdvertisesHumanBike(): void

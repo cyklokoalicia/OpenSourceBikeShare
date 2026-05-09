@@ -98,14 +98,16 @@ class GbfsFeedBuilder
         $now = $this->clock->now()->getTimestamp();
         $stations = [];
         foreach ($this->fetchPublicStands() as $stand) {
-            $isAvailable = StandStatus::from($stand['status'])->isRentablePublic();
+            // is_returning stays true even for TECHNICAL stands — returnBike()
+            // does not gate by stand status, so users can park there.
+            $isRentable = StandStatus::from($stand['status'])->isRentablePublic();
             $stations[] = [
                 'station_id' => (string)$stand['standId'],
                 'num_bikes_available' => (int)$stand['bikeCount'],
                 'num_docks_available' => null,
-                'is_installed' => $isAvailable,
-                'is_renting' => $isAvailable,
-                'is_returning' => $isAvailable,
+                'is_installed' => true,
+                'is_renting' => $isRentable,
+                'is_returning' => true,
                 'last_reported' => $now,
             ];
         }
@@ -132,12 +134,10 @@ class GbfsFeedBuilder
      */
     private function fetchPublicStands(): array
     {
-        $publicStatuses = array_filter(
-            StandStatus::cases(),
-            fn(StandStatus $s) => $s->isRentablePublic(),
-        );
-
-        return $this->standRepository->findAllExtended(null, array_values($publicStatuses));
+        // VIRTUAL is intentionally excluded — those stands are real rent endpoints
+        // (festivals, reserve storage) but carry placeholder lat/lng=0,0 that would
+        // render as Gulf-of-Guinea pins on aggregator maps.
+        return $this->standRepository->findAllExtended(null, [StandStatus::ACTIVE, StandStatus::TECHNICAL]);
     }
 
     private function envelope(int $ttl, array $data): array
