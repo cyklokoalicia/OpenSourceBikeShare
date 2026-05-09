@@ -57,4 +57,15 @@ class LoginControllerTest extends BikeSharingWebTestCase
         );
         $this->assertSame('de', $this->client->getRequest()->getSession()->get('_locale'));
     }
+
+    public function testAuthenticatedUserVisitingLoginPageIsRedirectedHome(): void
+    {
+        $user = $this->client->getContainer()->get(UserProvider::class)
+            ->loadUserByIdentifier(self::USER_PHONE_NUMBER);
+        $this->client->loginUser($user);
+
+        $this->client->request(Request::METHOD_GET, '/login');
+
+        $this->assertResponseRedirects('/');
+    }
 }

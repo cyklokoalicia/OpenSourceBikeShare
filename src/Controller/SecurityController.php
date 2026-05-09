@@ -20,6 +20,10 @@ class SecurityController extends AbstractController
         bool $isSmsSystemEnabled,
         AuthenticationUtils $authenticationUtils
     ): Response {
+        if ($this->getUser() !== null) {
+            return $this->redirectToRoute('home');
+        }
+
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
