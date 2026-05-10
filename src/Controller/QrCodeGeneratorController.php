@@ -62,12 +62,8 @@ class QrCodeGeneratorController extends AbstractController
             );
         }
 
-        $stands = $standRepository->findAll();
+        $stands = $standRepository->findAll([StandStatus::ACTIVE, StandStatus::TECHNICAL]);
         foreach ($stands as $stand) {
-            if (!StandStatus::from($stand["status"])->isRentablePublic()) {
-                continue;
-            }
-
             $this->addPageQrCode(
                 $pdf,
                 $stand["standName"],

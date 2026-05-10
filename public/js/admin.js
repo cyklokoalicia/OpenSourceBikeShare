@@ -291,51 +291,80 @@ function applyStandStatusToCard($card, status) {
     }
 }
 
-function applyStandStatusFilter() {
-    const selected = $('.stand-status-filter input[type="checkbox"]:checked')
-        .map(function () { return this.value; })
-        .get();
-    const showAll = selected.length === 0;
-    $('#standsconsole > .stand-col').each(function () {
-        const status = $(this).find('.stand-status').val() || 'active';
-        $(this).toggle(showAll || selected.includes(status));
-    });
-}
+const STAND_CITY_FILTER_STORAGE_KEY = 'admin.stands.cityFilter';
+const BIKE_STATUS_FILTER_STORAGE_KEY = 'admin.bikes.statusFilter';
 
-function loadStandStatusFilter() {
+function loadCheckboxFilter(selector, storageKey) {
     let enabled;
     try {
-        const saved = localStorage.getItem(STAND_STATUS_FILTER_STORAGE_KEY);
+        const saved = localStorage.getItem(storageKey);
         if (saved === null) return;
         enabled = JSON.parse(saved);
     } catch (e) {
         return;
     }
     if (!Array.isArray(enabled)) return;
-    $('.stand-status-filter input[type="checkbox"]').each(function () {
+    $(selector + ' input[type="checkbox"]').each(function () {
         const isChecked = enabled.includes(this.value);
         $(this).prop('checked', isChecked);
         $(this).closest('label').toggleClass('active', isChecked);
     });
 }
 
-function saveStandStatusFilter() {
-    const enabled = $('.stand-status-filter input[type="checkbox"]:checked')
+function saveCheckboxFilter(selector, storageKey) {
+    const enabled = $(selector + ' input[type="checkbox"]:checked')
         .map(function () { return this.value; })
         .get();
     try {
-        localStorage.setItem(STAND_STATUS_FILTER_STORAGE_KEY, JSON.stringify(enabled));
+        localStorage.setItem(storageKey, JSON.stringify(enabled));
     } catch (e) {
         // localStorage unavailable (private mode, quota) — filter still works in-session
     }
 }
 
+function applyStandFilters() {
+    const selectedStatuses = $('.stand-status-filter input[type="checkbox"]:checked')
+        .map(function () { return this.value; })
+        .get();
+    const selectedCities = $('.stand-city-filter input[type="checkbox"]:checked')
+        .map(function () { return this.value; })
+        .get();
+    const showAllStatuses = selectedStatuses.length === 0;
+    const showAllCities = selectedCities.length === 0;
+    $('#standsconsole > .stand-col').each(function () {
+        const status = $(this).find('.stand-status').val() || 'active';
+        const city = $(this).attr('data-stand-city') || '';
+        const statusMatch = showAllStatuses || selectedStatuses.includes(status);
+        const cityMatch = showAllCities || selectedCities.includes(city);
+        $(this).toggle(statusMatch && cityMatch);
+    });
+}
+
+function loadStandStatusFilter() {
+    loadCheckboxFilter('.stand-status-filter', STAND_STATUS_FILTER_STORAGE_KEY);
+}
+
+function saveStandStatusFilter() {
+    saveCheckboxFilter('.stand-status-filter', STAND_STATUS_FILTER_STORAGE_KEY);
+}
+
+function loadStandCityFilter() {
+    loadCheckboxFilter('.stand-city-filter', STAND_CITY_FILTER_STORAGE_KEY);
+}
+
+function saveStandCityFilter() {
+    saveCheckboxFilter('.stand-city-filter', STAND_CITY_FILTER_STORAGE_KEY);
+}
+
 $(document).on('change', '.stand-status-filter input[type="checkbox"]', function () {
     saveStandStatusFilter();
-    applyStandStatusFilter();
+    applyStandFilters();
 });
 
-const BIKE_STATUS_FILTER_STORAGE_KEY = 'admin.bikes.statusFilter';
+$(document).on('change', '.stand-city-filter input[type="checkbox"]', function () {
+    saveStandCityFilter();
+    applyStandFilters();
+});
 
 function applyBikeStatusFilter() {
     const selected = $('.bike-status-filter input[type="checkbox"]:checked')
@@ -349,31 +378,11 @@ function applyBikeStatusFilter() {
 }
 
 function loadBikeStatusFilter() {
-    let enabled;
-    try {
-        const saved = localStorage.getItem(BIKE_STATUS_FILTER_STORAGE_KEY);
-        if (saved === null) return;
-        enabled = JSON.parse(saved);
-    } catch (e) {
-        return;
-    }
-    if (!Array.isArray(enabled)) return;
-    $('.bike-status-filter input[type="checkbox"]').each(function () {
-        const isChecked = enabled.includes(this.value);
-        $(this).prop('checked', isChecked);
-        $(this).closest('label').toggleClass('active', isChecked);
-    });
+    loadCheckboxFilter('.bike-status-filter', BIKE_STATUS_FILTER_STORAGE_KEY);
 }
 
 function saveBikeStatusFilter() {
-    const enabled = $('.bike-status-filter input[type="checkbox"]:checked')
-        .map(function () { return this.value; })
-        .get();
-    try {
-        localStorage.setItem(BIKE_STATUS_FILTER_STORAGE_KEY, JSON.stringify(enabled));
-    } catch (e) {
-        // localStorage unavailable (private mode, quota) — filter still works in-session
-    }
+    saveCheckboxFilter('.bike-status-filter', BIKE_STATUS_FILTER_STORAGE_KEY);
 }
 
 function clearBikeStatusFilter() {
@@ -392,6 +401,7 @@ $(document).on('change', '.bike-status-filter input[type="checkbox"]', function 
 
 $(function () {
     loadStandStatusFilter();
+    loadStandCityFilter();
     loadBikeStatusFilter();
 });
 
@@ -404,9 +414,12 @@ function generateStandCards(data) {
         const $col = $template.clone().removeAttr("id").removeClass("d-none");
         const $card = $col.find('.stand-card');
         const status = item.status || 'active';
+        const city = item.city || '';
 
         $card.attr("data-stand-id", item.standId);
+        $col.attr("data-stand-city", city);
         $col.find(".stand-name").text(item.standName);
+        $col.find(".stand-city").text(city);
 
         const $photo = $col.find(".stand-photo");
         if (item.standPhoto) {
@@ -430,7 +443,7 @@ function generateStandCards(data) {
         $container.append($col);
     });
 
-    applyStandStatusFilter();
+    applyStandFilters();
 }
 
 $(document).on('click', '.stand-status-save', function () {
@@ -448,7 +461,7 @@ $(document).on('click', '.stand-status-save', function () {
         success: function (response) {
             const newStatus = (apiData(response) || {}).status || status;
             applyStandStatusToCard($card, newStatus);
-            applyStandStatusFilter();
+            applyStandFilters();
             $feedback
                 .removeClass('d-none text-danger')
                 .addClass('text-success')

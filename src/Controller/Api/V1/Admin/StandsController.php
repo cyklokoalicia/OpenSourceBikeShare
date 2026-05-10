@@ -20,7 +20,7 @@ class StandsController extends AbstractController
 
     public function index(): Response
     {
-        $stands = $this->standRepository->findAll();
+        $stands = $this->standRepository->findAll(StandStatus::cases());
 
         return $this->json($stands);
     }

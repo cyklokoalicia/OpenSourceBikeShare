@@ -17,14 +17,25 @@
                     </label>
                 {% endfor %}
             </div>
+            {% if availableCities|length > 1 %}
+                <div class="btn-group btn-group-sm btn-group-toggle mb-3 ml-2 stand-city-filter" data-toggle="buttons">
+                    {% for city in availableCities %}
+                        <label class="btn btn-outline-secondary">
+                            <input type="checkbox" autocomplete="off" value="{{ city }}">
+                            {{ city }}
+                        </label>
+                    {% endfor %}
+                </div>
+            {% endif %}
             <div class="row" id="standsconsole">
 
             </div>
             {# stand card#}
-            <div id="stand-card-template" class="d-none col-md-4 mb-4 stand-col">
+            <div id="stand-card-template" class="d-none col-md-4 mb-4 stand-col" data-stand-city="">
                 <div class="card stand-card border" data-stand-id="">
                     <div class="card-header">
                         <span class="stand-name"></span>
+                        <small class="stand-city text-muted ml-2"></small>
                         {% for status in standStatuses|filter(s => s.badgeClass) %}
                             <i class="fas {{ status.icon }} d-none {{ status.badgeClass }}"></i>
                         {% endfor %}

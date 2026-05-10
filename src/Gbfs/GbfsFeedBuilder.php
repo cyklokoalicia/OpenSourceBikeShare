@@ -136,8 +136,9 @@ class GbfsFeedBuilder
     {
         // VIRTUAL is intentionally excluded — those stands are real rent endpoints
         // (festivals, reserve storage) but carry placeholder lat/lng=0,0 that would
-        // render as Gulf-of-Guinea pins on aggregator maps.
-        return $this->standRepository->findAllExtended(null, [StandStatus::ACTIVE, StandStatus::TECHNICAL]);
+        // render as Gulf-of-Guinea pins on aggregator maps. Stands tied to cities
+        // not in CITIES env are filtered out at the repository level.
+        return $this->standRepository->findAll([StandStatus::ACTIVE, StandStatus::TECHNICAL]);
     }
 
     private function envelope(int $ttl, array $data): array

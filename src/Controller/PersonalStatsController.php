@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
+use BikeShare\Enum\StandStatus;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\StatsRepository;
 use BikeShare\Repository\UserRepository;
@@ -31,7 +32,9 @@ class PersonalStatsController extends AbstractController
 
         $userId = $userRepository->findItemByPhoneNumber($this->getUser()->getUserIdentifier())['userId'];
         $stats = $statsRepository->getUserStatsForYear((int)$userId, (int)$year);
-        $standsList = $standRepository->findAll();
+        $standsList = $standRepository->findAll(
+            [StandStatus::ACTIVE, StandStatus::TECHNICAL, StandStatus::INACTIVE],
+        );
         $stands = [];
         foreach ($standsList as $stand) {
             $stands[$stand['standId']] = $stand;
