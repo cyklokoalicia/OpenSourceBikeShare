@@ -67,6 +67,11 @@ class GbfsControllerTest extends BikeSharingWebTestCase
         $this->assertNotContains('HIDDEN_STAND', $names);
         $this->assertNotContains('INACTIVE_STAND', $names);
         $this->assertNotContains('VIRTUAL_STAND', $names);
+        $this->assertNotContains(
+            'ORPHAN_STAND',
+            $names,
+            'Stands tied to a non-configured city must be hidden from the public feed',
+        );
     }
 
     public function testStationStatusReportsBikeCounts(): void

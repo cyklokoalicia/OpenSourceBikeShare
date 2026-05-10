@@ -10,36 +10,24 @@ use BikeShare\Enum\StandStatus;
 
 class StandRepository
 {
-    public function __construct(private readonly DbInterface $db)
-    {
-    }
-
-    public function findAll(): array
-    {
-        $result = $this->db->query(
-            "SELECT
-                standId,
-                standName,
-                standDescription,
-                standPhoto,
-                status,
-                placeName,
-                longitude,
-                latitude
-            FROM stands
-            ORDER BY standName"
-        )->fetchAllAssoc();
-
-        return $result;
+    public function __construct(
+        private readonly DbInterface $db,
+        private readonly CityRepository $cityRepository,
+    ) {
     }
 
     /**
      * @param StandStatus[] $statuses Statuses to include. Defaults to publicly visible (active + technical).
      */
-    public function findAllExtended(?string $city = null, array $statuses = []): array
+    public function findAll(array $statuses = []): array
     {
         if (empty($statuses)) {
             $statuses = [StandStatus::ACTIVE, StandStatus::TECHNICAL];
+        }
+
+        $cityParams = $this->buildCityParams();
+        if ($cityParams === null) {
+            return [];
         }
 
         $statusParams = [];
@@ -50,6 +38,8 @@ class StandRepository
             $statusPlaceholders[] = ':' . $key;
         }
 
+        $cityPlaceholders = array_map(fn(string $k) => ':' . $k, array_keys($cityParams));
+
         $result = $this->db->query(
             "SELECT
                 standId,
@@ -58,21 +48,38 @@ class StandRepository
                 standDescription,
                 standPhoto,
                 status,
+                city,
                 longitude,
                 latitude
             FROM stands
             LEFT JOIN bikes ON bikes.currentStand=stands.standId
-            WHERE stands.status IN (" . implode(', ', $statusPlaceholders) . ") " .
-            (is_null($city) ? " AND standId != :city " : " AND city = :city ") .
-            "GROUP BY standName
+            WHERE stands.status IN (" . implode(', ', $statusPlaceholders) . ")
+            AND city IN (" . implode(', ', $cityPlaceholders) . ")
+            GROUP BY standName
             ORDER BY standName",
-            array_merge(
-                $statusParams,
-                ['city' => (string)$city]
-            )
+            array_merge($statusParams, $cityParams)
         )->fetchAllAssoc();
 
         return $result;
+    }
+
+    /**
+     * @return array<string, string>|null Map of bind-name (no colon) → configured city,
+     *                                    or null if no cities are configured.
+     */
+    private function buildCityParams(): ?array
+    {
+        $names = array_keys($this->cityRepository->findAvailableCities());
+        if (empty($names)) {
+            return null;
+        }
+
+        $params = [];
+        foreach ($names as $i => $name) {
+            $params['city' . $i] = $name;
+        }
+
+        return $params;
     }
 
     public function findItem(int $standId): ?array

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\Credit\CreditSystemInterface;
+use BikeShare\Repository\CityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,6 +16,7 @@ class AdminController extends AbstractController
         bool $isSmsSystemEnabled,
         CreditSystemInterface $creditSystem,
         ClockInterface $clock,
+        CityRepository $cityRepository,
     ): Response {
         return $this->render(
             'admin/index.html.twig',
@@ -22,6 +24,7 @@ class AdminController extends AbstractController
                 'isSmsSystemEnabled' => $isSmsSystemEnabled,
                 'creditSystem' => $creditSystem,
                 'currentYear' => $clock->now()->format('Y'),
+                'availableCities' => array_keys($cityRepository->findAvailableCities()),
             ]
         );
     }

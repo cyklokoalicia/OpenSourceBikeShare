@@ -39,3 +39,17 @@ stdClass:
     standName: 'VIRTUAL_STAND'
     standDescription: '<streetName()>'
     status: 'virtual'
+
+  stand_orphan (extends defaultStand):
+    standId: '10'
+    standName: 'ORPHAN_STAND'
+    standDescription: '<streetName()>'
+    status: 'active'
+    city: 'PhantomCity'
+
+  stand_other_city (extends defaultStand):
+    standId: '11'
+    standName: 'OTHER_CITY_STAND'
+    standDescription: '<streetName()>'
+    status: 'active'
+    city: 'Other City'
