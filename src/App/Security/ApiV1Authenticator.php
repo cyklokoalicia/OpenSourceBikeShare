@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\App\Security;
 
-use BikeShare\App\Entity\ApiServiceUser;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,7 +21,6 @@ class ApiV1Authenticator extends AbstractAuthenticator implements Authentication
         private readonly JwtTokenService $jwtTokenService,
         private readonly UserRepository $userRepository,
         private readonly UserProvider $userProvider,
-        private readonly array $validTokens,
     ) {
     }
 
@@ -51,11 +49,7 @@ class ApiV1Authenticator extends AbstractAuthenticator implements Authentication
             throw new AuthenticationException('No bearer token provided.');
         }
 
-        if (str_contains($token, '.')) {
-            return $this->authenticateJwtUser($token);
-        }
-
-        return $this->authenticateServiceToken($token);
+        return $this->authenticateJwtUser($token);
     }
 
     public function onAuthenticationSuccess(
@@ -107,20 +101,6 @@ class ApiV1Authenticator extends AbstractAuthenticator implements Authentication
             new UserBadge(
                 (string)$userId,
                 fn() => $this->userProvider->loadUserByIdentifier((string)$userData['number'])
-            )
-        );
-    }
-
-    private function authenticateServiceToken(string $token): Passport
-    {
-        if (!array_key_exists($token, $this->validTokens)) {
-            throw new AuthenticationException('Invalid service API token.');
-        }
-
-        return new SelfValidatingPassport(
-            new UserBadge(
-                'api_service_' . hash('sha256', $token),
-                fn() => new ApiServiceUser((string)$this->validTokens[$token])
             )
         );
     }

@@ -61,13 +61,11 @@ class StandsController extends AbstractController
         }
 
         $stands = $this->standRepository->findAll($statuses);
-        if (!$this->isGranted('ROLE_API') || $this->isGranted('ROLE_USER')) {
-            $userCity = $this->getUser()->getCity();
-            $stands = array_values(array_filter(
-                $stands,
-                fn(array $stand) => $stand['city'] === $userCity,
-            ));
-        }
+        $userCity = $this->getUser()->getCity();
+        $stands = array_values(array_filter(
+            $stands,
+            fn(array $stand) => $stand['city'] === $userCity,
+        ));
 
         return $this->json($stands);
     }

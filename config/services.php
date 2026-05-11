@@ -107,10 +107,6 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$defaultLocale', '%kernel.default_locale%')
         ->bind('$enabledLocales', '%kernel.enabled_locales%');
 
-    $services->get(\BikeShare\App\Security\ApiV1Authenticator::class)
-        ->bind('$validTokens', env('json:SERVICE_API_TOKENS'));
-    $services->get(\BikeShare\App\Security\ApiTokenAuthenticator::class)
-        ->bind('$validTokens', env('json:SERVICE_API_TOKENS'));
     $services->get(\BikeShare\App\Security\JwtTokenService::class)
         ->bind('$secret', env('APP_SECRET'))
         ->bind('$accessTtlSeconds', env('int:API_JWT_ACCESS_TTL'))
