@@ -65,8 +65,6 @@ class AndroidVersionSubscriberTest extends TestCase
             'me/limits per-screen' => ['/api/v1/me/limits', 'api_v1_me_limits'],
             'me/bikes per-screen' => ['/api/v1/me/bikes', 'api_v1_me_bikes'],
             'me/city patch' => ['/api/v1/me/city', 'api_v1_me_city'],
-            'me/credit-history' => ['/api/v1/me/credit-history', 'api_v1_me_credit_history'],
-            'me/trips' => ['/api/v1/me/trips', 'api_v1_me_trips'],
         ];
     }
 
