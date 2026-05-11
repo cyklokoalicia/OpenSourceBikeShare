@@ -17,15 +17,12 @@ class AndroidVersionSubscriber implements EventSubscriberInterface
     private const PLATFORM_ANDROID = 'android';
 
     // High-frequency endpoints (map polling, per-screen calls) that would otherwise
-    // trigger a no-op throttled write on every request. Tracked endpoints (login,
-    // refresh, rentals, returns, admin actions) cover real user activity.
+    // trigger a no-op throttled write on every request.
     private const SKIPPED_ROUTES = [
         'api_v1_stand_markers' => true,
         'api_v1_me_city' => true,
         'api_v1_me_bikes' => true,
         'api_v1_me_limits' => true,
-        'api_v1_me_credit_history' => true,
-        'api_v1_me_trips' => true,
     ];
 
     public function __construct(
