@@ -3,6 +3,7 @@
 namespace BikeShare\Rent;
 
 use BikeShare\Credit\CreditSystemInterface;
+use BikeShare\Rent\BikeCodeGenerator\BikeCodeGeneratorInterface;
 use BikeShare\Rent\DTO\RentSystemResult;
 use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Event\BikeRentEvent;
@@ -36,6 +37,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected readonly NoteRepository $noteRepository,
         protected readonly RentalCreditCalculator $creditCalculator,
         protected readonly ClockInterface $clock,
+        protected readonly BikeCodeGeneratorInterface $codeGenerator,
         protected readonly bool $stackWatchEnabled,
         protected readonly bool $isSmsSystemEnabled,
         protected readonly bool $forceStack,
@@ -127,8 +129,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $currentCode = $bike['currentCode'];
         $note = $bike['notes'];
 
-        // Avoid more than one leading zero or more than two leading 9s (unusual/unsafe).
-        $newCode = sprintf('%04d', rand(100, 9900));
+        $newCode = $this->codeGenerator->generate();
 
         $this->bikeRepository->assignToUser($bikeId, $userId, $newCode);
 

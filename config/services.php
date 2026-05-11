@@ -7,6 +7,8 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use BikeShare\App\EventListener\ErrorListener;
 use BikeShare\Credit\CodeGenerator\CodeGenerator;
 use BikeShare\Credit\CodeGenerator\CodeGeneratorInterface;
+use BikeShare\Rent\BikeCodeGenerator\BikeCodeGenerator;
+use BikeShare\Rent\BikeCodeGenerator\BikeCodeGeneratorInterface;
 use BikeShare\Credit\CreditSystem;
 use BikeShare\Credit\CreditSystemFactory;
 use BikeShare\Credit\CreditSystemInterface;
@@ -241,6 +243,7 @@ return static function (ContainerConfigurator $container): void {
     }
 
     $services->alias(CodeGeneratorInterface::class, CodeGenerator::class);
+    $services->alias(BikeCodeGeneratorInterface::class, BikeCodeGenerator::class);
 
     $services->alias(PhonePurifierInterface::class, PhonePurifier::class);
 
