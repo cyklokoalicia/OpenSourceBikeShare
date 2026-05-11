@@ -110,5 +110,4 @@ class StandMarkersTest extends BikeSharingWebTestCase
             $this->assertArrayHasKey('status', $marker);
         }
     }
-
 }
