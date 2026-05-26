@@ -7,7 +7,7 @@ namespace BikeShare\Sentry;
 use Sentry\Tracing\SamplingContext;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-final readonly class GbfsTracesSampler
+readonly class GbfsTracesSampler
 {
     public function __construct(private RequestStack $requestStack)
     {

@@ -1,15 +1,12 @@
 <?php
 
-use BikeShare\Sentry\GbfsTracesSampler;
-use Symfony\Config\SentryConfig;
-
-return static function (SentryConfig $sentry) {
+return static function (\Symfony\Config\SentryConfig $sentry) {
     $sentry->dsn('%env(SENTRY_DSN)%');
     $sentry->options()
         ->httpConnectTimeout(2)
         ->httpTimeout(2)
         ->defaultIntegrations(true)
-        ->tracesSampler(GbfsTracesSampler::class)
+        ->tracesSampler(\BikeShare\Sentry\GbfsTracesSampler::class)
         ->attachStacktrace(true)
         ->ignoreExceptions([
             \Symfony\Component\Security\Core\Exception\AccessDeniedException::class,
