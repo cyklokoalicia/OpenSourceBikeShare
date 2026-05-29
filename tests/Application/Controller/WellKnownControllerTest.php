@@ -48,40 +48,22 @@ class WellKnownControllerTest extends BikeSharingWebTestCase
 
     public function testAssetLinksReturnsNotFoundWhenNoFingerprintsConfigured(): void
     {
-        $previous = $_ENV['ANDROID_APP_LINKS_FINGERPRINTS'] ?? null;
-        $_ENV['ANDROID_APP_LINKS_FINGERPRINTS'] = '';
-        try {
-            self::ensureKernelShutdown();
-            $this->client = self::createClient();
-            $this->client->request(Request::METHOD_GET, '/.well-known/assetlinks.json');
-            $this->assertSame(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
-        } finally {
-            if ($previous === null) {
-                unset($_ENV['ANDROID_APP_LINKS_FINGERPRINTS']);
-            } else {
-                $_ENV['ANDROID_APP_LINKS_FINGERPRINTS'] = $previous;
-            }
-        }
+        $this->setEnvVar('ANDROID_APP_LINKS_FINGERPRINTS', '');
+        self::ensureKernelShutdown();
+        $this->client = self::createClient();
+        $this->client->request(Request::METHOD_GET, '/.well-known/assetlinks.json');
+        $this->assertSame(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
     }
 
     public function testAssetLinksIgnoresMalformedFingerprintsButKeepsValidOnes(): void
     {
-        $previous = $_ENV['ANDROID_APP_LINKS_FINGERPRINTS'] ?? null;
         $valid = 'AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99';
-        $_ENV['ANDROID_APP_LINKS_FINGERPRINTS'] = "garbage, $valid, 11:22, ZZ:invalid";
-        try {
-            self::ensureKernelShutdown();
-            $this->client = self::createClient();
-            $this->client->request(Request::METHOD_GET, '/.well-known/assetlinks.json');
-            $this->assertResponseIsSuccessful();
-            $body = json_decode($this->client->getResponse()->getContent(), true, flags: JSON_THROW_ON_ERROR);
-            $this->assertSame([$valid], $body[0]['target']['sha256_cert_fingerprints']);
-        } finally {
-            if ($previous === null) {
-                unset($_ENV['ANDROID_APP_LINKS_FINGERPRINTS']);
-            } else {
-                $_ENV['ANDROID_APP_LINKS_FINGERPRINTS'] = $previous;
-            }
-        }
+        $this->setEnvVar('ANDROID_APP_LINKS_FINGERPRINTS', "garbage, $valid, 11:22, ZZ:invalid");
+        self::ensureKernelShutdown();
+        $this->client = self::createClient();
+        $this->client->request(Request::METHOD_GET, '/.well-known/assetlinks.json');
+        $this->assertResponseIsSuccessful();
+        $body = json_decode($this->client->getResponse()->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame([$valid], $body[0]['target']['sha256_cert_fingerprints']);
     }
 }

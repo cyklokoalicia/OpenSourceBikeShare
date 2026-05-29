@@ -15,20 +15,6 @@ class HelpCommandTest extends BikeSharingWebTestCase
     private const USER_PHONE_NUMBER = '421951111111';
     private const ADMIN_PHONE_NUMBER = '421951222222';
 
-    private $smsSystemEnabled;
-
-    protected function setup(): void
-    {
-        parent::setup();
-        $this->smsSystemEnabled = $_ENV['CREDIT_SYSTEM_ENABLED'];
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = $this->smsSystemEnabled;
-        parent::tearDown();
-    }
-
     #[DataProvider('smsHelpDataProvider')]
     public function testHelpCommand(
         string $phoneNumber,
@@ -36,7 +22,7 @@ class HelpCommandTest extends BikeSharingWebTestCase
         array $notExpectedCommands,
         bool $isCreditSystemEnabled
     ): void {
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = $isCreditSystemEnabled ? '1' : '0';
+        $this->setEnvVar('CREDIT_SYSTEM_ENABLED', $isCreditSystemEnabled ? '1' : '0');
 
         $this->client->request(
             Request::METHOD_GET,

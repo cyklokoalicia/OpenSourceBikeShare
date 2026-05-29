@@ -18,26 +18,12 @@ class StandBikeListTest extends BikeSharingWebTestCase
     private const BIKE_NUMBER = 6;
     private const STAND_NAME = 'STAND1';
 
-    private $forceStack;
-
-    protected function setup(): void
-    {
-        $this->forceStack = $_ENV['FORCE_STACK'];
-        parent::setup();
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV['FORCE_STACK'] = $this->forceStack;
-        parent::tearDown();
-    }
-
     #[DataProvider('bikeListOnStandDataProvider')]
     public function testBikeListOnStand(
         bool $forceStack,
         $expectedStackTopBike
     ): void {
-        $_ENV['FORCE_STACK'] = $forceStack ? '1' : '0';
+        $this->setEnvVar('FORCE_STACK', $forceStack ? '1' : '0');
 
         #add bike to stand with note
         $admin = $this->client->getContainer()->get(UserRepository::class)

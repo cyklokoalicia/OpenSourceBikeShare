@@ -17,11 +17,8 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
     private const USER_PHONE_NUMBER = '421951111111';
     private const ADMIN_PHONE_NUMBER = '421951222222';
 
-    private $creditSystemEnabled;
-
     protected function setup(): void
     {
-        $this->creditSystemEnabled = $_ENV['CREDIT_SYSTEM_ENABLED'];
         parent::setup();
     }
 
@@ -35,13 +32,12 @@ class CouponApiControllerTest extends BikeSharingWebTestCase
             $creditSystem->decreaseCredit($user['userId'], $userCredit, CreditChangeType::BALANCE_ADJUSTMENT);
         }
 
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = $this->creditSystemEnabled;
         parent::tearDown();
     }
 
     public function testCouponUse(): void
     {
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = '1';
+        $this->setEnvVar('CREDIT_SYSTEM_ENABLED', '1');
 
         #generate coupons
         $admin = $this->client->getContainer()->get(UserProvider::class)

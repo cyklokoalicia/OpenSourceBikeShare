@@ -18,12 +18,9 @@ class UserBikeTest extends BikeSharingWebTestCase
     private const BIKE_NUMBER = 7;
     private const STAND_NAME = 'STAND1';
 
-    private $watchesTooMany;
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->watchesTooMany = $_ENV['WATCHES_NUMBER_TOO_MANY'];
 
         $admin = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
@@ -51,14 +48,13 @@ class UserBikeTest extends BikeSharingWebTestCase
                 true
             );
 
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = $this->watchesTooMany;
         parent::tearDown();
     }
 
     public function testUserBike(): void
     {
         //We should not notify admin about too many rents in this testsuite
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999;
+        $this->setEnvVar('WATCHES_NUMBER_TOO_MANY', '9999');
 
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);

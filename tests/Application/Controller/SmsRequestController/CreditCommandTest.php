@@ -15,23 +15,9 @@ class CreditCommandTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421951111111';
 
-    private $creditSystemEnabled;
-
-    protected function setup(): void
-    {
-        parent::setup();
-        $this->creditSystemEnabled = $_ENV['CREDIT_SYSTEM_ENABLED'];
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = $this->creditSystemEnabled;
-        parent::tearDown();
-    }
-
     public function testCreditCommandWithEnabledSystem(): void
     {
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = '1';
+        $this->setEnvVar('CREDIT_SYSTEM_ENABLED', '1');
 
         $this->client->request(
             Request::METHOD_GET,
@@ -66,7 +52,7 @@ class CreditCommandTest extends BikeSharingWebTestCase
 
     public function testCreditCommandWithDisabledSystem(): void
     {
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = '0';
+        $this->setEnvVar('CREDIT_SYSTEM_ENABLED', '0');
 
         $this->client->request(
             Request::METHOD_GET,

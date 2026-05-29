@@ -15,25 +15,11 @@ class ListCommandTest extends BikeSharingWebTestCase
     private const ADMIN_PHONE_NUMBER = '421951222222';
     private const STAND_NAME = 'STAND1';
 
-    private $forceStack;
-
-    protected function setup(): void
-    {
-        parent::setup();
-        $this->forceStack = $_ENV['FORCE_STACK'];
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV['FORCE_STACK'] = $this->forceStack;
-        parent::tearDown();
-    }
-
     #[DataProvider('listCommandDataProvider')]
     public function testListCommand(
         bool $forceStack
     ): void {
-        $_ENV['FORCE_STACK'] = $forceStack ? '1' : '0';
+        $this->setEnvVar('FORCE_STACK', $forceStack ? '1' : '0');
         $this->client->request(
             Request::METHOD_GET,
             '/receive.php',

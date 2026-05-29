@@ -13,11 +13,8 @@ class UserChangeCityTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421951111111';
 
-    private $cities;
-
     protected function setup(): void
     {
-        $this->cities = $_ENV['CITIES'];
         parent::setup();
         $userRepository = $this->client->getContainer()->get(UserRepository::class);
         $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
@@ -29,7 +26,6 @@ class UserChangeCityTest extends BikeSharingWebTestCase
 
     protected function tearDown(): void
     {
-        $_ENV['CITIES'] = $this->cities;
         $userRepository = $this->client->getContainer()->get(UserRepository::class);
         $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
         $userRepository->updateUserCity(
@@ -41,10 +37,10 @@ class UserChangeCityTest extends BikeSharingWebTestCase
 
     public function testChangeCity(): void
     {
-        $_ENV['CITIES'] = json_encode([
+        $this->setEnvVar('CITIES', json_encode([
             "Default City" => [48.148154, 17.117232],
             "Bratislava" => [17.117232, 48.148154],
-        ]);
+        ]));
 
         $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
         $this->client->loginUser($user);

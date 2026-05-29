@@ -23,12 +23,9 @@ class ReturnCommandTest extends BikeSharingWebTestCase
     private const BIKE_NUMBER = 6;
     private const STAND_NAME = 'STAND1';
 
-    private $watchesTooMany;
-
     protected function setUp(): void
     {
-        $this->watchesTooMany = $_ENV['WATCHES_NUMBER_TOO_MANY'];
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999; // Disable watches for this test
+        $this->setEnvVar('WATCHES_NUMBER_TOO_MANY', '9999'); // Disable watches for this test
         parent::setUp();
 
         $admin = $this->client->getContainer()->get(UserRepository::class)
@@ -55,12 +52,6 @@ class ReturnCommandTest extends BikeSharingWebTestCase
 
         // Drop any setup-noise from the recording SMS sender so the test sees only what RETURN produces.
         $this->client->getContainer()->get(DebugSmsSender::class)->reset();
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = $this->watchesTooMany;
-        parent::tearDown();
     }
 
     public function testReturnCommand(): void
