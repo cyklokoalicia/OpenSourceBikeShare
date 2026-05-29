@@ -13,6 +13,7 @@ use BikeShare\Repository\CityRepository;
 use BikeShare\Repository\RefreshTokenRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\User\UserRegistration;
+use BikeShare\Welcome\MessengerChatsProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,6 +35,7 @@ class AuthController extends AbstractController
         private readonly CityRepository $cityRepository,
         private readonly UserRegistration $userRegistration,
         private readonly PhonePurifierInterface $phonePurifier,
+        private readonly MessengerChatsProvider $messengerChatsProvider,
         private readonly bool $isSmsSystemEnabled = false,
     ) {
     }
@@ -43,6 +45,20 @@ class AuthController extends AbstractController
         $cities = array_keys($this->cityRepository->findAvailableCities());
 
         return $this->json($cities);
+    }
+
+    public function messengerChats(): Response
+    {
+        $chats = array_map(
+            static fn($chat) => [
+                'name' => $chat->name,
+                'url' => $chat->url,
+                'icon' => $chat->icon->value,
+            ],
+            $this->messengerChatsProvider->getChats(),
+        );
+
+        return $this->json($chats);
     }
 
     public function register(Request $request): Response

@@ -18,6 +18,9 @@ return function (RoutingConfigurator $routes) {
     $routes->add('api_v1_auth_cities', '/api/v1/auth/cities')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\V1\AuthController::class, 'cities']);
+    $routes->add('api_v1_auth_messenger_chats', '/api/v1/auth/messenger-chats')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\Api\V1\AuthController::class, 'messengerChats']);
     $routes->add('api_v1_stands', '/api/v1/admin/stands')
         ->methods(['GET'])
         ->controller([\BikeShare\Controller\Api\V1\Admin\StandsController::class, 'index']);
