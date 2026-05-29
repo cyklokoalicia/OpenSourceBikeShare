@@ -50,6 +50,7 @@ class MigrateCreditHistoryCommand extends Command
 
         if (empty($usersWithLegacy)) {
             $io->success('No users with legacy records found to migrate.');
+
             return Command::SUCCESS;
         }
 
@@ -181,6 +182,7 @@ class MigrateCreditHistoryCommand extends Command
         if (empty($records)) {
             $difference = abs($currentBalance);
             $balanceMismatch = ($difference > 0.01) ? round($currentBalance, 2) : null;
+
             return [
                 'migrated' => 0,
                 'deleted' => 0,
@@ -330,6 +332,7 @@ class MigrateCreditHistoryCommand extends Command
             }
 
             $newRecords[] = $jsonData;
+
             return $newRecords;
         }
 

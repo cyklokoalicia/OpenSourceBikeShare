@@ -80,6 +80,7 @@ class NewUserAdminNotifierEventListenerTest extends TestCase
                         ],
                         $msg->getParameters()
                     );
+
                     return true;
                 }),
                 false

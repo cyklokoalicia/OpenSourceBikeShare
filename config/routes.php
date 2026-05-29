@@ -81,4 +81,11 @@ return function (RoutingConfigurator $routes) {
 
     $routes->add('qr_code_generator', '/admin/qrCodeGenerator')
         ->controller([\BikeShare\Controller\QrCodeGeneratorController::class, 'index']);
+
+    $routes->add('welcome', '/welcome')
+        ->methods(['GET'])
+        ->controller([\BikeShare\Controller\WelcomeController::class, 'index']);
+    $routes->add('welcome_dismiss', '/welcome/dismiss')
+        ->methods(['POST'])
+        ->controller([\BikeShare\Controller\WelcomeController::class, 'dismiss']);
 };

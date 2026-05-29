@@ -36,6 +36,7 @@ class RentSystemResponseTraitTest extends TestCase
                 // level — the translation template embeds the badge spans itself).
                 $this->assertSame('web', $params['channel']);
                 $this->assertSame('42', $params['bikeNumber']);
+
                 return 'Bike <span class="badge badge-primary">42</span> rented';
             });
 
@@ -77,6 +78,7 @@ class RentSystemResponseTraitTest extends TestCase
                 // (errors included) so user-controlled string params can't smuggle markup
                 // through `detail` into .html() / |raw consumers.
                 $this->assertSame('1', $params['bikeNumber']);
+
                 return 'Bike 1 is already rented.';
             });
 

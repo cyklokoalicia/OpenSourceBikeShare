@@ -283,4 +283,9 @@ Prázdné stojany:
     'command.help.message' => 'Příkazy:
 {commands}',
     'command.help.help' => '',
+    'welcome.title' => 'Vítejte v {siteName}',
+    'welcome.description' => 'Připojte se k chatu pro začátečníky — naučte se používat systém a získejte pomoc od ostatních uživatelů.',
+    'welcome.openChat' => 'Otevřít chat',
+    'welcome.scanQr' => 'Naskenujte jiným zařízením',
+    'welcome.skip' => 'Přeskočit — již nezobrazovat',
 ];

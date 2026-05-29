@@ -33,6 +33,7 @@ class RentSystemResultTest extends TestCase
                 $this->assertSame('bike.rent.success', $code);
                 $this->assertSame('rentSystem', $domain);
                 $this->assertSame('web', $params['channel']);
+
                 return 'rendered';
             });
 
@@ -53,6 +54,7 @@ class RentSystemResultTest extends TestCase
             ->method('trans')
             ->willReturnCallback(function (string $code, array $params): string {
                 $this->assertSame('custom', $params['channel']);
+
                 return 'rendered';
             });
 
@@ -74,6 +76,7 @@ class RentSystemResultTest extends TestCase
             ->willReturnCallback(function (string $code, array $params): string {
                 $this->assertSame('&lt;script&gt;alert(1)&lt;/script&gt;', $params['standName']);
                 $this->assertSame('7', $params['bikeNumber']);
+
                 return 'rendered';
             });
 
@@ -97,6 +100,7 @@ class RentSystemResultTest extends TestCase
                     '&lt;img src=x onerror=alert(1)&gt;',
                     $params['standName']
                 );
+
                 return 'rendered';
             });
 
@@ -117,6 +121,7 @@ class RentSystemResultTest extends TestCase
             ->method('trans')
             ->willReturnCallback(function (string $code, array $params): string {
                 $this->assertSame('&lt;b&gt;x&lt;/b&gt;', $params['note']);
+
                 return 'rendered';
             });
 
@@ -145,6 +150,7 @@ class RentSystemResultTest extends TestCase
             ->willReturnCallback(function (string $code, array $params): string {
                 // Resolved value is then htmlspecialchars-escaped.
                 $this->assertSame('&lt;resolved&gt;', $params['inner']);
+
                 return 'rendered';
             });
 

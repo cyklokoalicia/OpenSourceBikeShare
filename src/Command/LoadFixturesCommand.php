@@ -28,6 +28,7 @@ class LoadFixturesCommand extends Command
     {
         if ($this->appEnvironment !== 'test') {
             $output->writeln('<error>This command can only be run in the test environment.</error>');
+
             return Command::FAILURE;
         }
 

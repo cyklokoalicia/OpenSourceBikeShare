@@ -26,6 +26,23 @@ class UserControllerTest extends BikeSharingWebTestCase
         }
     }
 
+    protected function tearDown(): void
+    {
+        $userRepository = $this->client->getContainer()->get(UserRepository::class);
+        $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE);
+        if ($user !== null) {
+            $db = $this->client->getContainer()->get(DbInterface::class);
+            $db->query(
+                'UPDATE users SET password = :password WHERE userId = :userId',
+                [
+                    'userId' => $user['userId'],
+                    'password' => password_hash('password', PASSWORD_BCRYPT, ['cost' => 13]),
+                ]
+            );
+        }
+        parent::tearDown();
+    }
+
     private function logIn(string $username, string $password)
     {
         $this->client->request('GET', '/login');

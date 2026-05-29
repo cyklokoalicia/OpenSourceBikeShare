@@ -148,6 +148,7 @@ class AdminNotifierTest extends TestCase
             ->method('trans')
             ->willReturnCallback(static function ($k, $p, $d, $l) use (&$localeSeen): string {
                 $localeSeen = $l;
+
                 return 'msg';
             });
 

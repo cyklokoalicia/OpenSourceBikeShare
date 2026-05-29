@@ -53,6 +53,7 @@ class WellKnownController extends AbstractController
                 $valid[] = $normalized;
             }
         }
+
         return $valid;
     }
 }

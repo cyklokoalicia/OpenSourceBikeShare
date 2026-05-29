@@ -286,4 +286,9 @@ Leere Stände:
     'command.help.message' => 'Befehle:
 {commands}',
     'command.help.help' => '',
+    'welcome.title' => 'Willkommen bei {siteName}',
+    'welcome.description' => 'Treten Sie unserem Einsteiger-Chat bei, um zu lernen, wie das System funktioniert, und Hilfe von anderen Nutzern zu erhalten.',
+    'welcome.openChat' => 'Chat öffnen',
+    'welcome.scanQr' => 'Mit einem anderen Gerät scannen',
+    'welcome.skip' => 'Überspringen — nicht mehr anzeigen',
 ];

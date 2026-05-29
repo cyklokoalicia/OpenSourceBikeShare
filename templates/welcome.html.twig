@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ siteName }} | {{ 'welcome.title'|trans }}{% endblock %}
+
+{% block head %}
+    {{ parent() }}
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/welcome.css') }}"/>
+{% endblock %}
+
+{% block body %}
+    <div class="my-4">
+        <h1>{{ 'welcome.title'|trans({siteName: siteName}) }}</h1>
+        <p class="lead">{{ 'welcome.description'|trans }}</p>
+
+        <div class="row mt-4">
+            {% for chat in chats %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card welcome-card">
+                        <div class="card-body text-center">
+                            <img class="messenger-icon mb-3"
+                                 src="{{ asset('assets/messengers/' ~ chat.icon.value ~ '.svg') }}"
+                                 alt="{{ chat.icon.value }}">
+                            <h5 class="card-title">{{ chat.name }}</h5>
+                            <a class="btn btn-primary"
+                               href="{{ chat.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="fas fa-external-link-alt mr-1"></i>{{ 'welcome.openChat'|trans }}
+                            </a>
+                            <div class="qr-wrap">
+                                {{ qr_svg(chat.url) }}
+                            </div>
+                            <small class="text-muted d-block mt-2">{{ 'welcome.scanQr'|trans }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <form method="post" action="{{ path('welcome_dismiss') }}" class="mt-3">
+            <button type="submit" class="btn btn-link" name="welcome_skip">{{ 'welcome.skip'|trans }}</button>
+        </form>
+    </div>
+{% endblock %}

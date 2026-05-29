@@ -287,4 +287,9 @@ Empty stands:
   'command.help.message' => 'Commands:
 {commands}',
   'command.help.help' => '',
+  'welcome.title' => 'Welcome to {siteName}',
+  'welcome.description' => 'Join our newcomers chat to learn how the system works and get help from other users.',
+  'welcome.openChat' => 'Open chat',
+  'welcome.scanQr' => 'Scan with another device',
+  'welcome.skip' => 'Skip — don\'t show again',
 ];

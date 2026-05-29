@@ -31,7 +31,6 @@ class UserRepository
             ORDER BY userName'
         )->fetchAllAssoc();
 
-
         return $users;
     }
 

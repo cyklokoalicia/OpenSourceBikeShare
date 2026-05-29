@@ -66,6 +66,7 @@ class BikeRevertEventListenerTest extends TestCase
                 $this->callback(function (TranslatableMessage $msg) use ($bikeNumber): bool {
                     $this->assertSame('bike.revert.notification.previous_owner', $msg->getMessage());
                     $this->assertSame(['bikeNumber' => $bikeNumber], $msg->getParameters());
+
                     return true;
                 }),
                 'de'
