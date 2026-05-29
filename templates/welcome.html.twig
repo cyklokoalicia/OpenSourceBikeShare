@@ -16,20 +16,22 @@
             {% for chat in chats %}
                 <div class="welcome-card card shadow-sm">
                     <div class="card-body">
-                        <img class="messenger-icon mb-3"
-                             src="{{ asset('assets/messengers/' ~ chat.icon.value ~ '.svg') }}"
-                             alt="{{ chat.icon.value }}">
-                        <h5 class="card-title">{{ chat.name }}</h5>
-                        <a class="btn btn-primary btn-lg mt-2"
-                           href="{{ chat.url }}"
-                           target="_blank"
-                           rel="noopener noreferrer">
-                            <i class="fas fa-external-link-alt mr-1"></i>{{ 'welcome.openChat'|trans }}
-                        </a>
-                        <div class="qr-wrap mt-4">
-                            {{ qr_svg(chat.url) }}
+                        <div class="welcome-card-info">
+                            <img class="messenger-icon mb-3"
+                                 src="{{ asset('assets/messengers/' ~ chat.icon.value ~ '.svg') }}"
+                                 alt="{{ chat.icon.value }}">
+                            <h4 class="card-title mb-3">{{ chat.name }}</h4>
+                            <a class="btn btn-primary btn-lg"
+                               href="{{ chat.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="fas fa-external-link-alt mr-1"></i>{{ 'welcome.openChat'|trans }}
+                            </a>
                         </div>
-                        <small class="text-muted d-block mt-2">{{ 'welcome.scanQr'|trans }}</small>
+                        <div class="welcome-card-qr">
+                            {{ qr_svg(chat.url) }}
+                            <small class="text-muted d-block mt-2">{{ 'welcome.scanQr'|trans }}</small>
+                        </div>
                     </div>
                 </div>
             {% endfor %}

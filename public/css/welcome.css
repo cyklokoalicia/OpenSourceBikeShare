@@ -5,32 +5,52 @@
 
 .welcome-chats {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 1.5rem;
-    justify-content: center;
+    align-items: center;
 }
 
 .welcome-card {
-    flex: 1 1 280px;
-    max-width: 360px;
+    width: 100%;
+    max-width: 560px;
 }
 
 .welcome-card .card-body {
-    padding: 1.75rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+}
+
+.welcome-card-info,
+.welcome-card-qr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .welcome-card .messenger-icon {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     color: #495057;
 }
 
-.welcome-card .qr-wrap {
-    display: flex;
-    justify-content: center;
-}
-
-.welcome-card .qr-wrap svg {
+.welcome-card-qr svg {
     width: 160px;
     height: 160px;
+}
+
+@media (min-width: 576px) {
+    .welcome-card .card-body {
+        flex-direction: row;
+        gap: 2rem;
+    }
+    .welcome-card-info {
+        border-right: 1px solid #e9ecef;
+        padding-right: 2rem;
+    }
 }
