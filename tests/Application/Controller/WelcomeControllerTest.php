@@ -106,8 +106,7 @@ class WelcomeControllerTest extends BikeSharingWebTestCase
     public function testWelcomeRedirectsHomeWhenNoChatsConfigured(): void
     {
         $this->setEnvVar('MESSENGER_CHATS_JSON', '[]');
-        self::ensureKernelShutdown();
-        $this->client = static::createClient();
+        $this->client->restart();
 
         $this->setShowWelcomePage(true);
         $this->loginUser();

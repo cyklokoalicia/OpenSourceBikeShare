@@ -35,8 +35,7 @@ class MessengerChatsApiTest extends BikeSharingWebTestCase
     public function testReturnsEmptyListWhenNoChatsConfigured(): void
     {
         $this->setEnvVar('MESSENGER_CHATS_JSON', '[]');
-        self::ensureKernelShutdown();
-        $this->client = static::createClient();
+        $this->client->restart();
 
         $this->client->request(Request::METHOD_GET, '/api/v1/auth/messenger-chats');
 
