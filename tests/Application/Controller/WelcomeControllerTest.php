@@ -18,14 +18,9 @@ class WelcomeControllerTest extends BikeSharingWebTestCase
     private const CHATS_JSON = '[{"name":"Test Telegram","url":"https://t.me/test"},'
         . '{"name":"Test Discord","url":"https://discord.gg/test"}]';
 
-    private ?string $previousChatsEnv = null;
-
     protected function setUp(): void
     {
-        $this->previousChatsEnv = $_SERVER['MESSENGER_CHATS_JSON'] ?? '';
-        $_SERVER['MESSENGER_CHATS_JSON'] = self::CHATS_JSON;
-        $_ENV['MESSENGER_CHATS_JSON'] = self::CHATS_JSON;
-
+        $this->setEnvVar('MESSENGER_CHATS_JSON', self::CHATS_JSON);
         parent::setUp();
         $this->resetWelcomeFlag();
     }
@@ -33,8 +28,6 @@ class WelcomeControllerTest extends BikeSharingWebTestCase
     protected function tearDown(): void
     {
         $this->resetWelcomeFlag();
-        $_SERVER['MESSENGER_CHATS_JSON'] = $this->previousChatsEnv;
-        $_ENV['MESSENGER_CHATS_JSON'] = $this->previousChatsEnv;
         parent::tearDown();
     }
 
@@ -112,8 +105,7 @@ class WelcomeControllerTest extends BikeSharingWebTestCase
 
     public function testWelcomeRedirectsHomeWhenNoChatsConfigured(): void
     {
-        $_SERVER['MESSENGER_CHATS_JSON'] = '[]';
-        $_ENV['MESSENGER_CHATS_JSON'] = '[]';
+        $this->setEnvVar('MESSENGER_CHATS_JSON', '[]');
         self::ensureKernelShutdown();
         $this->client = static::createClient();
 

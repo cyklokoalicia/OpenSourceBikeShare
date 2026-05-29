@@ -17,23 +17,12 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
 {
     private const SUPER_ADMIN_PHONE_NUMBER = '421951777777';
 
-    private ?string $previousChatsEnv = null;
-
     protected function setUp(): void
     {
         // Force empty chats so the welcome-page redirect does not interfere with the
         // post-login assertions below.
-        $this->previousChatsEnv = $_SERVER['MESSENGER_CHATS_JSON'] ?? '';
-        $_SERVER['MESSENGER_CHATS_JSON'] = '[]';
-        $_ENV['MESSENGER_CHATS_JSON'] = '[]';
+        $this->setEnvVar('MESSENGER_CHATS_JSON', '[]');
         parent::setUp();
-    }
-
-    protected function tearDown(): void
-    {
-        $_SERVER['MESSENGER_CHATS_JSON'] = $this->previousChatsEnv;
-        $_ENV['MESSENGER_CHATS_JSON'] = $this->previousChatsEnv;
-        parent::tearDown();
     }
 
     public function testFullRegistrationFlow(): void

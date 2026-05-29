@@ -12,22 +12,10 @@ class MessengerChatsApiTest extends BikeSharingWebTestCase
     private const CHATS_JSON = '[{"name":"Newcomers TG","url":"https://t.me/test"},'
         . '{"name":"WhatsApp Group","url":"https://chat.whatsapp.com/test"}]';
 
-    private ?string $previousChatsEnv = null;
-
     protected function setUp(): void
     {
-        $this->previousChatsEnv = $_SERVER['MESSENGER_CHATS_JSON'] ?? '';
-        $_SERVER['MESSENGER_CHATS_JSON'] = self::CHATS_JSON;
-        $_ENV['MESSENGER_CHATS_JSON'] = self::CHATS_JSON;
-
+        $this->setEnvVar('MESSENGER_CHATS_JSON', self::CHATS_JSON);
         parent::setUp();
-    }
-
-    protected function tearDown(): void
-    {
-        $_SERVER['MESSENGER_CHATS_JSON'] = $this->previousChatsEnv;
-        $_ENV['MESSENGER_CHATS_JSON'] = $this->previousChatsEnv;
-        parent::tearDown();
     }
 
     public function testReturnsConfiguredChatsWithoutAuthentication(): void
@@ -46,8 +34,7 @@ class MessengerChatsApiTest extends BikeSharingWebTestCase
 
     public function testReturnsEmptyListWhenNoChatsConfigured(): void
     {
-        $_SERVER['MESSENGER_CHATS_JSON'] = '[]';
-        $_ENV['MESSENGER_CHATS_JSON'] = '[]';
+        $this->setEnvVar('MESSENGER_CHATS_JSON', '[]');
         self::ensureKernelShutdown();
         $this->client = static::createClient();
 

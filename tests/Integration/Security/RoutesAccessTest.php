@@ -32,6 +32,7 @@ class RoutesAccessTest extends BikeSharingKernelTestCase
         '/api/v1/auth/logout' => [Request::METHOD_POST],
         '/api/v1/auth/register' => [Request::METHOD_POST],
         '/api/v1/auth/cities' => [Request::METHOD_GET],
+        '/api/v1/auth/messenger-chats' => [Request::METHOD_GET],
         '/login' => [],
         '/sms/receive.php' => [],
         '/receive.php' => [],
