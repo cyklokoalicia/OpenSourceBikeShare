@@ -12,6 +12,7 @@ class UserSettingsRepository
     private array $defaultSettings = [
         'locale' => 'en',
         'allowGeoDetection' => false,
+        'showWelcomePage' => false,
     ];
 
     public function __construct(
@@ -57,18 +58,25 @@ class UserSettingsRepository
         $this->saveSettings($userId, 'allowGeoDetection', $allowGeoDetection);
     }
 
+    public function saveShowWelcomePage(int $userId, bool $value): void
+    {
+        $this->saveSettings($userId, 'showWelcomePage', $value);
+    }
+
     public function saveSettings(int $userId, string $settingName, mixed $settingValue): void
     {
         $settings = $this->findByUserId($userId);
         $settings[$settingName] = $settingValue;
 
+        $nonDefaults = array_diff_assoc($settings, $this->defaultSettings);
+
         $this->db->query(
-            'INSERT INTO userSettings (userId, settings) 
-            VALUES (:userId, :settings) 
+            'INSERT INTO userSettings (userId, settings)
+            VALUES (:userId, :settings)
             ON DUPLICATE KEY UPDATE settings = VALUES(settings)',
             [
                 'userId' => $userId,
-                'settings' => json_encode($settings, JSON_THROW_ON_ERROR)
+                'settings' => json_encode((object)$nonDefaults, JSON_THROW_ON_ERROR)
             ]
         );
     }

@@ -43,6 +43,7 @@ class ApiV1ResponseSubscriber implements EventSubscriberInterface
         $contentType = (string)$response->headers->get('Content-Type');
         if (str_contains($contentType, 'application/problem+json')) {
             $event->setResponse($this->toProblemResponse($response, $path, $requestId));
+
             return;
         }
 
@@ -50,6 +51,7 @@ class ApiV1ResponseSubscriber implements EventSubscriberInterface
 
         if ($status >= Response::HTTP_BAD_REQUEST) {
             $event->setResponse($this->toProblemResponse($response, $path, $requestId));
+
             return;
         }
 
@@ -66,6 +68,7 @@ class ApiV1ResponseSubscriber implements EventSubscriberInterface
                 $meta
             );
             $response->setData($decoded);
+
             return;
         }
 

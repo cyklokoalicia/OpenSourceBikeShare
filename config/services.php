@@ -90,6 +90,8 @@ return static function (ContainerConfigurator $container): void {
             '../src/Rent/DTO',
             '../src/Rent/Enum',
             '../src/Translation',
+            '../src/Welcome/MessengerChat.php',
+            '../src/Welcome/MessengerIcon.php',
         ]);
 
     $services->get(\BikeShare\App\EventListener\AndroidVersionSubscriber::class)
@@ -172,6 +174,9 @@ return static function (ContainerConfigurator $container): void {
 
     $services->get(\BikeShare\Repository\CityRepository::class)
         ->bind('$cities', env('json:CITIES'));
+
+    $services->get(\BikeShare\Welcome\MessengerChatsProvider::class)
+        ->bind('$rawJson', env('MESSENGER_CHATS_JSON'));
 
     $services->get(\BikeShare\Mail\MailSenderFactory::class)
         ->bind('$smtpHost', env('SMTP_HOST'));

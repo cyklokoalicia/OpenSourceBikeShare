@@ -293,4 +293,9 @@ Email: {email}
     'command.help.message' => 'Команди:
 {commands}',
     'command.help.help' => '',
+    'welcome.title' => 'Ласкаво просимо до {siteName}',
+    'welcome.description' => 'Приєднуйтесь до чату новачків — навчіться користуватися системою та отримайте допомогу від інших користувачів.',
+    'welcome.openChat' => 'Відкрити чат',
+    'welcome.scanQr' => 'Скануйте іншим пристроєм',
+    'welcome.skip' => 'Пропустити — більше не показувати',
 ];

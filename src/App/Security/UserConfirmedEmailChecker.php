@@ -30,6 +30,7 @@ class UserConfirmedEmailChecker implements UserCheckerInterface
         $confirmation = $this->registrationRepository->findItemByUserId($user->getUserId());
         if (!empty($confirmation)) {
             $this->eventDispatcher->dispatch(new UserReconfirmationEvent($user));
+
             throw new CustomUserMessageAccountStatusException(
                 $this->translator->trans('User does not confirmed email. Check your email for confirmation letter.')
             );

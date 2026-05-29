@@ -25,4 +25,14 @@
         </properties>
     </rule>
 
+    <rule ref="SlevomatCodingStandard.ControlStructures.JumpStatementsSpacing">
+        <properties>
+            <property name="jumpStatements" type="array">
+                <element value="return"/>
+                <element value="throw"/>
+            </property>
+            <property name="allowSingleLineYieldStacking" value="true"/>
+        </properties>
+    </rule>
+
 </ruleset>

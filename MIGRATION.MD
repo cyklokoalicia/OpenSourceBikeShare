@@ -59,3 +59,20 @@ writes and hide the "Apps last seen on" section in the admin user editor.
 Symfony will fail to boot if this variable is undefined.
 
 When iOS support is added, a parallel `IOS_APP_ENABLED` variable will be introduced.
+
+```
+MESSENGER_CHATS_JSON=[]
+```
+
+Newcomers-chat invites shown on `/welcome` after the first login that follows a fresh
+registration. JSON array of `{name, url}`. The messenger icon is auto-detected from the
+URL host (`t.me`/`telegram.me` → Telegram, `wa.me`/`chat.whatsapp.com` → WhatsApp,
+`signal.group`/`signal.me` → Signal, `invite.viber.com`/`viber.com` → Viber,
+`discord.gg`/`discord.com` → Discord); unrecognized hosts fall back to a generic chat
+icon. Example:
+
+```
+MESSENGER_CHATS_JSON=[{"name":"Newcomers TG","url":"https://t.me/example"}]
+```
+
+Empty array (`[]`, the default) disables the welcome redirect for new registrations.

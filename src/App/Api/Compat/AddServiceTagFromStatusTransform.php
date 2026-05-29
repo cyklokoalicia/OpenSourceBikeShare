@@ -32,6 +32,7 @@ class AddServiceTagFromStatusTransform implements ApiResponseTransformInterface
         if (isset($data['status']) && is_string($data['status'])) {
             $status = StandStatus::tryFrom($data['status']);
             $data['serviceTag'] = ($status === StandStatus::TECHNICAL || $status === StandStatus::HIDDEN) ? 1 : 0;
+
             return $data;
         }
 
