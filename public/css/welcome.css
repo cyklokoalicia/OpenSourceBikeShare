@@ -1,17 +1,33 @@
+.welcome-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.welcome-chats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
 .welcome-card {
-    height: 100%;
+    flex: 1 1 280px;
+    max-width: 360px;
+}
+
+.welcome-card .card-body {
+    padding: 1.75rem 1.25rem;
 }
 
 .welcome-card .messenger-icon {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     color: #495057;
 }
 
 .welcome-card .qr-wrap {
     display: flex;
     justify-content: center;
-    margin-top: 1rem;
 }
 
 .welcome-card .qr-wrap svg {
