@@ -14,19 +14,10 @@ class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
 {
     private const SUPER_ADMIN_PHONE_NUMBER = '421951777777';
 
-    private string $originalSmsConnector;
-
     protected function setUp(): void
     {
-        $this->originalSmsConnector = $_ENV['SMS_CONNECTOR'];
-        $_ENV['SMS_CONNECTOR'] = 'disabled';
+        $this->setEnvVar('SMS_CONNECTOR', 'disabled');
         parent::setUp();
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV['SMS_CONNECTOR'] = $this->originalSmsConnector;
-        parent::tearDown();
     }
 
     public function testAdminNotifiedRightAfterEmailConfirmWhenSmsDisabled(): void

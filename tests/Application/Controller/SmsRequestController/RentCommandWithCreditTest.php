@@ -25,15 +25,10 @@ class RentCommandWithCreditTest extends BikeSharingWebTestCase
 
     protected const CONTAINER_REBOOT_DISABLED = true;
 
-    private $watchesTooMany;
-    private $creditSystemEnabled;
-
     protected function setUp(): void
     {
+        $this->setEnvVar('CREDIT_SYSTEM_ENABLED', '1');
         parent::setUp();
-        $this->watchesTooMany = $_ENV['WATCHES_NUMBER_TOO_MANY'];
-        $this->creditSystemEnabled = $_ENV['CREDIT_SYSTEM_ENABLED'];
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = '1';
 
         $this->client->request(
             Request::METHOD_GET,
@@ -75,8 +70,6 @@ class RentCommandWithCreditTest extends BikeSharingWebTestCase
             ]
         );
 
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = $this->watchesTooMany;
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = $this->creditSystemEnabled;
         parent::tearDown();
     }
 
@@ -88,7 +81,7 @@ class RentCommandWithCreditTest extends BikeSharingWebTestCase
         string $expectedCode
     ): void {
         //We should not notify admin about too many rents in this testsuite
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999;
+        $this->setEnvVar('WATCHES_NUMBER_TOO_MANY', '9999');
 
         $user = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::USER_PHONE_NUMBER);

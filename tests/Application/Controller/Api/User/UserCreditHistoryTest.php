@@ -15,19 +15,10 @@ class UserCreditHistoryTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421951111111';
 
-    private array $originalEnv = [];
-
     protected function setUp(): void
     {
-        $this->originalEnv = $_ENV;
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = '1';
+        $this->setEnvVar('CREDIT_SYSTEM_ENABLED', '1');
         parent::setUp();
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV = $this->originalEnv;
-        parent::tearDown();
     }
 
     public function testCreditHistoryReturnsArray(): void

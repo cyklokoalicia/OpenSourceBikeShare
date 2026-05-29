@@ -17,6 +17,14 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
 {
     private const SUPER_ADMIN_PHONE_NUMBER = '421951777777';
 
+    protected function setUp(): void
+    {
+        // Force empty chats so the welcome-page redirect does not interfere with the
+        // post-login assertions below.
+        $this->setEnvVar('MESSENGER_CHATS_JSON', '[]');
+        parent::setUp();
+    }
+
     public function testFullRegistrationFlow(): void
     {
         $userEmail = 'test_' . time() . '@example.com';

@@ -20,6 +20,9 @@ abstract class BikeSharingWebTestCase extends WebTestCase
     /** @var array<array{level:int, pattern:string|callable}> */
     private array $expected = [];
 
+    /** @var array<string, array{server: bool, env: bool, serverValue: string|null, envValue: string|null}> */
+    private array $envBackup = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -34,6 +37,24 @@ abstract class BikeSharingWebTestCase extends WebTestCase
         $handler->clear();
 
         $this->expected = [];
+    }
+
+    /**
+     * Override an env var for the current test, with automatic restore in tearDown.
+     * Captures whether the var pre-existed in $_SERVER / $_ENV so restoration is faithful.
+     */
+    protected function setEnvVar(string $name, string $value): void
+    {
+        if (!array_key_exists($name, $this->envBackup)) {
+            $this->envBackup[$name] = [
+                'server' => array_key_exists($name, $_SERVER),
+                'env' => array_key_exists($name, $_ENV),
+                'serverValue' => $_SERVER[$name] ?? null,
+                'envValue' => $_ENV[$name] ?? null,
+            ];
+        }
+        $_SERVER[$name] = $value;
+        $_ENV[$name] = $value;
     }
 
     /**
@@ -132,6 +153,20 @@ abstract class BikeSharingWebTestCase extends WebTestCase
          * 3) Clean up for re-use / multiple tearDown() calls.
          */
         $this->expected = [];
+
+        foreach ($this->envBackup as $name => $original) {
+            if ($original['server']) {
+                $_SERVER[$name] = $original['serverValue'];
+            } else {
+                unset($_SERVER[$name]);
+            }
+            if ($original['env']) {
+                $_ENV[$name] = $original['envValue'];
+            } else {
+                unset($_ENV[$name]);
+            }
+        }
+        $this->envBackup = [];
 
         parent::tearDown();
     }

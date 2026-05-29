@@ -83,7 +83,7 @@ return function (SecurityConfig $security) {
 
     $security
         ->accessControl()
-        ->path('^/api/v1/auth/(token|refresh|logout|register|cities)$')
+        ->path('^/api/v1/auth/(token|refresh|logout|register|cities|messenger-chats)$')
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()

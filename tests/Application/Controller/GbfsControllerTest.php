@@ -142,14 +142,10 @@ class GbfsControllerTest extends BikeSharingWebTestCase
 
     public function testFeedsReturn404WhenDisabled(): void
     {
-        $_ENV['GBFS_ENABLED'] = 'false';
-        try {
-            $this->client->restart();
-            $this->client->request(Request::METHOD_GET, '/gbfs.json');
-            $this->assertResponseStatusCodeSame(404);
-        } finally {
-            $_ENV['GBFS_ENABLED'] = 'true';
-        }
+        $this->setEnvVar('GBFS_ENABLED', 'false');
+        $this->client->restart();
+        $this->client->request(Request::METHOD_GET, '/gbfs.json');
+        $this->assertResponseStatusCodeSame(404);
     }
 
     public function testUnknownLocaleIs404(): void

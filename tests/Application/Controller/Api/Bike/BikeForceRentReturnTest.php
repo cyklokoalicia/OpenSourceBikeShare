@@ -18,24 +18,10 @@ class BikeForceRentReturnTest extends BikeSharingWebTestCase
     private const BIKE_NUMBER = 6;
     private const STAND_NAME = 'STAND1';
 
-    private $watchesTooMany;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->watchesTooMany = $_ENV['WATCHES_NUMBER_TOO_MANY'];
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = $this->watchesTooMany;
-        parent::tearDown();
-    }
-
     public function testForce(): void
     {
         //We should not notify admin about too many rents in this testsuite
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = 9999;
+        $this->setEnvVar('WATCHES_NUMBER_TOO_MANY', '9999');
 
         $admin = $this->client->getContainer()->get(UserProvider::class)
             ->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);

@@ -12,19 +12,6 @@ class AdminStandsListTest extends BikeSharingWebTestCase
 {
     private const ADMIN_PHONE_NUMBER = '421951222222';
 
-    private string $originalCities;
-
-    protected function setUp(): void
-    {
-        $this->originalCities = $_ENV['CITIES'] ?? '';
-        parent::setUp();
-    }
-
-    protected function tearDown(): void
-    {
-        $_ENV['CITIES'] = $this->originalCities;
-        parent::tearDown();
-    }
 
     public function testSingleCityListIncludesCityAndExcludesNonConfigured(): void
     {
@@ -50,10 +37,10 @@ class AdminStandsListTest extends BikeSharingWebTestCase
 
     public function testMultiCityListIncludesEveryConfiguredCity(): void
     {
-        $_ENV['CITIES'] = json_encode([
+        $this->setEnvVar('CITIES', json_encode([
             'Default City' => [48.148154, 17.117232],
             'Other City' => [50.0, 20.0],
-        ]);
+        ]));
         $this->loginAdmin();
 
         $this->client->request(Request::METHOD_GET, '/api/v1/admin/stands');
@@ -76,7 +63,7 @@ class AdminStandsListTest extends BikeSharingWebTestCase
 
     public function testEmptyCitiesConfigYieldsEmptyList(): void
     {
-        $_ENV['CITIES'] = '{}';
+        $this->setEnvVar('CITIES', '{}');
         $this->loginAdmin();
 
         $this->client->request(Request::METHOD_GET, '/api/v1/admin/stands');

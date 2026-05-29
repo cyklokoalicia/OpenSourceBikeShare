@@ -16,12 +16,9 @@ class CreditHistoryControllerTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE_NUMBER = '421951111111';
 
-    private array $originalEnv = [];
-
     protected function setUp(): void
     {
-        $this->originalEnv = $_ENV;
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = '1';
+        $this->setEnvVar('CREDIT_SYSTEM_ENABLED', '1');
         parent::setUp();
     }
 
@@ -47,7 +44,6 @@ class CreditHistoryControllerTest extends BikeSharingWebTestCase
             ]
         );
 
-        $_ENV = $this->originalEnv;
         parent::tearDown();
     }
 
@@ -109,7 +105,7 @@ class CreditHistoryControllerTest extends BikeSharingWebTestCase
 
     public function testCreditHistoryNotFoundWhenCreditSystemDisabled(): void
     {
-        $_ENV['CREDIT_SYSTEM_ENABLED'] = '0';
+        $this->setEnvVar('CREDIT_SYSTEM_ENABLED', '0');
 
         $user = $this->client->getContainer()->get(UserProvider::class)
             ->loadUserByIdentifier(self::USER_PHONE_NUMBER);

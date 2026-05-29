@@ -23,12 +23,9 @@ class ScanControllerTest extends BikeSharingWebTestCase
     private const BIKE_NUMBER = 5;
     private const STAND_NAME = 'STAND5';
 
-    private $watchesTooMany;
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->watchesTooMany = $_ENV['WATCHES_NUMBER_TOO_MANY'];
 
         $admin = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
@@ -56,7 +53,6 @@ class ScanControllerTest extends BikeSharingWebTestCase
                 true
             );
 
-        $_ENV['WATCHES_NUMBER_TOO_MANY'] = $this->watchesTooMany;
         parent::tearDown();
     }
 
