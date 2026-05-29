@@ -116,6 +116,19 @@ class MessengerChatsProviderTest extends TestCase
         $this->assertSame(MessengerIcon::GENERIC, $chats[0]->icon);
     }
 
+    public function testTrimsWhitespaceFromUrl(): void
+    {
+        $provider = new MessengerChatsProvider(
+            '[{"name":"Telegram","url":"  https://t.me/example  "}]',
+            new NullLogger()
+        );
+
+        $chats = $provider->getChats();
+        $this->assertCount(1, $chats);
+        $this->assertSame('https://t.me/example', $chats[0]->url);
+        $this->assertSame(MessengerIcon::TELEGRAM, $chats[0]->icon);
+    }
+
     public function testIconDetectionIgnoresWwwPrefix(): void
     {
         $provider = new MessengerChatsProvider(
