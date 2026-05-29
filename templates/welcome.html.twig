@@ -8,37 +8,35 @@
 {% endblock %}
 
 {% block body %}
-    <div class="my-4">
-        <h1>{{ 'welcome.title'|trans({siteName: siteName}) }}</h1>
-        <p class="lead">{{ 'welcome.description'|trans }}</p>
+    <div class="welcome-wrap text-center">
+        <h1 class="mt-5 mb-3">{{ 'welcome.title'|trans({siteName: siteName}) }}</h1>
+        <p class="lead mb-5">{{ 'welcome.description'|trans }}</p>
 
-        <div class="row mt-4">
+        <div class="welcome-chats">
             {% for chat in chats %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card welcome-card">
-                        <div class="card-body text-center">
-                            <img class="messenger-icon mb-3"
-                                 src="{{ asset('assets/messengers/' ~ chat.icon.value ~ '.svg') }}"
-                                 alt="{{ chat.icon.value }}">
-                            <h5 class="card-title">{{ chat.name }}</h5>
-                            <a class="btn btn-primary"
-                               href="{{ chat.url }}"
-                               target="_blank"
-                               rel="noopener noreferrer">
-                                <i class="fas fa-external-link-alt mr-1"></i>{{ 'welcome.openChat'|trans }}
-                            </a>
-                            <div class="qr-wrap">
-                                {{ qr_svg(chat.url) }}
-                            </div>
-                            <small class="text-muted d-block mt-2">{{ 'welcome.scanQr'|trans }}</small>
+                <div class="welcome-card card shadow-sm">
+                    <div class="card-body">
+                        <img class="messenger-icon mb-3"
+                             src="{{ asset('assets/messengers/' ~ chat.icon.value ~ '.svg') }}"
+                             alt="{{ chat.icon.value }}">
+                        <h5 class="card-title">{{ chat.name }}</h5>
+                        <a class="btn btn-primary btn-lg mt-2"
+                           href="{{ chat.url }}"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <i class="fas fa-external-link-alt mr-1"></i>{{ 'welcome.openChat'|trans }}
+                        </a>
+                        <div class="qr-wrap mt-4">
+                            {{ qr_svg(chat.url) }}
                         </div>
+                        <small class="text-muted d-block mt-2">{{ 'welcome.scanQr'|trans }}</small>
                     </div>
                 </div>
             {% endfor %}
         </div>
 
-        <form method="post" action="{{ path('welcome_dismiss') }}" class="mt-3">
-            <button type="submit" class="btn btn-link" name="welcome_skip">{{ 'welcome.skip'|trans }}</button>
+        <form method="post" action="{{ path('welcome_dismiss') }}" class="mt-4 mb-5">
+            <button type="submit" class="btn btn-link">{{ 'welcome.skip'|trans }}</button>
         </form>
     </div>
 {% endblock %}
