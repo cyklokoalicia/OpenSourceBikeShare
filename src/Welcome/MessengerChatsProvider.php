@@ -36,7 +36,7 @@ class MessengerChatsProvider
         } catch (\JsonException $e) {
             $this->logger->warning(
                 'Failed to parse MESSENGER_CHATS_JSON',
-                ['length' => strlen($this->rawJson), 'exception' => $e],
+                ['raw' => $this->rawJson, 'exception' => $e],
             );
 
             return $this->chats = [];
@@ -45,7 +45,7 @@ class MessengerChatsProvider
         if (!is_array($decoded) || !array_is_list($decoded)) {
             $this->logger->warning(
                 'MESSENGER_CHATS_JSON must be a JSON array',
-                ['length' => strlen($this->rawJson)],
+                ['raw' => $this->rawJson],
             );
 
             return $this->chats = [];
@@ -70,7 +70,7 @@ class MessengerChatsProvider
     private function buildChat(mixed $entry): ?MessengerChat
     {
         if (!is_array($entry)) {
-            $this->logger->warning('Skipping messenger chat entry: not an object');
+            $this->logger->warning('Skipping messenger chat entry: not an object', ['entry' => $entry]);
 
             return null;
         }
@@ -82,12 +82,12 @@ class MessengerChatsProvider
         }
 
         if (!is_string($name) || trim($name) === '') {
-            $this->logger->warning('Skipping messenger chat entry: missing name');
+            $this->logger->warning('Skipping messenger chat entry: missing name', ['entry' => $entry]);
 
             return null;
         }
         if (!is_string($url) || !$this->isValidHttpUrl($url)) {
-            $this->logger->warning('Skipping messenger chat entry: invalid url');
+            $this->logger->warning('Skipping messenger chat entry: invalid url', ['entry' => $entry]);
 
             return null;
         }
