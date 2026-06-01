@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use BikeShare\App\Security\ApiAccessDeniedHandler;
 use BikeShare\App\Security\ApiV1Authenticator;
+use BikeShare\App\Security\WebAccessDeniedHandler;
 use BikeShare\App\Security\TokenProvider;
 use BikeShare\App\Security\UserConfirmedEmailChecker;
 use BikeShare\App\Security\UserProvider;
@@ -14,6 +15,7 @@ return function (SecurityConfig $security) {
 
     $security->enableAuthenticatorManager(true);
 
+    $security->roleHierarchy('ROLE_USER', ['ROLE_NEWBIE']);
     $security->roleHierarchy('ROLE_ADMIN', ['ROLE_USER']);
     $security->roleHierarchy('ROLE_SUPER_ADMIN', ['ROLE_ADMIN']);
 
@@ -72,6 +74,8 @@ return function (SecurityConfig $security) {
     $mainFirewall
         ->pattern('^/')
         ->userChecker(UserConfirmedEmailChecker::class);
+    $mainFirewall
+        ->accessDeniedHandler(WebAccessDeniedHandler::class);
 
     $security->accessControl()
         ->path('^/admin')
@@ -85,6 +89,10 @@ return function (SecurityConfig $security) {
         ->accessControl()
         ->path('^/api/v1/auth/(token|refresh|logout|register|cities|messenger-chats)$')
         ->roles(['PUBLIC_ACCESS']);
+    $security
+        ->accessControl()
+        ->path('^/api/v1/user/phone-confirm/')
+        ->roles(['ROLE_NEWBIE']);
     $security
         ->accessControl()
         ->path('^/api/v1/admin')
@@ -133,6 +141,14 @@ return function (SecurityConfig $security) {
         ->accessControl()
         ->path('^/switchLanguage')
         ->roles(['PUBLIC_ACCESS']);
+    $security
+        ->accessControl()
+        ->path('^/user/confirm/phone(/\w*)?$')
+        ->roles(['ROLE_NEWBIE']);
+    $security
+        ->accessControl()
+        ->path('^/logout$')
+        ->roles(['ROLE_NEWBIE']);
     $security
         ->accessControl()
         ->path('^/')

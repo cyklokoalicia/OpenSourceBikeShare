@@ -149,6 +149,8 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/Success"
+        "403":
+          $ref: "#/components/responses/PhoneUnconfirmed"
         "404":
           $ref: "#/components/responses/Problem"
   /stands/markers:
@@ -157,6 +159,8 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/Success"
+        "403":
+          $ref: "#/components/responses/PhoneUnconfirmed"
   /admin/bikes/{bikeNumber}:
     get:
       summary: Bike details (admin)
@@ -199,6 +203,8 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/Success"
+        "403":
+          $ref: "#/components/responses/PhoneUnconfirmed"
         "409":
           $ref: "#/components/responses/Problem"
   /returns:
@@ -221,6 +227,8 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/Success"
+        "403":
+          $ref: "#/components/responses/PhoneUnconfirmed"
         "409":
           $ref: "#/components/responses/Problem"
   /me/bikes:
@@ -229,12 +237,16 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/Success"
+        "403":
+          $ref: "#/components/responses/PhoneUnconfirmed"
   /me/limits:
     get:
       summary: Current user limits and credit
       responses:
         "200":
           $ref: "#/components/responses/Success"
+        "403":
+          $ref: "#/components/responses/PhoneUnconfirmed"
   /me/city:
     patch:
       summary: Change current user city
@@ -521,6 +533,27 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/Problem"
+    PhoneUnconfirmed:
+      description: >-
+        Returned by any authenticated endpoint (except the auth and
+        phone-confirmation routes) when the SMS system is enabled and the
+        caller's phone number is not yet confirmed. The caller holds
+        ROLE_NEWBIE and must confirm their phone first. This is a standard
+        Problem Details response carrying the stable extension
+        `code: phone_unconfirmed`; clients should branch on `code` rather than
+        the human-readable `detail`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Forbidden
+            status: 403
+            detail: Phone number must be confirmed.
+            instance: /api/v1/me/bikes
+            requestId: 0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b
+            code: phone_unconfirmed
   schemas:
     SuccessEnvelope:
       type: object
@@ -555,3 +588,12 @@ components:
           type: string
         requestId:
           type: string
+        code:
+          type: string
+          description: >-
+            Stable, machine-readable error code (extension), present on errors
+            that carry one (e.g. phone_unconfirmed). Prefer this over `detail`.
+        params:
+          type: object
+          additionalProperties: true
+          description: Optional parameters for client-side localization of the error.
