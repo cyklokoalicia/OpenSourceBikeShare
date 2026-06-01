@@ -21,6 +21,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
         private readonly DbInterface $db,
         private readonly PhonePurifierInterface $phonePurifier,
         private readonly ClockInterface $clock,
+        private readonly bool $isSmsSystemEnabled = false,
     ) {
     }
 
@@ -63,7 +64,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $row['city'],
             $row['userName'],
             (int)$row['privileges'],
-            (bool)$row['isNumberConfirmed'],
+            !$this->isSmsSystemEnabled || (bool)$row['isNumberConfirmed'],
             new \DateTimeImmutable($row['registrationDate']),
         );
     }
@@ -162,7 +163,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             $city,
             $userName,
             $privileges,
-            $isNumberConfirmed,
+            !$this->isSmsSystemEnabled || $isNumberConfirmed,
             $registrationDate,
         );
     }

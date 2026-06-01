@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\App\Security;
 
+use BikeShare\App\Entity\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -33,6 +34,13 @@ class ApiAccessDeniedHandler implements AccessDeniedHandlerInterface
                 'ip' => $request->getClientIp(),
             ]
         );
+
+        if ($user instanceof User && !$user->isNumberConfirmed()) {
+            return new JsonResponse(
+                ['detail' => 'Phone number must be confirmed.', 'code' => 'phone_unconfirmed'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
 
         return new JsonResponse(
             ['detail' => 'Access denied'],

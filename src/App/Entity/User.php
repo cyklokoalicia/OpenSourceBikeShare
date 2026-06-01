@@ -64,6 +64,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
+        // An unconfirmed user (when phone confirmation is required) is a newbie and
+        // holds none of the regular roles; access is then limited to the
+        // phone-confirmation flow via access_control.
+        if (!$this->isNumberConfirmed) {
+            return ['ROLE_NEWBIE'];
+        }
+
         $roles = ['ROLE_USER'];
         if ($this->privileges >= 1) {
             $roles[] = 'ROLE_ADMIN';
@@ -76,6 +83,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * Effective confirmation: true when the number is confirmed, or when phone
+     * confirmation is not required at all (SMS system disabled). UserProvider folds
+     * the SMS-enabled config in, so the entity itself stays config-agnostic.
+     */
     public function isNumberConfirmed(): bool
     {
         return $this->isNumberConfirmed;
