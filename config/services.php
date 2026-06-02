@@ -272,4 +272,7 @@ return static function (ContainerConfigurator $container): void {
     $services->get(\BikeShare\EventListener\LongStandBonusEventListener::class)
         ->bind('$longStandDays', env('int:CREDIT_SYSTEM_LONG_STAND_DAYS'))
         ->bind('$longStandBonus', env('float:CREDIT_SYSTEM_LONG_STAND_BONUS'));
+
+    $services->get(\BikeShare\EventListener\ReconfirmationEventListener::class)
+        ->bind('$cache', service('cache.reconfirmation_throttle'));
 };

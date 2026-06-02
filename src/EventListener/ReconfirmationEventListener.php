@@ -6,7 +6,7 @@ namespace BikeShare\EventListener;
 
 use BikeShare\Event\UserReconfirmationEvent;
 use BikeShare\Mail\MailSenderInterface;
-use BikeShare\Repository\RegistrationRepository;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -14,25 +14,32 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class ReconfirmationEventListener
 {
     public function __construct(
-        private readonly RegistrationRepository $registrationRepository,
         private readonly MailSenderInterface $mailSender,
         private readonly TranslatorInterface $translator,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly LoggerInterface $logger,
+        private readonly CacheItemPoolInterface $cache,
     ) {
     }
 
     public function __invoke(UserReconfirmationEvent $event): void
     {
         $user = $event->getUser();
+        $userId = $user->getUserId();
+
+        // Throttle: the email checker runs on every authenticated API request, so an
+        // unconfirmed caller could otherwise trigger one reconfirmation email per request.
+        // Send at most one per user per window regardless of how often the event fires.
+        $throttleItem = $this->cache->getItem('reconfirmation_email.' . $userId);
+        if ($throttleItem->isHit()) {
+            return;
+        }
+        // Expiry comes from the pool's default lifetime (cache.reconfirmation_throttle).
+        $throttleItem->set(true);
+        $this->cache->save($throttleItem);
 
         $subject = $this->translator->trans('Email confirmation');
-
-        $userId = $user->getUserId();
         $emailRecipient = $user->getEmail();
-
-        $registration = $this->registrationRepository->findItemByUserId($userId);
-        $userKey = $registration['userKey'];
 
         $names = preg_split("/[\s,]+/", $user->getUsername());
         $firstName = $names[0];
@@ -42,7 +49,7 @@ class ReconfirmationEventListener
                 'name' => $firstName,
                 'emailConfirmURL' => $this->urlGenerator->generate(
                     'user_confirm_email',
-                    ['key' => $userKey],
+                    ['key' => $event->getUserKey()],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 )
             ]

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller\Api\V1;
 
+use BikeShare\App\Security\EmailUnconfirmedException;
 use BikeShare\App\Security\JwtTokenService;
 use BikeShare\App\Security\UserConfirmedEmailChecker;
 use BikeShare\App\Security\UserProvider;
@@ -19,7 +20,6 @@ use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Exception\AccountStatusException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -264,8 +264,11 @@ class AuthController extends AbstractController
     {
         try {
             $this->userConfirmedEmailChecker->checkPostAuth($user);
-        } catch (AccountStatusException $e) {
-            return $this->json(['detail' => $e->getMessageKey()], Response::HTTP_FORBIDDEN);
+        } catch (EmailUnconfirmedException $e) {
+            return $this->json(
+                ['detail' => $e->getMessageKey(), 'code' => 'email_unconfirmed'],
+                Response::HTTP_FORBIDDEN
+            );
         }
 
         return null;

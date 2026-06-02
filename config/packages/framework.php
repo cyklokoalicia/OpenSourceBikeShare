@@ -27,6 +27,14 @@ return static function (FrameworkConfig $framework): void {
         ->defaultLifetime(180)
         ->public(true);
 
+    // Persistent (cross-request) pool used to throttle reconfirmation emails: the email
+    // checker runs on every authenticated request, so the listener writes a per-user marker
+    // here and skips re-sending while it lives. Filesystem-backed; default lifetime = window.
+    $cache->pool('cache.reconfirmation_throttle')
+        ->adapters(['cache.adapter.filesystem'])
+        ->defaultLifetime(900)
+        ->public(true);
+
     $framework
         ->defaultLocale('en')
         ->enabledLocales(['en', 'sk', 'cs', 'de', 'uk'])
