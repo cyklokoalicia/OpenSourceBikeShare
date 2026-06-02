@@ -62,6 +62,13 @@ class ApiV1Authenticator extends AbstractAuthenticator implements Authentication
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): JsonResponse
     {
+        if ($exception instanceof EmailUnconfirmedException) {
+            return new JsonResponse(
+                ['detail' => $exception->getMessageKey(), 'code' => 'email_unconfirmed'],
+                JsonResponse::HTTP_FORBIDDEN
+            );
+        }
+
         return new JsonResponse(
             ['detail' => 'Invalid credentials'],
             JsonResponse::HTTP_UNAUTHORIZED

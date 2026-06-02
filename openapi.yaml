@@ -38,6 +38,8 @@ paths:
           $ref: "#/components/responses/Problem"
         "401":
           $ref: "#/components/responses/Problem"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /auth/refresh:
     post:
       summary: Rotate refresh token and return new tokens
@@ -63,6 +65,8 @@ paths:
           $ref: "#/components/responses/Problem"
         "401":
           $ref: "#/components/responses/Problem"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /auth/logout:
     post:
       summary: Revoke refresh token family
@@ -150,7 +154,7 @@ paths:
         "200":
           $ref: "#/components/responses/Success"
         "403":
-          $ref: "#/components/responses/PhoneUnconfirmed"
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/Problem"
   /stands/markers:
@@ -160,7 +164,7 @@ paths:
         "200":
           $ref: "#/components/responses/Success"
         "403":
-          $ref: "#/components/responses/PhoneUnconfirmed"
+          $ref: "#/components/responses/Forbidden"
   /admin/bikes/{bikeNumber}:
     get:
       summary: Bike details (admin)
@@ -204,7 +208,7 @@ paths:
         "200":
           $ref: "#/components/responses/Success"
         "403":
-          $ref: "#/components/responses/PhoneUnconfirmed"
+          $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Problem"
   /returns:
@@ -228,7 +232,7 @@ paths:
         "200":
           $ref: "#/components/responses/Success"
         "403":
-          $ref: "#/components/responses/PhoneUnconfirmed"
+          $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Problem"
   /me/bikes:
@@ -238,7 +242,7 @@ paths:
         "200":
           $ref: "#/components/responses/Success"
         "403":
-          $ref: "#/components/responses/PhoneUnconfirmed"
+          $ref: "#/components/responses/Forbidden"
   /me/limits:
     get:
       summary: Current user limits and credit
@@ -246,7 +250,7 @@ paths:
         "200":
           $ref: "#/components/responses/Success"
         "403":
-          $ref: "#/components/responses/PhoneUnconfirmed"
+          $ref: "#/components/responses/Forbidden"
   /me/city:
     patch:
       summary: Change current user city
@@ -533,27 +537,47 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/Problem"
-    PhoneUnconfirmed:
+    Forbidden:
       description: >-
-        Returned by any authenticated endpoint (except the auth and
-        phone-confirmation routes) when the SMS system is enabled and the
-        caller's phone number is not yet confirmed. The caller holds
-        ROLE_NEWBIE and must confirm their phone first. This is a standard
-        Problem Details response carrying the stable extension
-        `code: phone_unconfirmed`; clients should branch on `code` rather than
-        the human-readable `detail`.
+        Returned by authenticated endpoints when the caller is authenticated
+        but not permitted to use the API yet. Two stable extension codes can
+        appear:
+
+        - `email_unconfirmed`: the account still has a pending email
+          confirmation (a `registration` token row). Enforced per request on
+          the `api_v1` firewall via the same `UserChecker` as web login, so a
+          token issued before the account lapsed stops working immediately.
+          Resolve out-of-band via the email confirmation link.
+
+        - `phone_unconfirmed`: the SMS system is enabled and the caller's phone
+          number is not yet confirmed. The caller holds ROLE_NEWBIE and must
+          confirm their phone first (see the phone-confirmation routes).
+
+        Both are standard Problem Details responses; clients should branch on
+        the `code` extension rather than the human-readable `detail`.
       content:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/Problem"
-          example:
-            type: about:blank
-            title: Forbidden
-            status: 403
-            detail: Phone number must be confirmed.
-            instance: /api/v1/me/bikes
-            requestId: 0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b
-            code: phone_unconfirmed
+          examples:
+            emailUnconfirmed:
+              value:
+                type: about:blank
+                title: Forbidden
+                status: 403
+                detail: User does not confirmed email. Check your email for confirmation letter.
+                instance: /api/v1/me/bikes
+                requestId: 0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b
+                code: email_unconfirmed
+            phoneUnconfirmed:
+              value:
+                type: about:blank
+                title: Forbidden
+                status: 403
+                detail: Phone number must be confirmed.
+                instance: /api/v1/me/bikes
+                requestId: 0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b
+                code: phone_unconfirmed
   schemas:
     SuccessEnvelope:
       type: object

@@ -6,7 +6,6 @@ namespace BikeShare\App\Security;
 
 use BikeShare\Event\UserReconfirmationEvent;
 use BikeShare\Repository\RegistrationRepository;
-use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -29,9 +28,11 @@ class UserConfirmedEmailChecker implements UserCheckerInterface
     {
         $confirmation = $this->registrationRepository->findItemByUserId($user->getUserId());
         if (!empty($confirmation)) {
-            $this->eventDispatcher->dispatch(new UserReconfirmationEvent($user));
+            // Carry the userKey read here into the event so the listener never re-queries
+            // (the row may be deleted concurrently by the email-confirmation flow).
+            $this->eventDispatcher->dispatch(new UserReconfirmationEvent($user, (string)$confirmation['userKey']));
 
-            throw new CustomUserMessageAccountStatusException(
+            throw new EmailUnconfirmedException(
                 $this->translator->trans('User does not confirmed email. Check your email for confirmation letter.')
             );
         }

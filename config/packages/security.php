@@ -45,6 +45,7 @@ return function (SecurityConfig $security) {
         ->security(true)
         ->pattern('^/api/v1')
         ->context('main')
+        ->userChecker(UserConfirmedEmailChecker::class)
         ->accessDeniedHandler(ApiAccessDeniedHandler::class)
         ->entryPoint(ApiV1Authenticator::class);
     $apiFirewall
