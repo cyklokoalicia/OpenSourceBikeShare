@@ -479,6 +479,41 @@ $(document).on('click', '.stand-status-save', function () {
     });
 });
 
+// Stand ride history (spec 0009): lazy-load the rentals that originated at this stand,
+// then toggle the list on subsequent clicks.
+$(document).on('click', '.stand-history-toggle', function () {
+    const $card = $(this).closest('.stand-card');
+    const standId = $card.attr('data-stand-id');
+    const $list = $card.find('.stand-history-list');
+
+    if ($list.data('loaded')) {
+        $list.toggleClass('d-none');
+        return;
+    }
+
+    $.ajax({
+        url: '/api/v1/admin/stands/' + encodeURIComponent(standId) + '/rentals',
+        method: 'GET',
+        dataType: 'json',
+        success: function (response) {
+            const rentals = apiData(response) || [];
+            $list.empty();
+            if (rentals.length === 0) {
+                $list.append($('<li>').addClass('text-muted').text('No rides yet'));
+            } else {
+                $.each(rentals, function (i, r) {
+                    const who = r.userName || ('#' + r.userId);
+                    $list.append($('<li>').text('#' + r.bikeNumber + ' — ' + who + ' — ' + r.rentTime));
+                });
+            }
+            $list.data('loaded', true).removeClass('d-none');
+        },
+        error: function () {
+            $list.empty().append($('<li>').addClass('text-danger').text('Failed to load history')).removeClass('d-none');
+        }
+    });
+});
+
 function stands(standName) {
     const hasStandName = standName !== undefined && standName !== null && standName !== '';
     const url = hasStandName

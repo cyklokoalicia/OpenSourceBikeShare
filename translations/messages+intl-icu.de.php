@@ -165,6 +165,7 @@ Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmU
     'Total Actions' => 'Gesamtaktionen',
     'Year' => 'Jahr',
     'View on Google Maps' => 'Auf Google Maps ansehen',
+    'Ride history' => 'Fahrtenverlauf',
     'user.phone_confirm.sms_code' => 'Gib diesen Code ein, um dein Telefon zu verifizieren: {smsCode}',
     'Invalid confirmation code.' => 'Ungültiger Bestätigungscode.',
     'Phone confirmation' => 'Telefonbestätigung',

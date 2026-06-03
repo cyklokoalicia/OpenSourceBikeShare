@@ -145,6 +145,32 @@ paths:
           $ref: "#/components/responses/Problem"
         "404":
           $ref: "#/components/responses/Problem"
+  /admin/stands/{standId}/rentals:
+    get:
+      summary: Stand ride history — rentals that originated at this stand (admin, paginated)
+      parameters:
+        - name: standId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+        "404":
+          $ref: "#/components/responses/Problem"
   /stands/{standName}/bikes:
     get:
       summary: List bikes on stand

@@ -172,6 +172,7 @@ return [
     'Total Actions' => 'Загальна кількість дій',
     'Year' => 'Рік',
     'View on Google Maps' => 'Переглянути на Google Maps',
+    'Ride history' => 'Історія поїздок',
     'user.phone_confirm.sms_code' => 'Введіть цей код, щоб підтвердити свій телефон: {smsCode}',
     'Invalid confirmation code.' => 'Недійсний код підтвердження.',
     'Phone confirmation' => 'Підтвердження телефону',

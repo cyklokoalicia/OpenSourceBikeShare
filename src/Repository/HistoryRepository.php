@@ -331,6 +331,47 @@ class HistoryRepository
     }
 
     /**
+     * Recent rentals that originated at a stand (spec 0009): "who rented from this stand".
+     * A bike's origin stand is where it was last returned before the rent, so a RENT row
+     * belongs to this stand when the bike's immediately-preceding RETURN parameter (which
+     * stores the stand id) equals it. Newest first, paginated.
+     *
+     * @return array<int, array{id: int, bikeNumber: int, rentTime: string, userId: int, userName: string|null}>
+     */
+    public function findRentalsByStand(int $standId, int $limit = 20, int $offset = 0): array
+    {
+        return $this->db->query(
+            "SELECT
+                h.id,
+                h.bikeNum AS bikeNumber,
+                h.time AS rentTime,
+                h.userId,
+                u.userName AS userName
+            FROM history h
+            LEFT JOIN users u ON u.userId = h.userId
+            WHERE h.action IN (:rentAction, :forceRentAction)
+              AND (
+                SELECT r.parameter FROM history r
+                WHERE r.bikeNum = h.bikeNum
+                  AND r.action IN (:returnAction, :forceReturnAction)
+                  AND r.time < h.time
+                ORDER BY r.time DESC, r.id DESC LIMIT 1
+              ) = :standId
+            ORDER BY h.time DESC, h.id DESC
+            LIMIT :limit OFFSET :offset",
+            [
+                'rentAction' => Action::RENT->value,
+                'forceRentAction' => Action::FORCE_RENT->value,
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
+                'standId' => $standId,
+                'limit' => $limit,
+                'offset' => $offset,
+            ]
+        )->fetchAllAssoc();
+    }
+
+    /**
      * Returns last N trips (rent then return) for a user.
      * Each trip has: rentTime, bikeNumber, returnTime, standName (to), fromStandName (from).
      *
