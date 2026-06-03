@@ -93,6 +93,12 @@ function mapinit() {
     map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
     map.addLayer(osm);
 
+    // Stand markers: service ("technical") and testing ("hidden") stands go on a lower
+    // pane so active/parking stands are never hidden behind them (spec 0010). A pane's
+    // z-index is a hard order, unlike zIndexOffset which mixes with latitude position.
+    map.createPane('standServicePane');
+    map.getPane('standServicePane').style.zIndex = 590; // below the default markerPane (600)
+
     lc = L.control.locate({
         locateOptions: {
             maxZoom: mapzoom,
@@ -168,6 +174,13 @@ function getmarkers() {
         const body = $('body');
         const iconSizeArr = [iconsize, iconsize];
         const iconAnchorArr = [iconsize / 2, 0];
+        const seen = {};
+        const makeIcon = (html, standid) => L.divIcon({
+            iconSize: iconSizeArr,
+            iconAnchor: iconAnchorArr,
+            html: html,
+            standid: standid
+        });
 
         for (let i = 0, len = jsonObject.length; i < len; i++) {
             const {
@@ -182,6 +195,7 @@ function getmarkers() {
             } = jsonObject[i];
 
             let iconClass = 'icondesc';
+            const isServiceStand = status === 'technical' || status === 'hidden';
             if (status === 'technical') {
                 iconClass += ' stand-technical';
             } else if (status === 'hidden') {
@@ -196,24 +210,50 @@ function getmarkers() {
                     <dd class="standname">${standName}</dd>
                 </dl>`;
 
-            const tempIcon = L.divIcon({
-                iconSize: iconSizeArr,
-                iconAnchor: iconAnchorArr,
-                html: iconHTML,
-                standid: standId
-            });
-
             markerdata[standId] = {
                 name: standName,
                 desc: standDescription,
                 photo: standPhoto,
                 count: bikeCount
             };
+            seen[standId] = true;
 
-            markers[standId] = L.marker([latitude, longitude], {
-                icon: tempIcon
-            }).addTo(map).on("click", showstand);
+            const pane = isServiceStand ? 'standServicePane' : 'markerPane';
+            const existing = markers[standId];
+            // Reconcile in place so the 60s refresh doesn't leak layers (old code never
+            // removed markers) — and doesn't flicker either: existing markers are updated,
+            // only new stands are added, stale ones are removed after the loop. setIcon
+            // runs only when the rendered HTML changed, so unchanged markers don't redraw.
+            if (existing && existing._pane === pane) {
+                existing.setLatLng([latitude, longitude]);
+                if (existing._iconHtml !== iconHTML) {
+                    existing.setIcon(makeIcon(iconHTML, standId));
+                    existing._iconHtml = iconHTML;
+                }
+            } else {
+                // New stand, or its status crossed the service/active boundary (the pane is
+                // fixed at construction, so that marker must be recreated).
+                if (existing) {
+                    map.removeLayer(existing);
+                }
+                const marker = L.marker([latitude, longitude], {
+                    icon: makeIcon(iconHTML, standId),
+                    pane: pane
+                }).addTo(map).on("click", showstand);
+                marker._pane = pane;
+                marker._iconHtml = iconHTML;
+                markers[standId] = marker;
+            }
         }
+
+        // Drop markers for stands no longer in the feed.
+        Object.keys(markers).forEach(function (id) {
+            if (!seen[id]) {
+                map.removeLayer(markers[id]);
+                delete markers[id];
+                delete markerdata[id];
+            }
+        });
 
         body.data('markerdata', markerdata);
 
