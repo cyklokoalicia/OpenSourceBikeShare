@@ -55,21 +55,14 @@ class StandRentalsTest extends BikeSharingWebTestCase
         $this->assertResponseStatusCodeSame(404);
     }
 
-    public function testReturnsPaginatedEnvelopeForKnownStand(): void
+    public function testReturnsRentalListForKnownStand(): void
     {
         $this->loginAdmin();
 
-        $this->client->request(
-            Request::METHOD_GET,
-            '/api/v1/admin/stands/' . self::STAND_ID . '/rentals?limit=5&offset=0'
-        );
+        $this->client->request(Request::METHOD_GET, '/api/v1/admin/stands/' . self::STAND_ID . '/rentals');
 
         $this->assertResponseIsSuccessful();
-        $decoded = $this->decodeJsonResponse();
-        $this->assertIsArray($decoded['data']);
-        $this->assertSame(5, $decoded['meta']['limit']);
-        $this->assertSame(0, $decoded['meta']['offset']);
-        $this->assertArrayHasKey('count', $decoded['meta']);
+        $this->assertIsArray($this->decodeApiResponseData());
     }
 
     public function testListsRentalsOriginatingAtTheStand(): void

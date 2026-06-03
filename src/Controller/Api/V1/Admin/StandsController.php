@@ -74,26 +74,14 @@ class StandsController extends AbstractController
         ]);
     }
 
-    public function rentals(int $standId, Request $request): Response
+    public function rentals(int $standId): Response
     {
         $stand = $this->standRepository->findItem($standId);
         if (empty($stand)) {
             return $this->json(['detail' => 'Stand not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $limit = max(1, min(100, (int)$request->query->get('limit', 20)));
-        $offset = max(0, (int)$request->query->get('offset', 0));
-
-        $rentals = $this->historyRepository->findRentalsByStand($standId, $limit, $offset);
-
-        return $this->json([
-            'data' => $rentals,
-            'meta' => [
-                'limit' => $limit,
-                'offset' => $offset,
-                'count' => count($rentals),
-            ],
-        ]);
+        return $this->json($this->historyRepository->findRentalsByStand($standId));
     }
 
     public function removeNote(

@@ -331,14 +331,14 @@ class HistoryRepository
     }
 
     /**
-     * Recent rentals that originated at a stand (spec 0009): "who rented from this stand".
-     * A bike's origin stand is where it was last returned before the rent, so a RENT row
-     * belongs to this stand when the bike's immediately-preceding RETURN parameter (which
-     * stores the stand id) equals it. Newest first, paginated.
+     * The last N rentals that originated at a stand (spec 0009): "who rented from this
+     * stand". A bike's origin stand is where it was last returned before the rent, so a
+     * RENT row belongs to this stand when the bike's immediately-preceding RETURN parameter
+     * (which stores the stand id) equals it. Newest first.
      *
      * @return array<int, array{id: int, bikeNumber: int, rentTime: string, userId: int, userName: string|null}>
      */
-    public function findRentalsByStand(int $standId, int $limit = 20, int $offset = 0): array
+    public function findRentalsByStand(int $standId, int $limit = 10): array
     {
         return $this->db->query(
             "SELECT
@@ -358,7 +358,7 @@ class HistoryRepository
                 ORDER BY r.time DESC, r.id DESC LIMIT 1
               ) = :standId
             ORDER BY h.time DESC, h.id DESC
-            LIMIT :limit OFFSET :offset",
+            LIMIT :limit",
             [
                 'rentAction' => Action::RENT->value,
                 'forceRentAction' => Action::FORCE_RENT->value,
@@ -366,7 +366,6 @@ class HistoryRepository
                 'forceReturnAction' => Action::FORCE_RETURN->value,
                 'standId' => $standId,
                 'limit' => $limit,
-                'offset' => $offset,
             ]
         )->fetchAllAssoc();
     }
