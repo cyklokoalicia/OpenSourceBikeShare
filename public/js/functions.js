@@ -93,6 +93,12 @@ function mapinit() {
     map.setView(new L.LatLng($("body").data("mapcenterlat"), $("body").data("mapcenterlong")), $("body").data("mapzoom"));
     map.addLayer(osm);
 
+    // Stand markers: service ("technical") and testing ("hidden") stands go on a lower
+    // pane so active/parking stands are never hidden behind them (spec 0010). A pane's
+    // z-index is a hard order, unlike zIndexOffset which mixes with latitude position.
+    map.createPane('standServicePane');
+    map.getPane('standServicePane').style.zIndex = 590; // below the default markerPane (600)
+
     lc = L.control.locate({
         locateOptions: {
             maxZoom: mapzoom,
@@ -182,6 +188,7 @@ function getmarkers() {
             } = jsonObject[i];
 
             let iconClass = 'icondesc';
+            const isServiceStand = status === 'technical' || status === 'hidden';
             if (status === 'technical') {
                 iconClass += ' stand-technical';
             } else if (status === 'hidden') {
@@ -211,7 +218,8 @@ function getmarkers() {
             };
 
             markers[standId] = L.marker([latitude, longitude], {
-                icon: tempIcon
+                icon: tempIcon,
+                pane: isServiceStand ? 'standServicePane' : 'markerPane'
             }).addTo(map).on("click", showstand);
         }
 
