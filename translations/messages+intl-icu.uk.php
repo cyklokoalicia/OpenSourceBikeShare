@@ -173,6 +173,8 @@ return [
     'Year' => 'Рік',
     'View on Google Maps' => 'Переглянути на Google Maps',
     'Ride history' => 'Історія поїздок',
+    'No rides yet' => 'Поки немає поїздок',
+    'Failed to load history' => 'Не вдалося завантажити історію',
     'user.phone_confirm.sms_code' => 'Введіть цей код, щоб підтвердити свій телефон: {smsCode}',
     'Invalid confirmation code.' => 'Недійсний код підтвердження.',
     'Phone confirmation' => 'Підтвердження телефону',

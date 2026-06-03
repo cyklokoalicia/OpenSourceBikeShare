@@ -354,7 +354,7 @@ class HistoryRepository
                 SELECT r.parameter FROM history r
                 WHERE r.bikeNum = h.bikeNum
                   AND r.action IN (:returnAction, :forceReturnAction)
-                  AND r.time < h.time
+                  AND (r.time < h.time OR (r.time = h.time AND r.id < h.id))
                 ORDER BY r.time DESC, r.id DESC LIMIT 1
               ) = :standId
             ORDER BY h.time DESC, h.id DESC

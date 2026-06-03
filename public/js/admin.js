@@ -499,7 +499,7 @@ $(document).on('click', '.stand-history-toggle', function () {
             const rentals = apiData(response) || [];
             $list.empty();
             if (rentals.length === 0) {
-                $list.append($('<li>').addClass('text-muted').text('No rides yet'));
+                $list.append($('<li>').addClass('text-muted').text(window.translations['No rides yet'] || 'No rides yet'));
             } else {
                 $.each(rentals, function (i, r) {
                     const who = r.userName || ('#' + r.userId);
@@ -509,7 +509,8 @@ $(document).on('click', '.stand-history-toggle', function () {
             $list.data('loaded', true).removeClass('d-none');
         },
         error: function () {
-            $list.empty().append($('<li>').addClass('text-danger').text('Failed to load history')).removeClass('d-none');
+            const msg = window.translations['Failed to load history'] || 'Failed to load history';
+            $list.empty().append($('<li>').addClass('text-danger').text(msg)).removeClass('d-none');
         }
     });
 });
