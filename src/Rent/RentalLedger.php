@@ -22,6 +22,11 @@ use BikeShare\Repository\HistoryRepository;
  *   PARKED  --force-return-->  PARKED     FORCERETURN relocation (pair = null, closes nothing)
  *   ON_TRIP --force-rent-->    ON_TRIP    synthetic close of the abandoned trip, then re-open
  *   ON_TRIP --revert-->        PARKED     REVERT + synthetic RENT/RETURN; original rent cancelled
+ *
+ * The rent/return events dispatch on the current state via an exhaustive `match` (so the table
+ * above is executed, not just described — an unhandled state fails loudly). Transition
+ * *legality* (e.g. renting an already-rented bike needs force) stays in the engine's guards,
+ * which return user-facing errors; this class owns only the resulting ledger writes.
  */
 class RentalLedger
 {
@@ -40,9 +45,15 @@ class RentalLedger
     {
         $openRentId = $this->historyRepository->findOpenRentId($bikeId);
 
-        if ($this->stateOf($openRentId) === BikeRentalState::ON_TRIP) {
-            $this->closeAbandonedRental($userId, $bikeId, $openRentId);
-        }
+        // Transition on a rent event, dispatched by the current state (exhaustive — a new
+        // state would force a compile-time-style failure here):
+        match ($this->stateOf($openRentId)) {
+            // ON_TRIP: only reachable via a forced hand-over — close the abandoned trip first
+            // so it is not left dangling (INV2), then re-open below.
+            BikeRentalState::ON_TRIP => $this->closeAbandonedRental($userId, $bikeId, $openRentId),
+            // PARKED: nothing open; just open the new trip below.
+            BikeRentalState::PARKED => null,
+        };
 
         return $this->historyRepository->addItem(
             $userId,
@@ -60,9 +71,14 @@ class RentalLedger
      */
     public function recordReturn(int $userId, int $bikeId, bool $force, int $standId): void
     {
-        // The open rent this return closes, or null when nothing is open — i.e. a PARKED bike
-        // being force-relocated, which pairs nothing (INV3).
-        $pairActionId = $this->historyRepository->findOpenRentId($bikeId);
+        $openRentId = $this->historyRepository->findOpenRentId($bikeId);
+
+        // Transition on a return event, dispatched by the current state → the rent this return
+        // pairs to (exhaustive):
+        $pairActionId = match ($this->stateOf($openRentId)) {
+            BikeRentalState::ON_TRIP => $openRentId, // closes the open rent
+            BikeRentalState::PARKED => null,         // forced relocation closes nothing (INV3)
+        };
 
         $this->historyRepository->addItem(
             $userId,
