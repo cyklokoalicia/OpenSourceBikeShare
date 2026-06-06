@@ -134,7 +134,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $this->bikeRepository->assignToUser($bikeId, $userId, $newCode);
 
-        $this->rentalStateMachine->recordRent($userId, $bikeId, $force, $newCode, $originStand);
+        $this->rentalStateMachine->onRent($userId, $bikeId, $force, $newCode, $originStand);
 
         $this->eventDispatcher->dispatch(
             new BikeRentEvent($bikeId, $userId, $force)
@@ -192,7 +192,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
         $hasCreditChange = $force === false && $this->creditSystem->isEnabled() && $creditChange;
 
-        $this->rentalStateMachine->recordReturn($userId, $bikeId, $force, $standId);
+        $this->rentalStateMachine->onReturn($userId, $bikeId, $force, $standId);
 
         $this->eventDispatcher->dispatch(
             new BikeReturnEvent($bikeId, $standName, $userId, $force)
@@ -228,7 +228,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $this->bikeRepository->revertToStand($bikeId, $target['standId'], $target['code']);
 
-        $this->rentalStateMachine->recordRevert($userId, $bikeId, $target['standId'], $target['code']);
+        $this->rentalStateMachine->onRevert($userId, $bikeId, $target['standId'], $target['code']);
 
         $this->eventDispatcher->dispatch(
             new BikeRevertEvent($bikeId, $userId, $previousOwnerId)

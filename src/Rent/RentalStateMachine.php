@@ -41,7 +41,7 @@ class RentalStateMachine
      * A rent while already ON_TRIP is only reachable via a forced hand-over (the normal path
      * guards against it); the abandoned trip is closed first so no rental is left dangling (INV2).
      */
-    public function recordRent(int $userId, int $bikeId, bool $force, string $code, ?int $originStand): int
+    public function onRent(int $userId, int $bikeId, bool $force, string $code, ?int $originStand): int
     {
         $openRentId = $this->historyRepository->findOpenRentId($bikeId);
 
@@ -69,7 +69,7 @@ class RentalStateMachine
      * Record a return. From ON_TRIP it closes the open rent (pair = that rent); from PARKED it is
      * a forced relocation that closes nothing (pair = null) — INV3.
      */
-    public function recordReturn(int $userId, int $bikeId, bool $force, int $standId): void
+    public function onReturn(int $userId, int $bikeId, bool $force, int $standId): void
     {
         $openRentId = $this->historyRepository->findOpenRentId($bikeId);
 
@@ -94,7 +94,7 @@ class RentalStateMachine
      * Record a revert: a REVERT marker (pointing at the cancelled rental) plus a synthetic
      * RENT/RETURN pair that restores the bike to its previous stand and code.
      */
-    public function recordRevert(int $userId, int $bikeId, int $standId, string $code): void
+    public function onRevert(int $userId, int $bikeId, int $standId, string $code): void
     {
         $cancelledRentId = $this->historyRepository->findOpenRentId($bikeId);
 
