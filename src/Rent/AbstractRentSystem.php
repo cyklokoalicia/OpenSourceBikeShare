@@ -11,7 +11,6 @@ use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Event\BikeRevertEvent;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\BikeRepository;
-use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
@@ -32,7 +31,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected readonly AdminNotifier $adminNotifier,
         protected readonly LoggerInterface $logger,
         protected readonly StandRepository $standRepository,
-        protected readonly HistoryRepository $historyRepository,
         protected readonly NoteRepository $noteRepository,
         protected readonly RentalCreditCalculator $creditCalculator,
         protected readonly ClockInterface $clock,
@@ -223,28 +221,23 @@ abstract class AbstractRentSystem implements RentSystemInterface
             return $this->error('bike.revert.error.not_rented', ['bikeNumber' => $bikeId]);
         }
 
-        $lastReturn = $this->historyRepository->findLastReturnStand($bikeId);
-        $code = $this->historyRepository->findLastRentCode($bikeId);
-
-        if ($lastReturn && $code) {
-            $standId = $lastReturn['standId'];
-            $stand = $lastReturn['standName'];
-
-            $this->bikeRepository->revertToStand($bikeId, $standId, $code);
-
-            $this->rentalLedger->recordRevert($userId, $bikeId, (int)$standId, $code);
-
-            $this->eventDispatcher->dispatch(
-                new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
-            );
-
-            return $this->success(
-                'bike.revert.success',
-                ['bikeNumber' => $bikeId, 'standName' => $stand, 'code' => $code]
-            );
+        $target = $this->rentalLedger->findRevertTarget($bikeId);
+        if ($target === null) {
+            return $this->error('bike.revert.error.no_stand_or_code', ['bikeNumber' => $bikeId]);
         }
 
-        return $this->error('bike.revert.error.no_stand_or_code', ['bikeNumber' => $bikeId]);
+        $this->bikeRepository->revertToStand($bikeId, $target['standId'], $target['code']);
+
+        $this->rentalLedger->recordRevert($userId, $bikeId, $target['standId'], $target['code']);
+
+        $this->eventDispatcher->dispatch(
+            new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
+        );
+
+        return $this->success(
+            'bike.revert.success',
+            ['bikeNumber' => $bikeId, 'standName' => $target['standName'], 'code' => $target['code']]
+        );
     }
 
     abstract public static function getType(): RentSystemType;

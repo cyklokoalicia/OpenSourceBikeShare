@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace BikeShare\Rent;
 
 use BikeShare\Enum\Action;
+use BikeShare\Rent\Enum\BikeRentalState;
 use BikeShare\Repository\HistoryRepository;
 
 /**
- * Owns the rental side of the `history` ledger (spec 0013).
+ * The spec 0013 rental state machine, and the sole writer of the rental side of the `history`
+ * ledger.
  *
- * Every rent/return/revert event is written here — never with bare addItem() calls in the
- * engine — so the per-bike event stream stays a valid PARKED↔ON_TRIP alternation and the
- * stored facts (standId, pairActionId) can never drift from reality. The invariants and the
- * forced-operation compensation (a synthetic FORCE_RETURN closing an open trip on a forced
- * hand-over) live in one place, mirroring how REVERT already synthesizes its rows.
+ * A bike is always in one of two states — {@see BikeRentalState} — derived from whether it has
+ * an *open rental* (a RENT/FORCERENT with no later RETURN/FORCERETURN). Every rent/return/revert
+ * goes through here (never bare addItem() in the engine), so the per-bike event stream stays a
+ * valid PARKED↔ON_TRIP alternation and the stored facts (standId, pairActionId) cannot drift:
  *
- * - RENT/FORCE_RENT: standId = origin, pairActionId = NULL. If the bike still has an open
- *   rental (forced hand-over), a synthetic closing FORCE_RETURN is written for it first.
- * - RETURN/FORCE_RETURN: standId = destination, pairActionId = the open rent it closes, or
- *   NULL when nothing is open (a forced relocation of a parked bike — not a trip).
- * - REVERT: REVERT + synthetic RENT + synthetic RETURN; the original open rental is cancelled.
+ *   PARKED  --rent-->          ON_TRIP    RENT (standId = origin, no pair)
+ *   ON_TRIP --return-->        PARKED     RETURN (standId = dest, pair = the closed rent)
+ *   PARKED  --force-return-->  PARKED     FORCERETURN relocation (pair = null, closes nothing)
+ *   ON_TRIP --force-rent-->    ON_TRIP    synthetic close of the abandoned trip, then re-open
+ *   ON_TRIP --revert-->        PARKED     REVERT + synthetic RENT/RETURN; original rent cancelled
  */
 class RentalLedger
 {
@@ -30,17 +31,17 @@ class RentalLedger
     }
 
     /**
-     * Record a rent. Returns the new RENT row id.
+     * Record a rent and return the new RENT row id.
      *
-     * If the bike already has an open rental (only reachable via a forced hand-over — the
-     * normal rent path guards against it), a synthetic closing FORCE_RETURN is written first
-     * so the previous trip is not left dangling (INV2).
+     * A rent while already ON_TRIP is only reachable via a forced hand-over (the normal path
+     * guards against it); the abandoned trip is closed first so no rental is left dangling (INV2).
      */
     public function recordRent(int $userId, int $bikeId, bool $force, string $code, ?int $originStand): int
     {
         $openRentId = $this->historyRepository->findOpenRentId($bikeId);
-        if ($openRentId !== null) {
-            $this->closeOpenRental($userId, $bikeId, $openRentId);
+
+        if ($this->stateOf($openRentId) === BikeRentalState::ON_TRIP) {
+            $this->closeAbandonedRental($userId, $bikeId, $openRentId);
         }
 
         return $this->historyRepository->addItem(
@@ -54,12 +55,14 @@ class RentalLedger
     }
 
     /**
-     * Record a return. `pairActionId` links to the open rent this closes, or stays NULL when
-     * nothing is open (a forced relocation of an already-parked bike — INV3).
+     * Record a return. From ON_TRIP it closes the open rent (pair = that rent); from PARKED it is
+     * a forced relocation that closes nothing (pair = null) — INV3.
      */
     public function recordReturn(int $userId, int $bikeId, bool $force, int $standId): void
     {
         $openRentId = $this->historyRepository->findOpenRentId($bikeId);
+
+        $pairActionId = $this->stateOf($openRentId) === BikeRentalState::ON_TRIP ? $openRentId : null;
 
         $this->historyRepository->addItem(
             $userId,
@@ -67,14 +70,13 @@ class RentalLedger
             $force ? Action::FORCE_RETURN : Action::RETURN,
             (string)$standId,
             $standId,
-            $openRentId,
+            $pairActionId,
         );
     }
 
     /**
-     * Record a revert: a REVERT marker (pointing at the rental being cancelled) plus a synthetic
-     * RENT+RETURN pair that restores the bike to its previous stand and code. The original
-     * rental is treated as cancelled (dropped from trip accounting downstream).
+     * Record a revert: a REVERT marker (pointing at the cancelled rental) plus a synthetic
+     * RENT/RETURN pair that restores the bike to its previous stand and code.
      */
     public function recordRevert(int $userId, int $bikeId, int $standId, string $code): void
     {
@@ -109,11 +111,38 @@ class RentalLedger
     }
 
     /**
-     * Synthesize a closing FORCE_RETURN for an open rental that is being superseded by a forced
-     * hand-over. The destination is the bike's last-known stand (the decided placeholder — the
-     * bike has no real stand while on a trip), so the abandoned rental gets a terminus.
+     * Where and with what code a bike should be restored on revert: its last-known stand and
+     * last rent code. Null when either is missing (nothing to revert to).
+     *
+     * @return array{standId: int, standName: string, code: string}|null
      */
-    private function closeOpenRental(int $userId, int $bikeId, int $openRentId): void
+    public function findRevertTarget(int $bikeId): ?array
+    {
+        $lastReturn = $this->historyRepository->findLastReturnStand($bikeId);
+        $code = $this->historyRepository->findLastRentCode($bikeId);
+
+        if ($lastReturn === null || $code === null) {
+            return null;
+        }
+
+        return [
+            'standId' => $lastReturn['standId'],
+            'standName' => $lastReturn['standName'],
+            'code' => $code,
+        ];
+    }
+
+    private function stateOf(?int $openRentId): BikeRentalState
+    {
+        return $openRentId === null ? BikeRentalState::PARKED : BikeRentalState::ON_TRIP;
+    }
+
+    /**
+     * Synthesize a closing FORCE_RETURN for an open rental superseded by a forced hand-over.
+     * The destination is the bike's last-known stand (the decided placeholder — it has no real
+     * stand while ON_TRIP), so the abandoned rental gets a terminus and INV2 holds.
+     */
+    private function closeAbandonedRental(int $userId, int $bikeId, int $openRentId): void
     {
         $lastStand = $this->historyRepository->findLastReturnStand($bikeId);
         $placeholderStand = $lastStand['standId'] ?? null;
