@@ -60,9 +60,9 @@ class RentalLedger
      */
     public function recordReturn(int $userId, int $bikeId, bool $force, int $standId): void
     {
-        $openRentId = $this->historyRepository->findOpenRentId($bikeId);
-
-        $pairActionId = $this->stateOf($openRentId) === BikeRentalState::ON_TRIP ? $openRentId : null;
+        // The open rent this return closes, or null when nothing is open — i.e. a PARKED bike
+        // being force-relocated, which pairs nothing (INV3).
+        $pairActionId = $this->historyRepository->findOpenRentId($bikeId);
 
         $this->historyRepository->addItem(
             $userId,
@@ -147,6 +147,9 @@ class RentalLedger
         $lastStand = $this->historyRepository->findLastReturnStand($bikeId);
         $placeholderStand = $lastStand['standId'] ?? null;
 
+        // `standId` is the typed fact; the legacy `parameter` mirrors it as a string. When the
+        // bike has no prior return to borrow a placeholder from, both stay "unknown": standId
+        // null and parameter '' (the deliberate empty sentinel — do not "fix" to '0').
         $this->historyRepository->addItem(
             $userId,
             $bikeId,
