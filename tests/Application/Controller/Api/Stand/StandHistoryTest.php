@@ -17,7 +17,9 @@ class StandHistoryTest extends BikeSharingWebTestCase
 {
     private const ADMIN_PHONE_NUMBER = '421951222222';
     private const USER_PHONE_NUMBER = '421951111111';
-    private const STAND_ID = 1;
+    // STAND4 exists in fixtures but no other test rents from / returns to it, so this stand's
+    // history contains only what this test seeds — no contention with other tests' rows.
+    private const STAND_ID = 4;
     // A bike number absent from fixtures, so the seeded history is isolated and cheap to clean up.
     private const SENTINEL_BIKE = 9999;
 
@@ -74,17 +76,15 @@ class StandHistoryTest extends BikeSharingWebTestCase
         $userId = $user->getUserId();
 
         // A return TO this stand, then a rent FROM it — both now carry standId (spec 0013),
-        // so both must appear in the stand's history. Timestamps are set near the top of the
-        // MySQL TIMESTAMP range (max 2038-01-19) so these rows stay newest — and thus inside
-        // the newest-first, limited list — regardless of other tests' (real-now) data.
+        // so both must appear in the stand's history.
         $db->query(
             "INSERT INTO history (userId, bikeNum, action, parameter, standId, time)
-             VALUES (:u, :b, 'RETURN', :stand, :standId, '2037-12-31 10:00:00')",
+             VALUES (:u, :b, 'RETURN', :stand, :standId, '2026-05-01 10:00:00')",
             ['u' => $userId, 'b' => self::SENTINEL_BIKE, 'stand' => (string)self::STAND_ID, 'standId' => self::STAND_ID]
         );
         $db->query(
             "INSERT INTO history (userId, bikeNum, action, parameter, standId, time)
-             VALUES (:u, :b, 'RENT', 'TESTCODE', :standId, '2037-12-31 11:00:00')",
+             VALUES (:u, :b, 'RENT', 'TESTCODE', :standId, '2026-05-01 11:00:00')",
             ['u' => $userId, 'b' => self::SENTINEL_BIKE, 'standId' => self::STAND_ID]
         );
 
