@@ -9,8 +9,8 @@ use BikeShare\Rent\Enum\BikeRentalState;
 use BikeShare\Repository\HistoryRepository;
 
 /**
- * The spec 0013 rental state machine, and the sole writer of the rental side of the `history`
- * ledger.
+ * The spec 0013 rental state machine: the sole authority that records rent/return/revert events
+ * into the rental side of the `history` ledger, dispatching each on the bike's current state.
  *
  * A bike is always in one of two states — {@see BikeRentalState} — derived from whether it has
  * an *open rental* (a RENT/FORCERENT with no later RETURN/FORCERETURN). Every rent/return/revert
@@ -28,7 +28,7 @@ use BikeShare\Repository\HistoryRepository;
  * *legality* (e.g. renting an already-rented bike needs force) stays in the engine's guards,
  * which return user-facing errors; this class owns only the resulting ledger writes.
  */
-class RentalLedger
+class RentalStateMachine
 {
     public function __construct(
         private readonly HistoryRepository $historyRepository,

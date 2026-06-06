@@ -35,7 +35,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected readonly RentalCreditCalculator $creditCalculator,
         protected readonly ClockInterface $clock,
         protected readonly BikeCodeGeneratorInterface $codeGenerator,
-        protected readonly RentalLedger $rentalLedger,
+        protected readonly RentalStateMachine $rentalStateMachine,
         protected readonly bool $stackWatchEnabled,
         protected readonly bool $isSmsSystemEnabled,
         protected readonly bool $forceStack,
@@ -134,7 +134,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $this->bikeRepository->assignToUser($bikeId, $userId, $newCode);
 
-        $this->rentalLedger->recordRent($userId, $bikeId, $force, $newCode, $originStand);
+        $this->rentalStateMachine->recordRent($userId, $bikeId, $force, $newCode, $originStand);
 
         $this->eventDispatcher->dispatch(
             new BikeRentEvent($bikeId, $userId, $force)
@@ -192,7 +192,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
         $hasCreditChange = $force === false && $this->creditSystem->isEnabled() && $creditChange;
 
-        $this->rentalLedger->recordReturn($userId, $bikeId, $force, $standId);
+        $this->rentalStateMachine->recordReturn($userId, $bikeId, $force, $standId);
 
         $this->eventDispatcher->dispatch(
             new BikeReturnEvent($bikeId, $standName, $userId, $force)
@@ -221,14 +221,14 @@ abstract class AbstractRentSystem implements RentSystemInterface
             return $this->error('bike.revert.error.not_rented', ['bikeNumber' => $bikeId]);
         }
 
-        $target = $this->rentalLedger->findRevertTarget($bikeId);
+        $target = $this->rentalStateMachine->findRevertTarget($bikeId);
         if ($target === null) {
             return $this->error('bike.revert.error.no_stand_or_code', ['bikeNumber' => $bikeId]);
         }
 
         $this->bikeRepository->revertToStand($bikeId, $target['standId'], $target['code']);
 
-        $this->rentalLedger->recordRevert($userId, $bikeId, $target['standId'], $target['code']);
+        $this->rentalStateMachine->recordRevert($userId, $bikeId, $target['standId'], $target['code']);
 
         $this->eventDispatcher->dispatch(
             new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
