@@ -372,19 +372,16 @@ class HistoryRepository
     }
 
     /**
-     * The last N rentals that originated at a stand (spec 0009): "who rented from this
-     * stand". A RENT row stores its origin stand directly in `standId` (spec 0013); the
-     * lookup is an exact, index-backed filter. Newest first.
+     * Stand-scoped ride history (spec 0013): rentals originating at the stand and returns made
+     * to it, newest first. Exact and index-backed via the populated `standId` — both RENT and
+     * RETURN now carry the stand, so no correlated-subquery inference is needed.
      *
-     * Rows written before spec 0013 (or never backfilled by app:backfill_history_standid)
-     * have a NULL standId and so do not appear here.
+     * Rows written before spec 0013 (or never backfilled by app:backfill_history_standid) have
+     * a NULL standId and so do not appear here.
      *
-     * @return array<int, array{id: int, bikeNumber: int, rentTime: string, userId: int, userName: string|null}>
-     */
-    /**
-     * Stand-scoped ride history: rentals originating at the stand and returns made to it,
-     * newest first. Exact and index-backed via the populated standId (spec 0013) — both RENT
-     * and RETURN now carry the stand, so no correlated-subquery inference is needed.
+     * @return array<int, array{
+     *     id: int, bikeNumber: int, action: string, time: string, userId: int, userName: string|null
+     * }>
      */
     public function findStandHistory(int $standId, int $limit = 10): array
     {
