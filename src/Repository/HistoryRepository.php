@@ -20,16 +20,18 @@ class HistoryRepository
         int $userId,
         int $bikeNum,
         Action $action,
-        string $parameter
+        string $parameter,
+        ?int $standId = null
     ): void {
         $this->db->query(
-            'INSERT INTO history (userId, bikeNum, action, parameter, time)
-             VALUES (:userId, :bikeNum, :action, :parameter, :time)',
+            'INSERT INTO history (userId, bikeNum, action, parameter, standId, time)
+             VALUES (:userId, :bikeNum, :action, :parameter, :standId, :time)',
             [
                 'userId' => $userId,
                 'bikeNum' => $bikeNum,
                 'action' => $action->value,
                 'parameter' => $parameter,
+                'standId' => $standId,
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
@@ -328,6 +330,40 @@ class HistoryRepository
         )->fetchAllAssoc();
 
         return $result;
+    }
+
+    /**
+     * The last N rentals that originated at a stand (spec 0009): "who rented from this
+     * stand". A RENT row stores its origin stand directly in `standId` (spec 0013); the
+     * lookup is an exact, index-backed filter. Newest first.
+     *
+     * Rows written before spec 0013 (or never backfilled by app:backfill_history_standid)
+     * have a NULL standId and so do not appear here.
+     *
+     * @return array<int, array{id: int, bikeNumber: int, rentTime: string, userId: int, userName: string|null}>
+     */
+    public function findRentalsByStand(int $standId, int $limit = 10): array
+    {
+        return $this->db->query(
+            "SELECT
+                h.id,
+                h.bikeNum AS bikeNumber,
+                h.time AS rentTime,
+                h.userId,
+                u.userName AS userName
+            FROM history h
+            LEFT JOIN users u ON u.userId = h.userId
+            WHERE h.action IN (:rentAction, :forceRentAction)
+              AND h.standId = :standId
+            ORDER BY h.time DESC, h.id DESC
+            LIMIT :limit",
+            [
+                'rentAction' => Action::RENT->value,
+                'forceRentAction' => Action::FORCE_RENT->value,
+                'standId' => $standId,
+                'limit' => $limit,
+            ]
+        )->fetchAllAssoc();
     }
 
     /**

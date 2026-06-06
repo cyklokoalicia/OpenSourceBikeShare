@@ -129,6 +129,9 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $currentCode = $bike['currentCode'];
         $note = $bike['notes'];
 
+        // Origin stand the bike is rented from — captured before assignToUser clears it.
+        $originStand = isset($bike['currentStand']) ? (int)$bike['currentStand'] : null;
+
         $newCode = $this->codeGenerator->generate();
 
         $this->bikeRepository->assignToUser($bikeId, $userId, $newCode);
@@ -138,6 +141,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $bikeId,
             $force ? Action::FORCE_RENT : Action::RENT,
             $newCode,
+            $originStand,
         );
 
         $this->eventDispatcher->dispatch(
@@ -201,6 +205,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $bikeId,
             $force ? Action::FORCE_RETURN : Action::RETURN,
             (string)$standId,
+            $standId,
         );
 
         $this->eventDispatcher->dispatch(
@@ -244,18 +249,21 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 $bikeId,
                 Action::REVERT,
                 sprintf('%s|%s', $standId, $code),
+                (int)$standId,
             );
             $this->historyRepository->addItem(
                 $userId,
                 $bikeId,
                 Action::RENT,
                 $code,
+                (int)$standId,
             );
             $this->historyRepository->addItem(
                 $userId,
                 $bikeId,
                 Action::RETURN,
                 (string)$standId,
+                (int)$standId,
             );
 
             $this->eventDispatcher->dispatch(

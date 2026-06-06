@@ -476,4 +476,38 @@ class RentSystemTest extends BikeSharingKernelTestCase
             true
         );
     }
+
+    public function testRentAndReturnPopulateStandId(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+        $db = $container->get(DbInterface::class);
+        $rentSystem = $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB);
+        $user = $container->get(UserRepository::class)->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $stand = $container->get(StandRepository::class)->findItemByName(self::STAND_NAME);
+        $expectedStandId = (int)$stand['standId'];
+
+        // setUp force-returned the bike to STAND_NAME, so that is its origin stand.
+        $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+
+        $rentRow = $db->query(
+            "SELECT standId FROM history
+             WHERE userId = :u AND bikeNum = :b AND action = :rent
+             ORDER BY id DESC LIMIT 1",
+            ['u' => $user['userId'], 'b' => self::BIKE_NUMBER, 'rent' => Action::RENT->value]
+        )->fetchAssoc();
+        $this->assertNotEmpty($rentRow, 'RENT history row must exist');
+        $this->assertEquals($expectedStandId, $rentRow['standId'], 'RENT row must carry the origin stand id');
+
+        $rentSystem->returnBike($user['userId'], self::BIKE_NUMBER, self::STAND_NAME);
+
+        $returnRow = $db->query(
+            "SELECT standId FROM history
+             WHERE userId = :u AND bikeNum = :b AND action = :return
+             ORDER BY id DESC LIMIT 1",
+            ['u' => $user['userId'], 'b' => self::BIKE_NUMBER, 'return' => Action::RETURN->value]
+        )->fetchAssoc();
+        $this->assertNotEmpty($returnRow, 'RETURN history row must exist');
+        $this->assertEquals($expectedStandId, $returnRow['standId'], 'RETURN row must carry the destination stand id');
+    }
 }

@@ -17,6 +17,7 @@ class ControllerEventListener
         'api_v1_admin_stand_item',
         'api_v1_admin_stand_item_by_id',
         'api_v1_admin_stand_item_update',
+        'api_v1_admin_stand_rentals',
         'api_v1_admin_stand_notes_delete',
         'api_v1_admin_bikes',
         'api_v1_bike_item',
