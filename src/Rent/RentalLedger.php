@@ -160,12 +160,13 @@ class RentalLedger
      */
     private function closeAbandonedRental(int $userId, int $bikeId, int $openRentId): void
     {
-        $lastStand = $this->historyRepository->findLastReturnStand($bikeId);
-        $placeholderStand = $lastStand['standId'] ?? null;
+        // Terminus stand for the abandoned trip = its own origin (the open rent's standId): the
+        // bike has no real stand while ON_TRIP, so a zero-distance close is the best placeholder,
+        // and the origin is already known to the ledger. It stays null only when that origin is
+        // itself unknown — then standId is null and parameter '' (the deliberate empty sentinel,
+        // do not "fix" to '0').
+        $placeholderStand = $this->historyRepository->findStandIdById($openRentId);
 
-        // `standId` is the typed fact; the legacy `parameter` mirrors it as a string. When the
-        // bike has no prior return to borrow a placeholder from, both stay "unknown": standId
-        // null and parameter '' (the deliberate empty sentinel — do not "fix" to '0').
         $this->historyRepository->addItem(
             $userId,
             $bikeId,

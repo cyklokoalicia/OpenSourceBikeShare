@@ -76,6 +76,21 @@ class HistoryRepository
         return empty($row) ? null : (int)$row['id'];
     }
 
+    /**
+     * The standId stored on a single history row, or null if the row carries none.
+     */
+    public function findStandIdById(int $id): ?int
+    {
+        $result = $this->db->query(
+            'SELECT standId FROM history WHERE id = :id',
+            ['id' => $id]
+        );
+
+        $row = $result->fetchAssoc();
+
+        return isset($row['standId']) ? (int)$row['standId'] : null;
+    }
+
     public function dailyStats(): array
     {
 

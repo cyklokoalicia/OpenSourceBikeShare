@@ -8,6 +8,7 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Enum\Action;
 use BikeShare\Test\Integration\BikeSharingKernelTestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -123,5 +124,18 @@ class BackfillHistoryStandIdCommandTest extends BikeSharingKernelTestCase
 
         $this->assertNull($this->standIdOf(self::OLD_BIKE, Action::RETURN), 'Pre-since row must be untouched');
         $this->assertSame(self::SEEDED_STAND, $this->standIdOf(self::RETURN_BIKE, Action::RETURN));
+    }
+
+    public function testInvalidSinceIsRejectedWithoutWriting(): void
+    {
+        $this->insert(self::RETURN_BIKE, Action::RETURN, (string)self::SEEDED_STAND, '2020-01-01 10:00:00');
+
+        $exitCode = $this->commandTester->execute(['--since' => 'not-a-date']);
+
+        $this->assertSame(Command::INVALID, $exitCode);
+        $this->assertNull(
+            $this->standIdOf(self::RETURN_BIKE, Action::RETURN),
+            'An invalid --since must abort before any write'
+        );
     }
 }

@@ -55,8 +55,20 @@ class BackfillHistoryStandIdCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool)$input->getOption('dry-run');
-        $since = (string)$input->getOption('since');
         $batch = max(1, (int)$input->getOption('batch'));
+
+        // Validate --since up front: it is interpolated into SQL `time >= :since`, so a malformed
+        // value would otherwise behave DB-mode-dependently (error vs silent coercion).
+        $rawSince = (string)$input->getOption('since');
+        $sinceDate = \DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $rawSince)
+            ?: \DateTimeImmutable::createFromFormat('!Y-m-d', $rawSince);
+        if ($sinceDate === false) {
+            $io->error(sprintf('Invalid --since "%s": expected "Y-m-d" or "Y-m-d H:i:s".', $rawSince));
+
+            return Command::INVALID;
+        }
+
+        $since = $sinceDate->format('Y-m-d H:i:s');
 
         $io->title('Backfill history.standId');
         $io->text(sprintf('Since: %s%s', $since, $dryRun ? '  (dry-run — no writes)' : ''));
