@@ -510,4 +510,111 @@ class RentSystemTest extends BikeSharingKernelTestCase
         $this->assertNotEmpty($returnRow, 'RETURN history row must exist');
         $this->assertEquals($expectedStandId, $returnRow['standId'], 'RETURN row must carry the destination stand id');
     }
+
+    /** Spec 0013 §3.1: a normal return pairs back to the RENT it closes; the RENT carries no pair. */
+    public function testReturnPairsTheRentItCloses(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+        $db = $container->get(DbInterface::class);
+        $rentSystem = $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB);
+        $user = $container->get(UserRepository::class)->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $this->clearBikeHistory($db);
+
+        $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $rentSystem->returnBike($user['userId'], self::BIKE_NUMBER, self::STAND_NAME);
+
+        [$rent, $return] = $this->recentBikeHistory($db, 2);
+        $this->assertSame('RENT', $rent['action']);
+        $this->assertNull($rent['pairActionId'], 'RENT carries no pairActionId');
+        $this->assertSame('RETURN', $return['action']);
+        $this->assertEquals($rent['id'], $return['pairActionId'], 'RETURN must pair to the RENT it closes');
+    }
+
+    /** Spec 0013 §3.2.1: force-returning an already-parked bike is a relocation — it pairs nothing. */
+    public function testForceReturnOfParkedBikeIsRelocationWithNullPair(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+        $db = $container->get(DbInterface::class);
+        $rentSystem = $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB);
+        $admin = $container->get(UserRepository::class)->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $this->clearBikeHistory($db);
+
+        // The bike is parked at STAND_NAME (setUp); no open rental. Relocate it.
+        $rentSystem->returnBike($admin['userId'], self::BIKE_NUMBER, self::SERVICE_STAND_NAME, '', true);
+
+        [$relocation] = $this->recentBikeHistory($db, 1);
+        $this->assertSame('FORCERETURN', $relocation['action']);
+        $this->assertNull($relocation['pairActionId'], 'Relocation of a parked bike closes nothing');
+    }
+
+    /** Spec 0013 §3.2.2: force-renting an on-trip bike synthesizes a closing FORCERETURN for the abandoned rental. */
+    public function testForceRentOverOpenTripSynthesizesClosingReturn(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+        $db = $container->get(DbInterface::class);
+        $rentSystem = $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB);
+        $user = $container->get(UserRepository::class)->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $admin = $container->get(UserRepository::class)->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $stand = $container->get(StandRepository::class)->findItemByName(self::STAND_NAME);
+        $this->clearBikeHistory($db);
+
+        // Establish a known last stand (the placeholder the synthetic close will use).
+        $rentSystem->returnBike($admin['userId'], self::BIKE_NUMBER, self::STAND_NAME, '', true);
+        $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);          // open trip
+        $rentSystem->rentBike($admin['userId'], self::BIKE_NUMBER, true);   // forced hand-over
+
+        [$userRent, $synthClose, $adminRent] = $this->recentBikeHistory($db, 3);
+        $this->assertSame('RENT', $userRent['action']);
+        $this->assertSame('FORCERETURN', $synthClose['action'], 'A synthetic close must be inserted');
+        $this->assertEquals($userRent['id'], $synthClose['pairActionId'], 'Synthetic close pairs the abandoned rent');
+        $this->assertEquals((int)$stand['standId'], $synthClose['standId'], 'Placeholder = last-known stand');
+        $this->assertSame('FORCERENT', $adminRent['action']);
+        $this->assertNull($adminRent['pairActionId'], 'The new (forced) rent carries no pair');
+    }
+
+    /** Spec 0013 §3.2.3: revert writes REVERT + a synthetic RENT/RETURN pair; the original rent is cancelled. */
+    public function testRevertPairsSyntheticReturnToSyntheticRent(): void
+    {
+        self::bootKernel();
+        $container = self::getContainer();
+        $db = $container->get(DbInterface::class);
+        $rentSystem = $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB);
+        $user = $container->get(UserRepository::class)->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $admin = $container->get(UserRepository::class)->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $this->clearBikeHistory($db);
+
+        // revert needs a prior return (for the stand) and a rent (for the code) to restore to.
+        $rentSystem->returnBike($admin['userId'], self::BIKE_NUMBER, self::STAND_NAME, '', true);
+        $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $rentSystem->revertBike($user['userId'], self::BIKE_NUMBER);
+
+        [$rent, $revert, $synthRent, $synthReturn] = $this->recentBikeHistory($db, 4);
+        $this->assertSame('RENT', $rent['action']);
+        $this->assertSame('REVERT', $revert['action']);
+        $this->assertEquals($rent['id'], $revert['pairActionId'], 'REVERT marks the rental it cancels');
+        $this->assertSame('RENT', $synthRent['action']);
+        $this->assertNull($synthRent['pairActionId']);
+        $this->assertSame('RETURN', $synthReturn['action']);
+        $this->assertEquals($synthRent['id'], $synthReturn['pairActionId'], 'Synthetic return closes synthetic rent');
+    }
+
+    private function clearBikeHistory(DbInterface $db): void
+    {
+        $db->query('DELETE FROM history WHERE bikeNum = :b', ['b' => self::BIKE_NUMBER]);
+    }
+
+    /** @return array<int, array<string, mixed>> the bike's last $limit history rows, oldest-first */
+    private function recentBikeHistory(DbInterface $db, int $limit): array
+    {
+        $rows = $db->query(
+            'SELECT id, action, standId, pairActionId FROM history
+             WHERE bikeNum = :b ORDER BY id DESC LIMIT ' . $limit,
+            ['b' => self::BIKE_NUMBER]
+        )->fetchAllAssoc();
+
+        return array_reverse($rows);
+    }
 }

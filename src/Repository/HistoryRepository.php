@@ -21,20 +21,59 @@ class HistoryRepository
         int $bikeNum,
         Action $action,
         string $parameter,
-        ?int $standId = null
-    ): void {
+        ?int $standId = null,
+        ?int $pairActionId = null
+    ): int {
         $this->db->query(
-            'INSERT INTO history (userId, bikeNum, action, parameter, standId, time)
-             VALUES (:userId, :bikeNum, :action, :parameter, :standId, :time)',
+            'INSERT INTO history (userId, bikeNum, action, parameter, standId, pairActionId, time)
+             VALUES (:userId, :bikeNum, :action, :parameter, :standId, :pairActionId, :time)',
             [
                 'userId' => $userId,
                 'bikeNum' => $bikeNum,
                 'action' => $action->value,
                 'parameter' => $parameter,
                 'standId' => $standId,
+                'pairActionId' => $pairActionId,
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
+
+        return (int)$this->db->getLastInsertId();
+    }
+
+    /**
+     * Id of the bike's currently-open RENT/FORCERENT — a rent with no later RETURN/FORCERETURN —
+     * or null if the bike is not on a trip. This is the "open rental" the rental state machine
+     * (spec 0013) pairs each return against.
+     */
+    public function findOpenRentId(int $bikeNum): ?int
+    {
+        $result = $this->db->query(
+            "SELECT rent.id
+             FROM history rent
+             WHERE rent.bikeNum = :bikeNum
+               AND rent.action IN (:rentAction, :forceRentAction)
+               AND NOT EXISTS (
+                   SELECT 1 FROM history ret
+                   WHERE ret.bikeNum = :bikeNumRet
+                     AND ret.action IN (:returnAction, :forceReturnAction)
+                     AND (ret.time > rent.time OR (ret.time = rent.time AND ret.id > rent.id))
+               )
+             ORDER BY rent.time DESC, rent.id DESC
+             LIMIT 1",
+            [
+                'bikeNum' => $bikeNum,
+                'bikeNumRet' => $bikeNum,
+                'rentAction' => Action::RENT->value,
+                'forceRentAction' => Action::FORCE_RENT->value,
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
+            ]
+        );
+
+        $row = $result->fetchAssoc();
+
+        return empty($row) ? null : (int)$row['id'];
     }
 
     public function dailyStats(): array

@@ -15,7 +15,6 @@ use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\Enum\Action;
 use BikeShare\Enum\StandStatus;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
@@ -38,6 +37,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected readonly RentalCreditCalculator $creditCalculator,
         protected readonly ClockInterface $clock,
         protected readonly BikeCodeGeneratorInterface $codeGenerator,
+        protected readonly RentalLedger $rentalLedger,
         protected readonly bool $stackWatchEnabled,
         protected readonly bool $isSmsSystemEnabled,
         protected readonly bool $forceStack,
@@ -136,13 +136,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $this->bikeRepository->assignToUser($bikeId, $userId, $newCode);
 
-        $this->historyRepository->addItem(
-            $userId,
-            $bikeId,
-            $force ? Action::FORCE_RENT : Action::RENT,
-            $newCode,
-            $originStand,
-        );
+        $this->rentalLedger->recordRent($userId, $bikeId, $force, $newCode, $originStand);
 
         $this->eventDispatcher->dispatch(
             new BikeRentEvent($bikeId, $userId, $force)
@@ -200,13 +194,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         }
         $hasCreditChange = $force === false && $this->creditSystem->isEnabled() && $creditChange;
 
-        $this->historyRepository->addItem(
-            $userId,
-            $bikeId,
-            $force ? Action::FORCE_RETURN : Action::RETURN,
-            (string)$standId,
-            $standId,
-        );
+        $this->rentalLedger->recordReturn($userId, $bikeId, $force, $standId);
 
         $this->eventDispatcher->dispatch(
             new BikeReturnEvent($bikeId, $standName, $userId, $force)
@@ -244,27 +232,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
             $this->bikeRepository->revertToStand($bikeId, $standId, $code);
 
-            $this->historyRepository->addItem(
-                $userId,
-                $bikeId,
-                Action::REVERT,
-                sprintf('%s|%s', $standId, $code),
-                (int)$standId,
-            );
-            $this->historyRepository->addItem(
-                $userId,
-                $bikeId,
-                Action::RENT,
-                $code,
-                (int)$standId,
-            );
-            $this->historyRepository->addItem(
-                $userId,
-                $bikeId,
-                Action::RETURN,
-                (string)$standId,
-                (int)$standId,
-            );
+            $this->rentalLedger->recordRevert($userId, $bikeId, (int)$standId, $code);
 
             $this->eventDispatcher->dispatch(
                 new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
