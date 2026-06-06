@@ -381,24 +381,32 @@ class HistoryRepository
      *
      * @return array<int, array{id: int, bikeNumber: int, rentTime: string, userId: int, userName: string|null}>
      */
-    public function findRentalsByStand(int $standId, int $limit = 10): array
+    /**
+     * Stand-scoped ride history: rentals originating at the stand and returns made to it,
+     * newest first. Exact and index-backed via the populated standId (spec 0013) — both RENT
+     * and RETURN now carry the stand, so no correlated-subquery inference is needed.
+     */
+    public function findStandHistory(int $standId, int $limit = 10): array
     {
         return $this->db->query(
             "SELECT
                 h.id,
                 h.bikeNum AS bikeNumber,
-                h.time AS rentTime,
+                h.action,
+                h.time,
                 h.userId,
                 u.userName AS userName
             FROM history h
             LEFT JOIN users u ON u.userId = h.userId
-            WHERE h.action IN (:rentAction, :forceRentAction)
+            WHERE h.action IN (:rentAction, :forceRentAction, :returnAction, :forceReturnAction)
               AND h.standId = :standId
             ORDER BY h.time DESC, h.id DESC
             LIMIT :limit",
             [
                 'rentAction' => Action::RENT->value,
                 'forceRentAction' => Action::FORCE_RENT->value,
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
                 'standId' => $standId,
                 'limit' => $limit,
             ]

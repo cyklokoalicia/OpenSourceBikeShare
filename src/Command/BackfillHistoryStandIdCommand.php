@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Spec 0013: one-off backfill of history.standId for rows written before the column was
  * populated (the gap opened mid-2016 and persisted into the Symfony rewrite). After this
- * runs, every stand-bearing history row carries its stand id so findRentalsByStand can use
+ * runs, every stand-bearing history row carries its stand id so findStandHistory can use
  * the exact, index-backed filter for historical data too.
  *
  *   - RETURN / FORCERETURN: the stand id is the (numeric) parameter — set directly.

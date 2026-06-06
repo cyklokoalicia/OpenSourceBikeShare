@@ -74,14 +74,14 @@ class StandsController extends AbstractController
         ]);
     }
 
-    public function rentals(int $standId): Response
+    public function history(int $standId): Response
     {
         $stand = $this->standRepository->findItem($standId);
         if (empty($stand)) {
             return $this->json(['detail' => 'Stand not found'], Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json($this->historyRepository->findRentalsByStand($standId));
+        return $this->json($this->historyRepository->findStandHistory($standId));
     }
 
     public function removeNote(

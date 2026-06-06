@@ -32,10 +32,10 @@ return function (RoutingConfigurator $routes) {
         ->requirements(['standId' => '\d+'])
         ->methods(['PATCH'])
         ->controller([\BikeShare\Controller\Api\V1\Admin\StandsController::class, 'update']);
-    $routes->add('api_v1_admin_stand_rentals', '/api/v1/admin/stands/{standId}/rentals')
+    $routes->add('api_v1_admin_stand_history', '/api/v1/admin/stands/{standId}/history')
         ->requirements(['standId' => '\d+'])
         ->methods(['GET'])
-        ->controller([\BikeShare\Controller\Api\V1\Admin\StandsController::class, 'rentals']);
+        ->controller([\BikeShare\Controller\Api\V1\Admin\StandsController::class, 'history']);
     $routes->add('api_v1_admin_stand_item', '/api/v1/admin/stands/{standName}')
         ->requirements(['standName' => '\w+'])
         ->methods(['GET'])

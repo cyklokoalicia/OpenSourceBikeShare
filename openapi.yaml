@@ -145,9 +145,9 @@ paths:
           $ref: "#/components/responses/Problem"
         "404":
           $ref: "#/components/responses/Problem"
-  /admin/stands/{standId}/rentals:
+  /admin/stands/{standId}/history:
     get:
-      summary: Stand ride history — the last 10 rentals that originated at this stand (admin)
+      summary: Stand ride history — recent rentals from and returns to this stand (admin)
       parameters:
         - name: standId
           in: path

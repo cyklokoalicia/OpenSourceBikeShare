@@ -479,7 +479,7 @@ $(document).on('click', '.stand-status-save', function () {
     });
 });
 
-// Stand ride history (spec 0009): lazy-load the rentals that originated at this stand,
+// Stand ride history (spec 0013): lazy-load the rentals from and returns to this stand,
 // then toggle the list on subsequent clicks.
 $(document).on('click', '.stand-history-toggle', function () {
     const $card = $(this).closest('.stand-card');
@@ -492,18 +492,21 @@ $(document).on('click', '.stand-history-toggle', function () {
     }
 
     $.ajax({
-        url: '/api/v1/admin/stands/' + encodeURIComponent(standId) + '/rentals',
+        url: '/api/v1/admin/stands/' + encodeURIComponent(standId) + '/history',
         method: 'GET',
         dataType: 'json',
         success: function (response) {
-            const rentals = apiData(response) || [];
+            const events = apiData(response) || [];
             $list.empty();
-            if (rentals.length === 0) {
+            if (events.length === 0) {
                 $list.append($('<li>').addClass('text-muted').text(window.translations['No rides yet'] || 'No rides yet'));
             } else {
-                $.each(rentals, function (i, r) {
+                $.each(events, function (i, r) {
                     const who = r.userName || ('#' + r.userId);
-                    $list.append($('<li>').text('#' + r.bikeNumber + ' — ' + who + ' — ' + r.rentTime));
+                    const isReturn = String(r.action).indexOf('RETURN') !== -1;
+                    const labelKey = isReturn ? 'Returned' : 'Rented';
+                    const label = window.translations[labelKey] || labelKey;
+                    $list.append($('<li>').text(label + ': #' + r.bikeNumber + ' — ' + who + ' — ' + r.time));
                 });
             }
             $list.data('loaded', true).removeClass('d-none');
