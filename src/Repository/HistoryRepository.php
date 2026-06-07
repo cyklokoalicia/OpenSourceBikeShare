@@ -49,21 +49,22 @@ class HistoryRepository
     public function findOpenRentId(int $bikeNum): ?int
     {
         $result = $this->db->query(
-            "SELECT rent.id
-             FROM history rent
-             WHERE rent.bikeNum = :bikeNum
-               AND rent.action IN (:rentAction, :forceRentAction)
+            "SELECT rentEvent.id
+             FROM history rentEvent
+             WHERE rentEvent.bikeNum = :bikeNum
+               AND rentEvent.action IN (:rentAction, :forceRentAction)
                AND NOT EXISTS (
-                   SELECT 1 FROM history ret
-                   WHERE ret.bikeNum = :bikeNumRet
-                     AND ret.action IN (:returnAction, :forceReturnAction)
-                     AND (ret.time > rent.time OR (ret.time = rent.time AND ret.id > rent.id))
+                   SELECT 1 FROM history returnEvent
+                   WHERE returnEvent.bikeNum = :bikeNumReturn
+                     AND returnEvent.action IN (:returnAction, :forceReturnAction)
+                     AND (returnEvent.time > rentEvent.time
+                          OR (returnEvent.time = rentEvent.time AND returnEvent.id > rentEvent.id))
                )
-             ORDER BY rent.time DESC, rent.id DESC
+             ORDER BY rentEvent.time DESC, rentEvent.id DESC
              LIMIT 1",
             [
                 'bikeNum' => $bikeNum,
-                'bikeNumRet' => $bikeNum,
+                'bikeNumReturn' => $bikeNum,
                 'rentAction' => Action::RENT->value,
                 'forceRentAction' => Action::FORCE_RENT->value,
                 'returnAction' => Action::RETURN->value,
