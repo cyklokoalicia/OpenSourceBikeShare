@@ -11,6 +11,7 @@ use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Event\BikeRevertEvent;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\BikeRepository;
+use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
@@ -31,6 +32,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected readonly AdminNotifier $adminNotifier,
         protected readonly LoggerInterface $logger,
         protected readonly StandRepository $standRepository,
+        protected readonly HistoryRepository $historyRepository,
         protected readonly NoteRepository $noteRepository,
         protected readonly RentalCreditCalculator $creditCalculator,
         protected readonly ClockInterface $clock,
@@ -221,7 +223,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             return $this->error('bike.revert.error.not_rented', ['bikeNumber' => $bikeId]);
         }
 
-        $target = $this->rentalStateMachine->findRevertTarget($bikeId);
+        $target = $this->historyRepository->findRevertTarget($bikeId);
         if ($target === null) {
             return $this->error('bike.revert.error.no_stand_or_code', ['bikeNumber' => $bikeId]);
         }

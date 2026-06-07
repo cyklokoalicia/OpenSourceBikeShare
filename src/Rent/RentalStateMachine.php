@@ -126,28 +126,6 @@ class RentalStateMachine
         );
     }
 
-    /**
-     * Where and with what code a bike should be restored on revert: its last-known stand and
-     * last rent code. Null when either is missing (nothing to revert to).
-     *
-     * @return array{standId: int, standName: string, code: string}|null
-     */
-    public function findRevertTarget(int $bikeId): ?array
-    {
-        $lastReturn = $this->historyRepository->findLastReturnStand($bikeId);
-        $code = $this->historyRepository->findLastRentCode($bikeId);
-
-        if ($lastReturn === null || $code === null) {
-            return null;
-        }
-
-        return [
-            'standId' => $lastReturn['standId'],
-            'standName' => $lastReturn['standName'],
-            'code' => $code,
-        ];
-    }
-
     private function stateOf(?int $openRentId): BikeRentalState
     {
         return $openRentId === null ? BikeRentalState::PARKED : BikeRentalState::ON_TRIP;
