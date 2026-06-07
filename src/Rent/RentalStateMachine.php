@@ -10,7 +10,8 @@ use BikeShare\Repository\HistoryRepository;
 
 /**
  * The spec 0013 rental state machine: the sole authority that records rent/return/revert events
- * into the rental side of the `history` ledger, dispatching each on the bike's current state.
+ * into the rental side of the `history` ledger. Rent and return dispatch on the bike's current
+ * state; revert is a fixed compensation sequence.
  *
  * A bike is always in one of two states — {@see BikeRentalState} — derived from whether it has
  * an *open rental* (a RENT/FORCERENT with no later RETURN/FORCERETURN). Every rent/return/revert
@@ -132,17 +133,14 @@ class RentalStateMachine
     }
 
     /**
-     * Synthesize a closing FORCE_RETURN for an open rental superseded by a forced hand-over.
-     * The destination is the bike's last-known stand (the decided placeholder — it has no real
-     * stand while ON_TRIP), so the abandoned rental gets a terminus and INV2 holds.
+     * Synthesize a closing FORCE_RETURN for an open rental superseded by a forced hand-over, so the
+     * abandoned trip gets a terminus and is not left dangling (INV2). Its destination is the trip's
+     * own origin (the open rent's standId) — a zero-distance close, since the bike has no real stand
+     * while ON_TRIP. That origin is null only when itself unknown; then standId stays null and the
+     * legacy `parameter` is '' (the deliberate empty sentinel — do not "fix" to '0').
      */
     private function closeAbandonedRental(int $userId, int $bikeId, int $openRentId): void
     {
-        // Terminus stand for the abandoned trip = its own origin (the open rent's standId): the
-        // bike has no real stand while ON_TRIP, so a zero-distance close is the best placeholder,
-        // and the origin is already known to the ledger. It stays null only when that origin is
-        // itself unknown — then standId is null and parameter '' (the deliberate empty sentinel,
-        // do not "fix" to '0').
         $placeholderStand = $this->historyRepository->findStandIdById($openRentId);
 
         $this->historyRepository->addItem(

@@ -44,7 +44,8 @@ class HistoryRepository
     /**
      * Id of the bike's currently-open RENT/FORCERENT — a rent with no later RETURN/FORCERETURN —
      * or null if the bike is not on a trip. This is the "open rental" the rental state machine
-     * (spec 0013) pairs each return against.
+     * (spec 0013) reasons about: the rent a return pairs to, the trip a forced hand-over closes,
+     * and the rental a revert cancels.
      */
     public function findOpenRentId(int $bikeNum): ?int
     {
