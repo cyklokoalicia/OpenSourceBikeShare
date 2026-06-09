@@ -134,8 +134,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $newCode = $this->codeGenerator->generate();
 
-        $this->bikeRepository->assignToUser($bikeId, $userId, $newCode);
-
         $this->rentalStateMachine->onRent($userId, $bikeId, $force, $newCode, $originStand);
 
         $this->eventDispatcher->dispatch(
@@ -180,14 +178,8 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $currentCode = $bike['currentCode'];
 
-        $this->bikeRepository->returnToStand($bikeId, $standId, $force ? null : $userId);
-
-        if ($note) {
-            $this->addNote($userId, $bikeId, $note);
-        } else {
-            $note = $this->noteRepository->findBikeNote($bikeId)[0]['note'] ?? '';
-        }
-
+        // Credit is calculated from history *before* the RETURN row exists, so the re-rent check
+        // still sees the previous return; only then does the state machine perform the transition.
         $creditChange = null;
         if ($force === false) {
             $creditChange = $this->creditCalculator->calculateAndApply($bikeId, $userId);
@@ -195,6 +187,14 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $hasCreditChange = $force === false && $this->creditSystem->isEnabled() && $creditChange;
 
         $this->rentalStateMachine->onReturn($userId, $bikeId, $force, $standId);
+
+        // After the return the bike reads as parked at the stand, which addNote reflects in its
+        // admin notification.
+        if ($note) {
+            $this->addNote($userId, $bikeId, $note);
+        } else {
+            $note = $this->noteRepository->findBikeNote($bikeId)[0]['note'] ?? '';
+        }
 
         $this->eventDispatcher->dispatch(
             new BikeReturnEvent($bikeId, $standName, $userId, $force)
@@ -227,8 +227,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
         if ($target === null) {
             return $this->error('bike.revert.error.no_stand_or_code', ['bikeNumber' => $bikeId]);
         }
-
-        $this->bikeRepository->revertToStand($bikeId, $target['standId'], $target['code']);
 
         $this->rentalStateMachine->onRevert($userId, $bikeId, $target['standId'], $target['code']);
 
