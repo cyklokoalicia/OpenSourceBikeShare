@@ -223,12 +223,14 @@ abstract class AbstractRentSystem implements RentSystemInterface
             return $this->error('bike.revert.error.not_rented', ['bikeNumber' => $bikeId]);
         }
 
-        $target = $this->historyRepository->findRevertTarget($bikeId);
-        if ($target === null) {
+        // Revert preconditions: a bike can only be restored if we know its last stand and code.
+        $lastReturn = $this->historyRepository->findLastReturnStand($bikeId);
+        $code = $this->historyRepository->findLastRentCode($bikeId);
+        if ($lastReturn === null || $code === null) {
             return $this->error('bike.revert.error.no_stand_or_code', ['bikeNumber' => $bikeId]);
         }
 
-        $this->rentalStateMachine->onRevert($userId, $bikeId, $target['standId'], $target['code']);
+        $this->rentalStateMachine->onRevert($userId, $bikeId, $lastReturn['standId'], $code);
 
         $this->eventDispatcher->dispatch(
             new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
@@ -236,7 +238,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         return $this->success(
             'bike.revert.success',
-            ['bikeNumber' => $bikeId, 'standName' => $target['standName'], 'code' => $target['code']]
+            ['bikeNumber' => $bikeId, 'standName' => $lastReturn['standName'], 'code' => $code]
         );
     }
 

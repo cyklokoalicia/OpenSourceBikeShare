@@ -364,28 +364,6 @@ class HistoryRepository
         return str_pad($result->fetchAssoc()['parameter'], 4, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Where and with what code a bike should be restored on revert: its last-known return stand
-     * and last rent code. Null when either is missing (nothing to revert to).
-     *
-     * @return array{standId: int, standName: string, code: string}|null
-     */
-    public function findRevertTarget(int $bikeNum): ?array
-    {
-        $lastReturn = $this->findLastReturnStand($bikeNum);
-        $code = $this->findLastRentCode($bikeNum);
-
-        if ($lastReturn === null || $code === null) {
-            return null;
-        }
-
-        return [
-            'standId' => $lastReturn['standId'],
-            'standName' => $lastReturn['standName'],
-            'code' => $code,
-        ];
-    }
-
     public function findCreditHistoryByUser(int $userId, int $limit = 100, int $offset = 0): array
     {
         $result = $this->db->query(
