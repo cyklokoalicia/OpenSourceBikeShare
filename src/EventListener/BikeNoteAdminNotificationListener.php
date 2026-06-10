@@ -21,12 +21,10 @@ class BikeNoteAdminNotificationListener
 
     public function __invoke(BikeReturnEvent $event): void
     {
-        $noteId = $event->getNoteId();
-        if ($noteId === null) {
+        $userNote = $event->getNote();
+        if ($userNote === null) {
             return;
         }
-
-        $userNote = $event->getNote() ?? '';
 
         $user = $this->userRepository->findItem($event->getUserId());
         $userName = $user['userName'] ?? '';
@@ -47,7 +45,6 @@ class BikeNoteAdminNotificationListener
             new TranslatableMessage(
                 'bike.note.admin.notification',
                 [
-                    'noteId' => $noteId,
                     'bikeNumber' => $event->getBikeNumber(),
                     'bikeStatus' => $bikeStatus,
                     'userName' => $userName,

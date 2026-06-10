@@ -11,7 +11,6 @@ class BikeReturnEvent
         private readonly string $standName,
         private readonly int $userId,
         private readonly bool $isForce,
-        private readonly ?int $noteId = null,
         private readonly ?string $note = null,
     ) {
     }
@@ -34,11 +33,6 @@ class BikeReturnEvent
     public function isForce(): bool
     {
         return $this->isForce;
-    }
-
-    public function getNoteId(): ?int
-    {
-        return $this->noteId;
     }
 
     public function getNote(): ?string

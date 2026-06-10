@@ -184,13 +184,12 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $this->bikeRepository->returnToStand($bikeId, $standId, $force ? null : $userId);
 
-        $newNoteId = null;
         $newNote = null;
         if ($note) {
             $newNote = trim($note);
             // Persist inline (the response below reports the note); the admin notification is a
             // reaction and lives in BikeNoteAdminNotificationListener, triggered by BikeReturnEvent.
-            $newNoteId = $this->noteRepository->addNoteToBike($bikeId, $userId, $newNote);
+            $this->noteRepository->addNoteToBike($bikeId, $userId, $newNote);
         } else {
             $note = $this->noteRepository->findBikeNote($bikeId)[0]['note'] ?? '';
         }
@@ -209,7 +208,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         );
 
         $this->eventDispatcher->dispatch(
-            new BikeReturnEvent($bikeId, $standName, $userId, $force, $newNoteId, $newNote)
+            new BikeReturnEvent($bikeId, $standName, $userId, $force, $newNote)
         );
 
         return $this->success(

@@ -51,11 +51,7 @@ class ReturnWithNoteAdminNotificationTest extends BikeSharingWebTestCase
 
         $sent = $this->client->getContainer()->get(DebugSmsSender::class)->getSentMessages();
 
-        $adminMessages = array_values(array_filter(
-            $sent,
-            static fn (array $m): bool => $m['message'] instanceof TranslatableMessage
-                && $m['message']->getMessage() === 'bike.note.admin.notification'
-        ));
+        $adminMessages = $this->noteNotifications($sent);
 
         $this->assertCount(
             1,
@@ -67,8 +63,6 @@ class ReturnWithNoteAdminNotificationTest extends BikeSharingWebTestCase
         $this->assertSame(self::BIKE_NUMBER, $params['bikeNumber']);
         $this->assertSame(self::NOTE, $params['userNote']);
         $this->assertSame($user['userName'], $params['userName']);
-        $this->assertArrayHasKey('noteId', $params);
-        $this->assertNotNull($params['noteId'], 'noteId must be carried through the event');
     }
 
     public function testReturnWithoutNoteDoesNotNotifyAdmin(): void
@@ -81,12 +75,23 @@ class ReturnWithNoteAdminNotificationTest extends BikeSharingWebTestCase
 
         $sent = $this->client->getContainer()->get(DebugSmsSender::class)->getSentMessages();
 
-        $adminNoteMessages = array_filter(
+        $this->assertCount(
+            0,
+            $this->noteNotifications($sent),
+            'No note notification expected when no note is provided'
+        );
+    }
+
+    /**
+     * @param array<int, array{number: string, message: mixed, locale: ?string}> $sent
+     * @return list<array{number: string, message: mixed, locale: ?string}>
+     */
+    private function noteNotifications(array $sent): array
+    {
+        return array_values(array_filter(
             $sent,
             static fn (array $m): bool => $m['message'] instanceof TranslatableMessage
                 && $m['message']->getMessage() === 'bike.note.admin.notification'
-        );
-
-        $this->assertCount(0, $adminNoteMessages, 'No note notification expected when no note is provided');
+        ));
     }
 }
