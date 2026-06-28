@@ -22,7 +22,7 @@ class UserRepository
                 mail,
                 number,
                 privileges,
-                credit,
+                COALESCE(credit.credit, 0) AS credit,
                 userLimit,
                 isNumberConfirmed,
                 registrationDate
@@ -44,7 +44,7 @@ class UserRepository
                 mail,
                 number,
                 privileges,
-                credit,
+                COALESCE(credit.credit, 0) AS credit,
                 userLimit,
                 isNumberConfirmed,
                 registrationDate
@@ -69,7 +69,7 @@ class UserRepository
                 mail,
                 number,
                 privileges,
-                credit,
+                COALESCE(credit.credit, 0) AS credit,
                 userLimit,
                 isNumberConfirmed,
                 registrationDate
@@ -94,7 +94,7 @@ class UserRepository
                 mail,
                 number,
                 privileges,
-                credit,
+                COALESCE(credit.credit, 0) AS credit,
                 userLimit,
                 isNumberConfirmed,
                 registrationDate
