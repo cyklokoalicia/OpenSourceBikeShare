@@ -59,7 +59,7 @@
     "phpunit/phpunit": "^12.5",
     "php-mock/php-mock-phpunit": "^2.13",
     "rector/rector": "^2.1",
-    "symfony/browser-kit": "^6.0",
+    "symfony/browser-kit": "^8.0",
     "symfony/css-selector": "^6.0",
     "symfony/stopwatch": "^6.0",
     "nelmio/alice": "^3.9",
