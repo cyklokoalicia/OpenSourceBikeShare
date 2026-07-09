@@ -30,7 +30,7 @@
     "giggsey/libphonenumber-for-php": "^8.13",
     "lcobucci/jwt": "^5.4",
     "monolog/monolog": "^3.0",
-    "phpmailer/phpmailer": "^6.5.0",
+    "phpmailer/phpmailer": "^7.0.2",
     "sentry/sentry-symfony": "^5.1",
     "symfony/asset": "^6.0",
     "symfony/clock": "^6.4",
