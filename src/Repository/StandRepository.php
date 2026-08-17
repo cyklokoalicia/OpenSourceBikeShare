@@ -119,9 +119,24 @@ class StandRepository
                 longitude,
                 latitude
             FROM stands
-            WHERE standName = :standName LIMIT 1",
+            WHERE standName = :standName
+            ORDER BY CASE status
+                WHEN :statusActive THEN 0
+                WHEN :statusTechnical THEN 1
+                WHEN :statusHidden THEN 2
+                WHEN :statusVirtual THEN 3
+                WHEN :statusInactive THEN 4
+                ELSE 5
+            END,
+            standId DESC
+            LIMIT 1",
             [
                 'standName' => $standName,
+                'statusActive' => StandStatus::ACTIVE->value,
+                'statusTechnical' => StandStatus::TECHNICAL->value,
+                'statusHidden' => StandStatus::HIDDEN->value,
+                'statusVirtual' => StandStatus::VIRTUAL->value,
+                'statusInactive' => StandStatus::INACTIVE->value,
             ]
         )->fetchAssoc();
 
