@@ -20,19 +20,77 @@ class HistoryRepository
         int $userId,
         int $bikeNum,
         Action $action,
-        string $parameter
-    ): void {
+        string $parameter,
+        ?int $standId = null,
+        ?int $pairActionId = null
+    ): int {
         $this->db->query(
-            'INSERT INTO history (userId, bikeNum, action, parameter, time)
-             VALUES (:userId, :bikeNum, :action, :parameter, :time)',
+            'INSERT INTO history (userId, bikeNum, action, parameter, standId, pairActionId, time)
+             VALUES (:userId, :bikeNum, :action, :parameter, :standId, :pairActionId, :time)',
             [
                 'userId' => $userId,
                 'bikeNum' => $bikeNum,
                 'action' => $action->value,
                 'parameter' => $parameter,
+                'standId' => $standId,
+                'pairActionId' => $pairActionId,
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
+
+        return (int)$this->db->getLastInsertId();
+    }
+
+    /**
+     * Id of the bike's currently-open RENT/FORCERENT — a rent with no later RETURN/FORCERETURN —
+     * or null if the bike is not on a trip. This is the "open rental" the rental state machine
+     * (spec 0013) reasons about: the rent a return pairs to, the trip a forced hand-over closes,
+     * and the rental a revert cancels.
+     */
+    public function findOpenRentId(int $bikeNum): ?int
+    {
+        $result = $this->db->query(
+            "SELECT rentEvent.id
+             FROM history rentEvent
+             WHERE rentEvent.bikeNum = :bikeNum
+               AND rentEvent.action IN (:rentAction, :forceRentAction)
+               AND NOT EXISTS (
+                   SELECT 1 FROM history returnEvent
+                   WHERE returnEvent.bikeNum = :bikeNumReturn
+                     AND returnEvent.action IN (:returnAction, :forceReturnAction)
+                     AND (returnEvent.time > rentEvent.time
+                          OR (returnEvent.time = rentEvent.time AND returnEvent.id > rentEvent.id))
+               )
+             ORDER BY rentEvent.time DESC, rentEvent.id DESC
+             LIMIT 1",
+            [
+                'bikeNum' => $bikeNum,
+                'bikeNumReturn' => $bikeNum,
+                'rentAction' => Action::RENT->value,
+                'forceRentAction' => Action::FORCE_RENT->value,
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
+            ]
+        );
+
+        $row = $result->fetchAssoc();
+
+        return empty($row) ? null : (int)$row['id'];
+    }
+
+    /**
+     * The standId stored on a single history row, or null if the row carries none.
+     */
+    public function findStandIdById(int $id): ?int
+    {
+        $result = $this->db->query(
+            'SELECT standId FROM history WHERE id = :id',
+            ['id' => $id]
+        );
+
+        $row = $result->fetchAssoc();
+
+        return isset($row['standId']) ? (int)$row['standId'] : null;
     }
 
     public function dailyStats(): array
@@ -328,6 +386,45 @@ class HistoryRepository
         )->fetchAllAssoc();
 
         return $result;
+    }
+
+    /**
+     * Stand-scoped ride history (spec 0013): rentals originating at the stand and returns made
+     * to it, newest first. Exact and index-backed via the populated `standId` — both RENT and
+     * RETURN now carry the stand, so no correlated-subquery inference is needed.
+     *
+     * Rows written before spec 0013 (or never backfilled by app:backfill_history_standid) have
+     * a NULL standId and so do not appear here.
+     *
+     * @return array<int, array{
+     *     id: int, bikeNumber: int, action: string, time: string, userId: int, userName: string|null
+     * }>
+     */
+    public function findStandHistory(int $standId, int $limit = 10): array
+    {
+        return $this->db->query(
+            "SELECT
+                h.id,
+                h.bikeNum AS bikeNumber,
+                h.action,
+                h.time,
+                h.userId,
+                u.userName AS userName
+            FROM history h
+            LEFT JOIN users u ON u.userId = h.userId
+            WHERE h.action IN (:rentAction, :forceRentAction, :returnAction, :forceReturnAction)
+              AND h.standId = :standId
+            ORDER BY h.time DESC, h.id DESC
+            LIMIT :limit",
+            [
+                'rentAction' => Action::RENT->value,
+                'forceRentAction' => Action::FORCE_RENT->value,
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
+                'standId' => $standId,
+                'limit' => $limit,
+            ]
+        )->fetchAllAssoc();
     }
 
     /**
