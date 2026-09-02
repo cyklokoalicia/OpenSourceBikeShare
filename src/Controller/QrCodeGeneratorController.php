@@ -103,7 +103,7 @@ class QrCodeGeneratorController extends AbstractController
 
         $pdf->AddPage();
         // QRCODE,M : QR-CODE Medium error correction
-        $pdf->write2DBarcode($url, 'QRCODE,M', '', 18, '', 90, $style, 'N');
+        $pdf->write2DBarcode($url, 'QRCODE,M', null, 18, null, 90, $style, 'N');
         $pdf->MultiCell(0, 0, $text, 0, 'C', false, 0);
     }
 }
