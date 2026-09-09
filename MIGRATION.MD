@@ -76,3 +76,36 @@ MESSENGER_CHATS_JSON=[{"name":"Newcomers TG","url":"https://t.me/example"}]
 ```
 
 Empty array (`[]`, the default) disables the welcome redirect for new registrations.
+
+
+## Spec 0013: single-pairActionId foundation (staged)
+
+The new contract is terminal RETURN/FORCERETURN/REVERT -> opening RENT/FORCERENT.
+Starts always retain NULL. No second rental-link column or currentRentId is added.
+This foundation does not enable the new rental writer or reconstruct any history.
+
+1. Back up the existing schema and history. Apply `migrations/0013/01-expand.sql`
+   once to an existing installation. Nullable metadata leaves old rows unverified
+   (`ledgerVersion IS NULL`), including any pre-existing pairActionId values.
+2. **Defer `migrations/0013/02-enforce.sql` until the normalization/cutover phase.**
+   Archive and validate old pairs, clear reverse links from starts, resolve or
+   quarantine duplicate/missing targets, reconcile current bike holders, and pause
+   every rental writer. This PR deliberately supplies no automatic normalization.
+   After preflight succeeds, apply the constraints once and verify them before activation.
+
+Both SQL phases must first be rehearsed on a copy of the actual deployment. Check
+id/pairActionId signedness and supported CHECK enforcement. The bootstrap SQL is
+for a fresh database and includes the final constraints; do not run it on existing
+history. ALTER statements are checkpointed migration steps, not a single rollbackable
+application transaction. Re-running an already applied SQL phase is an error.
+
+UNIQUE prevents multiple terminal links; the FK checks existence only. The writer
+must additionally check the referenced action, same bike, matching verified version,
+and at most one open start under a bike lock. Metadata must be supplied explicitly
+for version 1; legacy writes continue with NULL defaults. Do not mark all legacy
+starts verified, or dangling old rows would become apparent active rentals.
+
+`DbInterface::transactional()` commits the callback result or rolls back on any
+Throwable. Nested calls are rejected before running the inner callback. Callbacks
+must not issue DDL or manual transaction-control SQL. Repositories share the same
+connection; the transaction owner decides when to notify external services.

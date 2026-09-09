@@ -11,4 +11,14 @@ interface DbInterface
     public function exec(string $query): int|bool;
 
     public function getLastInsertId(): int;
+
+    /**
+     * @template T
+     * @param callable(): T $operation
+     * @return T
+     */
+    public function transactional(callable $operation): mixed;
+
+    /** @phpstan-impure */
+    public function isTransactionActive(): bool;
 }
