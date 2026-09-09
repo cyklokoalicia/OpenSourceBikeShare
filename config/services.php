@@ -87,6 +87,7 @@ return static function (ContainerConfigurator $container): void {
             '../src/SmsCommand/*Command.php',
             '../src/SmsCommand/Exception',
             '../src/App/Api/Compat/ApiCompatTransformRegistry.php',
+            '../src/Rent/Exception',
             '../src/Rent/DTO',
             '../src/Rent/Enum',
             '../src/Translation',
@@ -219,6 +220,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->load('BikeShare\\Rent\\', '../src/Rent')
         ->exclude([
+            '../src/Rent/Exception',
             '../src/Rent/DTO',
             '../src/Rent/Enum',
         ])
