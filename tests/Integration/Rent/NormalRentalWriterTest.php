@@ -155,11 +155,8 @@ class NormalRentalWriterTest extends KernelTestCase
         }
         $bikeBefore = $this->bike();
         $historyBefore = $this->history();
-        $db = new FailingLedgerDb(
-            (string)getenv('DB_DSN'),
-            (string)getenv('DB_USER'),
-            (string)getenv('DB_PASSWORD'),
-        );
+        $database = $this->databaseConfig();
+        $db = new FailingLedgerDb($database['DB_DSN'], $database['DB_USER'], $database['DB_PASSWORD']);
         $db->failAfter = $failAfter;
         $writer = $this->makeWriter($db);
         $effects = static function (RentalWriteResult $result) use ($db): void {
@@ -263,6 +260,8 @@ class NormalRentalWriterTest extends KernelTestCase
                 $operation, (string)$userId, (string)$bikeNum, (string)$rentId],
             [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $this->pipes,
+            null,
+            array_merge(getenv(), $this->databaseConfig()),
         );
         self::assertIsResource($this->worker);
         $connectionId = (int)$this->readWorkerLine();
@@ -312,6 +311,17 @@ class NormalRentalWriterTest extends KernelTestCase
         self::assertIsString($line);
 
         return trim($line);
+    }
+
+    /** @return array{DB_DSN: string, DB_USER: string, DB_PASSWORD: string} */
+    private function databaseConfig(): array
+    {
+        // Dotenv values need not be exported to the process environment (notably DB_DSN in CI).
+        return [
+            'DB_DSN' => $_SERVER['DB_DSN'] ?? $_ENV['DB_DSN'],
+            'DB_USER' => $_SERVER['DB_USER'] ?? $_ENV['DB_USER'],
+            'DB_PASSWORD' => $_SERVER['DB_PASSWORD'] ?? $_ENV['DB_PASSWORD'],
+        ];
     }
 
     private function makeWriter(DbInterface $db): NormalRentalWriter
