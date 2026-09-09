@@ -15,7 +15,6 @@ use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
-use BikeShare\Enum\Action;
 use BikeShare\Enum\StandStatus;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
@@ -38,6 +37,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected readonly RentalCreditCalculator $creditCalculator,
         protected readonly ClockInterface $clock,
         protected readonly BikeCodeGeneratorInterface $codeGenerator,
+        protected readonly RentalStateMachine $rentalStateMachine,
         protected readonly bool $stackWatchEnabled,
         protected readonly bool $isSmsSystemEnabled,
         protected readonly bool $forceStack,
@@ -129,16 +129,12 @@ abstract class AbstractRentSystem implements RentSystemInterface
         $currentCode = $bike['currentCode'];
         $note = $bike['notes'];
 
+        // Origin stand the bike is rented from — captured before assignToUser clears it.
+        $originStand = isset($bike['currentStand']) ? (int)$bike['currentStand'] : null;
+
         $newCode = $this->codeGenerator->generate();
 
-        $this->bikeRepository->assignToUser($bikeId, $userId, $newCode);
-
-        $this->historyRepository->addItem(
-            $userId,
-            $bikeId,
-            $force ? Action::FORCE_RENT : Action::RENT,
-            $newCode,
-        );
+        $this->rentalStateMachine->onRent($userId, $bikeId, $force, $newCode, $originStand);
 
         $this->eventDispatcher->dispatch(
             new BikeRentEvent($bikeId, $userId, $force)
@@ -182,26 +178,23 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $currentCode = $bike['currentCode'];
 
-        $this->bikeRepository->returnToStand($bikeId, $standId, $force ? null : $userId);
-
-        if ($note) {
-            $this->addNote($userId, $bikeId, $note);
-        } else {
-            $note = $this->noteRepository->findBikeNote($bikeId)[0]['note'] ?? '';
-        }
-
+        // Credit is calculated from history *before* the RETURN row exists, so the re-rent check
+        // still sees the previous return; only then does the state machine perform the transition.
         $creditChange = null;
         if ($force === false) {
             $creditChange = $this->creditCalculator->calculateAndApply($bikeId, $userId);
         }
         $hasCreditChange = $force === false && $this->creditSystem->isEnabled() && $creditChange;
 
-        $this->historyRepository->addItem(
-            $userId,
-            $bikeId,
-            $force ? Action::FORCE_RETURN : Action::RETURN,
-            (string)$standId,
-        );
+        $this->rentalStateMachine->onReturn($userId, $bikeId, $force, $standId);
+
+        // After the return the bike reads as parked at the stand, which addNote reflects in its
+        // admin notification.
+        if ($note) {
+            $this->addNote($userId, $bikeId, $note);
+        } else {
+            $note = $this->noteRepository->findBikeNote($bikeId)[0]['note'] ?? '';
+        }
 
         $this->eventDispatcher->dispatch(
             new BikeReturnEvent($bikeId, $standName, $userId, $force)
@@ -230,45 +223,23 @@ abstract class AbstractRentSystem implements RentSystemInterface
             return $this->error('bike.revert.error.not_rented', ['bikeNumber' => $bikeId]);
         }
 
+        // Revert preconditions: a bike can only be restored if we know its last stand and code.
         $lastReturn = $this->historyRepository->findLastReturnStand($bikeId);
         $code = $this->historyRepository->findLastRentCode($bikeId);
-
-        if ($lastReturn && $code) {
-            $standId = $lastReturn['standId'];
-            $stand = $lastReturn['standName'];
-
-            $this->bikeRepository->revertToStand($bikeId, $standId, $code);
-
-            $this->historyRepository->addItem(
-                $userId,
-                $bikeId,
-                Action::REVERT,
-                sprintf('%s|%s', $standId, $code),
-            );
-            $this->historyRepository->addItem(
-                $userId,
-                $bikeId,
-                Action::RENT,
-                $code,
-            );
-            $this->historyRepository->addItem(
-                $userId,
-                $bikeId,
-                Action::RETURN,
-                (string)$standId,
-            );
-
-            $this->eventDispatcher->dispatch(
-                new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
-            );
-
-            return $this->success(
-                'bike.revert.success',
-                ['bikeNumber' => $bikeId, 'standName' => $stand, 'code' => $code]
-            );
+        if ($lastReturn === null || $code === null) {
+            return $this->error('bike.revert.error.no_stand_or_code', ['bikeNumber' => $bikeId]);
         }
 
-        return $this->error('bike.revert.error.no_stand_or_code', ['bikeNumber' => $bikeId]);
+        $this->rentalStateMachine->onRevert($userId, $bikeId, $lastReturn['standId'], $code);
+
+        $this->eventDispatcher->dispatch(
+            new BikeRevertEvent($bikeId, $userId, $previousOwnerId)
+        );
+
+        return $this->success(
+            'bike.revert.success',
+            ['bikeNumber' => $bikeId, 'standName' => $lastReturn['standName'], 'code' => $code]
+        );
     }
 
     abstract public static function getType(): RentSystemType;

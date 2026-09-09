@@ -46,6 +46,22 @@ CREATE TABLE `userClient` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
 
+## Data Backfill
+
+`history.standId` is now populated on every stand-bearing action (spec 0013). Legacy rows
+(roughly mid-2016 onward, where the column was left `NULL`) are backfilled by a one-off
+command so the admin per-stand ride history covers historical rentals too:
+
+```bash
+docker compose exec web php bin/console app:backfill_history_standid --dry-run   # preview counts
+docker compose exec web php bin/console app:backfill_history_standid             # apply
+```
+
+RETURN/FORCERETURN take the stand from `parameter`; REVERT from `"{standId}|{code}"`; RENT
+origin is inferred from the bike's immediately-preceding RETURN. RENT rows with no prior
+return remain `NULL` (reported in the summary). The command is idempotent — it only touches
+rows where `standId IS NULL`.
+
 ## Environment Changes
 
 Add the following to your `.env` (see `.env.dist` for the canonical default):
