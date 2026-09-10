@@ -176,6 +176,10 @@ return static function (ContainerConfigurator $container): void {
 
     $services->alias(DbInterface::class, PdoDb::class);
 
+    $container->parameters()->set('env(RENTAL_LEDGER_START_ID)', '0');
+    $services->get(\BikeShare\Repository\RentalLedgerRepository::class)
+        ->arg('$historyStartId', env('int:RENTAL_LEDGER_START_ID'));
+
     $services->get(\BikeShare\Repository\CityRepository::class)
         ->bind('$cities', env('json:CITIES'));
 

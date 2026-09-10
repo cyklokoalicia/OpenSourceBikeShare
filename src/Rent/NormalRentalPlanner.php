@@ -58,8 +58,7 @@ class NormalRentalPlanner
             (int)$bike['currentUser'] !== $userId || $bike['currentStand'] !== null
             || (int)$opening['userId'] !== $userId || (int)$opening['bikeNum'] !== (int)$bike['bikeNum']
             || !in_array($opening['action'], [Action::RENT->value, Action::FORCE_RENT->value], true)
-            || (int)$opening['ledgerVersion'] !== 1 || $opening['pairActionId'] !== null
-            || $opening['rentalKind'] !== 'rental'
+            || $opening['pairActionId'] !== null
         ) {
             throw new RentalLedgerConflict('rental_ledger_inconsistent_rental');
         }

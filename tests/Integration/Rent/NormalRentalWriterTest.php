@@ -72,10 +72,6 @@ class NormalRentalWriterTest extends KernelTestCase
         self::assertSame([null, $rent->rentId], array_column($rows, 'pairActionId'));
         self::assertSame([1, 2], array_column($rows, 'standId'));
         self::assertSame(['0042', '2'], array_column($rows, 'parameter'));
-        self::assertSame([1, 1], array_column($rows, 'ledgerVersion'));
-        self::assertSame(['command', 'command'], array_column($rows, 'recordOrigin'));
-        self::assertSame(['rental', 'rental'], array_column($rows, 'rentalKind'));
-        self::assertSame([null, 'returned'], array_column($rows, 'closeReason'));
         self::assertSame($rent->rentId, $return->rentId);
         self::assertSame($rows[1]['id'], $return->eventId);
         self::assertSame($rent->transition->startedAt->getTimestamp(), $return->transition->startedAt->getTimestamp());
@@ -109,11 +105,12 @@ class NormalRentalWriterTest extends KernelTestCase
         self::assertCount(2, $this->history());
     }
 
-    public function testUnverifiedStartsAreIgnoredButUnreconciledCurrentHolderIsRejected(): void
+    public function testCutoverBoundaryIgnoresOldStartsButUnreconciledHolderIsRejected(): void
     {
         $this->db->exec("INSERT INTO history (userId,bikeNum,action,parameter)
             VALUES (991301,99131,'RENT','1234')");
         $legacyId = $this->db->getLastInsertId();
+        $this->writer = $this->makeWriter($this->db, $legacyId);
         $rent = $this->writer->rent(self::USER, self::BIKE, '2345');
         self::assertNotSame($legacyId, $rent->rentId);
         $this->writer->returnBike(self::USER, self::BIKE, 2, $rent->rentId);
@@ -123,12 +120,30 @@ class NormalRentalWriterTest extends KernelTestCase
         self::assertCount(3, $this->history());
     }
 
+    public function testBackfillAfterNewWritesDoesNotChangeTheActiveRental(): void
+    {
+        $this->db->exec("INSERT INTO history (userId,bikeNum,action,parameter)
+            VALUES (991301,99131,'RENT','1234')");
+        $oldRentId = $this->db->getLastInsertId();
+        $this->db->exec("INSERT INTO history (userId,bikeNum,action,parameter)
+            VALUES (991301,99131,'RETURN','1')");
+        $oldReturnId = $this->db->getLastInsertId();
+        $this->writer = $this->makeWriter($this->db, $oldReturnId);
+        $rent = $this->writer->rent(self::USER, self::BIKE, '2345');
+        $this->db->query('UPDATE history SET pairActionId=:rent WHERE id=:return', [
+            'rent' => $oldRentId, 'return' => $oldReturnId,
+        ]);
+        $result = $this->writer->returnBike(self::USER, self::BIKE, 2, $rent->rentId);
+        self::assertSame($rent->rentId, $result->rentId);
+        self::assertSame([null, $oldRentId, null, $rent->rentId], array_column($this->history(), 'pairActionId'));
+    }
+
     public function testMultipleOpenStartsAreRejectedInsteadOfPickingTheNewest(): void
     {
         $rent = $this->writer->rent(self::USER, self::BIKE, '2345');
         $this->db->exec("INSERT INTO history
-            (userId,bikeNum,action,parameter,ledgerVersion,recordOrigin,rentalKind)
-            VALUES (991301,99131,'RENT','4567',1,'reconstructed','rental')");
+            (userId,bikeNum,action,parameter)
+            VALUES (991301,99131,'RENT','4567')");
         $this->assertConflict('rental_ledger_multiple_open_rentals', fn() =>
             $this->writer->returnBike(self::USER, self::BIKE, 2, $rent->rentId));
         self::assertCount(2, $this->history());
@@ -221,11 +236,12 @@ class NormalRentalWriterTest extends KernelTestCase
 
     public function testLocalEffectCommitsWithTheExactOpeningContext(): void
     {
-        $rent = $this->writer->rent(self::USER, self::BIKE, '2345');
-        $this->clock->sleep(3600);
-        // An unrelated legacy row must not replace the exact linked start for downstream pricing.
+        // An old row with a later timestamp must not replace the exact start for downstream pricing.
         $this->db->exec("INSERT INTO history (userId,bikeNum,action,parameter,time)
             VALUES (991301,99131,'RENT','9999','2026-09-09 12:59:00')");
+        $this->writer = $this->makeWriter($this->db, $this->db->getLastInsertId());
+        $rent = $this->writer->rent(self::USER, self::BIKE, '2345');
+        $this->clock->sleep(3600);
         $effectRuns = 0;
         $this->writer->returnBike(
             self::USER,
@@ -324,9 +340,14 @@ class NormalRentalWriterTest extends KernelTestCase
         ];
     }
 
-    private function makeWriter(DbInterface $db): NormalRentalWriter
+    private function makeWriter(DbInterface $db, int $historyStartId = 0): NormalRentalWriter
     {
-        return new NormalRentalWriter($db, new RentalLedgerRepository($db), new NormalRentalPlanner(), $this->clock);
+        return new NormalRentalWriter(
+            $db,
+            new RentalLedgerRepository($db, $historyStartId),
+            new NormalRentalPlanner(),
+            $this->clock,
+        );
     }
 
     private function history(): array

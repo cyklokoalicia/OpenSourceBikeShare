@@ -10,8 +10,13 @@ use BikeShare\Rent\DTO\RentalTransition;
 
 class RentalLedgerRepository
 {
-    public function __construct(private readonly DbInterface $db)
-    {
+    public function __construct(
+        private readonly DbInterface $db,
+        private readonly int $historyStartId = 0,
+    ) {
+        if ($historyStartId < 0) {
+            throw new \InvalidArgumentException('The history cutover boundary cannot be negative.');
+        }
     }
 
     public function lockUser(int $userId): bool
@@ -51,15 +56,19 @@ class RentalLedgerRepository
 
         return $this->db->query(
             "SELECT opening.* FROM history opening
-             WHERE opening.bikeNum = :bikeNum AND opening.ledgerVersion = 1
+             WHERE opening.bikeNum = :bikeNum AND opening.id > :historyStartId
                AND opening.action IN ('RENT','FORCERENT') AND opening.pairActionId IS NULL
                AND NOT EXISTS (
                  SELECT 1 FROM history terminal
-                 WHERE terminal.pairActionId = opening.id AND terminal.ledgerVersion = 1
+                 WHERE terminal.pairActionId = opening.id AND terminal.id > :terminalStartId
                    AND terminal.action IN ('RETURN','FORCERETURN','REVERT')
                )
              ORDER BY opening.id FOR UPDATE",
-            ['bikeNum' => $bikeNum],
+            [
+                'bikeNum' => $bikeNum,
+                'historyStartId' => $this->historyStartId,
+                'terminalStartId' => $this->historyStartId,
+            ],
         )->fetchAllAssoc();
     }
 
@@ -96,10 +105,8 @@ class RentalLedgerRepository
         }
         $this->db->query(
             "INSERT INTO history
-                (userId, bikeNum, action, parameter, time, standId, pairActionId,
-                 ledgerVersion, recordOrigin, rentalKind, closeReason)
-             VALUES (:userId, :bikeNum, :action, :parameter, :time, :standId, :pairActionId,
-                     1, 'command', 'rental', :closeReason)",
+                (userId, bikeNum, action, parameter, time, standId, pairActionId)
+             VALUES (:userId, :bikeNum, :action, :parameter, :time, :standId, :pairActionId)",
             [
                 'userId' => $transition->userId,
                 'bikeNum' => $transition->bikeNum,
@@ -108,7 +115,6 @@ class RentalLedgerRepository
                 'time' => $transition->occurredAt->format('Y-m-d H:i:s'),
                 'standId' => $transition->standId,
                 'pairActionId' => $transition->pairActionId,
-                'closeReason' => $transition->action === Action::RETURN ? 'returned' : null,
             ],
         );
 

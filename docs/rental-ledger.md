@@ -2,18 +2,35 @@
 
 `NormalRentalWriter` implements the first persistence slice, on top of the staged
 schema in step 1. It is intentionally not wired into `AbstractRentSystem`, controllers,
-or SMS commands. Merging it does not activate version 1 writes on an installation.
+or SMS commands. Merging it does not activate the new writer on an installation.
 
 A rent returns its inserted `rentId`. A return requires that exact `expectedRentId`
 and inserts `RETURN.pairActionId = RENT.id`. The start is never updated. Both events
-store the observed station, command origin, rental kind and verified ledger version.
+store the observed station using the existing standId field. No columns are added.
 The returned IDs are history row IDs, not additional link columns or a trips table.
 
 The pure planner rejects an unavailable bike, mismatched holder/projection, multiple
-open starts, stale rental ID, unsupported episode kind or a return before its start.
-The repository determines active starts through incoming verified terminal links;
-unverified old starts never become active just because they have no closing row.
-A rented bike without a verified start needs reconciliation, not a guessed match.
+open starts, stale rental ID or a return before its start.
+The repository determines active starts through incoming terminal links within the
+new history range. `RENTAL_LEDGER_START_ID` is the fixed maximum history.id captured
+while all old rental writers are paused/drained at cutover. Both starts and terminals
+in the lookup must have IDs above it; old dangling/reverse links cannot masquerade as
+new closures. The default 0 is for fresh databases, not an automatic legacy migration.
+Never recalculate or advance the boundary on restart or after backfill.
+
+Historical backfill can run after new writes begin, confined to the old range. It
+updates existing pairActionId values without adding columns or replaying commands.
+Global UNIQUE/FK/direction constraints on an existing installation are installed after
+old non-NULL pairs are normalized; before that, coordinated writer locks and state
+validation enforce pairing in the new range. Fresh databases already have constraints.
+
+Rentals active at cutover require separate reconciliation before their bikes can use
+this core. A held bike whose opening is outside the new range is rejected; the core
+does not manufacture a start or guess a legacy match. The activation/migration stage
+must define their transition before enabling the writer for those bikes. Completing
+all old historical pairs is not a prerequisite for starting new rentals on reconciled
+parked bikes. Appending reconstructed historical lifecycle events into the new ID
+range is not supported by this backfill contract.
 
 The writer owns one transaction and locks user, bike, then station. History queries
 use current reads after the bike lock. State updates and the terminal insert commit
@@ -37,7 +54,7 @@ The integration tests exercise the new core with the real MariaDB schema, separa
 connections, exact pairs, stale requests and injected write/effect failures.
 
 Next slices add forced handover/relocation and REVERT, then all readers and transport
-adapters under a coordinated activation switch. Existing history normalization and
-final constraint installation remain prerequisites for production activation. Never
+adapters under a coordinated activation switch. Active-state reconciliation and the
+fixed cutover boundary are prerequisites for production activation; historical backfill and global constraints can follow. Never
 run this writer alongside legacy writers on the same bikes. There is no production
 feature flag in this PR that could accidentally enable that mixed mode.
