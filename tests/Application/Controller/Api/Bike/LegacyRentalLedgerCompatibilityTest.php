@@ -10,7 +10,7 @@ use BikeShare\Test\Application\BikeSharingWebTestCase;
 
 class LegacyRentalLedgerCompatibilityTest extends BikeSharingWebTestCase
 {
-    public function testExistingRentalFlowRemainsCompatibleWithPairConstraints(): void
+    public function testExistingRentalFlowRemainsCompatibleWithLookupIndexes(): void
     {
         $db = $this->client->getContainer()->get(DbInterface::class);
         $db->query('INSERT INTO bikes (bikeNum, currentUser, currentStand, currentCode) VALUES (9913,NULL,1,1234)');

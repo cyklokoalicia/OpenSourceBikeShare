@@ -78,37 +78,32 @@ MESSENGER_CHATS_JSON=[{"name":"Newcomers TG","url":"https://t.me/example"}]
 Empty array (`[]`, the default) disables the welcome redirect for new registrations.
 
 
-## Spec 0013: one existing pairActionId (staged)
+## Spec 0013: application-owned pairing with the existing pairActionId
 
 The contract is terminal RETURN/FORCERETURN/REVERT -> opening RENT/FORCERENT.
-Starts always retain NULL. No columns are added: pairActionId, standId and the
-other event fields already exist. This foundation does not activate the new writer.
+Starts retain NULL. No columns, foreign keys, unique pair constraints, CHECK rules,
+triggers or stored procedures are added. Pairing rules belong to the application.
 
-1. Apply `migrations/0013/01-expand.sql` once to prepare the lookup index. It leaves
-   the columns and existing history values unchanged.
-2. At coordinated writer activation, pause/drain every old rental writer and record
-   the maximum history.id as a fixed deployment boundary. Reconcile rentals already
-   in progress separately. The new core reads active starts above that boundary;
-   it must not guess that every old unpaired RENT is still active. The boundary
-   is configuration, not another database field, and must not advance on restart.
-3. Historical pair backfill can run after new writes begin. Archive original values,
-   restrict legacy updates to IDs at/below the boundary, clear starts' reverse links,
-   and resolve duplicate/missing/wrong-type targets. Never rewrite the live range or
-   replay old commands through the rental engine. Uncertain historical pairs stay NULL.
-4. Apply `migrations/0013/02-enforce.sql` after legacy non-NULL pairs are normalized.
-   Verify preflight under a write pause before adding the global constraints. Until
-   then, the coordinated writer enforces live pairing under its transaction locks.
-   This PR supplies no automatic backfill or activation command.
+Apply `migrations/0013/01-indexes.sql` once to prepare the ordinary lookup index.
+The existing non-unique pairActionId index remains. Both indexes only support reads;
+they do not enforce event relationships. Rehearse index creation on a deployment copy.
+This foundation does not activate a writer or update history.
 
-Rehearse SQL phases on a copy of the deployment; check ID signedness and supported
-CHECK enforcement. The bootstrap SQL is for fresh databases and includes final
-constraints. ALTER steps require checkpoints, not an application transaction rollback.
-Re-running an already applied SQL phase is an error.
+At coordinated activation, pause/drain every old rental writer, capture the maximum
+history.id as a fixed deployment boundary, and reconcile rentals already in progress.
+The new core finds active starts above this boundary; it must not treat old unpaired
+RENT rows as live. The boundary is configuration and must not advance on restart.
 
-UNIQUE prevents repeated references; the FK checks existence. The direction CHECK
-allows a non-NULL pair only on a terminal action. NULL terminal pairs remain allowed
-for incomplete old history. The new writer must always supply a terminal's exact
-start, check type/bike/holder, and reject multiple open starts under the bike lock.
+Historical pair backfill may run after new writes start. Archive original values,
+restrict updates to the old range, resolve reverse/duplicate/missing/wrong-type links,
+and leave uncertain pairs NULL. Do not rewrite the live range or replay old commands.
+There is no later SQL constraint-enforcement phase. Migration tooling validates its
+own writes in code, just as the live writer does.
+
+The application owns existence/type/bike/holder validation and the single-closure
+rule. Every rental writer must use the same transaction/locking protocol: lock the
+bike, read and validate current state, then persist the transition. InnoDB transactions
+and row locks provide atomicity and serialization; direct SQL bypasses domain rules.
 
 `DbInterface::transactional()` commits the callback result or rolls back on any
 Throwable. Nested calls are rejected before running the inner callback. Callbacks

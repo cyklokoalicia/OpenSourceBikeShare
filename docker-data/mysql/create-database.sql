@@ -68,12 +68,8 @@ CREATE TABLE `history` (
   KEY `userId` (`userId`),
   KEY `action` (`action`),
   KEY `standId` (`standId`),
-  UNIQUE KEY `uniq_history_pair` (`pairActionId`),
+  KEY `pairActionId` (`pairActionId`),
   KEY `idx_history_rental_state` (`bikeNum`, `action`, `id`),
-  CONSTRAINT `fk_history_pair` FOREIGN KEY (`pairActionId`) REFERENCES `history` (`id`),
-  CONSTRAINT `chk_history_pair_direction` CHECK (
-    `pairActionId` IS NULL OR `action` IN ('RETURN','FORCERETURN','REVERT')
-  ),
   KEY `idx_time_action` (`time`, `action`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
