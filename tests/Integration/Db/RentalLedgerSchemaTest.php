@@ -32,58 +32,59 @@ class RentalLedgerSchemaTest extends KernelTestCase
         parent::tearDown();
     }
 
-    public function testExpandPreservesDirtyLegacyPairsAndEnforcementRejectsThem(): void
+    public function testIndexPreparationPreservesColumnsAndDirtyPairsBeforeEnforcement(): void
     {
         $this->db->exec("INSERT INTO ledger_schema_probe VALUES (1,1,'RENT',NULL),
             (2,1,'RETURN',1), (3,1,'RETURN',1)");
         $this->apply('01-expand.sql');
         $rows = $this->db->query(
-            'SELECT pairActionId, ledgerVersion FROM ledger_schema_probe ORDER BY id'
+            'SELECT pairActionId FROM ledger_schema_probe ORDER BY id'
         )->fetchAllAssoc();
         self::assertSame([null, 1, 1], array_column($rows, 'pairActionId'));
-        self::assertSame([null, null, null], array_column($rows, 'ledgerVersion'));
+        $columns = $this->db->query('SHOW COLUMNS FROM ledger_schema_probe')->fetchAllAssoc();
+        self::assertSame(['id', 'bikeNum', 'action', 'pairActionId'], array_column($columns, 'Field'));
         $this->expectException(\PDOException::class);
         $this->apply('02-enforce.sql');
     }
 
     public function testNormalizedPairCannotBeClosedTwiceEvenByRevert(): void
     {
-        $this->prepareVerifiedPair();
+        $this->preparePair();
         $this->expectException(\PDOException::class);
         $this->db->exec("INSERT INTO ledger_schema_probe VALUES
-            (3,1,'REVERT',1,1,'command','rental','cancelled')");
+            (3,1,'REVERT',1)");
     }
 
-    public function testVerifiedReturnRequiresPairAndMetadata(): void
+    public function testStartCannotHaveAnOutgoingPair(): void
     {
-        $this->prepareVerifiedPair();
+        $this->preparePair();
         $this->expectException(\PDOException::class);
         $this->db->exec("INSERT INTO ledger_schema_probe VALUES
-            (3,1,'RETURN',NULL,1,NULL,'rental','returned')");
+            (3,1,'RENT',1)");
     }
 
     public function testPairMustReferenceAnExistingRow(): void
     {
-        $this->prepareVerifiedPair();
+        $this->preparePair();
         $this->expectException(\PDOException::class);
         $this->db->exec("INSERT INTO ledger_schema_probe VALUES
-            (3,1,'RETURN',999,1,'command','rental','returned')");
+            (3,1,'RETURN',999)");
     }
 
-    private function prepareVerifiedPair(): void
+    private function preparePair(): void
     {
         $this->apply('01-expand.sql');
         $this->apply('02-enforce.sql');
         $this->db->exec("INSERT INTO ledger_schema_probe VALUES
-            (1,1,'RENT',NULL,1,'command','rental',NULL),
-            (2,1,'RETURN',1,1,'command','rental','returned')");
+            (1,1,'RENT',NULL),
+            (2,1,'RETURN',1)");
     }
 
     private function apply(string $name): void
     {
         $sql = file_get_contents(dirname(__DIR__, 3) . '/migrations/0013/' . $name);
         self::assertIsString($sql);
-        $sql = str_replace(['`history`', 'fk_history_pair', 'chk_history_ledger'], [
+        $sql = str_replace(['`history`', 'fk_history_pair', 'chk_history_pair_direction'], [
             '`ledger_schema_probe`', 'fk_probe_pair', 'chk_probe_ledger',
         ], $sql);
         $this->db->exec($sql);

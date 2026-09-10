@@ -78,32 +78,37 @@ MESSENGER_CHATS_JSON=[{"name":"Newcomers TG","url":"https://t.me/example"}]
 Empty array (`[]`, the default) disables the welcome redirect for new registrations.
 
 
-## Spec 0013: single-pairActionId foundation (staged)
+## Spec 0013: one existing pairActionId (staged)
 
-The new contract is terminal RETURN/FORCERETURN/REVERT -> opening RENT/FORCERENT.
-Starts always retain NULL. No second rental-link column or currentRentId is added.
-This foundation does not enable the new rental writer or reconstruct any history.
+The contract is terminal RETURN/FORCERETURN/REVERT -> opening RENT/FORCERENT.
+Starts always retain NULL. No columns are added: pairActionId, standId and the
+other event fields already exist. This foundation does not activate the new writer.
 
-1. Back up the existing schema and history. Apply `migrations/0013/01-expand.sql`
-   once to an existing installation. Nullable metadata leaves old rows unverified
-   (`ledgerVersion IS NULL`), including any pre-existing pairActionId values.
-2. **Defer `migrations/0013/02-enforce.sql` until the normalization/cutover phase.**
-   Archive and validate old pairs, clear reverse links from starts, resolve or
-   quarantine duplicate/missing targets, reconcile current bike holders, and pause
-   every rental writer. This PR deliberately supplies no automatic normalization.
-   After preflight succeeds, apply the constraints once and verify them before activation.
+1. Apply `migrations/0013/01-expand.sql` once to prepare the lookup index. It leaves
+   the columns and existing history values unchanged.
+2. At coordinated writer activation, pause/drain every old rental writer and record
+   the maximum history.id as a fixed deployment boundary. Reconcile rentals already
+   in progress separately. The new core reads active starts above that boundary;
+   it must not guess that every old unpaired RENT is still active. The boundary
+   is configuration, not another database field, and must not advance on restart.
+3. Historical pair backfill can run after new writes begin. Archive original values,
+   restrict legacy updates to IDs at/below the boundary, clear starts' reverse links,
+   and resolve duplicate/missing/wrong-type targets. Never rewrite the live range or
+   replay old commands through the rental engine. Uncertain historical pairs stay NULL.
+4. Apply `migrations/0013/02-enforce.sql` after legacy non-NULL pairs are normalized.
+   Verify preflight under a write pause before adding the global constraints. Until
+   then, the coordinated writer enforces live pairing under its transaction locks.
+   This PR supplies no automatic backfill or activation command.
 
-Both SQL phases must first be rehearsed on a copy of the actual deployment. Check
-id/pairActionId signedness and supported CHECK enforcement. The bootstrap SQL is
-for a fresh database and includes the final constraints; do not run it on existing
-history. ALTER statements are checkpointed migration steps, not a single rollbackable
-application transaction. Re-running an already applied SQL phase is an error.
+Rehearse SQL phases on a copy of the deployment; check ID signedness and supported
+CHECK enforcement. The bootstrap SQL is for fresh databases and includes final
+constraints. ALTER steps require checkpoints, not an application transaction rollback.
+Re-running an already applied SQL phase is an error.
 
-UNIQUE prevents multiple terminal links; the FK checks existence only. The writer
-must additionally check the referenced action, same bike, matching verified version,
-and at most one open start under a bike lock. Metadata must be supplied explicitly
-for version 1; legacy writes continue with NULL defaults. Do not mark all legacy
-starts verified, or dangling old rows would become apparent active rentals.
+UNIQUE prevents repeated references; the FK checks existence. The direction CHECK
+allows a non-NULL pair only on a terminal action. NULL terminal pairs remain allowed
+for incomplete old history. The new writer must always supply a terminal's exact
+start, check type/bike/holder, and reject multiple open starts under the bike lock.
 
 `DbInterface::transactional()` commits the callback result or rolls back on any
 Throwable. Nested calls are rejected before running the inner callback. Callbacks
