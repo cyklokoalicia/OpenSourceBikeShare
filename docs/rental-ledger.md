@@ -20,9 +20,10 @@ Never recalculate or advance the boundary on restart or after backfill.
 
 Historical backfill can run after new writes begin, confined to the old range. It
 updates existing pairActionId values without adding columns or replaying commands.
-Global UNIQUE/FK/direction constraints on an existing installation are installed after
-old non-NULL pairs are normalized; before that, coordinated writer locks and state
-validation enforce pairing in the new range. Fresh databases already have constraints.
+Pairing invariants are enforced entirely by application code, both before and after
+historical backfill. The database has ordinary lookup indexes, transactions and row
+locks; it has no pair FK, UNIQUE, CHECK, trigger or stored procedure. Every rental
+write must use the common writer. Historical backfill validates its own input in code.
 
 Rentals active at cutover require separate reconciliation before their bikes can use
 this core. A held bike whose opening is outside the new range is rejected; the core
@@ -55,6 +56,15 @@ connections, exact pairs, stale requests and injected write/effect failures.
 
 Next slices add forced handover/relocation and REVERT, then all readers and transport
 adapters under a coordinated activation switch. Active-state reconciliation and the
-fixed cutover boundary are prerequisites for production activation; historical backfill and global constraints can follow. Never
+fixed cutover boundary are prerequisites for production activation; historical backfill can follow. Never
 run this writer alongside legacy writers on the same bikes. There is no production
 feature flag in this PR that could accidentally enable that mixed mode.
+
+## Ownership of pairing rules
+
+The repository reads candidate starts under the bike lock. The planner validates
+availability, candidate count, exact expected ID, action, bike, holder, pair direction
+and time. The writer persists a validated transition within the same transaction.
+The second concurrent command reads state again after acquiring the lock and rejects
+an already completed rental in PHP; it does not rely on a duplicate-key error.
+SQL updates additionally check the expected projection and affected-row count.

@@ -150,6 +150,21 @@ class NormalRentalWriterTest extends KernelTestCase
         self::assertSame(self::USER, $this->bike()['currentUser']);
     }
 
+    public function testMissingOrDifferentBikeOpeningCannotBeUsedForReturn(): void
+    {
+        $rent = $this->writer->rent(self::USER, self::BIKE, '2345');
+        $otherRent = $this->writer->rent(self::OTHER_USER, self::OTHER_BIKE, '3456');
+        $before = $this->history();
+        foreach ([$otherRent->rentId, PHP_INT_MAX] as $invalidRentId) {
+            $this->assertConflict('rental_ledger_stale_rental', fn() =>
+                $this->writer->returnBike(self::USER, self::BIKE, 2, $invalidRentId));
+        }
+        self::assertSame($before, $this->history());
+        self::assertSame(self::USER, $this->bike()['currentUser']);
+        $this->writer->returnBike(self::USER, self::BIKE, 2, $rent->rentId);
+        self::assertSame($rent->rentId, $this->history()[2]['pairActionId']);
+    }
+
     public function testWrongHolderAndMissingStationDoNotChangeState(): void
     {
         $rent = $this->writer->rent(self::USER, self::BIKE, '2345');
