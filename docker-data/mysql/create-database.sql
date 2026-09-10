@@ -63,27 +63,16 @@ CREATE TABLE `history` (
   `parameter` text NOT NULL,
   `standId` int(11) UNSIGNED DEFAULT NULL,
   `pairActionId` int(11) UNSIGNED DEFAULT NULL,
-  `ledgerVersion` tinyint unsigned DEFAULT NULL,
-  `recordOrigin` enum('command','synthetic','reconstructed','legacy_unknown') DEFAULT NULL,
-  `rentalKind` enum('rental','correction','service') DEFAULT NULL,
-  `closeReason` enum('returned','forced_return','handover','relocation','cancelled') DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `bikeNum` (`bikeNum`),
   KEY `userId` (`userId`),
   KEY `action` (`action`),
   KEY `standId` (`standId`),
   UNIQUE KEY `uniq_history_pair` (`pairActionId`),
-  KEY `idx_history_rental_state` (`bikeNum`, `ledgerVersion`, `action`, `id`),
+  KEY `idx_history_rental_state` (`bikeNum`, `action`, `id`),
   CONSTRAINT `fk_history_pair` FOREIGN KEY (`pairActionId`) REFERENCES `history` (`id`),
-  CONSTRAINT `chk_history_ledger` CHECK (
-    `ledgerVersion` IS NULL OR (
-      `ledgerVersion` = 1 AND `recordOrigin` IS NOT NULL AND `rentalKind` IS NOT NULL
-      AND (
-        (`action` IN ('RENT','FORCERENT') AND `pairActionId` IS NULL AND `closeReason` IS NULL)
-        OR (`action` IN ('RETURN','FORCERETURN','REVERT')
-          AND `pairActionId` IS NOT NULL AND `closeReason` IS NOT NULL)
-      )
-    )
+  CONSTRAINT `chk_history_pair_direction` CHECK (
+    `pairActionId` IS NULL OR `action` IN ('RETURN','FORCERETURN','REVERT')
   ),
   KEY `idx_time_action` (`time`, `action`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
