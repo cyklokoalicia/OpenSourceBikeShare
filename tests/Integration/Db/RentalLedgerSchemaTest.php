@@ -32,61 +32,38 @@ class RentalLedgerSchemaTest extends KernelTestCase
         parent::tearDown();
     }
 
-    public function testIndexPreparationPreservesColumnsAndDirtyPairsBeforeEnforcement(): void
+    public function testIndexPreparationPreservesColumnsAndDoesNotEnforcePairing(): void
     {
         $this->db->exec("INSERT INTO ledger_schema_probe VALUES (1,1,'RENT',NULL),
             (2,1,'RETURN',1), (3,1,'RETURN',1)");
-        $this->apply('01-expand.sql');
-        $rows = $this->db->query(
-            'SELECT pairActionId FROM ledger_schema_probe ORDER BY id'
-        )->fetchAllAssoc();
-        self::assertSame([null, 1, 1], array_column($rows, 'pairActionId'));
-        $columns = $this->db->query('SHOW COLUMNS FROM ledger_schema_probe')->fetchAllAssoc();
-        self::assertSame(['id', 'bikeNum', 'action', 'pairActionId'], array_column($columns, 'Field'));
-        $this->expectException(\PDOException::class);
-        $this->apply('02-enforce.sql');
-    }
-
-    public function testNormalizedPairCannotBeClosedTwiceEvenByRevert(): void
-    {
-        $this->preparePair();
-        $this->expectException(\PDOException::class);
-        $this->db->exec("INSERT INTO ledger_schema_probe VALUES
-            (3,1,'REVERT',1)");
-    }
-
-    public function testStartCannotHaveAnOutgoingPair(): void
-    {
-        $this->preparePair();
-        $this->expectException(\PDOException::class);
-        $this->db->exec("INSERT INTO ledger_schema_probe VALUES
-            (3,1,'RENT',1)");
-    }
-
-    public function testPairMustReferenceAnExistingRow(): void
-    {
-        $this->preparePair();
-        $this->expectException(\PDOException::class);
-        $this->db->exec("INSERT INTO ledger_schema_probe VALUES
-            (3,1,'RETURN',999)");
-    }
-
-    private function preparePair(): void
-    {
-        $this->apply('01-expand.sql');
-        $this->apply('02-enforce.sql');
-        $this->db->exec("INSERT INTO ledger_schema_probe VALUES
-            (1,1,'RENT',NULL),
-            (2,1,'RETURN',1)");
-    }
-
-    private function apply(string $name): void
-    {
-        $sql = file_get_contents(dirname(__DIR__, 3) . '/migrations/0013/' . $name);
+        $sql = file_get_contents(dirname(__DIR__, 3) . '/migrations/0013/01-indexes.sql');
         self::assertIsString($sql);
-        $sql = str_replace(['`history`', 'fk_history_pair', 'chk_history_pair_direction'], [
-            '`ledger_schema_probe`', 'fk_probe_pair', 'chk_probe_ledger',
-        ], $sql);
-        $this->db->exec($sql);
+        $this->db->exec(str_replace('`history`', '`ledger_schema_probe`', $sql));
+        self::assertSame([null, 1, 1], array_column($this->db->query(
+            'SELECT pairActionId FROM ledger_schema_probe ORDER BY id'
+        )->fetchAllAssoc(), 'pairActionId'));
+        self::assertSame(['id', 'bikeNum', 'action', 'pairActionId'], array_column(
+            $this->db->query('SHOW COLUMNS FROM ledger_schema_probe')->fetchAllAssoc(),
+            'Field',
+        ));
+        // Deliberately invalid domain data: index preparation must not add hidden pairing rules.
+        $this->db->exec("INSERT INTO ledger_schema_probe VALUES (4,1,'RENT',999)");
+        $this->db->exec('DELETE FROM ledger_schema_probe WHERE id=1');
+        self::assertSame(3, (int)$this->db->query('SELECT COUNT(*) AS n FROM ledger_schema_probe')->fetchAssoc()['n']);
+    }
+
+    public function testBootstrapUsesOnlyOrdinaryPairIndexes(): void
+    {
+        $indexes = $this->db->query("SHOW INDEX FROM history WHERE Column_name='pairActionId'")->fetchAllAssoc();
+        self::assertNotEmpty($indexes);
+        foreach ($indexes as $index) {
+            self::assertSame(1, (int)$index['Non_unique']);
+        }
+        $constraints = $this->db->query(
+            "SELECT CONSTRAINT_TYPE FROM information_schema.TABLE_CONSTRAINTS
+             WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='history'
+               AND CONSTRAINT_TYPE IN ('FOREIGN KEY','CHECK')"
+        )->fetchAllAssoc();
+        self::assertSame([], $constraints);
     }
 }
