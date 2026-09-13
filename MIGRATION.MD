@@ -90,5 +90,7 @@ Optionally use `--bike=6` to migrate one bike. Correct pairs remain unchanged; c
 links and legacy REVERT sequences are skipped with reasons (`-v` includes event IDs).
 Verified links from a rent to the immediately previous return are cleared first, preserving
 the previous return-to-rent pair. The summary lists these chain links separately.
+Empty actions with both `bikeNum=0` and `userId=0` are counted separately from skipped events.
+Other unknown actions and REVERT have separate skip reasons and still prevent pairing across them.
 Only `pairActionId` changes. The command can be rerun after interruption; it does not
 change bike state, replay charges or send notifications.

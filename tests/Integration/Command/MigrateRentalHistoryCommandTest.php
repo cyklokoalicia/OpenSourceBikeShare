@@ -124,6 +124,57 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
         self::assertMatchesRegularExpression('/Pairs updated\s+0/', $this->tester->getDisplay());
     }
 
+    public function testEmptyServiceActionsAreReportedSeparatelyFromUnknownActionsAndReverts(): void
+    {
+        $this->insertHistory([
+            [100, 9100, Action::RENT, null, 4],
+            [101, 0, Action::CREDIT, null, 0],
+            [102, 0, Action::CREDIT, 0, 0],
+            [103, 9100, Action::RETURN, null, 4],
+            [110, 9200, Action::RENT, null, 4],
+            [111, 9200, Action::CREDIT, null, 4],
+            [112, 9200, Action::RETURN, null, 4],
+            [120, 9300, Action::CREDIT, null, 0],
+            [130, 9400, Action::REVERT, null, 4],
+            [131, 9400, Action::RENT, null, 0],
+            [132, 9400, Action::RETURN, null, 0],
+            [140, 0, Action::CREDIT, null, 4],
+        ]);
+        // Reproduce the empty ENUM values preserved in legacy history.
+        $this->db->query("UPDATE IGNORE history SET action = '' WHERE id IN (101, 102, 111, 120, 140)");
+        $before = $this->history();
+
+        foreach ([true, false] as $dryRun) {
+            $this->tester->execute(
+                $dryRun ? ['--dry-run' => true] : [],
+                ['verbosity' => OutputInterface::VERBOSITY_VERBOSE],
+            );
+            $this->tester->assertCommandIsSuccessful();
+            $display = $this->tester->getDisplay();
+            self::assertMatchesRegularExpression('/Ignored empty actions without bike or user\s+2/', $display);
+            self::assertStringContainsString('unknown_action: 3', $display);
+            self::assertStringContainsString('revert: 1', $display);
+            self::assertStringNotContainsString('revert_or_unknown_action', $display);
+            self::assertStringContainsString('Skip history 111 (bike 9200): unknown_action', $display);
+            self::assertStringContainsString('Skip history 112 (bike 9200): no_adjacent_start', $display);
+            self::assertStringContainsString('Ignore history 101: empty action without bike or user', $display);
+            self::assertMatchesRegularExpression('/Skipped returns\/events\s+7/', $display);
+
+            $expected = $before;
+            if (!$dryRun) {
+                $expected[3]['pairActionId'] = 100;
+            }
+            self::assertSame($expected, $this->history());
+        }
+
+        $this->tester->execute(['--bike' => 9100, '--dry-run' => true]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertMatchesRegularExpression(
+            '/Ignored empty actions without bike or user\s+0/',
+            $this->tester->getDisplay(),
+        );
+    }
+
     public function testBikeFilterLeavesOtherHistoryUnchanged(): void
     {
         $this->insertHistory([

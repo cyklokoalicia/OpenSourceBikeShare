@@ -58,6 +58,7 @@ class MigrateRentalHistoryCommand extends Command
         $previous = [];
         $changed = 0;
         $unchanged = 0;
+        $emptyServiceEvents = 0;
         $skipped = [];
         foreach ($this->iterateEvents($bikeNumber) as $event) {
             if (isset($this->chainStarts[$event['id']])) {
@@ -75,7 +76,15 @@ class MigrateRentalHistoryCommand extends Command
             $start = $previous[$bikeId] ?? null;
             $previous[$bikeId] = $event;
             if ($action === Action::REVERT || $action === null) {
-                $this->skip($event, 'revert_or_unknown_action', $skipped, $output);
+                if ($event['action'] === '' && $bikeId === 0 && (int)$event['userId'] === 0) {
+                    ++$emptyServiceEvents;
+                    $output->writeln(
+                        sprintf('Ignore history %d: empty action without bike or user', $event['id']),
+                        OutputInterface::VERBOSITY_VERBOSE,
+                    );
+                } else {
+                    $this->skip($event, $action === Action::REVERT ? 'revert' : 'unknown_action', $skipped, $output);
+                }
                 continue;
             }
             if (in_array($action, [Action::RENT, Action::FORCE_RENT], true)) {
@@ -124,6 +133,7 @@ class MigrateRentalHistoryCommand extends Command
             [$apply ? 'Chain links cleared' : 'Chain links to clear', count($this->chainStarts)],
             [$apply ? 'Pairs updated' : 'Pairs to update', $changed],
             ['Already linked', $unchanged],
+            ['Ignored empty actions without bike or user', $emptyServiceEvents],
             ['Skipped returns/events', array_sum($skipped)],
         ]);
         foreach ($skipped as $reason => $count) {
