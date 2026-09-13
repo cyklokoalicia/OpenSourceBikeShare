@@ -88,5 +88,7 @@ docker compose exec web php bin/console app:migrate_rental_history
 
 Optionally use `--bike=6` to migrate one bike. Correct pairs remain unchanged; conflicting
 links and legacy REVERT sequences are skipped with reasons (`-v` includes event IDs).
+Verified links from a rent to the immediately previous return are cleared first, preserving
+the previous return-to-rent pair. The summary lists these chain links separately.
 Only `pairActionId` changes. The command can be rerun after interruption; it does not
 change bike state, replay charges or send notifications.

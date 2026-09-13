@@ -16,6 +16,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'app:migrate_rental_history', description: 'Fill and normalize unambiguous historical rental pairs')]
 class MigrateRentalHistoryCommand extends Command
 {
+    private array $chainStarts = [];
+
     public function __construct(private readonly DbInterface $db)
     {
         parent::__construct();
@@ -42,11 +44,25 @@ class MigrateRentalHistoryCommand extends Command
 
         $apply = !(bool)$input->getOption('dry-run');
         $io->writeln($apply ? 'Migrating rental history.' : 'Previewing rental history; no changes will be written.');
+        $this->chainStarts = [];
+        $this->chainStarts = $this->findChainStarts($bikeNumber);
+        foreach ($this->chainStarts as $start) {
+            $output->writeln(
+                sprintf('Clear chain link on rent %d -> return %d', $start['id'], $start['pairActionId']),
+                OutputInterface::VERBOSITY_VERBOSE,
+            );
+            if ($apply) {
+                $this->updatePair($start, null);
+            }
+        }
         $previous = [];
         $changed = 0;
         $unchanged = 0;
         $skipped = [];
         foreach ($this->iterateEvents($bikeNumber) as $event) {
+            if (isset($this->chainStarts[$event['id']])) {
+                $event['pairActionId'] = null;
+            }
             $bikeId = (int)$event['bikeNum'];
             $action = Action::tryFrom($event['action']);
             if (
@@ -105,6 +121,7 @@ class MigrateRentalHistoryCommand extends Command
         }
 
         $io->table(['Result', 'Count'], [
+            [$apply ? 'Chain links cleared' : 'Chain links to clear', count($this->chainStarts)],
             [$apply ? 'Pairs updated' : 'Pairs to update', $changed],
             ['Already linked', $unchanged],
             ['Skipped returns/events', array_sum($skipped)],
@@ -114,6 +131,45 @@ class MigrateRentalHistoryCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    private function findChainStarts(?int $bikeNumber): array
+    {
+        $previous = [];
+        $beforePrevious = [];
+        $starts = [];
+        foreach ($this->iterateEvents($bikeNumber) as $event) {
+            $action = Action::tryFrom($event['action']);
+            if (
+                $action !== null && !in_array($action, [
+                    Action::RENT, Action::FORCE_RENT, Action::RETURN, Action::FORCE_RETURN, Action::REVERT,
+                ], true)
+            ) {
+                continue;
+            }
+            $bikeId = (int)$event['bikeNum'];
+            $return = $previous[$bikeId] ?? null;
+            $rent = $beforePrevious[$bikeId] ?? null;
+            $event['afterRevert'] = ($return['action'] ?? null) === Action::REVERT->value;
+            if (
+                in_array($action, [Action::RENT, Action::FORCE_RENT], true)
+                && $event['pairActionId'] !== null && (int)$event['userId'] > 0
+                && in_array($return['action'] ?? null, [Action::RETURN->value, Action::FORCE_RETURN->value], true)
+                && in_array($rent['action'] ?? null, [Action::RENT->value, Action::FORCE_RENT->value], true)
+                && (int)$event['pairActionId'] === (int)$return['id']
+                && $return['pairActionId'] !== null && (int)$return['pairActionId'] === (int)$rent['id']
+                && (int)$rent['userId'] > 0 && !$rent['afterRevert']
+                && $rent['time'] <= $return['time'] && $return['time'] <= $event['time']
+                && ($return['action'] === Action::FORCE_RETURN->value || $return['userId'] === $rent['userId'])
+                && !$this->hasOtherReferences((int)$rent['id'], (int)$return['id'], (int)$event['id'])
+            ) {
+                $starts[(int)$event['id']] = $event;
+            }
+            $beforePrevious[$bikeId] = $return;
+            $previous[$bikeId] = $event;
+        }
+
+        return $starts;
     }
 
     private function invalidPairReason(?array $start, array $return): ?string
@@ -174,19 +230,28 @@ class MigrateRentalHistoryCommand extends Command
         } while (count($rows) === 1000);
     }
 
-    private function hasOtherReferences(int $startId, int $returnId): bool
+    private function hasOtherReferences(int $startId, int $returnId, ?int $nextStartId = null): bool
     {
         // Include references from other bikes, even when the scan is filtered.
-        return $this->db->query(
+        $references = $this->db->query(
             'SELECT id FROM history WHERE pairActionId IN (:startId, :returnId)
-             AND id NOT IN (:excludeStartId, :excludeReturnId) LIMIT 1',
+             AND id NOT IN (:excludeStartId, :excludeReturnId, :excludeNextStartId)',
             [
                 'startId' => $startId,
                 'returnId' => $returnId,
                 'excludeStartId' => $startId,
                 'excludeReturnId' => $returnId,
+                'excludeNextStartId' => $nextStartId ?? $startId,
             ],
-        )->fetchAssoc() !== null;
+        )->fetchAllAssoc();
+        foreach ($references as $reference) {
+            // Preview must ignore exactly the chain links that applying would remove.
+            if (!isset($this->chainStarts[$reference['id']])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function updatePair(array $event, ?int $pairActionId): void

@@ -161,6 +161,112 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
         self::assertStringContainsString('other_references', $this->tester->getDisplay());
     }
 
+    public function testSequentialChainIsSplitIntoPairsIncludingAcrossBatches(): void
+    {
+        $this->insertHistory([
+            [10, 9100, Action::RENT, null, 4],
+            [11, 9100, Action::RETURN, 10, 4],
+            [12, 9100, Action::RENT, 11, 5],
+            [13, 9100, Action::RETURN, 12, 5],
+            [14, 9100, Action::FORCE_RENT, 13, 4],
+            [15, 9100, Action::FORCE_RETURN, 14, 5],
+            [1020, 9100, Action::RENT, 15, 4],
+        ]);
+        for ($id = 20; $id < 1020; ++$id) {
+            $this->insertHistory([[$id, 9100, Action::CHANGE_CODE, null, 4]]);
+        }
+        $before = $this->history();
+        $this->tester->execute(['--dry-run' => true]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($before, $this->history());
+        self::assertMatchesRegularExpression('/Chain links to clear\s+3/', $this->tester->getDisplay());
+        self::assertMatchesRegularExpression('/Already linked\s+3/', $this->tester->getDisplay());
+
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        $expected = $before;
+        foreach ($expected as &$row) {
+            if (in_array($row['id'], [12, 14, 1020], true)) {
+                $row['pairActionId'] = null;
+            }
+        }
+        unset($row);
+        self::assertSame($expected, $this->history());
+        self::assertMatchesRegularExpression('/Chain links cleared\s+3/', $this->tester->getDisplay());
+        self::assertMatchesRegularExpression('/Already linked\s+3/', $this->tester->getDisplay());
+
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($expected, $this->history());
+        self::assertMatchesRegularExpression('/Chain links cleared\s+0/', $this->tester->getDisplay());
+        self::assertMatchesRegularExpression('/Pairs updated\s+0/', $this->tester->getDisplay());
+    }
+
+    public function testChainCleanupAndMissingReturnLinkAreAppliedInOneRun(): void
+    {
+        $this->insertHistory([
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [102, 9100, Action::RENT, 101, 5],
+            [103, 9100, Action::RETURN, null, 5],
+        ]);
+        $this->tester->execute(['--dry-run' => true]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame([null, 100, 101, null], array_column($this->history(), 'pairActionId'));
+        self::assertMatchesRegularExpression('/Pairs to update\s+1/', $this->tester->getDisplay());
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame([null, 100, null, 102], array_column($this->history(), 'pairActionId'));
+        self::assertMatchesRegularExpression('/Pairs updated\s+1/', $this->tester->getDisplay());
+    }
+
+    #[DataProvider('ambiguousChains')]
+    public function testAmbiguousChainsStayUnchanged(array $rows): void
+    {
+        $this->insertHistory($rows);
+        $before = $this->history();
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($before, $this->history());
+    }
+
+    public static function ambiguousChains(): iterable
+    {
+        yield 'gap before next rent' => [[
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [102, 9100, Action::RENT, null, 4],
+            [103, 9100, Action::RENT, 101, 4],
+        ]];
+        yield 'duplicate closure on another bike' => [[
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [102, 9100, Action::RENT, 101, 4],
+            [103, 9200, Action::RETURN, 100, 4],
+        ]];
+        yield 'missing previous pair' => [[
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, null, 4],
+            [102, 9100, Action::RENT, 101, 4],
+        ]];
+        yield 'different holder of previous return' => [[
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, 100, 5],
+            [102, 9100, Action::RENT, 101, 4],
+        ]];
+        yield 'revert synthetic pair' => [[
+            [99, 9100, Action::REVERT, null, 4],
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [102, 9100, Action::RENT, 101, 4],
+        ]];
+        yield 'next rent timestamp is earlier' => [[
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [102, 9100, Action::RENT, 101, 4, '1999-12-31 12:00:00'],
+        ]];
+    }
+
     #[DataProvider('invalidOptions')]
     public function testInvalidOptionsDoNotWrite(array $options): void
     {
