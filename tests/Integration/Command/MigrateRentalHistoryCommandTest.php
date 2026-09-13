@@ -12,9 +12,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class BackfillRentalPairsCommandTest extends BikeSharingKernelTestCase
+class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
 {
-    private const LAST_HISTORY_ID = 2001;
     private const REVERSED_PAIR_BIKE = 9110;
     private const CONFLICTING_LINK_BIKE = 9280;
     private CommandTester $tester;
@@ -27,7 +26,7 @@ class BackfillRentalPairsCommandTest extends BikeSharingKernelTestCase
         $fixtures = new CommandTester($application->find('load:fixtures'));
         $fixtures->execute([]);
         $fixtures->assertCommandIsSuccessful();
-        $this->tester = new CommandTester($application->find('app:backfill_rental_pairs'));
+        $this->tester = new CommandTester($application->find('app:migrate_rental_history'));
         $this->db = self::getContainer()->get(DbInterface::class);
     }
 
@@ -39,7 +38,7 @@ class BackfillRentalPairsCommandTest extends BikeSharingKernelTestCase
         $sent = $this->db->query('SELECT * FROM sent ORDER BY id')->fetchAllAssoc();
 
         $this->tester->execute(
-            ['--to-id' => self::LAST_HISTORY_ID],
+            ['--dry-run' => true],
             ['verbosity' => OutputInterface::VERBOSITY_VERBOSE],
         );
         $this->tester->assertCommandIsSuccessful();
@@ -52,7 +51,7 @@ class BackfillRentalPairsCommandTest extends BikeSharingKernelTestCase
             self::assertStringContainsString($reason, $this->tester->getDisplay());
         }
 
-        $this->tester->execute(['--to-id' => self::LAST_HISTORY_ID, '--apply' => true]);
+        $this->tester->execute([]);
         $this->tester->assertCommandIsSuccessful();
         $expected = $before;
         $changes = [
@@ -70,20 +69,16 @@ class BackfillRentalPairsCommandTest extends BikeSharingKernelTestCase
         self::assertSame($credit, $this->db->query('SELECT * FROM credit ORDER BY userId')->fetchAllAssoc());
         self::assertSame($sent, $this->db->query('SELECT * FROM sent ORDER BY id')->fetchAllAssoc());
 
-        $this->tester->execute(['--to-id' => self::LAST_HISTORY_ID, '--apply' => true]);
+        $this->tester->execute([]);
         $this->tester->assertCommandIsSuccessful();
         self::assertSame($expected, $this->history());
         self::assertMatchesRegularExpression('/Pairs updated\s+0/', $this->tester->getDisplay());
     }
 
-    public function testBikeFilterAndBoundaryLeaveOtherHistoryUnchanged(): void
+    public function testBikeFilterLeavesOtherHistoryUnchanged(): void
     {
         $before = $this->history();
-        $this->tester->execute(['--to-id' => 110, '--bike' => self::REVERSED_PAIR_BIKE, '--apply' => true]);
-        $this->tester->assertCommandIsSuccessful();
-        self::assertSame($before, $this->history());
-
-        $this->tester->execute(['--to-id' => 111, '--bike' => self::REVERSED_PAIR_BIKE, '--apply' => true]);
+        $this->tester->execute(['--bike' => self::REVERSED_PAIR_BIKE]);
         $this->tester->assertCommandIsSuccessful();
         $expected = $before;
         foreach ($expected as &$row) {
@@ -97,10 +92,10 @@ class BackfillRentalPairsCommandTest extends BikeSharingKernelTestCase
         self::assertSame($expected, $this->history());
     }
 
-    public function testReferencesBeyondBoundaryAndFromAnotherBikePreventBackfill(): void
+    public function testReferencesFromAnotherBikePreventMigration(): void
     {
         $before = $this->history();
-        $this->tester->execute(['--to-id' => 281, '--bike' => self::CONFLICTING_LINK_BIKE, '--apply' => true]);
+        $this->tester->execute(['--bike' => self::CONFLICTING_LINK_BIKE]);
         $this->tester->assertCommandIsSuccessful();
         self::assertSame($before, $this->history());
         self::assertStringContainsString('other_references', $this->tester->getDisplay());
@@ -110,17 +105,16 @@ class BackfillRentalPairsCommandTest extends BikeSharingKernelTestCase
     public function testInvalidOptionsDoNotWrite(array $options): void
     {
         $before = $this->history();
-        self::assertSame(Command::INVALID, $this->tester->execute($options + ['--apply' => true]));
+        self::assertSame(Command::INVALID, $this->tester->execute($options));
         self::assertSame($before, $this->history());
     }
 
     public static function invalidOptions(): iterable
     {
-        yield 'missing boundary' => [[]];
-        yield 'zero boundary' => [['--to-id' => 0]];
-        yield 'negative boundary' => [['--to-id' => -1]];
-        yield 'non-integer boundary' => [['--to-id' => '1.5']];
-        yield 'invalid bike' => [['--to-id' => self::LAST_HISTORY_ID, '--bike' => 'no']];
+        yield 'zero bike' => [['--bike' => 0]];
+        yield 'negative bike' => [['--bike' => -1]];
+        yield 'non-integer bike' => [['--bike' => '1.5']];
+        yield 'invalid bike' => [['--bike' => 'no']];
     }
 
     private function history(): array

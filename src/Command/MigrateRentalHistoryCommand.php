@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Command;
 
 use BikeShare\Enum\Action;
-use BikeShare\Repository\RentalHistoryBackfillRepository;
+use BikeShare\Db\DbInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,10 +13,10 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'app:backfill_rental_pairs', description: 'Fill and normalize unambiguous historical rental pairs')]
-class BackfillRentalPairsCommand extends Command
+#[AsCommand(name: 'app:migrate_rental_history', description: 'Fill and normalize unambiguous historical rental pairs')]
+class MigrateRentalHistoryCommand extends Command
 {
-    public function __construct(private readonly RentalHistoryBackfillRepository $repository)
+    public function __construct(private readonly DbInterface $db)
     {
         parent::__construct();
     }
@@ -24,31 +24,29 @@ class BackfillRentalPairsCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('to-id', null, InputOption::VALUE_REQUIRED, 'Required inclusive historical history.id boundary')
             ->addOption('bike', null, InputOption::VALUE_REQUIRED, 'Process only this bike number')
-            ->addOption('apply', null, InputOption::VALUE_NONE, 'Write changes; otherwise only preview them')
-            ->setHelp('Use the same --to-id for preview and --apply. Add -v for event IDs and skip reasons.');
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview changes without modifying database')
+            ->setHelp('Scans the full history. Add -v for event IDs and skip reasons.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $toId = filter_var($input->getOption('to-id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         $bike = $input->getOption('bike');
         $bikeNumber = $bike === null ? null : filter_var($bike, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($toId === false || $bikeNumber === false) {
-            $io->error('--to-id is required; --to-id and --bike must be positive integers.');
+        if ($bikeNumber === false) {
+            $io->error('--bike must be a positive integer.');
 
             return Command::INVALID;
         }
 
-        $apply = (bool)$input->getOption('apply');
-        $io->writeln(sprintf('%s history through ID %d.', $apply ? 'Applying' : 'Previewing', $toId));
+        $apply = !(bool)$input->getOption('dry-run');
+        $io->writeln($apply ? 'Migrating rental history.' : 'Previewing rental history; no changes will be written.');
         $previous = [];
         $changed = 0;
         $unchanged = 0;
         $skipped = [];
-        foreach ($this->repository->iterateEvents($toId, $bikeNumber) as $event) {
+        foreach ($this->iterateEvents($bikeNumber) as $event) {
             $bikeId = (int)$event['bikeNum'];
             $action = Action::tryFrom($event['action']);
             if (
@@ -91,10 +89,10 @@ class BackfillRentalPairsCommand extends Command
             if ($apply) {
                 // Persist the closing link first; an interrupted normalization can be resumed safely.
                 if ($event['pairActionId'] === null) {
-                    $this->repository->updatePair($event, (int)$start['id']);
+                    $this->updatePair($event, (int)$start['id']);
                 }
                 if ($start['pairActionId'] !== null) {
-                    $this->repository->updatePair($start, null);
+                    $this->updatePair($start, null);
                 }
             }
             ++$changed;
@@ -102,7 +100,7 @@ class BackfillRentalPairsCommand extends Command
 
         foreach ($previous as $event) {
             if (in_array($event['action'] ?? null, [Action::RENT->value, Action::FORCE_RENT->value], true)) {
-                $this->skip($event, 'no_return_in_range', $skipped, $output);
+                $this->skip($event, 'no_return', $skipped, $output);
             }
         }
 
@@ -138,7 +136,7 @@ class BackfillRentalPairsCommand extends Command
         ) {
             return 'conflicting_pair';
         }
-        if ($this->repository->hasOtherReferences((int)$start['id'], (int)$return['id'])) {
+        if ($this->hasOtherReferences((int)$start['id'], (int)$return['id'])) {
             return 'other_references';
         }
 
@@ -152,5 +150,65 @@ class BackfillRentalPairsCommand extends Command
             sprintf('Skip history %d (bike %d): %s', $event['id'], $event['bikeNum'], $reason),
             OutputInterface::VERBOSITY_VERBOSE,
         );
+    }
+
+    private function iterateEvents(?int $bikeNumber): iterable
+    {
+        $afterId = 0;
+        do {
+            $params = ['afterId' => $afterId];
+            $bikeFilter = '';
+            if ($bikeNumber !== null) {
+                $bikeFilter = ' AND bikeNum = :bikeNum';
+                $params['bikeNum'] = $bikeNumber;
+            }
+            $rows = $this->db->query(
+                'SELECT id, bikeNum, userId, action, time, pairActionId FROM history
+                 WHERE id > :afterId' . $bikeFilter . ' ORDER BY id LIMIT 1000',
+                $params,
+            )->fetchAllAssoc();
+            foreach ($rows as $row) {
+                $afterId = (int)$row['id'];
+                yield $row;
+            }
+        } while (count($rows) === 1000);
+    }
+
+    private function hasOtherReferences(int $startId, int $returnId): bool
+    {
+        // Include references from other bikes, even when the scan is filtered.
+        return $this->db->query(
+            'SELECT id FROM history WHERE pairActionId IN (:startId, :returnId)
+             AND id NOT IN (:excludeStartId, :excludeReturnId) LIMIT 1',
+            [
+                'startId' => $startId,
+                'returnId' => $returnId,
+                'excludeStartId' => $startId,
+                'excludeReturnId' => $returnId,
+            ],
+        )->fetchAssoc() !== null;
+    }
+
+    private function updatePair(array $event, ?int $pairActionId): void
+    {
+        $affected = $this->db->query(
+            'UPDATE history SET pairActionId = :newPair
+             WHERE id = :id AND bikeNum = :bikeNum AND userId = :userId AND action = :action
+               AND time = :time AND pairActionId <=> :oldPair',
+            [
+                'newPair' => $pairActionId,
+                'id' => $event['id'],
+                'bikeNum' => $event['bikeNum'],
+                'userId' => $event['userId'],
+                'action' => $event['action'],
+                'time' => $event['time'],
+                'oldPair' => $event['pairActionId'],
+            ],
+        )->rowCount();
+        if ($affected !== 1) {
+            throw new \RuntimeException(
+                sprintf('History %d changed during migration; rerun the preview.', $event['id']),
+            );
+        }
     }
 }

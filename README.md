@@ -94,20 +94,3 @@ API_JWT_KEYS={"v1":"old-secret","v2":"new-secret"}
 API_JWT_ACTIVE_KID=v2
 API_JWT_KEYS={"v2":"new-secret"}
 ```
-
-### Backfill historical rental pairs
-
-Preview pairs up to the last historical `history.id`, then apply with the same boundary:
-
-```bash
-docker compose exec web php bin/console app:backfill_rental_pairs --to-id=123456 -v
-docker compose exec web php bin/console app:backfill_rental_pairs --to-id=123456 --apply
-```
-
-Replace `123456` with your historical boundary. Optionally add `--bike=6` to limit the scan.
-The command fills return-to-rent links and clears unambiguous reverse links on starts.
-It processes events by ID, skips conflicting links and legacy REVERT sequences, and reports
-skip reasons (`-v` includes event IDs). Existing correct pairs and rows above the boundary
-are preserved. Only `pairActionId` changes; bike state, billing and notifications are unaffected.
-There is no transaction across the run. Interrupted runs can be repeated with the same boundary;
-conflicting changes detected during a write stop the command so the preview can be checked again.
