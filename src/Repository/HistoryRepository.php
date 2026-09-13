@@ -20,19 +20,52 @@ class HistoryRepository
         int $userId,
         int $bikeNum,
         Action $action,
-        string $parameter
+        string $parameter,
+        ?int $pairActionId = null,
     ): void {
         $this->db->query(
-            'INSERT INTO history (userId, bikeNum, action, parameter, time)
-             VALUES (:userId, :bikeNum, :action, :parameter, :time)',
+            'INSERT INTO history (userId, bikeNum, action, parameter, time, pairActionId)
+             VALUES (:userId, :bikeNum, :action, :parameter, :time, :pairActionId)',
             [
                 'userId' => $userId,
                 'bikeNum' => $bikeNum,
                 'action' => $action->value,
                 'parameter' => $parameter,
+                'pairActionId' => $pairActionId,
                 'time' => $this->clock->now()->format('Y-m-d H:i:s'),
             ]
         );
+    }
+
+    /**
+     * Only pair the latest lifecycle event when it is a start for the current holder.
+     * Do not fall back to older unmatched rents. This read is not serialized with subsequent writes.
+     */
+    public function findCurrentRentId(int $bikeNum, int $userId): ?int
+    {
+        $event = $this->db->query(
+            "SELECT id, userId, action, pairActionId FROM history
+             WHERE bikeNum = :bikeNum
+               AND action IN (:rentAction, :forceRentAction, :returnAction, :forceReturnAction, :revertAction)
+             ORDER BY id DESC LIMIT 1",
+            [
+                'bikeNum' => $bikeNum,
+                'rentAction' => Action::RENT->value,
+                'forceRentAction' => Action::FORCE_RENT->value,
+                'returnAction' => Action::RETURN->value,
+                'forceReturnAction' => Action::FORCE_RETURN->value,
+                'revertAction' => Action::REVERT->value,
+            ],
+        )->fetchAssoc();
+        if (
+            $event === null || (int)$event['userId'] !== $userId
+            || !in_array($event['action'], [Action::RENT->value, Action::FORCE_RENT->value], true)
+            || $event['pairActionId'] !== null
+        ) {
+            return null;
+        }
+
+        return (int)$event['id'];
     }
 
     public function dailyStats(): array

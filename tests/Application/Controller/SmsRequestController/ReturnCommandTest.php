@@ -56,6 +56,10 @@ class ReturnCommandTest extends BikeSharingWebTestCase
 
     public function testReturnCommand(): void
     {
+        $rentId = $this->client->getContainer()->get(DbInterface::class)->query(
+            'SELECT id FROM history WHERE bikeNum = :bikeNum ORDER BY id DESC LIMIT 1',
+            ['bikeNum' => self::BIKE_NUMBER],
+        )->fetchAssoc()['id'];
         $user = $this->client->getContainer()->get(UserRepository::class)
             ->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
 
@@ -110,6 +114,7 @@ class ReturnCommandTest extends BikeSharingWebTestCase
         )->fetchAssoc();
 
         $this->assertSame('RETURN', $history['action'], 'Invalid history action');
+        $this->assertSame($rentId, $history['pairActionId']);
         $this->assertEquals($stand['standId'], $history['parameter'], 'Missed standId');
 
         $notCalledListeners = $this->client->getContainer()->get('event_dispatcher')->getNotCalledListeners();

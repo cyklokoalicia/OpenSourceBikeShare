@@ -180,6 +180,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
             }
         }
 
+        $pairActionId = !empty($bike['userId'])
+            ? $this->historyRepository->findCurrentRentId($bikeId, (int)$bike['userId'])
+            : null;
+
         $currentCode = $bike['currentCode'];
 
         $this->bikeRepository->returnToStand($bikeId, $standId, $force ? null : $userId);
@@ -201,6 +205,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
             $bikeId,
             $force ? Action::FORCE_RETURN : Action::RETURN,
             (string)$standId,
+            $pairActionId,
         );
 
         $this->eventDispatcher->dispatch(
