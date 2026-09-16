@@ -285,11 +285,6 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
             [101, 9100, Action::RETURN, 100, 4],
             [102, 9200, Action::RETURN, 100, 4],
         ]];
-        yield 'repeated force return is outside this cleanup' => [[
-            [100, 9100, Action::RENT, null, 4],
-            [101, 9100, Action::RETURN, 100, 4],
-            [102, 9100, Action::FORCE_RETURN, 100, 5],
-        ]];
         yield 'placeholder bike' => [[
             [100, 0, Action::RENT, null, 4],
             [101, 0, Action::RETURN, 100, 4],
@@ -314,6 +309,170 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
         self::assertSame($before, $this->history());
         self::assertStringContainsString('initial_return: 1', $this->tester->getDisplay());
         self::assertStringContainsString('return_after_return: 1', $this->tester->getDisplay());
+    }
+
+    public function testForcedReturnLinksAreClearedAcrossUnlinkedParkedReturns(): void
+    {
+        $this->insertHistory([
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [102, 9100, Action::FORCE_RETURN, 100, 5],
+            [103, 9100, Action::FORCE_RETURN, null, 5],
+            [104, 9100, Action::FORCE_RETURN, 100, 5],
+            [105, 9100, Action::RETURN, 100, 4],
+            [106, 9100, Action::RENT, null, 4],
+            [107, 9100, Action::FORCE_RETURN, 106, 5],
+        ]);
+        $before = $this->history();
+        $this->tester->execute(['--dry-run' => true]);
+        self::assertSame($before, $this->history());
+        self::assertMatchesRegularExpression('/Repeated return links to clear\s+3/', $this->tester->getDisplay());
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        $expected = $before;
+        foreach ($expected as &$row) {
+            if (in_array($row['id'], [102, 104, 105], true)) {
+                $row['pairActionId'] = null;
+            }
+        }
+        unset($row);
+        self::assertSame($expected, $this->history());
+        self::assertStringContainsString('force_return_after_return: 3', $this->tester->getDisplay());
+        $this->tester->execute([]);
+        self::assertSame($expected, $this->history());
+        self::assertMatchesRegularExpression('/Repeated return links cleared\s+0/', $this->tester->getDisplay());
+    }
+
+    public function testOwnClosingPairAllowsClearingLinksWithoutAPreviousRental(): void
+    {
+        $this->insertHistory([
+            [90, self::REVERSED_PAIR_BIKE, Action::RETURN, null, 4],
+            [100, self::REVERSED_PAIR_BIKE, Action::RENT, 90, 4],
+            [101, self::REVERSED_PAIR_BIKE, Action::RETURN, 100, 4],
+            [102, self::REVERSED_PAIR_BIKE, Action::RENT, 101, 4],
+            [103, self::REVERSED_PAIR_BIKE, Action::FORCE_RENT, 101, 5],
+            [104, self::REVERSED_PAIR_BIKE, Action::FORCE_RETURN, 103, 4],
+            [200, 9200, Action::RETURN, null, 4],
+            [201, 9200, Action::RENT, 200, 4],
+            [202, 9200, Action::RETURN, 201, 4],
+        ]);
+        $before = $this->history();
+        $this->tester->execute(['--bike' => self::REVERSED_PAIR_BIKE, '--dry-run' => true]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($before, $this->history());
+        self::assertMatchesRegularExpression('/Chain links to clear\s+3/', $this->tester->getDisplay());
+        self::assertMatchesRegularExpression('/Already linked\s+2/', $this->tester->getDisplay());
+        $this->tester->execute(['--bike' => self::REVERSED_PAIR_BIKE]);
+        $this->tester->assertCommandIsSuccessful();
+        $expected = $before;
+        foreach ($expected as &$row) {
+            if (in_array($row['id'], [100, 102, 103], true)) {
+                $row['pairActionId'] = null;
+            }
+        }
+        unset($row);
+        self::assertSame($expected, $this->history());
+        $this->tester->execute(['--bike' => self::REVERSED_PAIR_BIKE]);
+        self::assertSame($expected, $this->history());
+        self::assertMatchesRegularExpression('/Chain links cleared\s+0/', $this->tester->getDisplay());
+    }
+
+    #[DataProvider('ambiguousOwnPairs')]
+    public function testOwnPairCleanupPreservesUncertainLinks(array $rows): void
+    {
+        $this->insertHistory($rows);
+        $before = $this->history();
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($before, $this->history());
+    }
+
+    public static function ambiguousOwnPairs(): iterable
+    {
+        yield 'another closing reference from another bike' => [[
+            [90, 9100, Action::RETURN, null, 4],
+            [100, 9100, Action::RENT, 90, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [102, 9200, Action::RETURN, 100, 4],
+        ]];
+        yield 'missing own closing link' => [[
+            [90, 9100, Action::RETURN, null, 4],
+            [100, 9100, Action::RENT, 90, 4],
+            [101, 9100, Action::RETURN, null, 4],
+        ]];
+        yield 'return holder differs' => [[
+            [90, 9100, Action::RETURN, null, 4],
+            [100, 9100, Action::RENT, 90, 4],
+            [101, 9100, Action::RETURN, 100, 5],
+        ]];
+        yield 'old target is not a return' => [[
+            [90, 9100, Action::CHANGE_CODE, null, 4],
+            [100, 9100, Action::RENT, 90, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+        ]];
+        yield 'old target belongs to another bike' => [[
+            [90, 9200, Action::RETURN, null, 4],
+            [100, 9100, Action::RENT, 90, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+        ]];
+        yield 'old return time is later than start' => [[
+            [90, 9100, Action::RETURN, null, 4, '2000-01-02 12:00:00'],
+            [100, 9100, Action::RENT, 90, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+        ]];
+        yield 'later target ID with equal time is ambiguous' => [[
+            [100, 9100, Action::RENT, 130, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [130, 9100, Action::RETURN, null, 4],
+        ]];
+        yield 'revert synthetic start' => [[
+            [90, 9100, Action::RETURN, null, 4],
+            [99, 9100, Action::REVERT, null, 5],
+            [100, 9100, Action::RENT, 90, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+        ]];
+    }
+
+    public function testOwnPairCleanupAcceptsALargerOldReturnIdOnlyWithEarlierTime(): void
+    {
+        $this->insertHistory([
+            [100, 9100, Action::RENT, 130, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [130, 9100, Action::RETURN, null, 4, '1999-12-31 12:00:00'],
+        ]);
+        $before = $this->history();
+        $this->tester->execute(['--dry-run' => true]);
+        self::assertSame($before, $this->history());
+        self::assertMatchesRegularExpression('/Chain links to clear\s+1/', $this->tester->getDisplay());
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        $expected = $before;
+        $expected[0]['pairActionId'] = null;
+        self::assertSame($expected, $this->history());
+        $this->tester->execute([]);
+        self::assertSame($expected, $this->history());
+        self::assertMatchesRegularExpression('/Chain links cleared\s+0/', $this->tester->getDisplay());
+    }
+
+    public function testTechnicalAndInitialForcedReturnsHaveDistinctReasons(): void
+    {
+        $this->insertHistory([
+            [90, 9100, Action::FORCE_RETURN, null, 5],
+            [100, 9200, Action::REVERT, null, 4],
+            [101, 9200, Action::RENT, null, 0],
+            [102, 9200, Action::RETURN, null, 0],
+            [110, 9300, Action::REVERT, null, 4],
+            [111, 9300, Action::RETURN, null, 0],
+            [120, 9400, Action::REVERT, null, 4],
+            [121, 9400, Action::RENT, null, 0],
+        ]);
+        $before = $this->history();
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($before, $this->history());
+        self::assertStringContainsString('initial_force_return: 1', $this->tester->getDisplay());
+        self::assertStringContainsString('return_after_revert: 2', $this->tester->getDisplay());
+        self::assertStringNotContainsString('no_return:', $this->tester->getDisplay());
     }
 
     public function testBikeFilterLeavesOtherHistoryUnchanged(): void
