@@ -90,6 +90,8 @@ Optionally use `--bike=6` to migrate one bike; `-v` includes event IDs and skip 
 Repeated return links are cleared only when an existing adjacent pair proves the rental
 was already closed. Backward links from starts are cleared when the previous pair or
 the start's own unique closing pair confirms the relationship. The summary counts both separately.
+Returns pointing to a previous, already closed rental are reassigned only when the adjacent
+start, holder, timestamps and references confirm the new pair. Reassignments are counted separately.
 Initial returns, parked returns, REVERT sequences and empty service actions have distinct report categories.
 Uncertain links remain unchanged. Only `pairActionId` changes; missing events are not synthesized.
 The command can be rerun after interruption; it does not change bike state, charges or notifications.

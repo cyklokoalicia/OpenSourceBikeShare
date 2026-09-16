@@ -297,6 +297,155 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
         ]];
     }
 
+    public function testMislinkedReturnsAreReassignedBeforeClearingObsoleteLinks(): void
+    {
+        $this->insertHistory([
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [102, 9100, Action::RENT, 101, 4],
+            [103, 9100, Action::RETURN, 100, 4],
+            [110, self::REVERSED_PAIR_BIKE, Action::FORCE_RENT, null, 4],
+            [111, self::REVERSED_PAIR_BIKE, Action::FORCE_RETURN, 110, 6],
+            [112, self::REVERSED_PAIR_BIKE, Action::RENT, 111, 5],
+            [113, self::REVERSED_PAIR_BIKE, Action::RETURN, 110, 5],
+            [114, self::REVERSED_PAIR_BIKE, Action::RETURN, null, 6],
+            [115, self::REVERSED_PAIR_BIKE, Action::FORCE_RETURN, 112, 6],
+            [150, 9100, Action::RENT, 101, 4],
+            [151, 9100, Action::RETURN, 150, 4],
+        ]);
+        $before = $this->history();
+        $this->tester->execute(
+            ['--bike' => self::REVERSED_PAIR_BIKE, '--dry-run' => true],
+            ['verbosity' => OutputInterface::VERBOSITY_VERBOSE],
+        );
+        self::assertMatchesRegularExpression('/Return links to reassign\s+1/', $this->tester->getDisplay());
+        self::assertStringNotContainsString('Reassign return 103', $this->tester->getDisplay());
+        self::assertSame($before, $this->history());
+
+        $this->tester->execute(['--dry-run' => true], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($before, $this->history());
+        $preview = $this->tester->getDisplay();
+        self::assertMatchesRegularExpression('/Return links to reassign\s+2/', $preview);
+        self::assertMatchesRegularExpression('/Repeated return links to clear\s+1/', $preview);
+        self::assertMatchesRegularExpression('/Chain links to clear\s+3/', $preview);
+        self::assertMatchesRegularExpression('/Already linked\s+5/', $preview);
+
+        $this->tester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+        $this->tester->assertCommandIsSuccessful();
+        $changes = [102 => null, 103 => 102, 112 => null, 113 => 112, 115 => null, 150 => null];
+        $expected = $before;
+        foreach ($expected as &$row) {
+            if (array_key_exists($row['id'], $changes)) {
+                $row['pairActionId'] = $changes[$row['id']];
+            }
+        }
+        unset($row);
+        self::assertSame($expected, $this->history());
+        $expectedOutput = strtr($preview, [
+            'Previewing rental history; no changes will be written.' => 'Migrating rental history.',
+            'Return links to reassign' => 'Return links reassigned',
+            'Repeated return links to clear' => 'Repeated return links cleared',
+            'Chain links to clear' => 'Chain links cleared',
+            'Pairs to update' => 'Pairs updated',
+        ]);
+        self::assertSame(
+            preg_replace('/\s+/', ' ', $expectedOutput),
+            preg_replace('/\s+/', ' ', $this->tester->getDisplay()),
+        );
+
+        $this->tester->execute([]);
+        self::assertSame($expected, $this->history());
+        self::assertMatchesRegularExpression('/Return links reassigned\s+0/', $this->tester->getDisplay());
+        self::assertMatchesRegularExpression('/Repeated return links cleared\s+0/', $this->tester->getDisplay());
+        self::assertMatchesRegularExpression('/Chain links cleared\s+0/', $this->tester->getDisplay());
+    }
+
+    public function testReassignmentWithBikeFilterDoesNotChangeAnotherBike(): void
+    {
+        foreach ([9100, self::REVERSED_PAIR_BIKE] as $bike) {
+            $this->insertHistory([
+                [$bike, $bike, Action::RENT, null, 4],
+                [$bike + 1, $bike, Action::RETURN, $bike, 4],
+                [$bike + 2, $bike, Action::RENT, $bike + 1, 5],
+                [$bike + 3, $bike, Action::RETURN, $bike, 5],
+            ]);
+        }
+        $expected = $this->history();
+        $expected[6]['pairActionId'] = null;
+        $expected[7]['pairActionId'] = self::REVERSED_PAIR_BIKE + 2;
+        $this->tester->execute(['--bike' => self::REVERSED_PAIR_BIKE]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($expected, $this->history());
+    }
+
+    #[DataProvider('uncertainMislinkedReturns')]
+    public function testMislinkedReturnRequiresAnUnambiguousNewPair(array $changes, array $extra): void
+    {
+        $rows = [
+            [100, 9100, Action::RENT, null, 4],
+            [110, 9100, Action::RETURN, 100, 4],
+            [120, 9100, Action::RENT, 110, 5],
+            [130, 9100, Action::RETURN, 100, 5],
+        ];
+        foreach ($changes as $index => $fields) {
+            $rows[$index] = array_replace($rows[$index], $fields);
+        }
+        $this->insertHistory([...$rows, ...$extra]);
+        $this->tester->execute(['--bike' => 9100, '--dry-run' => true]);
+        self::assertMatchesRegularExpression('/Return links to reassign\s+0/', $this->tester->getDisplay());
+        $this->tester->execute(['--bike' => 9100]);
+        $this->tester->assertCommandIsSuccessful();
+        $return = $this->db->query('SELECT pairActionId FROM history WHERE id = 130')->fetchAssoc();
+        self::assertSame(100, $return['pairActionId']);
+    }
+
+    public static function uncertainMislinkedReturns(): iterable
+    {
+        yield 'no backward link proving chain' => [[2 => [3 => null]], []];
+        yield 'new holder differs' => [[3 => [4 => 6]], []];
+        yield 'old holder differs' => [[1 => [4 => 6]], []];
+        yield 'unknown new holder' => [[2 => [4 => 0], 3 => [4 => 0]], []];
+        yield 'new return is forced' => [[3 => [2 => Action::FORCE_RETURN]], []];
+        yield 'old pair missing' => [[1 => [3 => null]], []];
+        yield 'backwards new return time' => [[3 => [5 => '1999-12-31 12:00:00']], []];
+        yield 'backwards new start time' => [[2 => [5 => '1999-12-31 12:00:00']], []];
+        yield 'old pair after revert' => [[], [[99, 9100, Action::REVERT, null, 4]]];
+        yield 'intervening revert' => [[], [[125, 9100, Action::REVERT, null, 5]]];
+        yield 'extra old start reference' => [[], [[140, 9200, Action::RETURN, 100, 4]]];
+        yield 'extra old return reference' => [[], [[140, 9200, Action::RENT, 110, 4]]];
+        yield 'extra new return reference' => [[], [[140, 9200, Action::RENT, 130, 4]]];
+        yield 'new start reference from another bike' => [[], [[140, 9200, Action::FORCE_RETURN, 120, 4]]];
+        yield 'new start reference from service action' => [[], [[140, 9100, Action::CHANGE_CODE, 120, 4]]];
+        yield 'new start has an earlier reference' => [[], [[115, 9100, Action::RETURN, 120, 5]]];
+        yield 'later return after another start' => [[], [
+            [140, 9100, Action::RENT, null, 4],
+            [150, 9100, Action::FORCE_RETURN, 120, 4],
+        ]];
+        yield 'later return after revert' => [[], [
+            [140, 9100, Action::REVERT, null, 4],
+            [150, 9100, Action::FORCE_RETURN, 120, 4],
+        ]];
+        yield 'later return time goes backwards' => [[], [
+            [140, 9100, Action::FORCE_RETURN, 120, 4, '1999-12-31 12:00:00'],
+        ]];
+    }
+
+    public function testInterruptedReassignmentFinishesCleanupOnRerun(): void
+    {
+        $this->insertHistory([
+            [100, 9100, Action::RENT, null, 4],
+            [101, 9100, Action::RETURN, 100, 4],
+            [102, 9100, Action::RENT, 101, 5],
+            [103, 9100, Action::RETURN, 102, 5],
+            [104, 9100, Action::FORCE_RETURN, 102, 6],
+        ]);
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame([null, 100, null, 102, null], array_column($this->history(), 'pairActionId'));
+        self::assertMatchesRegularExpression('/Return links reassigned\s+0/', $this->tester->getDisplay());
+    }
+
     public function testInitialAndUnlinkedRepeatedReturnsAreReportedWithoutInventingStarts(): void
     {
         $this->insertHistory([
