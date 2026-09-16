@@ -17,6 +17,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class MigrateRentalHistoryCommand extends Command
 {
     private array $chainStarts = [];
+    private array $repeatedReturns = [];
 
     public function __construct(private readonly DbInterface $db)
     {
@@ -45,6 +46,17 @@ class MigrateRentalHistoryCommand extends Command
         $apply = !(bool)$input->getOption('dry-run');
         $io->writeln($apply ? 'Migrating rental history.' : 'Previewing rental history; no changes will be written.');
         $this->chainStarts = [];
+        $this->repeatedReturns = [];
+        $this->repeatedReturns = $this->findRepeatedReturnLinks($bikeNumber);
+        foreach ($this->repeatedReturns as $return) {
+            $output->writeln(
+                sprintf('Clear repeated return %d -> rent %d', $return['id'], $return['pairActionId']),
+                OutputInterface::VERBOSITY_VERBOSE,
+            );
+            if ($apply) {
+                $this->updatePair($return, null);
+            }
+        }
         $this->chainStarts = $this->findChainStarts($bikeNumber);
         foreach ($this->chainStarts as $start) {
             $output->writeln(
@@ -73,6 +85,7 @@ class MigrateRentalHistoryCommand extends Command
             ) {
                 continue;
             }
+            $isFirstEvent = !array_key_exists($bikeId, $previous);
             $start = $previous[$bikeId] ?? null;
             $previous[$bikeId] = $event;
             if ($action === Action::REVERT || $action === null) {
@@ -99,6 +112,15 @@ class MigrateRentalHistoryCommand extends Command
                 continue;
             }
             $reason = $this->invalidPairReason($start, $event);
+            if ($reason === 'no_adjacent_start' && $action === Action::RETURN && $bikeId > 0) {
+                if ($isFirstEvent) {
+                    $reason = 'initial_return';
+                } elseif (
+                    in_array($start['action'] ?? null, [Action::RETURN->value, Action::FORCE_RETURN->value], true)
+                ) {
+                    $reason = 'return_after_return';
+                }
+            }
             if ($reason !== null) {
                 $this->skip($event, $reason, $skipped, $output);
                 continue;
@@ -130,6 +152,10 @@ class MigrateRentalHistoryCommand extends Command
         }
 
         $io->table(['Result', 'Count'], [
+            [
+                $apply ? 'Repeated return links cleared' : 'Repeated return links to clear',
+                count($this->repeatedReturns),
+            ],
             [$apply ? 'Chain links cleared' : 'Chain links to clear', count($this->chainStarts)],
             [$apply ? 'Pairs updated' : 'Pairs to update', $changed],
             ['Already linked', $unchanged],
@@ -141,6 +167,63 @@ class MigrateRentalHistoryCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    private function findRepeatedReturnLinks(?int $bikeNumber): array
+    {
+        $previousActions = [];
+        $starts = [];
+        $closed = [];
+        $repeated = [];
+        foreach ($this->iterateEvents($bikeNumber) as $event) {
+            $action = Action::tryFrom($event['action']);
+            if (
+                $action !== null && !in_array($action, [
+                    Action::RENT, Action::FORCE_RENT, Action::RETURN, Action::FORCE_RETURN, Action::REVERT,
+                ], true)
+            ) {
+                continue;
+            }
+            $bikeId = (int)$event['bikeNum'];
+            $afterRevert = ($previousActions[$bikeId] ?? null) === Action::REVERT;
+            $previousActions[$bikeId] = $action;
+            if (in_array($action, [Action::RENT, Action::FORCE_RENT], true)) {
+                unset($closed[$bikeId]);
+                $starts[$bikeId] = !$afterRevert && $bikeId > 0 && (int)$event['userId'] > 0 ? $event : null;
+                continue;
+            }
+            if (!in_array($action, [Action::RETURN, Action::FORCE_RETURN], true)) {
+                unset($starts[$bikeId], $closed[$bikeId]);
+                continue;
+            }
+            $start = $starts[$bikeId] ?? null;
+            unset($starts[$bikeId]);
+            if ($start !== null) {
+                // Only an existing adjacent closing link can prove a subsequent RETURN is redundant.
+                if (
+                    $event['pairActionId'] !== null && (int)$event['pairActionId'] === (int)$start['id']
+                    && $start['time'] <= $event['time']
+                    && ($action === Action::FORCE_RETURN || (int)$start['userId'] === (int)$event['userId'])
+                ) {
+                    $closed[$bikeId] = $event;
+                }
+                continue;
+            }
+            $closing = $closed[$bikeId] ?? null;
+            if (
+                $action === Action::RETURN && $closing !== null
+                && $event['pairActionId'] !== null
+                && (int)$event['pairActionId'] === (int)$closing['pairActionId']
+                && $closing['time'] <= $event['time']
+            ) {
+                $repeated[(int)$event['id']] = $event;
+                $closed[$bikeId] = $event;
+            } else {
+                unset($closed[$bikeId]);
+            }
+        }
+
+        return $repeated;
     }
 
     private function findChainStarts(?int $bikeNumber): array
@@ -235,6 +318,9 @@ class MigrateRentalHistoryCommand extends Command
             )->fetchAllAssoc();
             foreach ($rows as $row) {
                 $afterId = (int)$row['id'];
+                if (isset($this->repeatedReturns[$row['id']])) {
+                    $row['pairActionId'] = null;
+                }
                 yield $row;
             }
         } while (count($rows) === 1000);
@@ -256,7 +342,7 @@ class MigrateRentalHistoryCommand extends Command
         )->fetchAllAssoc();
         foreach ($references as $reference) {
             // Preview must ignore exactly the chain links that applying would remove.
-            if (!isset($this->chainStarts[$reference['id']])) {
+            if (!isset($this->chainStarts[$reference['id']]) && !isset($this->repeatedReturns[$reference['id']])) {
                 return true;
             }
         }

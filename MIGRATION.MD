@@ -92,5 +92,9 @@ Verified links from a rent to the immediately previous return are cleared first,
 the previous return-to-rent pair. The summary lists these chain links separately.
 Empty actions with both `bikeNum=0` and `userId=0` are counted separately from skipped events.
 Other unknown actions and REVERT have separate skip reasons and still prevent pairing across them.
+Repeated ordinary RETURN links to an already closed rental are cleared when an existing
+adjacent closing pair proves the duplication. REVERT sequences and uncertain links are preserved.
+The summary reports these clears separately; `initial_return` and `return_after_return`
+distinguish ordinary returns without an adjacent start. Missing starts are not synthesized.
 Only `pairActionId` changes. The command can be rerun after interruption; it does not
 change bike state, replay charges or send notifications.
