@@ -13,6 +13,8 @@ use Symfony\Config\SecurityConfig;
 
 return function (SecurityConfig $security) {
 
+    $security->enableAuthenticatorManager(true);
+
     $security->roleHierarchy('ROLE_USER', ['ROLE_NEWBIE']);
     $security->roleHierarchy('ROLE_ADMIN', ['ROLE_USER']);
     $security->roleHierarchy('ROLE_SUPER_ADMIN', ['ROLE_ADMIN']);

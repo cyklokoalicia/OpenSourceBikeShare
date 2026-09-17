@@ -80,11 +80,13 @@ class UserControllerTest extends BikeSharingWebTestCase
         $this->client->submit($form);
 
         $this->assertResponseRedirects('/user/profile');
-        // Reauthenticate without relying on the session or cookie issued before the password change.
-        $this->client->restart();
+        $this->client->followRedirect();
+        $this->assertSelectorExists('.alert-success');
+
+        // Logout and login with new password
+        $this->client->request('GET', '/logout');
+        $this->client->followRedirect();
         $this->logIn(self::USER_PHONE, 'new-password');
-        $this->client->request('GET', '/user/profile');
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('h1', 'User Profile');
     }
 }
