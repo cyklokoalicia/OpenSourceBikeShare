@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\App\Security;
 
-use BikeShare\App\Entity\User;
 use BikeShare\Db\DbInterface;
 use Symfony\Component\Security\Core\Authentication\RememberMe\PersistentToken;
 use Symfony\Component\Security\Core\Authentication\RememberMe\PersistentTokenInterface;
@@ -33,6 +32,7 @@ class TokenProvider implements TokenProviderInterface
             $row = $result->fetchAssoc();
 
             $this->tokens[$series] = new PersistentToken(
+                $row['class'],
                 $row['username'],
                 $row['series'],
                 $row['value'],
@@ -51,6 +51,7 @@ class TokenProvider implements TokenProviderInterface
         $currentToken = $this->loadTokenBySeries($series);
 
         $token = new PersistentToken(
+            $currentToken->getClass(),
             $currentToken->getUserIdentifier(),
             $series,
             $tokenValue,
@@ -81,7 +82,7 @@ class TokenProvider implements TokenProviderInterface
             'INSERT INTO remember_me_token (class, username, series, value, lastUsed) 
              VALUES (:class, :username, :series, :value, :lastUsed)',
             [
-                'class' => User::class,
+                'class' => $token->getClass(),
                 'username' => $token->getUserIdentifier(),
                 'series' => $token->getSeries(),
                 'value' => $token->getTokenValue(),
