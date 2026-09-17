@@ -86,11 +86,12 @@ docker compose exec web php bin/console app:migrate_rental_history --dry-run -v
 docker compose exec web php bin/console app:migrate_rental_history
 ```
 
-Optionally use `--bike=6` to migrate one bike. Correct pairs remain unchanged; conflicting
-links and legacy REVERT sequences are skipped with reasons (`-v` includes event IDs).
-Verified links from a rent to the immediately previous return are cleared first, preserving
-the previous return-to-rent pair. The summary lists these chain links separately.
-Empty actions with both `bikeNum=0` and `userId=0` are counted separately from skipped events.
-Other unknown actions and REVERT have separate skip reasons and still prevent pairing across them.
-Only `pairActionId` changes. The command can be rerun after interruption; it does not
-change bike state, replay charges or send notifications.
+Optionally use `--bike=6` to migrate one bike; `-v` includes event IDs and skip reasons.
+Repeated return links are cleared only when an existing adjacent pair proves the rental
+was already closed. Backward links from starts are cleared when the previous pair or
+the start's own unique closing pair confirms the relationship. The summary counts both separately.
+Returns pointing to a previous, already closed rental are reassigned only when the adjacent
+start, holder, timestamps and references confirm the new pair. Reassignments are counted separately.
+Initial returns, parked returns, REVERT sequences and empty service actions have distinct report categories.
+Uncertain links remain unchanged. Only `pairActionId` changes; missing events are not synthesized.
+The command can be rerun after interruption; it does not change bike state, charges or notifications.
