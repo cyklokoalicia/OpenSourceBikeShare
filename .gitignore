@@ -9,3 +9,5 @@ config.php
 composer.lock
 var
 docker-compose.override.yml
+
+/config/reference.php
