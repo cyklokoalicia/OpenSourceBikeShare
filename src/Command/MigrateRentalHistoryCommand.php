@@ -16,6 +16,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'app:migrate_rental_history', description: 'Fill and normalize unambiguous historical rental pairs')]
 class MigrateRentalHistoryCommand extends Command
 {
+    // Separate forced actions were introduced in November 2014 (5d64acd).
+    private const LEGACY_RETURN_BEFORE = '2014-11-12 00:00:00';
+
+    private array $legacyForcedReturns = [];
     private array $chainStarts = [];
     private array $repeatedReturns = [];
     private array $reassignedReturns = [];
@@ -50,6 +54,7 @@ class MigrateRentalHistoryCommand extends Command
 
         $apply = !(bool)$input->getOption('dry-run');
         $io->writeln($apply ? 'Migrating rental history.' : 'Previewing rental history; no changes will be written.');
+        $this->legacyForcedReturns = [];
         $this->chainStarts = [];
         $this->repeatedReturns = [];
         $this->reassignedReturns = [];
@@ -66,6 +71,21 @@ class MigrateRentalHistoryCommand extends Command
         $this->chainStarts += $this->findStartsWithOwnPair($bikeNumber);
         $this->chainStarts += $this->findChainStarts($bikeNumber);
         $this->revertPairs = $this->findRevertPairs($reverts);
+        $this->legacyForcedReturns = $this->findLegacyForcedReturns($bikeNumber);
+        foreach ($this->legacyForcedReturns as $event) {
+            $output->writeln(
+                sprintf(
+                    'Normalize legacy return %d: %s -> %s',
+                    $event['id'],
+                    Action::RETURN->value,
+                    Action::FORCE_RETURN->value,
+                ),
+                OutputInterface::VERBOSITY_VERBOSE,
+            );
+            if ($apply) {
+                $this->updateLegacyReturnAction($event);
+            }
+        }
         $revertsChanged = 0;
         foreach ($this->revertPairs as $correction) {
             if ($correction['event']['pairActionId'] !== null) {
@@ -222,6 +242,10 @@ class MigrateRentalHistoryCommand extends Command
         }
 
         $io->table(['Result', 'Count'], [
+            [
+                $apply ? 'Legacy return actions normalized' : 'Legacy return actions to normalize',
+                count($this->legacyForcedReturns),
+            ],
             [$apply ? 'Cancellations linked' : 'Cancellations to link', $revertsChanged],
             ['Already linked cancellations', count($this->revertPairs) - $revertsChanged],
             ['Recognized technical revert events', count($this->technicalEvents)],
@@ -242,6 +266,67 @@ class MigrateRentalHistoryCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    private function findLegacyForcedReturns(?int $bikeNumber): array
+    {
+        $previous = [];
+        $returns = [];
+        foreach ($this->iterateEvents($bikeNumber) as $event) {
+            $action = Action::tryFrom($event['action']);
+            if (
+                $action !== null && !in_array($action, [
+                    Action::RENT, Action::FORCE_RENT, Action::RETURN, Action::FORCE_RETURN, Action::REVERT,
+                ], true)
+            ) {
+                continue;
+            }
+            $bikeId = (int)$event['bikeNum'];
+            $start = $previous[$bikeId] ?? null;
+            $event['afterRevert'] = ($start['action'] ?? null) === Action::REVERT->value;
+            $previous[$bikeId] = $event;
+            if (
+                $bikeId <= 0 || $action !== Action::RETURN || !str_starts_with($event['time'], '2014-')
+                || $event['time'] >= self::LEGACY_RETURN_BEFORE
+                || ($start['action'] ?? null) !== Action::RENT->value || $start['afterRevert']
+                || isset($this->technicalEvents[$start['id']]) || isset($this->technicalEvents[$event['id']])
+                || (int)$start['userId'] <= 0 || (int)$event['userId'] <= 0
+                || (int)$start['userId'] === (int)$event['userId'] || $start['time'] > $event['time']
+                || $start['pairActionId'] !== null || (int)$event['pairActionId'] !== (int)$start['id']
+            ) {
+                continue;
+            }
+            $ids = [(int)$start['id'], (int)$event['id']];
+            if (!$this->hasOtherReferences($ids, $ids)) {
+                $returns[(int)$event['id']] = $event;
+            }
+        }
+
+        return $returns;
+    }
+
+    private function updateLegacyReturnAction(array $event): void
+    {
+        $affected = $this->db->query(
+            'UPDATE history SET action = :newAction
+             WHERE id = :id AND bikeNum = :bikeNum AND userId = :userId AND action = :oldAction
+               AND time = :time AND parameter = :parameter AND pairActionId = :pairActionId',
+            [
+                'newAction' => Action::FORCE_RETURN->value,
+                'id' => $event['id'],
+                'bikeNum' => $event['bikeNum'],
+                'userId' => $event['userId'],
+                'oldAction' => Action::RETURN->value,
+                'time' => $event['time'],
+                'parameter' => $event['parameter'],
+                'pairActionId' => $event['pairActionId'],
+            ],
+        )->rowCount();
+        if ($affected !== 1) {
+            throw new \RuntimeException(
+                sprintf('History %d changed during migration; rerun the preview.', $event['id']),
+            );
+        }
     }
 
     private function findTechnicalRevertEvents(?int $bikeNumber): array
@@ -695,6 +780,9 @@ class MigrateRentalHistoryCommand extends Command
             )->fetchAllAssoc();
             foreach ($rows as $row) {
                 $afterId = (int)$row['id'];
+                if (isset($this->legacyForcedReturns[$row['id']])) {
+                    $row['action'] = Action::FORCE_RETURN->value;
+                }
                 if (isset($this->reassignedReturns[$row['id']])) {
                     $row['pairActionId'] = $this->reassignedReturns[$row['id']]['rentId'];
                 }

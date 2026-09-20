@@ -29,6 +29,13 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
         $this->db->query('DELETE FROM history');
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        unset($this->tester, $this->db);
+        gc_collect_cycles();
+    }
+
     public function testPreviewApplyAndRepeatChangeOnlyUnambiguousPairs(): void
     {
         $this->insertHistory([
@@ -344,6 +351,7 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
         self::assertSame($expected, $this->history());
         $expectedOutput = strtr($preview, [
             'Previewing rental history; no changes will be written.' => 'Migrating rental history.',
+            'Legacy return actions to normalize' => 'Legacy return actions normalized',
             'Cancellations to link' => 'Cancellations linked',
             'Technical links to clear' => 'Technical links cleared',
             'Return links to reassign' => 'Return links reassigned',
@@ -668,6 +676,100 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
         self::assertStringContainsString('unpaired_revert: 1', $this->tester->getDisplay());
         self::assertMatchesRegularExpression('/Cancellations linked\s+0/', $this->tester->getDisplay());
         self::assertMatchesRegularExpression('/Already linked\s+1/', $this->tester->getDisplay());
+    }
+
+    public function testLegacyReturnActionNormalizationPreservesEveryOtherField(): void
+    {
+        $time = '2014-10-01 12:00:00';
+        $this->insertHistory([
+            [100, 9100, Action::RENT, null, 4, $time],
+            [101, 9100, Action::CHANGE_CODE, null, 4, $time],
+            [102, 9100, Action::RETURN, 100, 5, $time],
+        ]);
+        $before = $this->history();
+        $this->tester->execute(['--dry-run' => true], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($before, $this->history());
+        self::assertMatchesRegularExpression('/Legacy return actions to normalize\s+1/', $this->tester->getDisplay());
+        self::assertMatchesRegularExpression('/Already linked\s+1/', $this->tester->getDisplay());
+        self::assertStringContainsString(
+            'Normalize legacy return 102: RETURN -> FORCERETURN',
+            $this->tester->getDisplay(),
+        );
+        self::assertStringNotContainsString('different_holder:', $this->tester->getDisplay());
+        $this->tester->execute([]);
+        $this->tester->assertCommandIsSuccessful();
+        $expected = $before;
+        $expected[2]['action'] = Action::FORCE_RETURN->value;
+        self::assertSame($expected, $this->history());
+        self::assertMatchesRegularExpression('/Legacy return actions normalized\s+1/', $this->tester->getDisplay());
+        $this->tester->execute(['--dry-run' => true]);
+        self::assertSame($expected, $this->history());
+        self::assertMatchesRegularExpression('/Legacy return actions to normalize\s+0/', $this->tester->getDisplay());
+        self::assertMatchesRegularExpression('/Already linked\s+1/', $this->tester->getDisplay());
+    }
+
+    public function testLegacyReturnActionNormalizationRespectsBikeFilter(): void
+    {
+        $time = '2014-10-01 12:00:00';
+        $this->insertHistory([
+            [100, 9100, Action::RENT, null, 4, $time],
+            [101, 9100, Action::RETURN, 100, 5, $time],
+            [110, self::REVERSED_PAIR_BIKE, Action::RENT, null, 4, $time],
+            [111, self::REVERSED_PAIR_BIKE, Action::RETURN, 110, 5, $time],
+        ]);
+        $before = $this->history();
+        $this->tester->execute(['--bike' => self::REVERSED_PAIR_BIKE, '--dry-run' => true]);
+        self::assertSame($before, $this->history());
+        self::assertMatchesRegularExpression('/Legacy return actions to normalize\s+1/', $this->tester->getDisplay());
+        $this->tester->execute(['--bike' => self::REVERSED_PAIR_BIKE]);
+        $this->tester->assertCommandIsSuccessful();
+        $expected = $before;
+        $expected[3]['action'] = Action::FORCE_RETURN->value;
+        self::assertSame($expected, $this->history());
+    }
+
+    #[DataProvider('unprovenLegacyReturns')]
+    public function testLegacyReturnActionNormalizationPreservesUncertainEvents(array $changes, array $extra): void
+    {
+        $time = '2014-10-01 12:00:00';
+        $rows = [
+            [100, 9100, Action::RENT, null, 4, $time],
+            [110, 9100, Action::RETURN, 100, 5, $time],
+        ];
+        foreach ($changes as $index => $fields) {
+            $rows[$index] = array_replace($rows[$index], $fields);
+        }
+        $this->insertHistory([...$rows, ...$extra]);
+        $before = $this->history();
+        $this->tester->execute(['--bike' => 9100]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($before, $this->history());
+        self::assertMatchesRegularExpression('/Legacy return actions normalized\s+0/', $this->tester->getDisplay());
+    }
+
+    public static function unprovenLegacyReturns(): iterable
+    {
+        yield 'same holder' => [[1 => [4 => 4]], []];
+        yield 'missing closing link' => [[1 => [3 => null]], []];
+        yield 'another closing target' => [[1 => [3 => 99999]], []];
+        yield 'conflicting outgoing start link' => [[0 => [3 => 99999]], []];
+        yield 'unknown holder' => [[0 => [4 => 0]], []];
+        yield 'unknown return actor' => [[1 => [4 => 0]], []];
+        yield 'before approved legacy period' => [[
+            0 => [5 => '2013-10-01 12:00:00'], 1 => [5 => '2013-10-01 12:00:00'],
+        ], []];
+        yield 'forced actions introduction boundary' => [[1 => [5 => '2014-11-12 00:00:00']], []];
+        yield 'modern different holder' => [[1 => [5 => '2026-10-01 12:00:00']], []];
+        yield 'return predates start' => [[1 => [5 => '2014-09-30 12:00:00']], []];
+        yield 'start follows revert' => [[], [[99, 9100, Action::REVERT, null, 4, '2014-10-01 12:00:00']]];
+        yield 'intervening cancellation' => [[], [[105, 9100, Action::REVERT, null, 4, '2014-10-01 12:00:00']]];
+        yield 'extra reference from another bike to start' => [[], [
+            [120, 9200, Action::RETURN, 100, 4, '2014-10-01 12:00:00'],
+        ]];
+        yield 'extra reference from another bike to return' => [[], [
+            [120, 9200, Action::RENT, 110, 4, '2014-10-01 12:00:00'],
+        ]];
     }
 
     public function testInitialAndUnlinkedRepeatedReturnsAreReportedWithoutInventingStarts(): void

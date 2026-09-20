@@ -97,5 +97,8 @@ REVERT points to the canceled start when it is unambiguous. Backward links on in
 are cleared without inventing their missing completions. Existing pairs with reversed insertion order
 are retained only when their timestamps, holder and unique references agree.
 Initial returns, parked returns, unpaired REVERTs and empty service actions have distinct report categories.
-Uncertain links remain unchanged. Only `pairActionId` changes; missing events are not synthesized.
+Existing unique RENT/RETURN pairs from 2014, before November 12, are normalized to FORCERETURN
+when the return actor differs from the renter. Only the return's action changes for this rule;
+its user, time and pairActionId remain intact. Normalizations have a separate summary counter.
+Other rules change only `pairActionId`. Uncertain links remain unchanged; missing events are not synthesized.
 The command can be rerun after interruption; it does not change bike state, charges or notifications.
