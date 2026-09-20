@@ -92,6 +92,10 @@ was already closed. Backward links from starts are cleared when the previous pai
 the start's own unique closing pair confirms the relationship. The summary counts both separately.
 Returns pointing to a previous, already closed rental are reassigned only when the adjacent
 start, holder, timestamps and references confirm the new pair. Reassignments are counted separately.
-Initial returns, parked returns, REVERT sequences and empty service actions have distinct report categories.
+Verified legacy REVERT restoration records are reported separately and lose their rental links;
+REVERT points to the canceled start when it is unambiguous. Backward links on interrupted starts
+are cleared without inventing their missing completions. Existing pairs with reversed insertion order
+are retained only when their timestamps, holder and unique references agree.
+Initial returns, parked returns, unpaired REVERTs and empty service actions have distinct report categories.
 Uncertain links remain unchanged. Only `pairActionId` changes; missing events are not synthesized.
 The command can be rerun after interruption; it does not change bike state, charges or notifications.
