@@ -19,6 +19,10 @@ class MigrateRentalHistoryCommand extends Command
     private array $chainStarts = [];
     private array $repeatedReturns = [];
     private array $reassignedReturns = [];
+    private array $technicalEvents = [];
+    private array $technicalLinks = [];
+    private array $revertPairs = [];
+    private array $reorderedPairs = [];
 
     public function __construct(private readonly DbInterface $db)
     {
@@ -49,12 +53,42 @@ class MigrateRentalHistoryCommand extends Command
         $this->chainStarts = [];
         $this->repeatedReturns = [];
         $this->reassignedReturns = [];
+        $this->technicalEvents = [];
+        $this->technicalLinks = [];
+        $this->revertPairs = [];
+        $this->reorderedPairs = [];
+        $reverts = $this->findTechnicalRevertEvents($bikeNumber);
         $this->repeatedReturns = $this->findRepeatedReturnLinks($bikeNumber);
-        $this->chainStarts = $this->findStartsWithOwnPair($bikeNumber);
+        $this->chainStarts = $this->findInterruptedStartLinks($bikeNumber);
+        $this->chainStarts += $this->findStartsWithOwnPair($bikeNumber);
         $this->reassignedReturns = $this->findMislinkedReturns($bikeNumber);
         $this->repeatedReturns += $this->findRepeatedReturnLinks($bikeNumber);
         $this->chainStarts += $this->findStartsWithOwnPair($bikeNumber);
         $this->chainStarts += $this->findChainStarts($bikeNumber);
+        $this->revertPairs = $this->findRevertPairs($reverts);
+        $revertsChanged = 0;
+        foreach ($this->revertPairs as $correction) {
+            if ($correction['event']['pairActionId'] !== null) {
+                continue;
+            }
+            ++$revertsChanged;
+            $output->writeln(
+                sprintf('Pair revert %d -> rent %d', $correction['event']['id'], $correction['rentId']),
+                OutputInterface::VERBOSITY_VERBOSE,
+            );
+            if ($apply) {
+                $this->updatePair($correction['event'], $correction['rentId']);
+            }
+        }
+        foreach ($this->technicalLinks as $event) {
+            $output->writeln(
+                sprintf('Clear technical event %d -> event %d', $event['id'], $event['pairActionId']),
+                OutputInterface::VERBOSITY_VERBOSE,
+            );
+            if ($apply) {
+                $this->updatePair($event, null);
+            }
+        }
         foreach ($this->reassignedReturns as $correction) {
             $return = $correction['event'];
             $output->writeln(
@@ -103,9 +137,19 @@ class MigrateRentalHistoryCommand extends Command
             ) {
                 continue;
             }
+            if (isset($this->reorderedPairs[$event['id']])) {
+                if (in_array($action, [Action::RETURN, Action::FORCE_RETURN], true)) {
+                    ++$unchanged;
+                    $previous[$bikeId] = $event;
+                }
+                continue;
+            }
             $isFirstEvent = !array_key_exists($bikeId, $previous);
             $start = $previous[$bikeId] ?? null;
             $previous[$bikeId] = $event;
+            if (isset($this->technicalEvents[$event['id']]) || isset($this->revertPairs[$event['id']])) {
+                continue;
+            }
             if ($action === Action::REVERT || $action === null) {
                 if ($event['action'] === '' && $bikeId === 0 && (int)$event['userId'] === 0) {
                     ++$emptyServiceEvents;
@@ -114,7 +158,9 @@ class MigrateRentalHistoryCommand extends Command
                         OutputInterface::VERBOSITY_VERBOSE,
                     );
                 } else {
-                    $this->skip($event, $action === Action::REVERT ? 'revert' : 'unknown_action', $skipped, $output);
+                    $reason = $action === Action::REVERT
+                        ? (isset($reverts[$event['id']]) ? 'unpaired_revert' : 'revert') : 'unknown_action';
+                    $this->skip($event, $reason, $skipped, $output);
                 }
                 continue;
             }
@@ -176,6 +222,10 @@ class MigrateRentalHistoryCommand extends Command
         }
 
         $io->table(['Result', 'Count'], [
+            [$apply ? 'Cancellations linked' : 'Cancellations to link', $revertsChanged],
+            ['Already linked cancellations', count($this->revertPairs) - $revertsChanged],
+            ['Recognized technical revert events', count($this->technicalEvents)],
+            [$apply ? 'Technical links cleared' : 'Technical links to clear', count($this->technicalLinks)],
             [$apply ? 'Return links reassigned' : 'Return links to reassign', count($this->reassignedReturns)],
             [
                 $apply ? 'Repeated return links cleared' : 'Repeated return links to clear',
@@ -192,6 +242,135 @@ class MigrateRentalHistoryCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    private function findTechnicalRevertEvents(?int $bikeNumber): array
+    {
+        $recent = [];
+        $reverts = [];
+        foreach ($this->iterateEvents($bikeNumber) as $event) {
+            $action = Action::tryFrom($event['action']);
+            if (
+                $action !== null && !in_array($action, [
+                    Action::RENT, Action::FORCE_RENT, Action::RETURN, Action::FORCE_RETURN, Action::REVERT,
+                ], true)
+            ) {
+                continue;
+            }
+            $bikeId = (int)$event['bikeNum'];
+            $events = $recent[$bikeId] ?? [];
+            $recent[$bikeId] = array_slice([...$events, $event], -3);
+            if ($bikeId <= 0 || $action !== Action::RETURN || count($events) < 2) {
+                continue;
+            }
+            $start = count($events) === 3 ? $events[0] : null;
+            [$revert, $technicalStart] = array_slice($events, -2);
+            $swapped = $revert['action'] === Action::RENT->value
+                && $technicalStart['action'] === Action::REVERT->value;
+            if ($swapped) {
+                [$revert, $technicalStart] = [$technicalStart, $revert];
+            }
+            if (
+                $revert['action'] !== Action::REVERT->value || $technicalStart['action'] !== Action::RENT->value
+                || (int)$technicalStart['userId'] !== (int)$event['userId']
+                || !in_array((int)$technicalStart['userId'], [0, (int)$revert['userId']], true)
+                || $technicalStart['time'] < $revert['time']
+                || ((int)$technicalStart['userId'] !== 0 && ($technicalStart['time'] !== $revert['time']
+                    || $event['time'] !== $revert['time']))
+                || ($swapped && ((int)$technicalStart['userId'] !== 0 || $event['time'] !== $revert['time']
+                    || $technicalStart['time'] !== $revert['time']))
+            ) {
+                continue;
+            }
+            $parameters = explode('|', $revert['parameter']);
+            if (
+                count($parameters) !== 2 || !ctype_digit($parameters[0]) || !ctype_digit($parameters[1])
+                || !ctype_digit($technicalStart['parameter']) || !ctype_digit($event['parameter'])
+                || (int)$parameters[0] <= 0 || (int)$parameters[0] !== (int)$event['parameter']
+                || (int)$parameters[1] !== (int)$technicalStart['parameter']
+            ) {
+                continue;
+            }
+            // The matching code and stand identify restoration records even if a legacy timestamp was edited.
+            foreach ([$technicalStart, $event] as $technical) {
+                $this->technicalEvents[(int)$technical['id']] = [
+                    'rentId' => (int)$technicalStart['id'],
+                    'time' => max($revert['time'], $technicalStart['time'], $event['time']),
+                ];
+                if ($technical['pairActionId'] !== null) {
+                    $this->technicalLinks[(int)$technical['id']] = $technical;
+                }
+            }
+            $reverts[(int)$revert['id']] = ['event' => $revert, 'start' => $start];
+        }
+
+        return $reverts;
+    }
+
+    private function findInterruptedStartLinks(?int $bikeNumber): array
+    {
+        $previous = [];
+        $starts = [];
+        foreach ($this->iterateEvents($bikeNumber) as $event) {
+            $action = Action::tryFrom($event['action']);
+            if (
+                $action !== null && !in_array($action, [
+                    Action::RENT, Action::FORCE_RENT, Action::RETURN, Action::FORCE_RETURN, Action::REVERT,
+                ], true)
+            ) {
+                continue;
+            }
+            $bikeId = (int)$event['bikeNum'];
+            if (isset($this->technicalEvents[$event['id']])) {
+                continue;
+            }
+            $start = $previous[$bikeId] ?? null;
+            $previous[$bikeId] = $event;
+            if (
+                $bikeId <= 0 || !in_array($action, [Action::RENT, Action::FORCE_RENT, Action::REVERT], true)
+                || !in_array($start['action'] ?? null, [Action::RENT->value, Action::FORCE_RENT->value], true)
+                || (int)$start['userId'] <= 0 || $start['pairActionId'] === null || $start['time'] > $event['time']
+                || $this->hasOtherReferences([(int)$start['id']], [$event['id']])
+            ) {
+                continue;
+            }
+            $oldReturn = $this->db->query(
+                'SELECT id, bikeNum, action, time FROM history WHERE id = :id',
+                ['id' => $start['pairActionId']],
+            )->fetchAssoc();
+            if (
+                $oldReturn !== null && (int)$oldReturn['bikeNum'] === $bikeId
+                && in_array($oldReturn['action'], [Action::RETURN->value, Action::FORCE_RETURN->value], true)
+                && $oldReturn['time'] <= $start['time']
+                && ((int)$oldReturn['id'] < (int)$start['id'] || $oldReturn['time'] < $start['time'])
+            ) {
+                $starts[(int)$start['id']] = $start;
+            }
+        }
+
+        return $starts;
+    }
+
+    private function findRevertPairs(array $reverts): array
+    {
+        $pairs = [];
+        foreach ($reverts as $id => $group) {
+            $event = $group['event'];
+            $start = $group['start'];
+            if (
+                !in_array($start['action'] ?? null, [Action::RENT->value, Action::FORCE_RENT->value], true)
+                || isset($this->technicalEvents[$start['id']]) || (int)$start['userId'] <= 0
+                || $start['time'] > $event['time']
+                || ($start['pairActionId'] !== null && !isset($this->chainStarts[$start['id']]))
+                || ($event['pairActionId'] !== null && (int)$event['pairActionId'] !== (int)$start['id'])
+                || $this->hasOtherReferences([(int)$start['id'], $id], [(int)$start['id'], $id])
+            ) {
+                continue;
+            }
+            $pairs[$id] = ['event' => $event, 'rentId' => (int)$start['id']];
+        }
+
+        return $pairs;
     }
 
     private function findMislinkedReturns(?int $bikeNumber): array
@@ -298,6 +477,14 @@ class MigrateRentalHistoryCommand extends Command
                 continue;
             }
             $bikeId = (int)$event['bikeNum'];
+            if ($action === Action::RETURN && isset($this->technicalEvents[$event['id']])) {
+                unset($starts[$bikeId]);
+                $previousActions[$bikeId] = $action;
+                $event['pairActionId'] = $this->technicalEvents[$event['id']]['rentId'];
+                $event['time'] = $this->technicalEvents[$event['id']]['time'];
+                $closed[$bikeId] = $event;
+                continue;
+            }
             $afterRevert = ($previousActions[$bikeId] ?? null) === Action::REVERT;
             $previousActions[$bikeId] = $action;
             if (in_array($action, [Action::RENT, Action::FORCE_RENT], true)) {
@@ -359,28 +546,50 @@ class MigrateRentalHistoryCommand extends Command
             $start = $previous[$bikeId] ?? null;
             $event['afterRevert'] = ($start['action'] ?? null) === Action::REVERT->value;
             $previous[$bikeId] = $event;
+            $reversed = in_array($action, [Action::RENT, Action::FORCE_RENT], true)
+                && in_array($start['action'] ?? null, [Action::RETURN->value, Action::FORCE_RETURN->value], true)
+                && (int)$start['pairActionId'] === (int)$event['id'];
+            if ($reversed) {
+                [$start, $event] = [$event, $start];
+                $action = Action::tryFrom($event['action']);
+            }
             if (
                 $bikeId <= 0 || !in_array($action, [Action::RETURN, Action::FORCE_RETURN], true)
                 || !in_array($start['action'] ?? null, [Action::RENT->value, Action::FORCE_RENT->value], true)
-                || $start['afterRevert'] || (int)$start['userId'] <= 0 || $start['pairActionId'] === null
+                || $start['afterRevert'] || (int)$start['userId'] <= 0
+                || (!$reversed && $start['pairActionId'] === null)
+                || ($reversed && ($event['afterRevert'] || isset($this->technicalEvents[$event['id']])))
                 || $event['pairActionId'] === null || (int)$event['pairActionId'] !== (int)$start['id']
                 || $start['time'] > $event['time']
                 || ($action === Action::RETURN && (int)$start['userId'] !== (int)$event['userId'])
             ) {
                 continue;
             }
-            $oldReturn = $this->db->query(
-                'SELECT id, bikeNum, action, time FROM history WHERE id = :id',
-                ['id' => $start['pairActionId']],
-            )->fetchAssoc();
-            if (
-                $oldReturn !== null && (int)$oldReturn['bikeNum'] === $bikeId
-                && in_array($oldReturn['action'], [Action::RETURN->value, Action::FORCE_RETURN->value], true)
-                && $oldReturn['time'] <= $start['time']
-                && ((int)$oldReturn['id'] < (int)$start['id'] || $oldReturn['time'] < $start['time'])
-                && !$this->hasOtherReferences([(int)$start['id']], [(int)$event['id']])
-            ) {
+            if ($start['pairActionId'] !== null) {
+                $oldReturn = $this->db->query(
+                    'SELECT id, bikeNum, action, time FROM history WHERE id = :id',
+                    ['id' => $start['pairActionId']],
+                )->fetchAssoc();
+                if (
+                    $oldReturn === null || (int)$oldReturn['bikeNum'] !== $bikeId
+                    || !in_array($oldReturn['action'], [Action::RETURN->value, Action::FORCE_RETURN->value], true)
+                    || $oldReturn['time'] > $start['time']
+                    || ((int)$oldReturn['id'] >= (int)$start['id'] && $oldReturn['time'] >= $start['time'])
+                ) {
+                    continue;
+                }
+            }
+            $ids = [(int)$start['id'], (int)$event['id']];
+            if ($this->hasOtherReferences($reversed ? $ids : [(int)$start['id']], $ids)) {
+                continue;
+            }
+            if ($start['pairActionId'] !== null) {
                 $starts[(int)$start['id']] = $start;
+            }
+            if ($reversed) {
+                // Preserve the explicit pair when insertion order differs from the recorded trip times.
+                $this->reorderedPairs[(int)$start['id']] = true;
+                $this->reorderedPairs[(int)$event['id']] = true;
             }
         }
 
@@ -480,7 +689,7 @@ class MigrateRentalHistoryCommand extends Command
                 $params['bikeNum'] = $bikeNumber;
             }
             $rows = $this->db->query(
-                'SELECT id, bikeNum, userId, action, time, pairActionId FROM history
+                'SELECT id, bikeNum, userId, action, time, pairActionId, parameter FROM history
                  WHERE id > :afterId' . $bikeFilter . ' ORDER BY id LIMIT 1000',
                 $params,
             )->fetchAllAssoc();
@@ -489,7 +698,13 @@ class MigrateRentalHistoryCommand extends Command
                 if (isset($this->reassignedReturns[$row['id']])) {
                     $row['pairActionId'] = $this->reassignedReturns[$row['id']]['rentId'];
                 }
-                if (isset($this->repeatedReturns[$row['id']]) || isset($this->chainStarts[$row['id']])) {
+                if (isset($this->revertPairs[$row['id']])) {
+                    $row['pairActionId'] = $this->revertPairs[$row['id']]['rentId'];
+                }
+                if (
+                    isset($this->repeatedReturns[$row['id']]) || isset($this->chainStarts[$row['id']])
+                    || isset($this->technicalLinks[$row['id']])
+                ) {
                     $row['pairActionId'] = null;
                 }
                 yield $row;
@@ -509,7 +724,7 @@ class MigrateRentalHistoryCommand extends Command
             'SELECT id, pairActionId FROM history WHERE pairActionId IN (' . $placeholders . ')',
             $targetIds,
         )->fetchAllAssoc();
-        foreach ($this->reassignedReturns as $id => $correction) {
+        foreach ($this->reassignedReturns + $this->revertPairs as $id => $correction) {
             if (in_array($correction['rentId'], $targetIds, true)) {
                 $references[] = ['id' => $id, 'pairActionId' => $correction['rentId']];
             }
@@ -517,13 +732,15 @@ class MigrateRentalHistoryCommand extends Command
         foreach ($references as $reference) {
             // Preview must ignore exactly the links that applying would remove.
             $id = (int)$reference['id'];
-            $targetId = $this->reassignedReturns[$id]['rentId'] ?? (int)$reference['pairActionId'];
+            $targetId = $this->reassignedReturns[$id]['rentId']
+                ?? $this->revertPairs[$id]['rentId'] ?? (int)$reference['pairActionId'];
             if (!in_array($targetId, $targetIds, true)) {
                 continue;
             }
             if (
                 !in_array($id, $allowedIds, true)
                 && !isset($this->chainStarts[$id]) && !isset($this->repeatedReturns[$id])
+                && !isset($this->technicalLinks[$id])
             ) {
                 return true;
             }
@@ -537,7 +754,7 @@ class MigrateRentalHistoryCommand extends Command
         $affected = $this->db->query(
             'UPDATE history SET pairActionId = :newPair
              WHERE id = :id AND bikeNum = :bikeNum AND userId = :userId AND action = :action
-               AND time = :time AND pairActionId <=> :oldPair',
+               AND time = :time AND parameter = :parameter AND pairActionId <=> :oldPair',
             [
                 'newPair' => $pairActionId,
                 'id' => $event['id'],
@@ -545,6 +762,7 @@ class MigrateRentalHistoryCommand extends Command
                 'userId' => $event['userId'],
                 'action' => $event['action'],
                 'time' => $event['time'],
+                'parameter' => $event['parameter'],
                 'oldPair' => $event['pairActionId'],
             ],
         )->rowCount();
