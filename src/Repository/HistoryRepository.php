@@ -38,34 +38,47 @@ class HistoryRepository
     }
 
     /**
-     * Only pair the latest lifecycle event when it is a start for the current holder.
-     * Do not fall back to older unmatched rents. This read is not serialized with subsequent writes.
+     * Use the latest start for the current holder; never fall back to an older open rental.
+     * A backfilled completion of an older rental must not hide that start.
      */
     public function findCurrentRentId(int $bikeNum, int $userId): ?int
     {
-        $event = $this->db->query(
-            "SELECT id, userId, action, pairActionId FROM history
-             WHERE bikeNum = :bikeNum
-               AND action IN (:rentAction, :forceRentAction, :returnAction, :forceReturnAction, :revertAction)
-             ORDER BY id DESC LIMIT 1",
+        $start = $this->db->query(
+            'SELECT id, userId, time, pairActionId FROM history
+             WHERE bikeNum = :bikeNum AND action IN (:rentAction, :forceRentAction)
+             ORDER BY id DESC LIMIT 1',
             [
                 'bikeNum' => $bikeNum,
                 'rentAction' => Action::RENT->value,
                 'forceRentAction' => Action::FORCE_RENT->value,
-                'returnAction' => Action::RETURN->value,
-                'forceReturnAction' => Action::FORCE_RETURN->value,
-                'revertAction' => Action::REVERT->value,
             ],
         )->fetchAssoc();
-        if (
-            $event === null || (int)$event['userId'] !== $userId
-            || !in_array($event['action'], [Action::RENT->value, Action::FORCE_RENT->value], true)
-            || $event['pairActionId'] !== null
-        ) {
+        if ($start === null || (int)$start['userId'] !== $userId || $start['pairActionId'] !== null) {
             return null;
         }
+        $closing = $this->db->query(
+            'SELECT h.id FROM history h
+             LEFT JOIN history paired ON paired.id = h.pairActionId
+             WHERE h.bikeNum = :bikeNum AND h.action IN (:returnAction, :forceReturnAction, :revertAction)
+               AND (h.pairActionId = :startId OR (h.id > :afterId AND (
+                 paired.id IS NULL OR paired.bikeNum <> h.bikeNum
+                 OR paired.action NOT IN (:rentAction, :forceRentAction)
+                 OR paired.id >= :latestStartId OR paired.pairActionId IS NOT NULL
+                 OR h.time < paired.time OR h.time > :startTime
+                 OR (h.action = :ordinaryReturn AND h.userId <> paired.userId)
+               ))) LIMIT 1',
+            [
+                'bikeNum' => $bikeNum,
+                'startId' => $start['id'], 'afterId' => $start['id'], 'latestStartId' => $start['id'],
+                'startTime' => $start['time'],
+                'returnAction' => Action::RETURN->value, 'forceReturnAction' => Action::FORCE_RETURN->value,
+                'revertAction' => Action::REVERT->value,
+                'rentAction' => Action::RENT->value, 'forceRentAction' => Action::FORCE_RENT->value,
+                'ordinaryReturn' => Action::RETURN->value,
+            ],
+        )->fetchAssoc();
 
-        return (int)$event['id'];
+        return $closing === null ? (int)$start['id'] : null;
     }
 
     public function dailyStats(): array
