@@ -17,6 +17,7 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
 {
     private const REVERSED_PAIR_BIKE = 9110;
     private const CONFLICTING_LINK_BIKE = 9280;
+    private ?string $repairsFile = null;
     private CommandTester $tester;
     private DbInterface $db;
 
@@ -31,9 +32,162 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
 
     protected function tearDown(): void
     {
+        if ($this->repairsFile !== null) {
+            unlink($this->repairsFile);
+        }
         parent::tearDown();
         unset($this->tester, $this->db);
         gc_collect_cycles();
+    }
+
+    public function testReviewedRepairsPreserveLatestCodeAndRecognizeBackfilledPairs(): void
+    {
+        $plan = $this->reviewedPlan();
+        $before = $this->history();
+        $file = $this->writeRepairs($plan);
+        $this->tester->execute(['--repairs' => $file, '--dry-run' => true]);
+        $this->tester->assertCommandIsSuccessful();
+        self::assertSame($before, $this->history());
+        self::assertMatchesRegularExpression('/Reviewed rows to delete\s+3/', $this->tester->getDisplay());
+        self::assertMatchesRegularExpression('/Historical completions to insert\s+1/', $this->tester->getDisplay());
+        self::assertStringNotContainsString('superseded_start:', $this->tester->getDisplay());
+        $this->tester->execute(['--repairs' => $file]);
+        $this->tester->assertCommandIsSuccessful();
+        $after = $this->history();
+        $expected = array_values(array_filter(
+            $before,
+            static fn (array $row): bool => !in_array($row['id'], [200, 300, 301]),
+        ));
+        self::assertSame($expected, array_slice($after, 0, -1));
+        $added = $after[count($after) - 1];
+        unset($added['id']);
+        self::assertEquals($plan['insert'][0]['event'], $added);
+        self::assertSame('9876', array_column($after, null, 'id')[201]['parameter']);
+        self::assertSame(201, array_column($after, null, 'id')[202]['pairActionId']);
+        foreach ([['--repairs' => $file], ['--dry-run' => true]] as $options) {
+            $this->tester->execute($options);
+            $this->tester->assertCommandIsSuccessful();
+            self::assertSame($after, $this->history());
+            self::assertMatchesRegularExpression(
+                '/Recognized historical completions\s+1/',
+                $this->tester->getDisplay(),
+            );
+            self::assertStringNotContainsString('superseded_start:', $this->tester->getDisplay());
+            self::assertStringNotContainsString('force_return_after_return:', $this->tester->getDisplay());
+        }
+    }
+
+    public function testReviewedRepairsRespectBikeFilterIncludingDeletions(): void
+    {
+        $plan = $this->reviewedPlan();
+        $before = $this->history();
+        $this->tester->execute(['--repairs' => $this->writeRepairs($plan), '--bike' => 9100]);
+        $this->tester->assertCommandIsSuccessful();
+        $after = $this->history();
+        self::assertSame($before, array_slice($after, 0, -1));
+        self::assertSame(100, $after[count($after) - 1]['pairActionId']);
+        self::assertMatchesRegularExpression('/Reviewed rows deleted\s+0/', $this->tester->getDisplay());
+    }
+
+    #[DataProvider('invalidReviewedRepairs')]
+    public function testReviewedRepairsPreflightRejectsChangesBeforeAnyWrites(string $problem): void
+    {
+        $plan = $this->reviewedPlan();
+        switch ($problem) {
+            case 'stale station':
+                $plan['insert'][0]['start']['standId'] = 9;
+                break;
+            case 'missing original field':
+                unset($plan['delete'][0]['event']['parameter']);
+                break;
+            case 'referenced deletion':
+                $this->insertHistory([[400, 9900, Action::CHANGE_CODE, 300, 4]]);
+                break;
+            case 'existing different completion':
+                $this->insertHistory([[400, 9100, Action::FORCE_RETURN, 100, 5, '2000-01-02 12:00:00']]);
+                break;
+            case 'different bike':
+                $plan['insert'][0]['event']['bikeNum'] = 9999;
+                break;
+            case 'different holder':
+                $plan['insert'][0]['event']['action'] = Action::RETURN->value;
+                break;
+            case 'completion after next start':
+                $plan['insert'][0]['event']['time'] = '2000-01-03 12:00:00';
+                break;
+            case 'nonadjacent next start':
+                $this->insertHistory([[105, 9100, Action::REVERT, null, 4]]);
+                break;
+            case 'known action deletion':
+                $plan['delete'][1]['reason'] = 'unknown_action';
+                break;
+            case 'invalid timestamp':
+                $plan['insert'][0]['event']['time'] = '2000-01-01 13:invalid';
+                break;
+            case 'missing origin station':
+                $plan['insert'][0]['event']['standId'] = null;
+                break;
+        }
+        $before = $this->history();
+        try {
+            $this->tester->execute(['--repairs' => $this->writeRepairs($plan)]);
+            self::fail('Expected the reviewed repair to be rejected.');
+        } catch (\RuntimeException) {
+            self::assertSame($before, $this->history());
+        }
+    }
+
+    public static function invalidReviewedRepairs(): iterable
+    {
+        foreach (
+            [
+            'stale station', 'missing original field', 'referenced deletion', 'existing different completion',
+            'different bike', 'different holder', 'completion after next start', 'nonadjacent next start',
+            'known action deletion', 'missing origin station', 'invalid timestamp',
+            ] as $problem
+        ) {
+            yield $problem => [$problem];
+        }
+    }
+
+    private function reviewedPlan(): array
+    {
+        $this->insertHistory([
+            [100, 9100, Action::RENT, null, 4],
+            [110, 9100, Action::FORCE_RENT, null, 5, '2000-01-02 12:00:00'],
+            [111, 9100, Action::RETURN, 110, 5, '2000-01-02 13:00:00'],
+            [200, 9200, Action::RENT, null, 4],
+            [201, 9200, Action::RENT, null, 4, '2000-01-01 12:00:01', '9876'],
+            [202, 9200, Action::REVERT, 201, 5, '2000-01-01 12:00:02'],
+            [300, 0, Action::RETURN, null, 4],
+            [301, 2, Action::CHANGE_CODE, 0, 1],
+        ]);
+        $this->db->query("UPDATE IGNORE history SET action = '' WHERE id = 301");
+        $rows = array_column($this->history(), null, 'id');
+
+        return [
+            'version' => 1,
+            'delete' => [
+                ['reason' => 'duplicate_start', 'event' => $rows[200], 'keep' => $rows[201]],
+                ['reason' => 'failed_qr_return', 'event' => $rows[300]],
+                ['reason' => 'unknown_action', 'event' => $rows[301]],
+            ],
+            'insert' => [[
+                'start' => $rows[100], 'next' => $rows[110],
+                'event' => [
+                    'userId' => 5, 'bikeNum' => 9100, 'time' => '2000-01-02 12:00:00',
+                    'action' => Action::FORCE_RETURN->value, 'parameter' => '1', 'standId' => 1, 'pairActionId' => 100,
+                ],
+            ]],
+        ];
+    }
+
+    private function writeRepairs(array $plan): string
+    {
+        $this->repairsFile = tempnam(sys_get_temp_dir(), 'rental-repairs-');
+        file_put_contents($this->repairsFile, json_encode($plan, JSON_THROW_ON_ERROR));
+
+        return $this->repairsFile;
     }
 
     public function testPreviewApplyAndRepeatChangeOnlyUnambiguousPairs(): void
@@ -351,6 +505,8 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
         self::assertSame($expected, $this->history());
         $expectedOutput = strtr($preview, [
             'Previewing rental history; no changes will be written.' => 'Migrating rental history.',
+            'Reviewed rows to delete' => 'Reviewed rows deleted',
+            'Historical completions to insert' => 'Historical completions inserted',
             'Legacy return actions to normalize' => 'Legacy return actions normalized',
             'Cancellations to link' => 'Cancellations linked',
             'Technical links to clear' => 'Technical links cleared',

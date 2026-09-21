@@ -100,5 +100,20 @@ Initial returns, parked returns, unpaired REVERTs and empty service actions have
 Existing unique RENT/RETURN pairs from 2014, before November 12, are normalized to FORCERETURN
 when the return actor differs from the renter. Only the return's action changes for this rule;
 its user, time and pairActionId remain intact. Normalizations have a separate summary counter.
-Other rules change only `pairActionId`. Uncertain links remain unchanged; missing events are not synthesized.
+Without a reviewed repair file, other rules change only `pairActionId` and do not synthesize missing events.
+Uncertain links remain unchanged.
 The command can be rerun after interruption; it does not change bike state, charges or notifications.
+
+
+For reviewed insertions and deletions, keep the JSON repair file as the recovery archive and run:
+```bash
+php bin/console app:migrate_rental_history --repairs=/path/to/repairs.json --dry-run -v
+php bin/console app:migrate_rental_history --repairs=/path/to/repairs.json
+```
+The version-1 file contains `delete` entries (`reason`, complete original `event`, and `keep` for
+`duplicate_start`) and `insert` entries (complete original `start` and `next`, plus the closing
+`event` without an ID). Supported deletion reasons are `duplicate_start`, `failed_qr_return`,
+and `unknown_action`. Times are UTC. Originals are checked before any writes; reruns skip
+already applied repairs. The retained duplicate keeps its latest code and existing closing links.
+Historical completions are recognized by their pairs even when inserted after newer rentals.
+Inferred completion times and origin stands are reconstruction conventions, not recovered physical returns.

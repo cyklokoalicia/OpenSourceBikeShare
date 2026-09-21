@@ -19,6 +19,9 @@ class MigrateRentalHistoryCommand extends Command
     // Separate forced actions were introduced in November 2014 (5d64acd).
     private const LEGACY_RETURN_BEFORE = '2014-11-12 00:00:00';
 
+    private array $reviewedDeletions = [];
+    private array $historicalCompletions = [];
+    private array $historicalEndIds = [];
     private array $legacyForcedReturns = [];
     private array $chainStarts = [];
     private array $repeatedReturns = [];
@@ -37,6 +40,12 @@ class MigrateRentalHistoryCommand extends Command
     {
         $this
             ->addOption('bike', null, InputOption::VALUE_REQUIRED, 'Process only this bike number')
+            ->addOption(
+                'repairs',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'JSON file containing reviewed repairs and original rows',
+            )
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview changes without modifying database')
             ->setHelp('Scans the full history. Add -v for event IDs and skip reasons.');
     }
@@ -62,6 +71,29 @@ class MigrateRentalHistoryCommand extends Command
         $this->technicalLinks = [];
         $this->revertPairs = [];
         $this->reorderedPairs = [];
+        $this->reviewedDeletions = [];
+        $this->historicalCompletions = [];
+        $this->historicalEndIds = [];
+        $repairs = $this->prepareReviewedRepairs($input->getOption('repairs'), $bikeNumber);
+        foreach ($repairs['delete'] as $row) {
+            $this->reviewedDeletions[(int)$row['id']] = true;
+            $output->writeln(sprintf('Delete reviewed history %d', $row['id']), OutputInterface::VERBOSITY_VERBOSE);
+            if ($apply) {
+                $this->deleteReviewedRow($row);
+            }
+        }
+        foreach ($repairs['insert'] as $repair) {
+            $row = $repair['event'];
+            $this->historicalCompletions[(int)$row['pairActionId']] = $row;
+            $output->writeln(
+                sprintf('Restore %s -> rent %d at %s', $row['action'], $row['pairActionId'], $row['time']),
+                OutputInterface::VERBOSITY_VERBOSE,
+            );
+            if ($apply) {
+                $this->insertReviewedCompletion($repair);
+            }
+        }
+        $this->findHistoricalCompletions($bikeNumber);
         $reverts = $this->findTechnicalRevertEvents($bikeNumber);
         $this->repeatedReturns = $this->findRepeatedReturnLinks($bikeNumber);
         $this->chainStarts = $this->findInterruptedStartLinks($bikeNumber);
@@ -144,7 +176,7 @@ class MigrateRentalHistoryCommand extends Command
         }
         $previous = [];
         $changed = 0;
-        $unchanged = 0;
+        $unchanged = count($this->historicalCompletions);
         $emptyServiceEvents = 0;
         $skipped = [];
         foreach ($this->iterateEvents($bikeNumber) as $event) {
@@ -188,6 +220,7 @@ class MigrateRentalHistoryCommand extends Command
                 if (
                     in_array($start['action'] ?? null, [Action::RENT->value, Action::FORCE_RENT->value], true)
                     && !($start['afterRevert'] ?? false)
+                    && !isset($this->historicalCompletions[$start['id']])
                 ) {
                     $this->skip($start, 'superseded_start', $skipped, $output);
                 }
@@ -236,12 +269,19 @@ class MigrateRentalHistoryCommand extends Command
             if (
                 in_array($event['action'] ?? null, [Action::RENT->value, Action::FORCE_RENT->value], true)
                 && !($event['afterRevert'] ?? false)
+                && !isset($this->historicalCompletions[$event['id']])
             ) {
                 $this->skip($event, 'no_return', $skipped, $output);
             }
         }
 
         $io->table(['Result', 'Count'], [
+            [$apply ? 'Reviewed rows deleted' : 'Reviewed rows to delete', count($repairs['delete'])],
+            [
+                $apply ? 'Historical completions inserted' : 'Historical completions to insert',
+                count($repairs['insert']),
+            ],
+            ['Recognized historical completions', count($this->historicalCompletions)],
             [
                 $apply ? 'Legacy return actions normalized' : 'Legacy return actions to normalize',
                 count($this->legacyForcedReturns),
@@ -266,6 +306,252 @@ class MigrateRentalHistoryCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    private function prepareReviewedRepairs(?string $path, ?int $bikeNumber): array
+    {
+        $result = ['delete' => [], 'insert' => []];
+        if ($path === null) {
+            return $result;
+        }
+        if (!is_file($path) || !is_readable($path)) {
+            throw new \RuntimeException('Cannot read the reviewed repairs file.');
+        }
+        $plan = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($plan) || ($plan['version'] ?? null) !== 1) {
+            throw new \RuntimeException('Unsupported reviewed repairs format.');
+        }
+        // Reviewed snapshots use UTC even when the server's default timezone differs.
+        $this->db->query("SET time_zone = '+00:00'");
+        $seen = [];
+        foreach ($plan['delete'] ?? [] as $repair) {
+            $row = $repair['event'];
+            if ($bikeNumber !== null && (int)$row['bikeNum'] !== $bikeNumber) {
+                continue;
+            }
+            $id = (int)$row['id'];
+            if (isset($seen[$id])) {
+                throw new \RuntimeException('Duplicate reviewed deletion.');
+            }
+            $seen[$id] = true;
+            if ($this->readHistoryRow($id) === null) {
+                continue;
+            }
+            $this->assertReviewedRow($row);
+            if (!in_array($row['pairActionId'], [null, 0], true) || $this->hasOtherReferences([$id], [])) {
+                throw new \RuntimeException(sprintf('History %d is referenced; cannot delete it.', $id));
+            }
+            if ($repair['reason'] === 'duplicate_start') {
+                $keep = $repair['keep'];
+                $this->assertReviewedRow($keep);
+                $seconds = strtotime($keep['time']) - strtotime($row['time']);
+                if (
+                    $row['action'] !== Action::RENT->value || $keep['action'] !== Action::RENT->value
+                    || (int)$row['bikeNum'] <= 0 || $row['bikeNum'] !== $keep['bikeNum']
+                    || (int)$row['userId'] <= 0 || $row['userId'] !== $keep['userId']
+                    || (int)$keep['id'] <= $id || $seconds < 0 || $seconds > 2
+                    || $keep['pairActionId'] !== null || $this->nextLifecycleId($row) !== (int)$keep['id']
+                ) {
+                    throw new \RuntimeException('The reviewed duplicate no longer matches its retained start.');
+                }
+            } elseif ($repair['reason'] === 'unknown_action') {
+                if ($row['action'] !== '') {
+                    throw new \RuntimeException('The reviewed unknown action is no longer empty.');
+                }
+            } elseif (
+                $repair['reason'] !== 'failed_qr_return' || (int)$row['bikeNum'] !== 0
+                || $row['action'] !== Action::RETURN->value
+            ) {
+                throw new \RuntimeException('Unsupported reviewed deletion.');
+            }
+            $result['delete'][] = $row;
+        }
+        $seen = [];
+        foreach ($plan['insert'] ?? [] as $repair) {
+            $row = $repair['event'];
+            $start = $repair['start'];
+            $next = $repair['next'];
+            if ($bikeNumber !== null && (int)$row['bikeNum'] !== $bikeNumber) {
+                continue;
+            }
+            $fields = array_keys($row);
+            sort($fields);
+            if ($fields !== ['action', 'bikeNum', 'pairActionId', 'parameter', 'standId', 'time', 'userId']) {
+                throw new \RuntimeException('A reviewed completion must contain every field except its generated ID.');
+            }
+            $time = \DateTimeImmutable::createFromFormat(
+                '!Y-m-d H:i:s',
+                (string)$row['time'],
+                new \DateTimeZone('UTC'),
+            );
+            if (
+                $time === false || $time->format('Y-m-d H:i:s') !== $row['time']
+                || !is_int($row['userId']) || !is_int($row['bikeNum']) || !is_int($row['pairActionId'])
+                || !is_int($row['standId']) || !is_string($row['parameter'])
+            ) {
+                throw new \RuntimeException('Invalid reviewed completion field types or timestamp.');
+            }
+            $deletedIds = array_column($result['delete'], 'id');
+            if (in_array($start['id'], $deletedIds, true) || in_array($next['id'], $deletedIds, true)) {
+                throw new \RuntimeException('A completion cannot depend on a row scheduled for deletion.');
+            }
+            $startId = (int)$start['id'];
+            if (isset($seen[$startId])) {
+                throw new \RuntimeException('Duplicate reviewed completion.');
+            }
+            $seen[$startId] = true;
+            $this->assertReviewedRow($start);
+            $this->assertReviewedRow($next);
+            $validStart = in_array($start['action'], [Action::RENT->value, Action::FORCE_RENT->value], true);
+            $validNext = in_array($next['action'], [Action::RENT->value, Action::FORCE_RENT->value], true);
+            if (
+                !$validStart || !$validNext || (int)$start['userId'] <= 0 || (int)$row['userId'] <= 0
+                || (int)$start['bikeNum'] <= 0 || $row['bikeNum'] !== $start['bikeNum']
+                || $row['bikeNum'] !== $next['bikeNum'] || $start['pairActionId'] !== null
+                || (int)$row['pairActionId'] !== $startId || (int)$next['id'] <= $startId
+                || $row['time'] < $start['time'] || $row['time'] > $next['time']
+                || !in_array($row['action'], [Action::RETURN->value, Action::FORCE_RETURN->value], true)
+                || ($row['action'] === Action::RETURN->value && $row['userId'] !== $start['userId'])
+                || $this->nextLifecycleId($start) !== (int)$next['id']
+                || (int)$row['standId'] <= 0 || (string)$row['standId'] !== $row['parameter']
+            ) {
+                throw new \RuntimeException(sprintf('Invalid reviewed completion for history %d.', $startId));
+            }
+            $existing = $this->db->query(
+                'SELECT * FROM history WHERE pairActionId = :id',
+                ['id' => $startId],
+            )->fetchAllAssoc();
+            if ($existing !== []) {
+                if (count($existing) !== 1 || !$this->sameHistoryFields($row, $existing[0])) {
+                    throw new \RuntimeException(sprintf('History %d already has a different completion.', $startId));
+                }
+                continue;
+            }
+            $result['insert'][] = $repair;
+        }
+
+        return $result;
+    }
+
+    private function readHistoryRow(int $id): ?array
+    {
+        return $this->db->query('SELECT * FROM history WHERE id = :id', ['id' => $id])->fetchAssoc();
+    }
+
+    private function sameHistoryFields(array $expected, array $actual): bool
+    {
+        foreach ($expected as $field => $value) {
+            if (!array_key_exists($field, $actual) || $actual[$field] !== $value) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function assertReviewedRow(array $row): void
+    {
+        $fields = array_keys($row);
+        sort($fields);
+        if ($fields !== ['action', 'bikeNum', 'id', 'pairActionId', 'parameter', 'standId', 'time', 'userId']) {
+            throw new \RuntimeException('A reviewed original must contain every history field.');
+        }
+        $actual = $this->readHistoryRow((int)$row['id']);
+        if ($actual === null || !$this->sameHistoryFields($row, $actual)) {
+            throw new \RuntimeException(sprintf('History %d differs from the reviewed original.', $row['id']));
+        }
+    }
+
+    private function nextLifecycleId(array $start): ?int
+    {
+        $next = $this->db->query(
+            'SELECT id FROM history WHERE bikeNum = :bike AND id > :id
+             AND action IN (:rent, :forceRent, :return, :forceReturn, :revert) ORDER BY id LIMIT 1',
+            [
+                'bike' => $start['bikeNum'], 'id' => $start['id'],
+                'rent' => Action::RENT->value, 'forceRent' => Action::FORCE_RENT->value,
+                'return' => Action::RETURN->value, 'forceReturn' => Action::FORCE_RETURN->value,
+                'revert' => Action::REVERT->value,
+            ],
+        )->fetchAssoc();
+
+        return $next === null ? null : (int)$next['id'];
+    }
+
+    private function deleteReviewedRow(array $row): void
+    {
+        $this->assertReviewedRow($row);
+        // The reviewed file retains the original row for recovery.
+        $affected = $this->db->query(
+            'DELETE FROM history WHERE id = :id AND userId = :userId AND bikeNum = :bikeNum
+             AND time = :time AND action = :action AND parameter = :parameter
+             AND standId <=> :standId AND pairActionId <=> :pairActionId',
+            $row,
+        )->rowCount();
+        if ($affected !== 1) {
+            throw new \RuntimeException(sprintf('History %d changed during deletion.', $row['id']));
+        }
+    }
+
+    private function insertReviewedCompletion(array $repair): void
+    {
+        $this->assertReviewedRow($repair['start']);
+        $this->assertReviewedRow($repair['next']);
+        $row = $repair['event'];
+        $affected = $this->db->query(
+            'INSERT INTO history (userId, bikeNum, time, action, parameter, standId, pairActionId)
+             SELECT :userId, :bikeNum, :time, :action, :parameter, :standId, :pairActionId FROM DUAL
+             WHERE NOT EXISTS (SELECT 1 FROM history WHERE pairActionId = :startId)',
+            $row + ['startId' => $row['pairActionId']],
+        )->rowCount();
+        if ($affected !== 1) {
+            throw new \RuntimeException('The rental was completed during insertion; rerun the preview.');
+        }
+    }
+
+    private function findHistoricalCompletions(?int $bikeNumber): void
+    {
+        $previous = [];
+        foreach ($this->iterateEvents($bikeNumber) as $event) {
+            $action = Action::tryFrom($event['action']);
+            if (
+                $action !== null && !in_array($action, [
+                Action::RENT, Action::FORCE_RENT, Action::RETURN, Action::FORCE_RETURN, Action::REVERT,
+                ], true)
+            ) {
+                continue;
+            }
+            $bikeId = (int)$event['bikeNum'];
+            $start = $previous[$bikeId] ?? null;
+            $event['afterRevert'] = ($start['action'] ?? null) === Action::REVERT->value;
+            $previous[$bikeId] = $event;
+            if (
+                $bikeId <= 0 || !in_array($action, [Action::RENT, Action::FORCE_RENT], true)
+                || !in_array($start['action'] ?? null, [Action::RENT->value, Action::FORCE_RENT->value], true)
+                || $start['afterRevert'] || (int)$start['userId'] <= 0 || $start['pairActionId'] !== null
+            ) {
+                continue;
+            }
+            $ends = $this->db->query(
+                'SELECT * FROM history WHERE pairActionId = :id',
+                ['id' => $start['id']],
+            )->fetchAllAssoc();
+            if (count($ends) !== 1) {
+                continue;
+            }
+            $end = $ends[0];
+            if (
+                (int)$end['bikeNum'] !== $bikeId || (int)$end['id'] <= (int)$event['id']
+                || !in_array($end['action'], [Action::RETURN->value, Action::FORCE_RETURN->value], true)
+                || $end['time'] < $start['time'] || $end['time'] > $event['time']
+                || ($end['action'] === Action::RETURN->value && (int)$end['userId'] !== (int)$start['userId'])
+                || $this->hasOtherReferences([(int)$end['id']], [])
+            ) {
+                continue;
+            }
+            $this->historicalCompletions[(int)$start['id']] = $end;
+            $this->historicalEndIds[(int)$end['id']] = true;
+        }
     }
 
     private function findLegacyForcedReturns(?int $bikeNumber): array
@@ -780,6 +1066,9 @@ class MigrateRentalHistoryCommand extends Command
             )->fetchAllAssoc();
             foreach ($rows as $row) {
                 $afterId = (int)$row['id'];
+                if (isset($this->reviewedDeletions[$row['id']]) || isset($this->historicalEndIds[$row['id']])) {
+                    continue;
+                }
                 if (isset($this->legacyForcedReturns[$row['id']])) {
                     $row['action'] = Action::FORCE_RETURN->value;
                 }
