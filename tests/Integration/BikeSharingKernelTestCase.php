@@ -72,7 +72,7 @@ abstract class BikeSharingKernelTestCase extends WebTestCase
                 $found,
                 sprintf(
                     'Expected %s log matching %s but did not find it.',
-                    Logger::getLevelName((int)$expected['level']),
+                    Level::from((int)$expected['level'])->getName(),
                     \is_callable($expected['pattern']) ? 'closure' : $expected['pattern']
                 )
             );

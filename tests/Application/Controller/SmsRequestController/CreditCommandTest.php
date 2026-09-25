@@ -37,6 +37,7 @@ class CreditCommandTest extends BikeSharingWebTestCase
         $sentMessage = $smsSender->getSentMessages()[0];
 
         $creditSystem = $this->client->getContainer()->get(CreditSystemInterface::class);
+        $this->assertInstanceOf(CreditSystemInterface::class, $creditSystem);
 
         $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
         $this->assertSame('command.credit.message', $sentMessage['message']->getMessage());
