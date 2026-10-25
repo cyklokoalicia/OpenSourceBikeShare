@@ -11,6 +11,7 @@ use BikeShare\Test\Application\BikeSharingWebTestCase;
 class UserControllerTest extends BikeSharingWebTestCase
 {
     private const USER_PHONE = '421951555555';
+    private const REMEMBER_ME_COOKIE = 'REMEMBERME';
 
     protected function setUp(): void
     {
@@ -88,5 +89,50 @@ class UserControllerTest extends BikeSharingWebTestCase
         $this->client->followRedirect();
         $this->logIn(self::USER_PHONE, 'new-password');
         $this->assertResponseIsSuccessful();
+    }
+
+    public function testChangePasswordReissuesRememberMeCookie(): void
+    {
+        $this->logIn(self::USER_PHONE, 'password');
+        $oldCookie = $this->client->getCookieJar()->get(self::REMEMBER_ME_COOKIE);
+        $this->assertNotNull($oldCookie);
+
+        $this->changePassword('password', 'new-password');
+
+        $newCookie = $this->client->getCookieJar()->get(self::REMEMBER_ME_COOKIE);
+        $this->assertNotNull($newCookie);
+        $this->assertNotSame($oldCookie->getValue(), $newCookie->getValue());
+
+        // Session gone, only the reissued remember-me cookie left: still signed in.
+        $this->client->getCookieJar()->clear();
+        $this->client->getCookieJar()->set($newCookie);
+        $this->client->request('GET', '/user/profile');
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function testRememberMeCookieIssuedBeforePasswordChangeIsRejected(): void
+    {
+        $this->logIn(self::USER_PHONE, 'password');
+        $oldCookie = $this->client->getCookieJar()->get(self::REMEMBER_ME_COOKIE);
+        $this->assertNotNull($oldCookie);
+
+        $this->changePassword('password', 'new-password');
+
+        // Another device that still holds the old cookie must log in again.
+        $this->client->getCookieJar()->clear();
+        $this->client->getCookieJar()->set($oldCookie);
+        $this->client->request('GET', '/user/profile');
+        $this->assertResponseRedirects('/login');
+    }
+
+    private function changePassword(string $currentPassword, string $newPassword): void
+    {
+        $crawler = $this->client->request('GET', '/user/profile');
+        $this->client->submit($crawler->selectButton('Change Password')->form([
+            'change_password_form[currentPassword]' => $currentPassword,
+            'change_password_form[plainPassword][first]' => $newPassword,
+            'change_password_form[plainPassword][second]' => $newPassword,
+        ]));
+        $this->assertResponseRedirects('/user/profile');
     }
 }

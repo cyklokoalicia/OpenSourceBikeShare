@@ -12,7 +12,10 @@
   "autoload": {
     "psr-4": {
       "BikeShare\\": "src/"
-    }
+    },
+    "files": [
+      "config/tcpdf.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {
@@ -28,10 +31,10 @@
     "ext-mysqli": "*",
     "ext-pdo": "*",
     "ashtokalo/php-translit": "^0.3.0",
-    "giggsey/libphonenumber-for-php": "^8.13",
+    "giggsey/libphonenumber-for-php": "^9.0",
     "lcobucci/jwt": "^5.4",
     "monolog/monolog": "^3.0",
-    "phpmailer/phpmailer": "^6.5.0",
+    "phpmailer/phpmailer": "^7.1.1",
     "sentry/sentry-symfony": "^5.1",
     "symfony/asset": "^6.0",
     "symfony/clock": "^6.4",
@@ -53,10 +56,8 @@
     "symfony/translation": "^6.0",
     "symfony/twig-bundle": "^6.0",
     "symfony/validator": "^6.4",
-    "tecnickcom/tcpdf": "^6.2.6"
-  },
-  "conflict": {
-    "symfony/security-http": ">=7.4.18"
+    "tecnickcom/tc-lib-barcode": "^2.17",
+    "tecnickcom/tcpdf": "^7.0.19"
   },
   "require-dev": {
     "nelmio/alice": "^3.9",
