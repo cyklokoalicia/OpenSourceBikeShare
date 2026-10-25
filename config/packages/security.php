@@ -78,13 +78,14 @@ return function (SecurityConfig $security) {
     $mainFirewall
         ->accessDeniedHandler(WebAccessDeniedHandler::class);
 
-    $security->accessControl()
-        ->path('^/admin')
-        ->roles(['ROLE_ADMIN']);
-
+    // access_control stops at the first match, so the narrower rule must come first
     $security->accessControl()
         ->path('^/admin/qrCodeGenerator')
         ->roles(['ROLE_SUPER_ADMIN']);
+
+    $security->accessControl()
+        ->path('^/admin')
+        ->roles(['ROLE_ADMIN']);
 
     $security
         ->accessControl()

@@ -7,12 +7,14 @@ namespace BikeShare\Test\Application\Controller;
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Monolog\Logger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class QrCodeGeneratorControllerTest extends BikeSharingWebTestCase
 {
     private const SUPER_ADMIN_PHONE_NUMBER = '421951777777';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const USER_PHONE_NUMBER = '421951111111';
 
     public function testSuperAdminDownloadsQrCodesPdf(): void
@@ -32,10 +34,11 @@ class QrCodeGeneratorControllerTest extends BikeSharingWebTestCase
         $this->assertStringContainsString('%%EOF', $content);
     }
 
-    public function testRegularUserIsDenied(): void
+    #[DataProvider('nonSuperAdminProvider')]
+    public function testNonSuperAdminIsDenied(string $phoneNumber): void
     {
         $user = $this->client->getContainer()->get(UserProvider::class)
-            ->loadUserByIdentifier(self::USER_PHONE_NUMBER);
+            ->loadUserByIdentifier($phoneNumber);
         $this->client->loginUser($user);
         $this->expectLog(Logger::ERROR, '/Access Denied/');
 
@@ -43,5 +46,11 @@ class QrCodeGeneratorControllerTest extends BikeSharingWebTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $this->assertResponseHeaderNotSame('Content-Type', 'application/pdf');
+    }
+
+    public static function nonSuperAdminProvider(): iterable
+    {
+        yield 'user' => [self::USER_PHONE_NUMBER];
+        yield 'admin' => [self::ADMIN_PHONE_NUMBER];
     }
 }
