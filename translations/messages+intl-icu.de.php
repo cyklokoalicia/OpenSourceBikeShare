@@ -211,7 +211,7 @@ Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmU
     'bike.error.already_rented_short' => 'Fahrrad {bikeNumber} ist bereits ausgeliehen.',
     'bike.rent.admin.stack_watch' => 'Fahrrad {bikeNumber} außerhalb der Reihe von {userName} ausgeliehen. {stackTopBike} war oben auf dem Stapel am Ständer {standName}.',
     'bike.revert.notification.previous_owner' => 'Fahrrad {bikeNumber} wurde zurückgegeben. Du kannst jetzt ein neues Fahrrad ausleihen.',
-    'bike.note.admin.notification' => 'Notiz #{noteId}: F.{bikeNumber} ({bikeStatus}) von {userName}/{phone}:{userNote}',
+    'bike.note.admin.notification' => 'Notiz: F.{bikeNumber} ({bikeStatus}) von {userName}/{phone}:{userNote}',
     'bike.status.at_stand' => 'am {standName}',
     'bike.status.in_use' => 'verwendet von {userName} +{phone}',
     'stand.error.unrecognized' => 'Standname {standName} wurde nicht erkannt. Stände sind mit GROSSBUCHSTABEN markiert.',
