@@ -1032,6 +1032,9 @@ class MigrateRentalHistoryCommandTest extends BikeSharingKernelTestCase
         }
     }
 
+    /**
+     * @phpstan-impure reads the live table, so repeated calls around a command run may differ
+     */
     private function history(): array
     {
         return $this->db->query('SELECT * FROM history ORDER BY id')->fetchAllAssoc();
