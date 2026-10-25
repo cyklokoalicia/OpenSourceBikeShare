@@ -59,9 +59,6 @@
     "tecnickcom/tc-lib-barcode": "^2.17",
     "tecnickcom/tcpdf": "^7.0.19"
   },
-  "conflict": {
-    "symfony/security-http": ">=7.4.18"
-  },
   "require-dev": {
     "nelmio/alice": "^3.9",
     "php-mock/php-mock-phpunit": "^2.13",

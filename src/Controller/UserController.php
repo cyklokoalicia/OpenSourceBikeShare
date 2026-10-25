@@ -11,15 +11,21 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Http\RememberMe\RememberMeHandlerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserController extends AbstractController
 {
+    private const REMEMBER_ME_COOKIE = 'REMEMBERME';
+
     public function profile(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         UserProvider $userProvider,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        TokenStorageInterface $tokenStorage,
+        RememberMeHandlerInterface $rememberMeHandler,
     ): Response {
         $user = $this->getUser();
         $form = $this->createForm(ChangePasswordFormType::class);
@@ -36,6 +42,15 @@ class UserController extends AbstractController
                     $newPassword
                 );
                 $userProvider->upgradePassword($user, $hashedPassword);
+
+                // Keep this session signed in: with the old hash in the token the next request would see a
+                // changed user and log out. Other sessions and remember-me cookies are invalidated on purpose.
+                $refreshedUser = $userProvider->refreshUser($user);
+                $tokenStorage->getToken()?->setUser($refreshedUser);
+                if ($request->cookies->has(self::REMEMBER_ME_COOKIE)) {
+                    $rememberMeHandler->createRememberMeCookie($refreshedUser);
+                }
+
                 $this->addFlash('success', $translator->trans('Password updated successfully.'));
 
                 return $this->redirectToRoute('user_profile');
