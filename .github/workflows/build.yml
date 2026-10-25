@@ -10,7 +10,8 @@ on:
 
 jobs:
   phpcs_phpunit:
-    runs-on: ubuntu-latest
+    # ubuntu-latest moved to 26.04, which no longer ships the MySQL server used by "Init mysql"
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         php-version: [8.4, 8.5]
