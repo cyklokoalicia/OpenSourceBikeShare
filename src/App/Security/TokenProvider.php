@@ -32,7 +32,6 @@ class TokenProvider implements TokenProviderInterface
             $row = $result->fetchAssoc();
 
             $this->tokens[$series] = new PersistentToken(
-                $row['class'],
                 $row['username'],
                 $row['series'],
                 $row['value'],
@@ -51,7 +50,6 @@ class TokenProvider implements TokenProviderInterface
         $currentToken = $this->loadTokenBySeries($series);
 
         $token = new PersistentToken(
-            $currentToken->getClass(),
             $currentToken->getUserIdentifier(),
             $series,
             $tokenValue,
