@@ -53,7 +53,7 @@
     "symfony/property-info": "^6.4",
     "symfony/runtime": "^6.0",
     "symfony/security-bundle": "^6.0",
-    "symfony/translation": "^6.0",
+    "symfony/translation": "^8.1",
     "symfony/twig-bundle": "^6.0",
     "symfony/validator": "^6.4",
     "tecnickcom/tc-lib-barcode": "^2.17",
