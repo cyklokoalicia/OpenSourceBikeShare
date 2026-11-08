@@ -90,6 +90,9 @@ return static function (ContainerConfigurator $container): void {
             '../src/Rent/DTO',
             '../src/Rent/Enum',
             '../src/Translation',
+            '../src/Notification/Contact.php',
+            '../src/Notification/Notification.php',
+            '../src/Notification/Recipients.php',
             '../src/Welcome/MessengerChat.php',
             '../src/Welcome/MessengerIcon.php',
         ]);
