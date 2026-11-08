@@ -10,7 +10,6 @@ use BikeShare\Event\BikeRentEvent;
 use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Event\BikeRevertEvent;
 use BikeShare\Event\StackWatchViolationEvent;
-use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\NoteRepository;
@@ -29,7 +28,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected readonly CreditSystemInterface $creditSystem,
         protected readonly UserRepository $userRepository,
         protected readonly EventDispatcherInterface $eventDispatcher,
-        protected readonly AdminNotifier $adminNotifier,
         protected readonly LoggerInterface $logger,
         protected readonly StandRepository $standRepository,
         protected readonly HistoryRepository $historyRepository,

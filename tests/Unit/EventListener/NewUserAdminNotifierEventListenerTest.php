@@ -14,6 +14,7 @@ use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class NewUserAdminNotifierEventListenerTest extends TestCase
 {
@@ -74,6 +75,7 @@ class NewUserAdminNotifierEventListenerTest extends TestCase
             ->with(
                 $this->callback(function (Notification $notification): bool {
                     $msg = $notification->body;
+                    $this->assertInstanceOf(TranslatableMessage::class, $msg);
                     $this->assertSame(NotificationType::NewVerifiedUser, $notification->type);
                     $this->assertSame('admin.notification.new_verified_user', $msg->getMessage());
                     $this->assertSame(
@@ -145,6 +147,7 @@ class NewUserAdminNotifierEventListenerTest extends TestCase
             ->with(
                 $this->callback(
                     static fn (Notification $n): bool => $n->type === NotificationType::NewVerifiedUser
+                        && $n->body instanceof TranslatableMessage
                         && $n->body->getMessage() === 'admin.notification.new_verified_user'
                 ),
                 $this->equalTo(Recipients::admins())

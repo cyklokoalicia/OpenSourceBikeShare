@@ -16,6 +16,7 @@ use Psr\Clock\ClockInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class InactiveStandBikesCheckCommandTest extends TestCase
 {
@@ -91,6 +92,7 @@ class InactiveStandBikesCheckCommandTest extends TestCase
             ->with(
                 $this->callback(
                     static fn (Notification $n): bool => $n->type === NotificationType::InactiveBikes
+                        && $n->body instanceof TranslatableMessage
                         && $n->body->getMessage() === 'admin.notification.inactive_bikes'
                 ),
                 $this->equalTo(Recipients::admins())
@@ -98,6 +100,7 @@ class InactiveStandBikesCheckCommandTest extends TestCase
             ->willReturnCallback(
                 static function (Notification $notification) use (&$notifiedKey, &$notifiedLines): void {
                     $message = $notification->body;
+                    assert($message instanceof TranslatableMessage);
                     $notifiedKey = $message->getMessage();
                     $notifiedLines = $message->getParameters()['lines'] ?? '';
                 }
