@@ -104,7 +104,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                         new StackWatchViolationEvent(
                             $bikeId,
                             (int)$userId,
-                            (int)$stackTopBike,
+                            $stackTopBike,
                             $stand['standName'] ?? ''
                         )
                     );
