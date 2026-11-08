@@ -9,6 +9,7 @@ use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Event\BikeRentEvent;
 use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Event\BikeRevertEvent;
+use BikeShare\Event\StackWatchViolationEvent;
 use BikeShare\Notifier\AdminNotifier;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
@@ -19,9 +20,7 @@ use BikeShare\Enum\Action;
 use BikeShare\Enum\StandStatus;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
-use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Translation\TranslatableInterface;
 
 abstract class AbstractRentSystem implements RentSystemInterface
 {
@@ -103,17 +102,13 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 }
 
                 if ($this->stackWatchEnabled && $stackTopBike != $bikeId) {
-                    $this->notifyAdmins(
-                        new TranslatableMessage(
-                            'bike.rent.admin.stack_watch',
-                            [
-                                'bikeNumber' => $bikeId,
-                                'userName' => $user['userName'] ?? '',
-                                'stackTopBike' => $stackTopBike,
-                                'standName' => $stand['standName'] ?? '',
-                            ]
-                        ),
-                        false,
+                    $this->eventDispatcher->dispatch(
+                        new StackWatchViolationEvent(
+                            $bikeId,
+                            (int)$userId,
+                            (int)$stackTopBike,
+                            $stand['standName'] ?? ''
+                        )
                     );
                 }
 
@@ -289,10 +284,5 @@ abstract class AbstractRentSystem implements RentSystemInterface
     protected function error(string $code, array $params = []): RentSystemResult
     {
         return new RentSystemResult(true, $code, static::getType(), $params);
-    }
-
-    private function notifyAdmins(TranslatableInterface $message, bool $bySms = true): void
-    {
-        $this->adminNotifier->notify($message, $bySms);
     }
 }
