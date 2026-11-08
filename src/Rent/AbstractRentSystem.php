@@ -188,8 +188,11 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $this->bikeRepository->returnToStand($bikeId, $standId, $force ? null : $userId);
 
+        $noteId = null;
+        $userNote = null;
         if ($note) {
-            $this->addNote($userId, $bikeId, $note);
+            $userNote = trim($note);
+            $noteId = $this->noteRepository->addNoteToBike($bikeId, $userId, $userNote);
         } else {
             $note = $this->noteRepository->findBikeNote($bikeId)[0]['note'] ?? '';
         }
@@ -209,7 +212,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         );
 
         $this->eventDispatcher->dispatch(
-            new BikeReturnEvent($bikeId, $standName, $userId, $force)
+            new BikeReturnEvent($bikeId, $standName, $userId, $force, $noteId, $userNote)
         );
 
         return $this->success(
@@ -291,40 +294,5 @@ abstract class AbstractRentSystem implements RentSystemInterface
     private function notifyAdmins(TranslatableInterface $message, bool $bySms = true): void
     {
         $this->adminNotifier->notify($message, $bySms);
-    }
-
-    private function addNote(int $userId, int $bikeNum, string $message): void
-    {
-        $userNote = trim($message);
-
-        $user = $this->userRepository->findItem($userId);
-        $userName = $user['userName'] ?? '';
-        $phone = $user['number'] ?? '';
-
-        $bikeUsage = $this->bikeRepository->findBikeCurrentUsage($bikeNum);
-        $standName = $bikeUsage['standName'] ?? null;
-        if ($standName !== null) {
-            $bikeStatus = new TranslatableMessage('bike.status.at_stand', ['standName' => $standName]);
-        } else {
-            $bikeStatus = new TranslatableMessage(
-                'bike.status.in_use',
-                ['userName' => $userName, 'phone' => $phone]
-            );
-        }
-
-        $noteId = $this->noteRepository->addNoteToBike($bikeNum, $userId, $userNote);
-        $this->notifyAdmins(
-            new TranslatableMessage(
-                'bike.note.admin.notification',
-                [
-                    'noteId' => $noteId,
-                    'bikeNumber' => $bikeNum,
-                    'bikeStatus' => $bikeStatus,
-                    'userName' => $userName,
-                    'phone' => $phone,
-                    'userNote' => $userNote,
-                ]
-            )
-        );
     }
 }
