@@ -18,7 +18,20 @@ class Notifier implements NotifierInterface
 
     public function notify(Notification $notification, Recipients $recipients): void
     {
-        foreach ($this->contactResolver->resolve($recipients) as $contact) {
+        try {
+            $contacts = $this->contactResolver->resolve($recipients);
+        } catch (\Throwable $e) {
+            $this->logger->error('Notification delivery failed', [
+                'type' => $notification->type->value,
+                'channel' => null,
+                'userId' => null,
+                'exception' => $e,
+            ]);
+
+            return;
+        }
+
+        foreach ($contacts as $contact) {
             foreach ($notification->type->allowedChannels() as $channel) {
                 $address = $contact->addressFor($channel);
                 if ($address === null || !$this->channelSenders->has($channel->value)) {

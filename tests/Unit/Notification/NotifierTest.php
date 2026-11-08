@@ -102,6 +102,42 @@ class NotifierTest extends TestCase
         ], $this->calls);
     }
 
+    public function testFailingRecipientLookupIsIsolated(): void
+    {
+        $resolver = $this->createStub(ContactResolver::class);
+        $resolver->method('resolve')->willThrowException(new \RuntimeException('db down'));
+        $this->resolver = $resolver;
+        $this->logger->expects($this->once())->method('error')->with(
+            'Notification delivery failed',
+            $this->callback(
+                static fn(array $context): bool => $context['type'] === 'bike-note-added'
+                    && $context['channel'] === null
+                    && $context['userId'] === null
+                    && $context['exception'] instanceof \RuntimeException
+                    && count($context) === 4
+            )
+        );
+
+        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), Recipients::admins());
+
+        $this->assertSame([], $this->calls);
+    }
+
+    public function testSkipsChannelWithoutRegisteredSender(): void
+    {
+        $this->resolver->method('resolve')->willReturn([
+            new Contact(1, 'en', ['email' => 'a@x.com', 'sms' => '111']),
+        ]);
+        $this->logger->expects($this->never())->method('error');
+
+        $this->notifier([Channel::Email])->notify(
+            $this->notification(NotificationType::BikeNoteAdded),
+            Recipients::admins()
+        );
+
+        $this->assertSame([['email', 'a@x.com', 'en']], $this->calls);
+    }
+
     public function testNoContactsNoSends(): void
     {
         $this->resolver->method('resolve')->willReturn([]);
@@ -117,12 +153,15 @@ class NotifierTest extends TestCase
         return new Notification($type, new TranslatableMessage('some.key'));
     }
 
-    private function notifier(): Notifier
+    /**
+     * @param list<Channel> $registered
+     */
+    private function notifier(array $registered = [Channel::Email, Channel::Sms]): Notifier
     {
-        $senders = [
-            Channel::Email->value => $this->spy(Channel::Email),
-            Channel::Sms->value => $this->spy(Channel::Sms),
-        ];
+        $senders = [];
+        foreach ($registered as $channel) {
+            $senders[$channel->value] = $this->spy($channel);
+        }
         $locator = $this->createStub(ContainerInterface::class);
         $locator->method('has')->willReturnCallback(static fn(string $id): bool => isset($senders[$id]));
         $locator->method('get')->willReturnCallback(static fn(string $id) => $senders[$id]);
