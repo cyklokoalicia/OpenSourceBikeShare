@@ -61,7 +61,9 @@ class ReturnWithNoteNotificationTest extends BikeSharingWebTestCase
         $this->assertGreaterThan(0, $params['noteId']);
         $this->assertSame(self::NOTE, $params['userNote']);
         $this->assertSame(self::BIKE_NUMBER, $params['bikeNumber']);
-        $this->assertArrayHasKey('bikeStatus', $params);
+        $this->assertInstanceOf(TranslatableMessage::class, $params['bikeStatus']);
+        $this->assertSame('bike.status.at_stand', $params['bikeStatus']->getMessage());
+        $this->assertSame(['standName' => self::STAND_NAME], $params['bikeStatus']->getParameters());
         $this->assertArrayHasKey('userName', $params);
         $this->assertArrayHasKey('phone', $params);
 
