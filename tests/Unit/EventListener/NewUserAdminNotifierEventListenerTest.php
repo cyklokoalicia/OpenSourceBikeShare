@@ -6,22 +6,24 @@ namespace BikeShare\Test\Unit\EventListener;
 
 use BikeShare\Event\UserVerificationCompletedEvent;
 use BikeShare\EventListener\NewUserAdminNotifierEventListener;
-use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\Recipients;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Translation\TranslatableMessage;
 
 class NewUserAdminNotifierEventListenerTest extends TestCase
 {
-    private AdminNotifier&MockObject $adminNotifierMock;
+    private NotifierInterface&MockObject $adminNotifierMock;
     private UserRepository&MockObject $userRepositoryMock;
     private RegistrationRepository&MockObject $registrationRepositoryMock;
 
     protected function setUp(): void
     {
-        $this->adminNotifierMock = $this->createMock(AdminNotifier::class);
+        $this->adminNotifierMock = $this->createMock(NotifierInterface::class);
         $this->userRepositoryMock = $this->createMock(UserRepository::class);
         $this->registrationRepositoryMock = $this->createMock(RegistrationRepository::class);
     }
@@ -70,7 +72,9 @@ class NewUserAdminNotifierEventListenerTest extends TestCase
             ->expects($this->once())
             ->method('notify')
             ->with(
-                $this->callback(function (TranslatableMessage $msg): bool {
+                $this->callback(function (Notification $notification): bool {
+                    $msg = $notification->body;
+                    $this->assertSame(NotificationType::NewVerifiedUser, $notification->type);
                     $this->assertSame('admin.notification.new_verified_user', $msg->getMessage());
                     $this->assertSame(
                         [
@@ -83,7 +87,7 @@ class NewUserAdminNotifierEventListenerTest extends TestCase
 
                     return true;
                 }),
-                false
+                $this->equalTo(Recipients::admins())
             );
 
         ($this->createListener(isSmsSystemEnabled: true))(new UserVerificationCompletedEvent($userId));
@@ -138,7 +142,13 @@ class NewUserAdminNotifierEventListenerTest extends TestCase
         $this->adminNotifierMock
             ->expects($this->once())
             ->method('notify')
-            ->with($this->isInstanceOf(TranslatableMessage::class), false);
+            ->with(
+                $this->callback(
+                    static fn (Notification $n): bool => $n->type === NotificationType::NewVerifiedUser
+                        && $n->body->getMessage() === 'admin.notification.new_verified_user'
+                ),
+                $this->equalTo(Recipients::admins())
+            );
 
         ($this->createListener(isSmsSystemEnabled: false))(new UserVerificationCompletedEvent($userId));
     }

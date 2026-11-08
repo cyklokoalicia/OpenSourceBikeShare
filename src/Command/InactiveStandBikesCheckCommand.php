@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace BikeShare\Command;
 
-use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\Recipients;
 use BikeShare\Repository\BikeRepository;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -22,7 +25,7 @@ class InactiveStandBikesCheckCommand extends Command
 {
     public function __construct(
         private readonly BikeRepository $bikeRepository,
-        private readonly AdminNotifier $adminNotifier,
+        private readonly NotifierInterface $notifier,
         private readonly ClockInterface $clock,
     ) {
         parent::__construct();
@@ -70,12 +73,15 @@ class InactiveStandBikesCheckCommand extends Command
             ];
         }
 
-        $this->adminNotifier->notify(
-            new TranslatableMessage(
-                'admin.notification.inactive_bikes',
-                ['lines' => implode("\n", $lines)]
+        $this->notifier->notify(
+            new Notification(
+                NotificationType::InactiveBikes,
+                new TranslatableMessage(
+                    'admin.notification.inactive_bikes',
+                    ['lines' => implode("\n", $lines)]
+                )
             ),
-            false
+            Recipients::admins()
         );
 
         if (!$isSilent) {

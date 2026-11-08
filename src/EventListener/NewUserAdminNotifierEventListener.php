@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\UserVerificationCompletedEvent;
-use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\Recipients;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -14,7 +17,7 @@ class NewUserAdminNotifierEventListener
 {
     public function __construct(
         private readonly bool $isSmsSystemEnabled,
-        private readonly AdminNotifier $adminNotifier,
+        private readonly NotifierInterface $notifier,
         private readonly UserRepository $userRepository,
         private readonly RegistrationRepository $registrationRepository,
     ) {
@@ -39,16 +42,19 @@ class NewUserAdminNotifierEventListener
             return;
         }
 
-        $this->adminNotifier->notify(
-            new TranslatableMessage(
-                'admin.notification.new_verified_user',
-                [
-                    'userName' => $user['userName'],
-                    'email' => $user['mail'],
-                    'phone' => $user['number'],
-                ]
+        $this->notifier->notify(
+            new Notification(
+                NotificationType::NewVerifiedUser,
+                new TranslatableMessage(
+                    'admin.notification.new_verified_user',
+                    [
+                        'userName' => $user['userName'],
+                        'email' => $user['mail'],
+                        'phone' => $user['number'],
+                    ]
+                )
             ),
-            bySms: false,
+            Recipients::admins()
         );
     }
 }
