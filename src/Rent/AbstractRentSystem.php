@@ -99,7 +99,8 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     return $this->error('bike.rent.error.service_stand');
                 }
 
-                if ($this->stackWatchEnabled && $stackTopBike != $bikeId) {
+                // An unknown stack top (no bike here was ever returned to this stand) is not a violation.
+                if ($this->stackWatchEnabled && $stackTopBike !== null && $stackTopBike !== $bikeId) {
                     $this->eventDispatcher->dispatch(
                         new StackWatchViolationEvent(
                             $bikeId,

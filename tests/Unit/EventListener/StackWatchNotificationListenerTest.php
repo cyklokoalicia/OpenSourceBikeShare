@@ -31,7 +31,7 @@ class StackWatchNotificationListenerTest extends TestCase
         unset($this->notifierMock, $this->userRepositoryMock);
     }
 
-    public function testUnknownStackTopBikeStaysNull(): void
+    public function testNotifiesAdminsAboutTheViolation(): void
     {
         $this->userRepositoryMock->method('findItem')->with(7)->willReturn(['userName' => 'Jane']);
 
@@ -45,8 +45,9 @@ class StackWatchNotificationListenerTest extends TestCase
                     $this->assertInstanceOf(TranslatableMessage::class, $message);
                     $this->assertSame('bike.rent.admin.stack_watch', $message->getMessage());
                     $params = $message->getParameters();
-                    $this->assertArrayHasKey('stackTopBike', $params);
-                    $this->assertNull($params['stackTopBike']);
+                    $this->assertInstanceOf(TranslatableMessage::class, $notification->subject);
+                    $this->assertSame('notification.subject.stack_watch', $notification->subject->getMessage());
+                    $this->assertSame(6, $params['stackTopBike']);
                     $this->assertSame(5, $params['bikeNumber']);
                     $this->assertSame('Jane', $params['userName']);
                     $this->assertSame('STAND1', $params['standName']);
@@ -57,7 +58,7 @@ class StackWatchNotificationListenerTest extends TestCase
             );
 
         (new StackWatchNotificationListener($this->userRepositoryMock, $this->notifierMock))(
-            new StackWatchViolationEvent(5, 7, null, 'STAND1')
+            new StackWatchViolationEvent(5, 7, 6, 'STAND1')
         );
     }
 }

@@ -9,7 +9,7 @@ class StackWatchViolationEvent
     public function __construct(
         private readonly int $bikeNumber,
         private readonly int $userId,
-        private readonly ?int $stackTopBike,
+        private readonly int $stackTopBike,
         private readonly string $standName,
     ) {
     }
@@ -24,7 +24,7 @@ class StackWatchViolationEvent
         return $this->userId;
     }
 
-    public function getStackTopBike(): ?int
+    public function getStackTopBike(): int
     {
         return $this->stackTopBike;
     }

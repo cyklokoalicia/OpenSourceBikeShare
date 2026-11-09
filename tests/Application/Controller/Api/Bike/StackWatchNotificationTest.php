@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Test\Application\Controller\Api\Bike;
 
 use BikeShare\App\Security\UserProvider;
+use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Rent\RentSystemFactory;
@@ -22,6 +23,9 @@ class StackWatchNotificationTest extends BikeSharingWebTestCase
     private const STAND_NAME = 'STAND1';
 
     private int $otherBike;
+
+    /** @var array{bike: int, standName: string, maxHistoryId: int}|null */
+    private ?array $unknownTopRental = null;
 
     protected function setUp(): void
     {
@@ -54,6 +58,20 @@ class StackWatchNotificationTest extends BikeSharingWebTestCase
         $rentSystem = $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB);
         $rentSystem->returnBike($admin['userId'], $this->otherBike, self::STAND_NAME, '', true);
         $rentSystem->returnBike($admin['userId'], self::STACK_TOP_BIKE, self::STAND_NAME, '', true);
+        if ($this->unknownTopRental !== null) {
+            $rentSystem->returnBike(
+                $admin['userId'],
+                $this->unknownTopRental['bike'],
+                $this->unknownTopRental['standName'],
+                '',
+                true
+            );
+            // Drop this test's rent/return rows so the stand's stack top stays unknown for later tests.
+            $this->client->getContainer()->get(DbInterface::class)->query(
+                'DELETE FROM history WHERE id > :maxId',
+                ['maxId' => $this->unknownTopRental['maxHistoryId']]
+            );
+        }
 
         parent::tearDown();
     }
@@ -85,6 +103,33 @@ class StackWatchNotificationTest extends BikeSharingWebTestCase
     public function testRentingStackTopSendsNothing(): void
     {
         $this->rentAsUser(self::STACK_TOP_BIKE);
+
+        $container = $this->client->getContainer();
+        $this->assertSame([], $container->get(MailSenderInterface::class)->getSentMessages());
+        $this->assertSame([], $container->get(DebugSmsSender::class)->getSentMessages());
+    }
+
+    public function testRentingOnStandWithUnknownStackTopSendsNothing(): void
+    {
+        $container = $this->client->getContainer();
+        $db = $container->get(DbInterface::class);
+        $standRepository = $container->get(StandRepository::class);
+        $stands = $db->query("SELECT standId, standName FROM stands WHERE status = 'active'")->fetchAllAssoc();
+        foreach ($stands as $stand) {
+            $bikes = $standRepository->findBikesOnStand((int)$stand['standId']);
+            if ($bikes !== [] && $standRepository->findLastReturnedBikeOnStand((int)$stand['standId']) === null) {
+                $this->unknownTopRental = [
+                    'bike' => (int)$bikes[0]['bikeNum'],
+                    'standName' => $stand['standName'],
+                    'maxHistoryId' => (int)$db->query('SELECT COALESCE(MAX(id), 0) AS maxId FROM history')
+                        ->fetchAssoc()['maxId'],
+                ];
+                break;
+            }
+        }
+        $this->assertNotNull($this->unknownTopRental, 'Fixtures need an active stand with bikes and no returns');
+
+        $this->rentAsUser($this->unknownTopRental['bike']);
 
         $container = $this->client->getContainer();
         $this->assertSame([], $container->get(MailSenderInterface::class)->getSentMessages());
