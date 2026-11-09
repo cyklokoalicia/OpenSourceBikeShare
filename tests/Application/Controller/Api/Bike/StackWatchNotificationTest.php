@@ -14,6 +14,7 @@ use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class StackWatchNotificationTest extends BikeSharingWebTestCase
 {
@@ -86,15 +87,14 @@ class StackWatchNotificationTest extends BikeSharingWebTestCase
         $sent = $container->get(MailSenderInterface::class)->getSentMessages();
         $this->assertEqualsCanonicalizing($adminMails, array_column($sent, 'recipient'));
         foreach ($sent as $mail) {
-            $this->assertSame('Bike rented out of stack order', $mail['subject']);
-            $this->assertSame(
-                sprintf(
-                    'Bike %d rented out of stack by %s. %d was on the top of the stack at %s.',
-                    $this->otherBike,
-                    $user['userName'],
-                    self::STACK_TOP_BIKE,
-                    self::STAND_NAME
-                ),
+            $this->assertEquals(new TranslatableMessage('notification.subject.stack_watch'), $mail['subject']);
+            $this->assertEquals(
+                new TranslatableMessage('bike.rent.admin.stack_watch', [
+                    'bikeNumber' => $this->otherBike,
+                    'userName' => $user['userName'],
+                    'stackTopBike' => self::STACK_TOP_BIKE,
+                    'standName' => self::STAND_NAME,
+                ]),
                 $mail['message']
             );
         }

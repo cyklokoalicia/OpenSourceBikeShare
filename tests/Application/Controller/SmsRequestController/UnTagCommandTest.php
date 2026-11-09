@@ -42,7 +42,6 @@ class UnTagCommandTest extends BikeSharingWebTestCase
         ?string $pattern,
         string $expectedCode,
         array $expectedParams,
-        string $expectedMailMessagePattern,
         bool $notifiesAdmins,
         int $expectedRemainingNotes,
         bool $expectedWarning
@@ -129,8 +128,18 @@ class UnTagCommandTest extends BikeSharingWebTestCase
 
         if ($notifiesAdmins) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertMatchesRegularExpression($expectedMailMessagePattern, $sentMessage['message']);
-                $this->assertSame('SMS command processed', $sentMessage['subject']);
+                $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+                $this->assertEquals(
+                    new TranslatableMessage('admin.notification.sms_processed', [
+                        'userName' => $user['userName'],
+                        'message' => new TranslatableMessage($expectedCode, $expectedParams),
+                    ]),
+                    $sentMessage['message']
+                );
+                $this->assertEquals(
+                    new TranslatableMessage('notification.subject.sms_command_audit'),
+                    $sentMessage['subject']
+                );
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
         }
@@ -158,7 +167,6 @@ class UnTagCommandTest extends BikeSharingWebTestCase
                     'hasPattern' => 'false',
                     'pattern' => '',
                 ],
-                'expectedMailMessagePattern' => '/note(s)? for bikes on stand ' . self::STAND_NAME . ' \w* deleted\./',
                 'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 0,
                 'expectedWarning' => false,
@@ -172,8 +180,6 @@ class UnTagCommandTest extends BikeSharingWebTestCase
                     'hasPattern' => 'true',
                     'pattern' => 'test',
                 ],
-                'expectedMailMessagePattern' => '/note(s)? matching pattern \"test\" for bikes on stand ' .
-                    self::STAND_NAME . ' \w* deleted\./',
                 'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 1,
                 'expectedWarning' => false,
@@ -186,8 +192,6 @@ class UnTagCommandTest extends BikeSharingWebTestCase
                     'hasPattern' => 'true',
                     'pattern' => 'INVALID_PATTERN',
                 ],
-                'expectedMailMessagePattern' => '/No notes matching pattern \"INVALID_PATTERN\" '
-                    . 'found for bikes on stand ' . self::STAND_NAME . ' to delete\./',
                 'notifiesAdmins' => false,
                 'expectedRemainingNotes' => 2,
                 'expectedWarning' => true,

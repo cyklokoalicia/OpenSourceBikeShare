@@ -8,6 +8,7 @@ use BikeShare\App\Entity\User;
 use BikeShare\Event\UserReconfirmationEvent;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Test\Integration\BikeSharingKernelTestCase;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
 {
@@ -28,7 +29,13 @@ class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
         // userKey (no registration re-query — so a concurrently deleted row cannot crash it).
         $eventDispatcher->dispatch($event);
         $this->assertCount(1, $mailSender->getSentMessages());
-        $this->assertStringContainsString(self::USER_KEY, $mailSender->getSentMessages()[0]['message']);
+        $mail = $mailSender->getSentMessages()[0];
+        $this->assertEquals(new TranslatableMessage('Email confirmation'), $mail['subject']);
+        $this->assertInstanceOf(TranslatableMessage::class, $mail['message']);
+        $this->assertSame('email.confirmation.mail', $mail['message']->getMessage());
+        $params = $mail['message']->getParameters();
+        $this->assertSame('Eve', $params['name']);
+        $this->assertStringEndsWith('/user/confirm/email/' . self::USER_KEY, $params['emailConfirmURL']);
 
         // Second dispatch within the window is throttled — no additional email.
         $eventDispatcher->dispatch($event);

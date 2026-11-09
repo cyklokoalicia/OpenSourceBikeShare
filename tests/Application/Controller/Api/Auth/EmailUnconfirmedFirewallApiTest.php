@@ -20,6 +20,7 @@ use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class EmailUnconfirmedFirewallApiTest extends BikeSharingWebTestCase
 {
@@ -66,10 +67,12 @@ class EmailUnconfirmedFirewallApiTest extends BikeSharingWebTestCase
 
         // Confirm the email out-of-band via the link from the registration mail.
         $mailSender = $container->get(MailSenderInterface::class);
-        $body = $mailSender->getSentMessages()[0]['message'] ?? '';
-        preg_match('/(\/user\/confirm\/email\/[a-z0-9]+)/', (string)$body, $matches);
-        $this->assertNotEmpty($matches[1] ?? null, 'Email confirmation link not found');
-        $this->client->request(Request::METHOD_GET, $matches[1]);
+        $body = $mailSender->getSentMessages()[0]['message'] ?? null;
+        $this->assertInstanceOf(TranslatableMessage::class, $body);
+        $this->assertSame('email.confirmation.mail', $body->getMessage());
+        $confirmationLink = parse_url((string)($body->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
+        $this->assertNotEmpty($confirmationLink, 'Email confirmation link not found');
+        $this->client->request(Request::METHOD_GET, $confirmationLink);
         $this->assertResponseRedirects();
         $this->assertNull($registrationRepository->findItemByUserId($userRow['userId']));
 

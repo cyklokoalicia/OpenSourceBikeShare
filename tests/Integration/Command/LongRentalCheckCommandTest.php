@@ -15,6 +15,7 @@ use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
 {
@@ -108,14 +109,14 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
         $mailSender = self::getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'Invalid number of sent email');
         $sentMessage = $mailSender->getSentMessages()[0];
-        $this->assertStringContainsString(
-            'Bike rental exceed ' . $_ENV['WATCHES_LONG_RENTAL'] . ' hours',
-            $sentMessage['message'],
-            'Invalid message for admin email'
-        );
+        $this->assertEquals(new TranslatableMessage('notification.subject.long_rental_admin'), $sentMessage['subject']);
+        $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+        $this->assertSame('admin.notification.long_rental', $sentMessage['message']->getMessage());
+        $params = $sentMessage['message']->getParameters();
+        $this->assertEquals($_ENV['WATCHES_LONG_RENTAL'], $params['hour'], 'Invalid hour count for admin email');
         $this->assertStringContainsString(
             self::USER_PHONE_NUMBER,
-            $sentMessage['message'],
+            $params['abusers'],
             'Invalid message for admin email'
         );
     }
@@ -153,12 +154,15 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
         $this->assertSame([self::SECOND_USER_PHONE_NUMBER], array_column($warnings, 'number'));
         $this->assertStringContainsString('return your bike ' . self::SECOND_BIKE_NUMBER . ' ', $warnings[0]['text']);
 
+        $summarySubject = new TranslatableMessage('notification.subject.long_rental_admin');
         $summaries = array_values(array_filter(
             $container->get(MailSenderInterface::class)->getSentMessages(),
-            static fn (array $m): bool => $m['subject'] === 'Long rentals'
+            static fn (array $m): bool => $m['subject'] == $summarySubject
         ));
         $this->assertCount(count($userRepository->findAdmins()), $summaries);
-        $this->assertStringContainsString(self::USER_PHONE_NUMBER, $summaries[0]['message']);
-        $this->assertStringContainsString(self::SECOND_USER_PHONE_NUMBER, $summaries[0]['message']);
+        $this->assertInstanceOf(TranslatableMessage::class, $summaries[0]['message']);
+        $abusers = $summaries[0]['message']->getParameters()['abusers'];
+        $this->assertStringContainsString(self::USER_PHONE_NUMBER, $abusers);
+        $this->assertStringContainsString(self::SECOND_USER_PHONE_NUMBER, $abusers);
     }
 }

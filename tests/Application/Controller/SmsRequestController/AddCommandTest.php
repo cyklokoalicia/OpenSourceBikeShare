@@ -87,16 +87,17 @@ class AddCommandTest extends BikeSharingWebTestCase
         $this->assertCount(1, $sentMessages, 'Invalid number of sent messages');
         $names = preg_split("/[\s,]+/", $fullName);
         $firstName = $names[0];
-        # Assert that the email contains only the first name of the user
-        $this->assertStringContainsString(
-            'Hello ' . $firstName . PHP_EOL,
-            $sentMessages[0]['message'],
-            "Email does not contain the user's first name"
-        );
+        $mail = $sentMessages[0];
+        $this->assertEquals(new TranslatableMessage('Registration'), $mail['subject']);
+        $this->assertInstanceOf(TranslatableMessage::class, $mail['message']);
+        $this->assertSame('success.registration.mail', $mail['message']->getMessage());
+        $params = $mail['message']->getParameters();
+        # Assert that the email addresses only the first name of the user
+        $this->assertSame($firstName, $params['name'], "Email does not contain the user's first name");
         # Assert that the email contains the link to the system rules page
-        $this->assertStringContainsString(
-            $this->client->getServerParameter('SYSTEM_RULES'),
-            $sentMessages[0]['message'],
+        $this->assertSame(
+            $_ENV['SYSTEM_RULES'],
+            $params['systemRulesPageUrl'],
             'Email does not contain the system rules link'
         );
 
@@ -106,7 +107,7 @@ class AddCommandTest extends BikeSharingWebTestCase
         # Assert that the email contains the registration key for the user
         $this->assertStringContainsString(
             $registrationKey,
-            $sentMessages[0]['message'],
+            $params['emailConfirmURL'],
             'Email does not contain the registration key'
         );
 

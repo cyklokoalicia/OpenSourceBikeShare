@@ -55,9 +55,10 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
 
         // Extract confirmation link
         $body = $email['message'];
-        $this->assertNotNull($body);
-        preg_match('/(\/user\/confirm\/email\/[a-z0-9]+)/', $body, $matches);
-        $confirmationLink = $matches[1];
+        $this->assertInstanceOf(TranslatableMessage::class, $body);
+        $this->assertSame('success.registration.mail', $body->getMessage());
+        $confirmationLink = parse_url((string)($body->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
+        $this->assertNotEmpty($confirmationLink, 'Email confirmation link not found');
 
         $this->client->request(Request::METHOD_GET, $confirmationLink);
         $this->assertResponseRedirects('/');
@@ -133,7 +134,9 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
             $emailsAfterPhoneConfirm,
             static fn (array $m): bool => $m['recipient'] === $superAdmin['mail']
         ))[0];
-        $this->assertStringContainsString($userEmail, $adminEmail['message']);
-        $this->assertStringContainsString($phonePurifier->purify($userPhone), $adminEmail['message']);
+        $this->assertInstanceOf(TranslatableMessage::class, $adminEmail['message']);
+        $this->assertSame('admin.notification.new_verified_user', $adminEmail['message']->getMessage());
+        $this->assertSame($userEmail, $adminEmail['message']->getParameters()['email']);
+        $this->assertSame($phonePurifier->purify($userPhone), $adminEmail['message']->getParameters()['phone']);
     }
 }

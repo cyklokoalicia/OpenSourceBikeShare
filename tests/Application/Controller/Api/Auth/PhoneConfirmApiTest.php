@@ -81,11 +81,11 @@ class PhoneConfirmApiTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $sendEmails = $mailSender->getSentMessages();
         $this->assertCount(1, $sendEmails);
-        $body = $sendEmails[0]['message'] ?? '';
-        $this->assertNotSame('', $body);
-        preg_match('/(\/user\/confirm\/email\/[a-z0-9]+)/', $body, $matches);
-        $this->assertNotEmpty($matches[1], 'Email confirmation link not found');
-        $confirmationLink = $matches[1];
+        $body = $sendEmails[0]['message'];
+        $this->assertInstanceOf(TranslatableMessage::class, $body);
+        $this->assertSame('success.registration.mail', $body->getMessage());
+        $confirmationLink = parse_url((string)($body->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
+        $this->assertNotEmpty($confirmationLink, 'Email confirmation link not found');
 
         $this->client->request(Request::METHOD_GET, $confirmationLink);
         $this->assertResponseRedirects();
@@ -182,8 +182,12 @@ class PhoneConfirmApiTest extends BikeSharingWebTestCase
         $this->assertResponseStatusCodeSame(201);
 
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
-        preg_match('/(\/user\/confirm\/email\/[a-z0-9]+)/', $mailSender->getSentMessages()[0]['message'], $m);
-        $this->client->request(Request::METHOD_GET, $m[1]);
+        $body = $mailSender->getSentMessages()[0]['message'];
+        $this->assertInstanceOf(TranslatableMessage::class, $body);
+        $this->assertSame('success.registration.mail', $body->getMessage());
+        $confirmationLink = parse_url((string)($body->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
+        $this->assertNotEmpty($confirmationLink, 'Email confirmation link not found');
+        $this->client->request(Request::METHOD_GET, $confirmationLink);
 
         $phonePurifier = $this->client->getContainer()->get(PhonePurifierInterface::class);
         $tokenPayload = $this->obtainToken($phonePurifier->purify($userPhone), $password);

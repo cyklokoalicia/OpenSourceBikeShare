@@ -81,16 +81,15 @@ class ReturnWithNoteNotificationTest extends BikeSharingWebTestCase
         $mails = $this->client->getContainer()->get(MailSenderInterface::class)->getSentMessages();
         $this->assertEqualsCanonicalizing(array_column($admins, 'mail'), array_column($mails, 'recipient'));
         foreach ($mails as $mail) {
-            $this->assertSame('Bike note added', $mail['subject']);
-            $this->assertSame(
-                sprintf(
-                    'Note: b.%d (at %s) by %s/%s:%s',
-                    self::BIKE_NUMBER,
-                    self::STAND_NAME,
-                    $user['userName'],
-                    $user['number'],
-                    self::NOTE
-                ),
+            $this->assertEquals(new TranslatableMessage('notification.subject.bike_note_added'), $mail['subject']);
+            $this->assertEquals(
+                new TranslatableMessage('bike.note.admin.notification', [
+                    'bikeNumber' => self::BIKE_NUMBER,
+                    'bikeStatus' => new TranslatableMessage('bike.status.at_stand', ['standName' => self::STAND_NAME]),
+                    'userName' => $user['userName'],
+                    'phone' => $user['number'],
+                    'userNote' => self::NOTE,
+                ]),
                 $mail['message']
             );
         }

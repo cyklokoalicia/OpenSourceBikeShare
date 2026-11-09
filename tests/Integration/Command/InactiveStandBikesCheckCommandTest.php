@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class InactiveStandBikesCheckCommandTest extends BikeSharingKernelTestCase
 {
@@ -67,12 +68,11 @@ class InactiveStandBikesCheckCommandTest extends BikeSharingKernelTestCase
         $mailSender = self::getContainer()->get(MailSenderInterface::class);
         $adminMails = array_column(self::getContainer()->get(UserRepository::class)->findAdmins(), 'mail');
         $this->assertEqualsCanonicalizing($adminMails, array_column($mailSender->getSentMessages(), 'recipient'));
-        $message = $mailSender->getSentMessages()[0]['message'];
-
-        $this->assertStringContainsString(
-            'Inactive bikes on stands (service stands excluded, sorted by inactive days).',
-            $message
-        );
+        $mail = $mailSender->getSentMessages()[0];
+        $this->assertEquals(new TranslatableMessage('notification.subject.inactive_bikes'), $mail['subject']);
+        $this->assertInstanceOf(TranslatableMessage::class, $mail['message']);
+        $this->assertSame('admin.notification.inactive_bikes', $mail['message']->getMessage());
+        $message = $mail['message']->getParameters()['lines'];
         $this->assertStringContainsString(self::BIKE_INACTIVE_SHORT . ' | STAND1', $message);
         $this->assertStringContainsString(self::BIKE_INACTIVE_LONG . ' | STAND2', $message);
         $this->assertLessThan(

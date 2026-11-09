@@ -95,11 +95,21 @@ class TagCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            $this->assertSame(
-                $user['userName'] . ': All bikes on stand ' . $standName . ' tagged with note "' . $note . '".',
+            $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
+            $this->assertEquals(
+                new TranslatableMessage('admin.notification.sms_processed', [
+                    'userName' => $user['userName'],
+                    'message' => new TranslatableMessage(
+                        'command.tag.success',
+                        ['standName' => $standName, 'note' => $note]
+                    ),
+                ]),
                 $sentMessage['message']
             );
-            $this->assertSame('SMS command processed', $sentMessage['subject']);
+            $this->assertEquals(
+                new TranslatableMessage('notification.subject.sms_command_audit'),
+                $sentMessage['subject']
+            );
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }
 

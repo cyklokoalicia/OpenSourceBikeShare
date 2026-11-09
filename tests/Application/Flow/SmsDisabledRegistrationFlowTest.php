@@ -9,6 +9,7 @@ use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
 {
@@ -44,9 +45,11 @@ class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
         $this->assertCount(1, $emailsAfterRegister, 'Expected only the registration confirmation link');
 
         // Extract confirmation link.
-        preg_match('/(\/user\/confirm\/email\/[a-z0-9]+)/', $emailsAfterRegister[0]['message'], $matches);
-        $confirmationLink = $matches[1] ?? null;
-        $this->assertNotNull($confirmationLink, 'Email confirmation link not found in registration email');
+        $body = $emailsAfterRegister[0]['message'];
+        $this->assertInstanceOf(TranslatableMessage::class, $body);
+        $this->assertSame('success.registration.mail', $body->getMessage());
+        $confirmationLink = parse_url((string)($body->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
+        $this->assertNotEmpty($confirmationLink, 'Email confirmation link not found');
 
         // Confirm email.
         $this->client->request(Request::METHOD_GET, $confirmationLink);
@@ -76,6 +79,8 @@ class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
             $emailsAfterEmailConfirm,
             static fn (array $m): bool => $m['recipient'] === $superAdmin['mail']
         ))[0];
-        $this->assertStringContainsString($userEmail, $adminEmail['message']);
+        $this->assertInstanceOf(TranslatableMessage::class, $adminEmail['message']);
+        $this->assertSame('admin.notification.new_verified_user', $adminEmail['message']->getMessage());
+        $this->assertSame($userEmail, $adminEmail['message']->getParameters()['email']);
     }
 }

@@ -7,35 +7,35 @@ namespace BikeShare\Test\Unit\Mail;
 use BikeShare\Mail\DebugMailSender;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\TranslatableMessage;
-use Symfony\Component\Translation\Translator;
 
 class DebugMailSenderTest extends TestCase
 {
-    public function testSendMail()
+    public function testSendMail(): void
     {
         $recipient = 'a@x';
-        $subject = 'Predmet';
-        $message = 'Ahoj Jane';
+        $subject = $this->subject();
+        $body = $this->body();
         $loggerMock = $this->createMock(LoggerInterface::class);
-        $mailer = new DebugMailSender($this->translator(), $loggerMock);
+        $mailer = new DebugMailSender($loggerMock);
 
         $loggerMock->expects($this->once())
             ->method('debug')
-            ->with('Sending email', compact('recipient', 'subject', 'message'));
+            ->with('Sending email', ['recipient' => 'a@x', 'locale' => 'sk']);
 
-        $mailer->sendMail($recipient, $this->subject(), $this->body(), 'sk');
+        $mailer->sendMail($recipient, $subject, $body, 'sk');
 
-        $this->assertSame(
-            [['recipient' => 'a@x', 'subject' => 'Predmet', 'message' => 'Ahoj Jane']],
-            $mailer->getSentMessages()
-        );
+        $sent = $mailer->getSentMessages();
+        $this->assertCount(1, $sent);
+        $this->assertSame('a@x', $sent[0]['recipient']);
+        $this->assertSame($subject, $sent[0]['subject']);
+        $this->assertSame($body, $sent[0]['message']);
+        $this->assertSame('sk', $sent[0]['locale']);
     }
 
     public function testFailForThrowsAndRecordsNothing(): void
     {
-        $mailer = new DebugMailSender($this->translator(), $this->createStub(LoggerInterface::class));
+        $mailer = new DebugMailSender($this->createStub(LoggerInterface::class));
         $mailer->failFor('a@x');
 
         try {
@@ -50,7 +50,7 @@ class DebugMailSenderTest extends TestCase
 
     public function testFailForDoesNotAffectOthers(): void
     {
-        $mailer = new DebugMailSender($this->translator(), $this->createStub(LoggerInterface::class));
+        $mailer = new DebugMailSender($this->createStub(LoggerInterface::class));
         $mailer->failFor('a@x');
 
         $mailer->sendMail('b@x', $this->subject(), $this->body(), 'sk');
@@ -60,7 +60,7 @@ class DebugMailSenderTest extends TestCase
 
     public function testResetClearsFailList(): void
     {
-        $mailer = new DebugMailSender($this->translator(), $this->createStub(LoggerInterface::class));
+        $mailer = new DebugMailSender($this->createStub(LoggerInterface::class));
         $mailer->failFor('a@x');
         $mailer->reset();
 
@@ -77,19 +77,5 @@ class DebugMailSenderTest extends TestCase
     private function body(): TranslatableMessage
     {
         return new TranslatableMessage('mail.body', ['name' => 'Jane']);
-    }
-
-    private function translator(): Translator
-    {
-        $translator = new Translator('en');
-        $translator->addLoader('array', new ArrayLoader());
-        $translator->addResource(
-            'array',
-            ['mail.subject' => 'Predmet', 'mail.body' => 'Ahoj {name}'],
-            'sk',
-            'messages+intl-icu'
-        );
-
-        return $translator;
     }
 }
