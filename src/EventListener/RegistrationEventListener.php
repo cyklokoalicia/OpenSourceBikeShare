@@ -8,7 +8,7 @@ use BikeShare\Event\UserRegistrationEvent;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\RegistrationRepository;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class RegistrationEventListener
 {
@@ -17,7 +17,6 @@ class RegistrationEventListener
         private readonly string $systemRules,
         private readonly RegistrationRepository $registrationRepository,
         private readonly MailSenderInterface $mailSender,
-        private readonly TranslatorInterface $translator,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
@@ -25,8 +24,6 @@ class RegistrationEventListener
     public function __invoke(UserRegistrationEvent $event): void
     {
         $user = $event->getUser();
-
-        $subject = $this->translator->trans('Registration');
 
         $userId = $user->getUserId();
         $emailRecipient = $user->getEmail();
@@ -36,7 +33,7 @@ class RegistrationEventListener
 
         $names = preg_split("/[\s,]+/", $user->getUsername());
         $firstName = $names[0];
-        $message = $this->translator->trans(
+        $message = new TranslatableMessage(
             'success.registration.mail',
             [
                 'name' => $firstName,
@@ -50,6 +47,6 @@ class RegistrationEventListener
             ]
         );
 
-        $this->mailSender->sendMail($emailRecipient, $subject, $message);
+        $this->mailSender->sendMail($emailRecipient, new TranslatableMessage('Registration'), $message);
     }
 }

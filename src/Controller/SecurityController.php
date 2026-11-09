@@ -6,6 +6,7 @@ namespace BikeShare\Controller;
 
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Mail\MailSenderInterface;
+use BikeShare\Translation\PlainText;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -76,7 +77,7 @@ class SecurityController extends AbstractController
                     $translator->trans('Your password has been reset successfully.') . "\n\n" .
                     $translator->trans('Your new password is:') . "\n" . $plainPassword;
 
-                $mailer->sendMail($user->getEmail(), $subject, $message);
+                $mailer->sendMail($user->getEmail(), new PlainText($subject), new PlainText($message));
             }
 
             $this->addFlash(

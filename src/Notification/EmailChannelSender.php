@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace BikeShare\Notification;
 
 use BikeShare\Mail\MailSenderInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EmailChannelSender implements ChannelSenderInterface
 {
-    public function __construct(
-        private readonly MailSenderInterface $mailSender,
-        private readonly TranslatorInterface $translator,
-    ) {
+    public function __construct(private readonly MailSenderInterface $mailSender)
+    {
     }
 
     public static function getChannelName(): string
@@ -24,8 +21,9 @@ class EmailChannelSender implements ChannelSenderInterface
     {
         $this->mailSender->sendMail(
             $address,
-            $notification->subject->trans($this->translator, $locale),
-            $notification->body->trans($this->translator, $locale),
+            $notification->subject,
+            $notification->body,
+            $locale,
         );
     }
 }

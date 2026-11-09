@@ -8,6 +8,9 @@ use BikeShare\Mail\PHPMailerMailSender;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Loader\ArrayLoader;
+use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Component\Translation\Translator;
 
 class PHPMailerSenderTest extends TestCase
 {
@@ -23,20 +26,28 @@ class PHPMailerSenderTest extends TestCase
             'smtp_password' => 'smtp_password',
         ];
 
+        $translator = new Translator('en');
+        $translator->addLoader('array', new ArrayLoader());
+        $translator->addResource(
+            'array',
+            ['mail.subject' => 'Predmet', 'mail.body' => 'Ahoj {name}'],
+            'sk',
+            'messages+intl-icu'
+        );
+
         $this->mailer = $this->createMock(PHPMailer::class);
         $this->mailSender = new PHPMailerMailSender(
             'fromEmail',
             'fromName',
             $email,
-            $this->mailer
+            $this->mailer,
+            $translator
         );
     }
 
     public function testSendMail()
     {
         $recipient = 'recipient';
-        $subject = 'subject';
-        $message = 'message';
 
         $this->mailer
             ->expects($this->once())
@@ -52,7 +63,12 @@ class PHPMailerSenderTest extends TestCase
             ->expects($this->once())
             ->method('send');
 
-        $this->mailSender->sendMail($recipient, $subject, $message);
+        $this->mailSender->sendMail(
+            $recipient,
+            new TranslatableMessage('mail.subject'),
+            new TranslatableMessage('mail.body', ['name' => 'Jane']),
+            'sk'
+        );
 
         $this->assertEquals($this->mailer->Host, 'smtp_host');
         $this->assertEquals($this->mailer->Username, 'smtp_user');
@@ -63,7 +79,7 @@ class PHPMailerSenderTest extends TestCase
         $this->assertEquals($this->mailer->CharSet, 'UTF-8');
         $this->assertEquals($this->mailer->From, 'fromEmail');
         $this->assertEquals($this->mailer->FromName, 'fromName');
-        $this->assertEquals($this->mailer->Subject, $subject);
-        $this->assertEquals($this->mailer->Body, $message);
+        $this->assertEquals($this->mailer->Subject, 'Predmet');
+        $this->assertEquals($this->mailer->Body, 'Ahoj Jane');
     }
 }

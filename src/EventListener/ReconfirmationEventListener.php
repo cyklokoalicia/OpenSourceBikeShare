@@ -9,13 +9,12 @@ use BikeShare\Mail\MailSenderInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class ReconfirmationEventListener
 {
     public function __construct(
         private readonly MailSenderInterface $mailSender,
-        private readonly TranslatorInterface $translator,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly LoggerInterface $logger,
         private readonly CacheItemPoolInterface $cache,
@@ -38,12 +37,11 @@ class ReconfirmationEventListener
         $throttleItem->set(true);
         $this->cache->save($throttleItem);
 
-        $subject = $this->translator->trans('Email confirmation');
         $emailRecipient = $user->getEmail();
 
         $names = preg_split("/[\s,]+/", $user->getUsername());
         $firstName = $names[0];
-        $message = $this->translator->trans(
+        $message = new TranslatableMessage(
             'email.confirmation.mail',
             [
                 'name' => $firstName,
@@ -63,6 +61,6 @@ class ReconfirmationEventListener
                 'mailSenderClass' => $this->mailSender::class,
             ]
         );
-        $this->mailSender->sendMail($emailRecipient, $subject, $message);
+        $this->mailSender->sendMail($emailRecipient, new TranslatableMessage('Email confirmation'), $message);
     }
 }
