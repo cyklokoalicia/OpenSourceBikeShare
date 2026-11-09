@@ -181,11 +181,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $this->bikeRepository->returnToStand($bikeId, $standId, $force ? null : $userId);
 
-        $noteId = null;
         $userNote = null;
         if ($note) {
             $userNote = trim($note);
-            $noteId = $this->noteRepository->addNoteToBike($bikeId, $userId, $userNote);
+            $this->noteRepository->addNoteToBike($bikeId, $userId, $userNote);
         } else {
             $note = $this->noteRepository->findBikeNote($bikeId)[0]['note'] ?? '';
         }
@@ -205,7 +204,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         );
 
         $this->eventDispatcher->dispatch(
-            new BikeReturnEvent($bikeId, $standName, $userId, $force, $noteId, $userNote)
+            new BikeReturnEvent($bikeId, $standName, $userId, $force, $userNote)
         );
 
         return $this->success(

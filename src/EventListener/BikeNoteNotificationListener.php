@@ -24,7 +24,7 @@ class BikeNoteNotificationListener
 
     public function __invoke(BikeReturnEvent $event): void
     {
-        if ($event->getNoteId() === null) {
+        if ($event->getNote() === null) {
             return;
         }
 
@@ -50,7 +50,6 @@ class BikeNoteNotificationListener
                 new TranslatableMessage(
                     'bike.note.admin.notification',
                     [
-                        'noteId' => $event->getNoteId(),
                         'bikeNumber' => $event->getBikeNumber(),
                         'bikeStatus' => $bikeStatus,
                         'userName' => $userName,

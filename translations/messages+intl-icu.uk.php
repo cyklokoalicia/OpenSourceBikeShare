@@ -218,7 +218,7 @@ return [
     'bike.error.already_rented_short' => 'Велосипед {bikeNumber} вже орендовано.',
     'bike.rent.admin.stack_watch' => 'Велосипед {bikeNumber} орендовано поза стеком користувачем {userName}. {stackTopBike} був на вершині стеку на стоянці {standName}.',
     'bike.revert.notification.previous_owner' => 'Велосипед {bikeNumber} повернуто. Тепер ви можете орендувати новий велосипед.',
-    'bike.note.admin.notification' => 'Нотатка #{noteId}: в.{bikeNumber} ({bikeStatus}) від {userName}/{phone}:{userNote}',
+    'bike.note.admin.notification' => 'Нотатка: в.{bikeNumber} ({bikeStatus}) від {userName}/{phone}:{userNote}',
     'bike.status.at_stand' => 'на {standName}',
     'bike.status.in_use' => 'використовує {userName} +{phone}',
     'stand.error.unrecognized' => 'Назва стоянки {standName} не була розпізнана. Стоянки позначені ВЕЛИКИМИ ЛІТЕРАМИ.',
