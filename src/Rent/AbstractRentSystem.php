@@ -206,7 +206,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         );
 
         $this->eventDispatcher->dispatch(
-            new BikeReturnEvent($bikeId, $standName, $userId, $force, $userNote)
+            new BikeReturnEvent($bikeId, $standData['standName'], $userId, $force, $userNote)
         );
 
         return $this->success(

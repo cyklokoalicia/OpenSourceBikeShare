@@ -77,6 +77,10 @@ class NewUserAdminNotifierEventListenerTest extends TestCase
                     $msg = $notification->body;
                     $this->assertInstanceOf(TranslatableMessage::class, $msg);
                     $this->assertSame(NotificationType::NewVerifiedUser, $notification->type);
+                    $this->assertEquals(
+                        new TranslatableMessage('notification.subject.new_verified_user'),
+                        $notification->subject
+                    );
                     $this->assertSame('admin.notification.new_verified_user', $msg->getMessage());
                     $this->assertSame(
                         [

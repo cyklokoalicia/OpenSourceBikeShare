@@ -220,7 +220,6 @@ return [
     'bike.revert.notification.previous_owner' => 'Велосипед {bikeNumber} повернуто. Тепер ви можете орендувати новий велосипед.',
     'bike.note.admin.notification' => 'Нотатка: в.{bikeNumber} ({bikeStatus}) від {userName}/{phone}:{userNote}',
     'bike.status.at_stand' => 'на {standName}',
-    'bike.status.in_use' => 'використовує {userName} +{phone}',
     'stand.error.unrecognized' => 'Назва стоянки {standName} не була розпізнана. Стоянки позначені ВЕЛИКИМИ ЛІТЕРАМИ.',
     'stand.error.not_found' => 'Стоянка {standName} не існує.',
     'user.error.invalid_phone' => 'Неправильний номер телефону.',

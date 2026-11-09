@@ -40,7 +40,7 @@ class UserRepository
     public function findAdmins(): array
     {
         return $this->db
-            ->query('SELECT userId, number,mail FROM users where privileges & 2 != 0')
+            ->query('SELECT userId, number, mail FROM users WHERE privileges & 2 != 0 ORDER BY userId')
             ->fetchAllAssoc();
     }
 

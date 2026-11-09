@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
+use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
-use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
-use Monolog\Logger;
 use BikeShare\Translation\TranslatableResult;
+use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -31,86 +31,108 @@ class ReturnWithNoteNotificationTest extends BikeSharingWebTestCase
         parent::setUp();
 
         $container = $this->client->getContainer();
-        $admin = $container->get(UserRepository::class)->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $userRepository = $container->get(UserRepository::class);
+        $admin = $userRepository->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
         $rentSystem = $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::SMS);
         $rentSystem->returnBike($admin['userId'], self::BIKE_NUMBER, self::STAND_NAME, '', true);
 
-        $user = $container->get(UserRepository::class)->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
-        $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $user = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $rent = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
+        $this->assertFalse($rent->isError(), 'Setup rent failed: ' . $rent->getCode());
+
+        // Fixtures have a single admin; make a second one so isolation can be asserted on a survivor.
+        $container->get(DbInterface::class)->query(
+            'UPDATE users SET privileges = 3 WHERE userId = :userId',
+            ['userId' => $admin['userId']]
+        );
 
         $container->get(DebugSmsSender::class)->reset();
         $container->get(MailSenderInterface::class)->reset();
+    }
+
+    protected function tearDown(): void
+    {
+        $container = $this->client->getContainer();
+        $admin = $container->get(UserRepository::class)->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $container->get(DbInterface::class)->query(
+            'UPDATE users SET privileges = 1 WHERE userId = :userId',
+            ['userId' => $admin['userId']]
+        );
+        $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::SMS)
+            ->returnBike($admin['userId'], self::BIKE_NUMBER, self::STAND_NAME, '', true);
+
+        parent::tearDown();
     }
 
     public function testReturnWithNoteNotifiesAdmins(): void
     {
         $this->sendReturn(self::NOTE);
 
-        $admins = $this->adminsWithNumber();
-        $sms = $this->client->getContainer()->get(DebugSmsSender::class)->getSentMessages();
-        $this->assertCount(1 + count($admins), $sms);
+        $this->assertReturnSucceeded();
+        $user = $this->client->getContainer()->get(UserRepository::class)
+            ->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
+        $admins = $this->admins();
+        $this->assertCount(2, $admins);
 
-        $notes = array_values(array_filter(
-            $sms,
-            static fn (array $m): bool => $m['message'] instanceof TranslatableMessage
-                && $m['message']->getMessage() === 'bike.note.admin.notification'
-        ));
-        $this->assertCount(count($admins), $notes);
-        $params = $notes[0]['message']->getParameters();
-        $this->assertArrayNotHasKey('noteId', $params);
-        $this->assertSame(self::NOTE, $params['userNote']);
-        $this->assertSame(self::BIKE_NUMBER, $params['bikeNumber']);
-        $this->assertInstanceOf(TranslatableMessage::class, $params['bikeStatus']);
-        $this->assertSame('bike.status.at_stand', $params['bikeStatus']->getMessage());
-        $this->assertSame(['standName' => self::STAND_NAME], $params['bikeStatus']->getParameters());
-        $this->assertArrayHasKey('userName', $params);
-        $this->assertArrayHasKey('phone', $params);
+        $alerts = $this->noteAlertSms();
+        $this->assertEqualsCanonicalizing(array_column($admins, 'number'), array_column($alerts, 'number'));
+        foreach ($alerts as $alert) {
+            $this->assertEquals(
+                new TranslatableMessage('bike.note.admin.notification', [
+                    'bikeNumber' => self::BIKE_NUMBER,
+                    'bikeStatus' => new TranslatableMessage('bike.status.at_stand', ['standName' => self::STAND_NAME]),
+                    'userName' => $user['userName'],
+                    'phone' => $user['number'],
+                    'userNote' => self::NOTE,
+                ]),
+                $alert['message']
+            );
+        }
 
         $mails = $this->client->getContainer()->get(MailSenderInterface::class)->getSentMessages();
-        $this->assertCount(count($this->adminsWithMail()), $mails);
+        $this->assertEqualsCanonicalizing(array_column($admins, 'mail'), array_column($mails, 'recipient'));
+        foreach ($mails as $mail) {
+            $this->assertSame('Bike note added', $mail['subject']);
+            $this->assertSame(
+                sprintf(
+                    'Note: b.%d (at %s) by %s/%s:%s',
+                    self::BIKE_NUMBER,
+                    self::STAND_NAME,
+                    $user['userName'],
+                    $user['number'],
+                    self::NOTE
+                ),
+                $mail['message']
+            );
+        }
     }
 
     public function testReturnWithoutNoteSendsNoAdminNotification(): void
     {
         $this->sendReturn(null);
 
-        $sms = $this->client->getContainer()->get(DebugSmsSender::class)->getSentMessages();
-        $this->assertCount(1, $sms);
-        $this->assertSame(self::USER_PHONE_NUMBER, $sms[0]['number']);
-        $this->assertCount(0, $this->client->getContainer()->get(MailSenderInterface::class)->getSentMessages());
+        $this->assertReturnSucceeded();
+        $this->assertSame([], $this->noteAlertSms());
+        $this->assertCount(1, $this->client->getContainer()->get(DebugSmsSender::class)->getSentMessages());
+        $this->assertSame([], $this->client->getContainer()->get(MailSenderInterface::class)->getSentMessages());
     }
 
     public function testAdminSmsFailureDoesNotBreakReturn(): void
     {
         $this->expectLog(Logger::ERROR, '/Notification delivery failed/');
-        $admins = $this->adminsWithNumber();
+        $admins = $this->admins();
+        $this->assertCount(2, $admins);
         $failing = $admins[0]['number'];
         $this->client->getContainer()->get(DebugSmsSender::class)->failFor($failing);
 
         $this->sendReturn(self::NOTE);
 
-        $sms = $this->client->getContainer()->get(DebugSmsSender::class)->getSentMessages();
-        $userReplies = array_values(array_filter(
-            $sms,
-            static fn (array $m): bool => $m['number'] === self::USER_PHONE_NUMBER
-        ));
-        $this->assertCount(1, $userReplies);
-        $reply = $userReplies[0]['message'];
-        $this->assertInstanceOf(TranslatableResult::class, $reply);
-        $this->assertSame('bike.return.success', $reply->getCode());
-
-        $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
-        $stand = $this->client->getContainer()->get(StandRepository::class)->findItemByName(self::STAND_NAME);
-        $this->assertNull($bike['userId']);
-        $this->assertSame($stand['standName'], $bike['standName']);
-
-        $adminNumbers = array_column(array_filter(
-            $sms,
-            static fn (array $m): bool => $m['message'] instanceof TranslatableMessage
-                && $m['message']->getMessage() === 'bike.note.admin.notification'
-        ), 'number');
-        $expected = array_values(array_diff(array_column($admins, 'number'), [$failing]));
-        $this->assertEqualsCanonicalizing($expected, $adminNumbers);
+        $this->assertReturnSucceeded();
+        $this->assertSame(
+            [$admins[1]['number']],
+            array_column($this->noteAlertSms(), 'number'),
+            'The admin after the failing one must still get the note alert'
+        );
     }
 
     private function sendReturn(?string $note): void
@@ -129,19 +151,41 @@ class ReturnWithNoteNotificationTest extends BikeSharingWebTestCase
         $this->assertResponseIsSuccessful();
     }
 
-    private function adminsWithNumber(): array
+    private function assertReturnSucceeded(): void
+    {
+        $container = $this->client->getContainer();
+        $replies = array_values(array_filter(
+            $container->get(DebugSmsSender::class)->getSentMessages(),
+            static fn (array $m): bool => $m['number'] === self::USER_PHONE_NUMBER
+        ));
+        $this->assertCount(1, $replies);
+        $this->assertInstanceOf(TranslatableResult::class, $replies[0]['message']);
+        $this->assertSame('bike.return.success', $replies[0]['message']->getCode());
+
+        $bike = $container->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
+        $this->assertNull($bike['userId']);
+        $this->assertSame(self::STAND_NAME, $bike['standName']);
+    }
+
+    /**
+     * @return list<array{number: string, message: TranslatableMessage}>
+     */
+    private function noteAlertSms(): array
     {
         return array_values(array_filter(
-            $this->client->getContainer()->get(UserRepository::class)->findAdmins(),
-            static fn (array $a): bool => !empty($a['number'])
+            $this->client->getContainer()->get(DebugSmsSender::class)->getSentMessages(),
+            static fn (array $m): bool => $m['message'] instanceof TranslatableMessage
+                && $m['message']->getMessage() === 'bike.note.admin.notification'
         ));
     }
 
-    private function adminsWithMail(): array
+    /**
+     * Admins in findAdmins() order, which is the order the Notifier sends in.
+     *
+     * @return list<array{userId: int|string, number: string, mail: string}>
+     */
+    private function admins(): array
     {
-        return array_values(array_filter(
-            $this->client->getContainer()->get(UserRepository::class)->findAdmins(),
-            static fn (array $a): bool => !empty($a['mail'])
-        ));
+        return $this->client->getContainer()->get(UserRepository::class)->findAdmins();
     }
 }

@@ -92,6 +92,7 @@ class InactiveStandBikesCheckCommandTest extends TestCase
             ->with(
                 $this->callback(
                     static fn (Notification $n): bool => $n->type === NotificationType::InactiveBikes
+                        && $n->subject == new TranslatableMessage('notification.subject.inactive_bikes')
                         && $n->body instanceof TranslatableMessage
                         && $n->body->getMessage() === 'admin.notification.inactive_bikes'
                 ),

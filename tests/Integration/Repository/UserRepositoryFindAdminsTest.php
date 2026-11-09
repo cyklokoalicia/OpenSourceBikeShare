@@ -10,30 +10,43 @@ use BikeShare\Test\Integration\BikeSharingKernelTestCase;
 
 class UserRepositoryFindAdminsTest extends BikeSharingKernelTestCase
 {
-    public function testReturnsOnlyPrivilegedAdmins(): void
+    /** Fixture admin: privileges 7. */
+    private const ADMIN_USER_ID = 7;
+    /** Fixture user with privileges 1: privileged, but not an admin. */
+    private const PRIVILEGED_USER_ID = 5;
+
+    protected function tearDown(): void
     {
-        $db = self::getContainer()->get(DbInterface::class);
-        $expected = $db
-            ->query('SELECT userId, number, mail FROM users WHERE privileges & 2 != 0')
-            ->fetchAllAssoc();
+        $this->setPrivileges(self::PRIVILEGED_USER_ID, 1);
+        parent::tearDown();
+    }
 
-        $actual = self::getContainer()->get(UserRepository::class)->findAdmins();
+    public function testReturnsOnlyAdminsWithTheirContacts(): void
+    {
+        $admins = self::getContainer()->get(UserRepository::class)->findAdmins();
 
-        $this->assertNotEmpty($actual);
-        $normalize = static function (array $rows): array {
-            $rows = array_map(
-                static fn(array $row): array => [
-                    'userId' => (int) $row['userId'],
-                    'number' => (string) $row['number'],
-                    'mail' => (string) $row['mail'],
-                ],
-                $rows
-            );
-            usort($rows, static fn(array $a, array $b): int => $a['userId'] <=> $b['userId']);
+        $this->assertSame([self::ADMIN_USER_ID], array_map('intval', array_column($admins, 'userId')));
+        $this->assertSame(['userId', 'number', 'mail'], array_keys($admins[0]));
+        $this->assertSame('421951777777', $admins[0]['number']);
+    }
 
-            return $rows;
-        };
+    public function testAdminBitMakesAUserAnAdminAndOrderIsByUserId(): void
+    {
+        $this->setPrivileges(self::PRIVILEGED_USER_ID, 3);
 
-        $this->assertSame($normalize($expected), $normalize($actual));
+        $admins = self::getContainer()->get(UserRepository::class)->findAdmins();
+
+        $this->assertSame(
+            [self::PRIVILEGED_USER_ID, self::ADMIN_USER_ID],
+            array_map('intval', array_column($admins, 'userId'))
+        );
+    }
+
+    private function setPrivileges(int $userId, int $privileges): void
+    {
+        self::getContainer()->get(DbInterface::class)->query(
+            'UPDATE users SET privileges = :privileges WHERE userId = :userId',
+            ['privileges' => $privileges, 'userId' => $userId]
+        );
     }
 }
