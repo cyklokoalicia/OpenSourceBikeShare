@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\App\Security\UserProvider;
-use BikeShare\Mail\MailSenderInterface;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\UserRecipient;
 use BikeShare\Translation\PlainText;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,7 +50,7 @@ class SecurityController extends AbstractController
     public function resetPassword(
         bool $isSmsSystemEnabled,
         Request $request,
-        MailSenderInterface $mailer,
+        NotifierInterface $notifier,
         UserProvider $userProvider,
         UserPasswordHasherInterface $passwordHasher,
         TranslatorInterface $translator
@@ -77,7 +80,14 @@ class SecurityController extends AbstractController
                     $translator->trans('Your password has been reset successfully.') . "\n\n" .
                     $translator->trans('Your new password is:') . "\n" . $plainPassword;
 
-                $mailer->sendMail($user->getEmail(), new PlainText($subject), new PlainText($message));
+                $notifier->notify(
+                    new Notification(
+                        NotificationType::PasswordReset,
+                        new PlainText($subject),
+                        new PlainText($message)
+                    ),
+                    new UserRecipient($user->getUserId())
+                );
             }
 
             $this->addFlash(

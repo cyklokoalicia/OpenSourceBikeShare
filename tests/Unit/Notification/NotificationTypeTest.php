@@ -36,5 +36,6 @@ class NotificationTypeTest extends TestCase
         yield 'bike reverted owner' => [NotificationType::BikeRevertedOwner, $sms];
         yield 'registration' => [NotificationType::Registration, $email];
         yield 'reconfirmation' => [NotificationType::Reconfirmation, $email];
+        yield 'password reset' => [NotificationType::PasswordReset, $email];
     }
 }

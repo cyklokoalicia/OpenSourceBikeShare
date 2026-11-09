@@ -19,6 +19,7 @@ enum NotificationType: string
     case BikeRevertedOwner = 'bike-reverted-owner';
     case Registration = 'registration';
     case Reconfirmation = 'reconfirmation';
+    case PasswordReset = 'password-reset';
 
     /**
      * @return list<Channel>
@@ -36,7 +37,8 @@ enum NotificationType: string
             self::DuplicateSms,
             self::InactiveBikes,
             self::Registration,
-            self::Reconfirmation => [Channel::Email],
+            self::Reconfirmation,
+            self::PasswordReset => [Channel::Email],
             self::LongRentalUser,
             self::BikeRevertedOwner => [Channel::Sms],
         };
