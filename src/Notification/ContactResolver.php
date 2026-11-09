@@ -66,7 +66,7 @@ class ContactResolver
 
         return new Contact(
             $userId,
-            $this->userSettingsRepository->findByUserId($userId)['locale'] ?? null,
+            $this->userSettingsRepository->findByUserId($userId)['locale'],
             $addresses,
         );
     }

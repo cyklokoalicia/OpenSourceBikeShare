@@ -65,7 +65,7 @@ class SmsRequestController extends AbstractController
             $this->smsSender->send(
                 $this->smsConnector->getNumber(),
                 $message,
-                $userSettings['locale'] ?? null
+                $userSettings['locale']
             );
         } catch (\Throwable $exception) {
             $this->logger->error(
