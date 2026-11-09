@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\UserRegistrationEvent;
-use BikeShare\Mail\MailSenderInterface;
-use BikeShare\Repository\RegistrationRepository;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\UserRecipient;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -15,21 +17,14 @@ class RegistrationEventListener
     public function __construct(
         private readonly string $appName,
         private readonly string $systemRules,
-        private readonly RegistrationRepository $registrationRepository,
-        private readonly MailSenderInterface $mailSender,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly NotifierInterface $notifier,
     ) {
     }
 
     public function __invoke(UserRegistrationEvent $event): void
     {
         $user = $event->getUser();
-
-        $userId = $user->getUserId();
-        $emailRecipient = $user->getEmail();
-        $userKey = hash('sha256', md5(mt_rand() . microtime() . $emailRecipient));
-
-        $this->registrationRepository->addItem($userId, $userKey);
 
         $names = preg_split("/[\s,]+/", $user->getUsername());
         $firstName = $names[0];
@@ -41,12 +36,15 @@ class RegistrationEventListener
                 'systemRulesPageUrl' => $this->systemRules,
                 'emailConfirmURL' => $this->urlGenerator->generate(
                     'user_confirm_email',
-                    ['key' => $userKey],
+                    ['key' => $event->getUserKey()],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 )
             ]
         );
 
-        $this->mailSender->sendMail($emailRecipient, new TranslatableMessage('Registration'), $message);
+        $this->notifier->notify(
+            new Notification(NotificationType::Registration, new TranslatableMessage('Registration'), $message),
+            new UserRecipient($user->getUserId())
+        );
     }
 }
