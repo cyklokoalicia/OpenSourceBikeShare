@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\UserReconfirmationEvent;
-use BikeShare\Mail\MailSenderInterface;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\UserRecipient;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -14,10 +17,10 @@ use Symfony\Component\Translation\TranslatableMessage;
 class ReconfirmationEventListener
 {
     public function __construct(
-        private readonly MailSenderInterface $mailSender,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly LoggerInterface $logger,
         private readonly CacheItemPoolInterface $cache,
+        private readonly NotifierInterface $notifier,
     ) {
     }
 
@@ -58,9 +61,15 @@ class ReconfirmationEventListener
             [
                 'userId' => $userId,
                 'email' => $emailRecipient,
-                'mailSenderClass' => $this->mailSender::class,
             ]
         );
-        $this->mailSender->sendMail($emailRecipient, new TranslatableMessage('Email confirmation'), $message);
+        $this->notifier->notify(
+            new Notification(
+                NotificationType::Reconfirmation,
+                new TranslatableMessage('Email confirmation'),
+                $message
+            ),
+            new UserRecipient($userId)
+        );
     }
 }
