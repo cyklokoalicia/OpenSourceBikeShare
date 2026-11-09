@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BikeShare\Test\Application\Controller\Api\Bike;
 
 use BikeShare\App\Security\UserProvider;
+use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Rent\RentSystemFactory;
@@ -12,7 +13,6 @@ use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
-use BikeShare\Test\Application\UnknownStackTopStand;
 use Symfony\Component\HttpFoundation\Request;
 
 class StackWatchNotificationTest extends BikeSharingWebTestCase
@@ -21,9 +21,12 @@ class StackWatchNotificationTest extends BikeSharingWebTestCase
     private const ADMIN_PHONE_NUMBER = '421951222222';
     private const STACK_TOP_BIKE = 6;
     private const STAND_NAME = 'STAND1';
+    /** Fixture stand whose bikes were never returned there, so its stack top is unknown. */
+    private const FRESH_STAND_NAME = 'FRESH_STAND';
+    private const FRESH_STAND_BIKE = 26;
 
     private ?int $otherBike = null;
-    private ?UnknownStackTopStand $unknownTopStand = null;
+    private bool $rentedFromFreshStand = false;
 
     protected function setUp(): void
     {
@@ -58,7 +61,9 @@ class StackWatchNotificationTest extends BikeSharingWebTestCase
             $rentSystem->returnBike($admin['userId'], $this->otherBike, self::STAND_NAME, '', true);
         }
         $rentSystem->returnBike($admin['userId'], self::STACK_TOP_BIKE, self::STAND_NAME, '', true);
-        $this->unknownTopStand?->restore($container, (int)$admin['userId']);
+        if ($this->rentedFromFreshStand) {
+            $this->restoreFreshStand((int)$admin['userId']);
+        }
 
         parent::tearDown();
     }
@@ -107,14 +112,26 @@ class StackWatchNotificationTest extends BikeSharingWebTestCase
 
     public function testRentingOnStandWithUnknownStackTopSendsNothing(): void
     {
-        $this->unknownTopStand = UnknownStackTopStand::find($this->client->getContainer());
-        $this->assertNotNull($this->unknownTopStand, 'Fixtures need an active stand with bikes and no returns');
-
-        $this->rentAsUser($this->unknownTopStand->bike);
+        $this->rentedFromFreshStand = true;
+        $this->rentAsUser(self::FRESH_STAND_BIKE);
 
         $container = $this->client->getContainer();
         $this->assertSame([], $container->get(MailSenderInterface::class)->getSentMessages());
         $this->assertSame([], $container->get(DebugSmsSender::class)->getSentMessages());
+    }
+
+    /**
+     * Puts the fresh-stand bike back and drops its history, so the stand's stack top stays unknown.
+     */
+    private function restoreFreshStand(int $adminUserId): void
+    {
+        $container = $this->client->getContainer();
+        $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB)
+            ->returnBike($adminUserId, self::FRESH_STAND_BIKE, self::FRESH_STAND_NAME, '', true);
+        $container->get(DbInterface::class)->query(
+            'DELETE FROM history WHERE bikeNum = :bikeNumber',
+            ['bikeNumber' => self::FRESH_STAND_BIKE]
+        );
     }
 
     private function rentAsUser(int $bikeNumber): void

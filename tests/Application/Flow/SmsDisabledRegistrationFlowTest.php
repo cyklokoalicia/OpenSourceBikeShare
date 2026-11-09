@@ -57,7 +57,6 @@ class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
 
         // Email-confirm controller dispatches UserVerificationCompletedEvent;
         // listener with isSmsSystemEnabled=false notifies admins immediately, no phone step required.
-        $this->assertCount(1, $emailsAfterEmailConfirm, 'Expected admin notification email after email confirmation');
 
         $userRepository = static::getContainer()->get(UserRepository::class);
         $registrationRepository = static::getContainer()->get(RegistrationRepository::class);
@@ -70,9 +69,13 @@ class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
             'Registration row should be deleted after email confirmation'
         );
 
+        $adminMails = array_column(static::getContainer()->get(UserRepository::class)->findAdmins(), 'mail');
+        $this->assertEqualsCanonicalizing($adminMails, array_column($emailsAfterEmailConfirm, 'recipient'));
         $superAdmin = $userRepository->findItemByPhoneNumber(self::SUPER_ADMIN_PHONE_NUMBER);
-        $adminEmail = $emailsAfterEmailConfirm[0];
-        $this->assertSame($superAdmin['mail'], $adminEmail['recipient']);
+        $adminEmail = array_values(array_filter(
+            $emailsAfterEmailConfirm,
+            static fn (array $m): bool => $m['recipient'] === $superAdmin['mail']
+        ))[0];
         $this->assertStringContainsString($userEmail, $adminEmail['message']);
     }
 }

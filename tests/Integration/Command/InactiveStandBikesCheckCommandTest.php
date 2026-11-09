@@ -65,7 +65,8 @@ class InactiveStandBikesCheckCommandTest extends BikeSharingKernelTestCase
         $commandTester->assertCommandIsSuccessful();
 
         $mailSender = self::getContainer()->get(MailSenderInterface::class);
-        $this->assertCount(1, $mailSender->getSentMessages(), 'Invalid number of sent emails');
+        $adminMails = array_column(self::getContainer()->get(UserRepository::class)->findAdmins(), 'mail');
+        $this->assertEqualsCanonicalizing($adminMails, array_column($mailSender->getSentMessages(), 'recipient'));
         $message = $mailSender->getSentMessages()[0]['message'];
 
         $this->assertStringContainsString(
@@ -106,7 +107,11 @@ class InactiveStandBikesCheckCommandTest extends BikeSharingKernelTestCase
         $this->assertSame('', trim($commandTester->getDisplay()));
 
         $mailSender = self::getContainer()->get(MailSenderInterface::class);
-        $this->assertCount(1, $mailSender->getSentMessages(), 'Email should still be sent in silent mode');
+        $this->assertCount(
+            count(self::getContainer()->get(UserRepository::class)->findAdmins()),
+            $mailSender->getSentMessages(),
+            'Email should still be sent in silent mode'
+        );
     }
 
     private function simulateBikeActivity(int $bikeNumber, string $standName, string $lastReturnTime): void

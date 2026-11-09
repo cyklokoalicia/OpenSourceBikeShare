@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
-use BikeShare\Db\DbInterface;
 use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
@@ -34,12 +33,6 @@ class RentWithFailingAdminNotificationTest extends BikeSharingWebTestCase
         $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::SMS)
             ->returnBike($admin['userId'], self::BIKE_NUMBER, self::STAND_NAME, '', true);
 
-        // Fixtures have a single admin with a phone number; make a second one so a survivor can be asserted.
-        $container->get(DbInterface::class)->query(
-            'UPDATE users SET privileges = 3 WHERE userId = :userId',
-            ['userId' => $admin['userId']]
-        );
-
         $container->get(DebugSmsSender::class)->reset();
     }
 
@@ -49,11 +42,6 @@ class RentWithFailingAdminNotificationTest extends BikeSharingWebTestCase
             ->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
         $this->client->getContainer()->get(RentSystemFactory::class)->getRentSystem(RentSystemType::SMS)
             ->returnBike($admin['userId'], self::BIKE_NUMBER, self::STAND_NAME, '', true);
-
-        $this->client->getContainer()->get(DbInterface::class)->query(
-            'UPDATE users SET privileges = 1 WHERE userId = :userId',
-            ['userId' => $admin['userId']]
-        );
 
         parent::tearDown();
     }

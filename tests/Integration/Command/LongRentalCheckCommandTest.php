@@ -84,8 +84,9 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
         $commandTester->execute([]);
         $commandTester->assertCommandIsSuccessful();
 
+        $admins = self::getContainer()->get(UserRepository::class)->findAdmins();
         $smsConnector = self::getContainer()->get(SmsConnectorInterface::class);
-        $this->assertCount(2, $smsConnector->getSentMessages(), 'Invalid number of sent messages');
+        $this->assertCount(1 + count($admins), $smsConnector->getSentMessages(), 'Invalid number of sent messages');
         $sentMessages = $smsConnector->getSentMessages();
         foreach ($sentMessages as $sentMessage) {
             if ($sentMessage['number'] === self::USER_PHONE_NUMBER) {
@@ -94,7 +95,8 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
                     $sentMessage['text'],
                     'Invalid message for user'
                 );
-            } elseif ($sentMessage['number'] === self::ADMIN_PHONE_NUMBER) {
+            } else {
+                $this->assertContains($sentMessage['number'], array_column($admins, 'number'), 'Unexpected recipient');
                 $this->assertStringContainsString(
                     'Bike rental exceed ' . $_ENV['WATCHES_LONG_RENTAL'] . ' hours',
                     $sentMessage['text'],
@@ -104,7 +106,7 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
         }
 
         $mailSender = self::getContainer()->get(MailSenderInterface::class);
-        $this->assertCount(1, $mailSender->getSentMessages(), 'Invalid number of sent email');
+        $this->assertCount(count($admins), $mailSender->getSentMessages(), 'Invalid number of sent email');
         $sentMessage = $mailSender->getSentMessages()[0];
         $this->assertStringContainsString(
             'Bike rental exceed ' . $_ENV['WATCHES_LONG_RENTAL'] . ' hours',
@@ -155,7 +157,7 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
             $container->get(MailSenderInterface::class)->getSentMessages(),
             static fn (array $m): bool => $m['subject'] === 'Long rentals'
         ));
-        $this->assertCount(1, $summaries);
+        $this->assertCount(count($userRepository->findAdmins()), $summaries);
         $this->assertStringContainsString(self::USER_PHONE_NUMBER, $summaries[0]['message']);
         $this->assertStringContainsString(self::SECOND_USER_PHONE_NUMBER, $summaries[0]['message']);
     }

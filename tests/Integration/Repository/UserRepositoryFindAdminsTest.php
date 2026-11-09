@@ -10,8 +10,8 @@ use BikeShare\Test\Integration\BikeSharingKernelTestCase;
 
 class UserRepositoryFindAdminsTest extends BikeSharingKernelTestCase
 {
-    /** Fixture admin: privileges 7. */
-    private const ADMIN_USER_ID = 7;
+    /** Fixture admins: privileges 7. */
+    private const ADMIN_USER_IDS = [7, 12];
     /** Fixture user with privileges 1: privileged, but not an admin. */
     private const PRIVILEGED_USER_ID = 5;
 
@@ -25,7 +25,7 @@ class UserRepositoryFindAdminsTest extends BikeSharingKernelTestCase
     {
         $admins = self::getContainer()->get(UserRepository::class)->findAdmins();
 
-        $this->assertSame([self::ADMIN_USER_ID], array_map('intval', array_column($admins, 'userId')));
+        $this->assertSame(self::ADMIN_USER_IDS, array_map('intval', array_column($admins, 'userId')));
         $this->assertSame(['userId', 'number', 'mail'], array_keys($admins[0]));
         $this->assertSame('421951777777', $admins[0]['number']);
     }
@@ -37,7 +37,7 @@ class UserRepositoryFindAdminsTest extends BikeSharingKernelTestCase
         $admins = self::getContainer()->get(UserRepository::class)->findAdmins();
 
         $this->assertSame(
-            [self::PRIVILEGED_USER_ID, self::ADMIN_USER_ID],
+            [self::PRIVILEGED_USER_ID, ...self::ADMIN_USER_IDS],
             array_map('intval', array_column($admins, 'userId'))
         );
     }

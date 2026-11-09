@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
-use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Rent\RentSystemFactory;
@@ -40,12 +39,6 @@ class ReturnWithNoteNotificationTest extends BikeSharingWebTestCase
         $rent = $rentSystem->rentBike($user['userId'], self::BIKE_NUMBER);
         $this->assertFalse($rent->isError(), 'Setup rent failed: ' . $rent->getCode());
 
-        // Fixtures have a single admin; make a second one so isolation can be asserted on a survivor.
-        $container->get(DbInterface::class)->query(
-            'UPDATE users SET privileges = 3 WHERE userId = :userId',
-            ['userId' => $admin['userId']]
-        );
-
         $container->get(DebugSmsSender::class)->reset();
         $container->get(MailSenderInterface::class)->reset();
     }
@@ -54,10 +47,6 @@ class ReturnWithNoteNotificationTest extends BikeSharingWebTestCase
     {
         $container = $this->client->getContainer();
         $admin = $container->get(UserRepository::class)->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
-        $container->get(DbInterface::class)->query(
-            'UPDATE users SET privileges = 1 WHERE userId = :userId',
-            ['userId' => $admin['userId']]
-        );
         $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::SMS)
             ->returnBike($admin['userId'], self::BIKE_NUMBER, self::STAND_NAME, '', true);
 

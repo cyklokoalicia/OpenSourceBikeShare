@@ -58,7 +58,7 @@ class TagCommandTest extends BikeSharingWebTestCase
 
         #One message is sent to admin, one to user
         $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
-        $this->assertCount(2, $smsSender->getSentMessages());
+        $this->assertCount(1 + count($admins), $smsSender->getSentMessages());
         $sentMessages = $smsSender->getSentMessages();
 
         $notifiedNumbers = [];
