@@ -126,15 +126,13 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
         $this->assertSame(1, $user['isNumberConfirmed'], 'User phone number is not confirmed');
 
         // Admins were notified about the newly fully-verified user.
-        $this->assertCount(
-            1,
-            $emailsAfterPhoneConfirm,
-            'Expected one admin notification email after phone confirmation'
-        );
-
+        $adminMails = array_column(static::getContainer()->get(UserRepository::class)->findAdmins(), 'mail');
+        $this->assertEqualsCanonicalizing($adminMails, array_column($emailsAfterPhoneConfirm, 'recipient'));
         $superAdmin = $userRepository->findItemByPhoneNumber(self::SUPER_ADMIN_PHONE_NUMBER);
-        $adminEmail = $emailsAfterPhoneConfirm[0];
-        $this->assertSame($superAdmin['mail'], $adminEmail['recipient']);
+        $adminEmail = array_values(array_filter(
+            $emailsAfterPhoneConfirm,
+            static fn (array $m): bool => $m['recipient'] === $superAdmin['mail']
+        ))[0];
         $this->assertStringContainsString($userEmail, $adminEmail['message']);
         $this->assertStringContainsString($phonePurifier->purify($userPhone), $adminEmail['message']);
     }

@@ -75,18 +75,6 @@ class BikeRevertEventListenerTest extends TestCase
         ($this->listener)(new BikeRevertEvent($bikeNumber, 99, $previousOwnerId));
     }
 
-    public function testFallsBackToNullLocaleWhenSettingsMissing(): void
-    {
-        $this->userRepositoryMock->expects($this->once())->method('findItem')->willReturn(['number' => '111']);
-        $this->userSettingsRepositoryMock->expects($this->once())->method('findByUserId')->willReturn([]);
-        $this->smsSenderMock
-            ->expects($this->once())
-            ->method('send')
-            ->with('111', $this->isInstanceOf(TranslatableMessage::class), null);
-
-        ($this->listener)(new BikeRevertEvent(1, 2, 3));
-    }
-
     public function testSkipsNotificationWhenPhoneMissing(): void
     {
         $this->userRepositoryMock->expects($this->once())->method('findItem')->willReturn(['number' => null]);

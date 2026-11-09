@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Db\DbInterface;
-use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Notification\AdminRecipients;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -16,7 +19,7 @@ class SmsControllerEventListener
     public function __construct(
         private readonly DbInterface $db,
         private readonly SmsConnectorInterface $smsConnector,
-        private readonly AdminNotifier $adminNotifier,
+        private readonly NotifierInterface $notifier,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -50,12 +53,16 @@ class SmsControllerEventListener
         if ($result->rowCount() >= 1) {
             // sms already exists in DB, possible problem
             $this->logger->error("SMS already exists in DB", ['sms_uuid' => $sms_uuid]);
-            $this->adminNotifier->notify(
-                new TranslatableMessage(
-                    'admin.notification.duplicate_sms',
-                    ['uuid' => $sms_uuid]
+            $this->notifier->notify(
+                new Notification(
+                    NotificationType::DuplicateSms,
+                    new TranslatableMessage('notification.subject.duplicate_sms'),
+                    new TranslatableMessage(
+                        'admin.notification.duplicate_sms',
+                        ['uuid' => $sms_uuid]
+                    )
                 ),
-                false
+                new AdminRecipients()
             );
         } else {
             $this->db->query(

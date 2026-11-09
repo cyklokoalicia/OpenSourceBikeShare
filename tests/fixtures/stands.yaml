@@ -53,3 +53,9 @@ stdClass:
     standDescription: '<streetName()>'
     status: 'active'
     city: 'Other City'
+
+  # Its bikes were never returned here, so its stack top is unknown.
+  stand_fresh (extends defaultStand):
+    standId: '12'
+    standName: 'FRESH_STAND'
+    standDescription: '<streetName()>'

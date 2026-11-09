@@ -50,4 +50,48 @@ class DebugSmsSenderTest extends TestCase
         $sender->reset();
         $this->assertSame([], $sender->getSentMessages());
     }
+
+    public function testFailForThrowsAndRecordsNothing(): void
+    {
+        $innerMock = $this->createMock(SmsSender::class);
+        $innerMock->expects($this->never())->method('send');
+        $sender = new DebugSmsSender($innerMock, $this->createStub(LoggerInterface::class));
+        $sender->failFor('421900111222');
+
+        try {
+            $sender->send('421900111222', new TranslatableMessage('foo'));
+            $this->fail('Expected a RuntimeException');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Debug delivery failure for 421900111222', $e->getMessage());
+        }
+
+        $this->assertSame([], $sender->getSentMessages());
+    }
+
+    public function testFailForDoesNotAffectOthers(): void
+    {
+        $sender = new DebugSmsSender(
+            $this->createStub(SmsSender::class),
+            $this->createStub(LoggerInterface::class),
+        );
+        $sender->failFor('421900111222');
+
+        $sender->send('421900333444', new TranslatableMessage('foo'));
+
+        $this->assertCount(1, $sender->getSentMessages());
+    }
+
+    public function testResetClearsFailList(): void
+    {
+        $sender = new DebugSmsSender(
+            $this->createStub(SmsSender::class),
+            $this->createStub(LoggerInterface::class),
+        );
+        $sender->failFor('421900111222');
+        $sender->reset();
+
+        $sender->send('421900111222', new TranslatableMessage('foo'));
+
+        $this->assertCount(1, $sender->getSentMessages());
+    }
 }

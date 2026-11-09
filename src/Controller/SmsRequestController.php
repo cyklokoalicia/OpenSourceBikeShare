@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\App\Security\UserProvider;
-use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Notification\AdminRecipients;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\UserSettingsRepository;
 use BikeShare\Sms\SmsSenderInterface;
@@ -25,7 +28,7 @@ class SmsRequestController extends AbstractController
         private readonly SmsSenderInterface $smsSender,
         private readonly UserProvider $userProvider,
         private readonly LoggerInterface $logger,
-        private readonly AdminNotifier $adminNotifier,
+        private readonly NotifierInterface $notifier,
         private readonly CommandExecutor $commandExecutor,
         private readonly UserSettingsRepository $userSettingsRepository,
     ) {
@@ -62,7 +65,7 @@ class SmsRequestController extends AbstractController
             $this->smsSender->send(
                 $this->smsConnector->getNumber(),
                 $message,
-                $userSettings['locale'] ?? null
+                $userSettings['locale']
             );
         } catch (\Throwable $exception) {
             $this->logger->error(
@@ -73,15 +76,19 @@ class SmsRequestController extends AbstractController
                     'exception' => $exception
                 ]
             );
-            $this->adminNotifier->notify(
-                new TranslatableMessage(
-                    'admin.notification.sms_problem',
-                    [
-                        'number' => $this->smsConnector->getNumber(),
-                        'sms' => $this->smsConnector->getProcessedMessage(),
-                    ]
+            $this->notifier->notify(
+                new Notification(
+                    NotificationType::SmsProblem,
+                    new TranslatableMessage('notification.subject.sms_problem'),
+                    new TranslatableMessage(
+                        'admin.notification.sms_problem',
+                        [
+                            'number' => $this->smsConnector->getNumber(),
+                            'sms' => $this->smsConnector->getProcessedMessage(),
+                        ]
+                    )
                 ),
-                false
+                new AdminRecipients()
             );
         }
 

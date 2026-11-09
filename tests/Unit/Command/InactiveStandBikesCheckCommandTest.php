@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\Test\Unit\Command;
 
 use BikeShare\Command\InactiveStandBikesCheckCommand;
-use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Notification\AdminRecipients;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
 use BikeShare\Repository\BikeRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -18,14 +21,14 @@ use Symfony\Component\Translation\TranslatableMessage;
 class InactiveStandBikesCheckCommandTest extends TestCase
 {
     private BikeRepository&MockObject $bikeRepository;
-    private AdminNotifier&MockObject $adminNotifier;
+    private NotifierInterface&MockObject $adminNotifier;
     private ClockInterface&MockObject $clock;
     private CommandTester $commandTester;
 
     protected function setUp(): void
     {
         $this->bikeRepository = $this->createMock(BikeRepository::class);
-        $this->adminNotifier = $this->createMock(AdminNotifier::class);
+        $this->adminNotifier = $this->createMock(NotifierInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
 
         $command = new InactiveStandBikesCheckCommand(
@@ -86,9 +89,19 @@ class InactiveStandBikesCheckCommandTest extends TestCase
         $this->adminNotifier
             ->expects($this->once())
             ->method('notify')
-            ->with($this->isInstanceOf(TranslatableMessage::class), false)
+            ->with(
+                $this->callback(
+                    static fn (Notification $n): bool => $n->type === NotificationType::InactiveBikes
+                        && $n->subject == new TranslatableMessage('notification.subject.inactive_bikes')
+                        && $n->body instanceof TranslatableMessage
+                        && $n->body->getMessage() === 'admin.notification.inactive_bikes'
+                ),
+                $this->equalTo(new AdminRecipients())
+            )
             ->willReturnCallback(
-                static function (TranslatableMessage $message, bool $bySms) use (&$notifiedKey, &$notifiedLines): void {
+                static function (Notification $notification) use (&$notifiedKey, &$notifiedLines): void {
+                    $message = $notification->body;
+                    assert($message instanceof TranslatableMessage);
                     $notifiedKey = $message->getMessage();
                     $notifiedLines = $message->getParameters()['lines'] ?? '';
                 }

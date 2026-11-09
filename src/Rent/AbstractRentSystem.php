@@ -9,7 +9,7 @@ use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Event\BikeRentEvent;
 use BikeShare\Event\BikeReturnEvent;
 use BikeShare\Event\BikeRevertEvent;
-use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Event\StackWatchViolationEvent;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\NoteRepository;
@@ -19,9 +19,7 @@ use BikeShare\Enum\Action;
 use BikeShare\Enum\StandStatus;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
-use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Translation\TranslatableInterface;
 
 abstract class AbstractRentSystem implements RentSystemInterface
 {
@@ -30,7 +28,6 @@ abstract class AbstractRentSystem implements RentSystemInterface
         protected readonly CreditSystemInterface $creditSystem,
         protected readonly UserRepository $userRepository,
         protected readonly EventDispatcherInterface $eventDispatcher,
-        protected readonly AdminNotifier $adminNotifier,
         protected readonly LoggerInterface $logger,
         protected readonly StandRepository $standRepository,
         protected readonly HistoryRepository $historyRepository,
@@ -102,22 +99,20 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     return $this->error('bike.rent.error.service_stand');
                 }
 
-                if ($this->stackWatchEnabled && $stackTopBike != $bikeId) {
-                    $this->notifyAdmins(
-                        new TranslatableMessage(
-                            'bike.rent.admin.stack_watch',
-                            [
-                                'bikeNumber' => $bikeId,
-                                'userName' => $user['userName'] ?? '',
-                                'stackTopBike' => $stackTopBike,
-                                'standName' => $stand['standName'] ?? '',
-                            ]
-                        ),
-                        false,
+                // An unknown stack top (no bike here was ever returned to this stand) is not a violation.
+                $isStackViolation = $stackTopBike !== null && $stackTopBike !== $bikeId;
+                if ($this->stackWatchEnabled && $isStackViolation) {
+                    $this->eventDispatcher->dispatch(
+                        new StackWatchViolationEvent(
+                            $bikeId,
+                            (int)$userId,
+                            $stackTopBike,
+                            $stand['standName'] ?? ''
+                        )
                     );
                 }
 
-                if ($this->forceStack && $stackTopBike != $bikeId) {
+                if ($this->forceStack && $isStackViolation) {
                     return $this->error(
                         'bike.rent.error.stack_top_bike',
                         ['bikeNumber' => $bikeId, 'stackTopBike' => $stackTopBike]
@@ -188,8 +183,10 @@ abstract class AbstractRentSystem implements RentSystemInterface
 
         $this->bikeRepository->returnToStand($bikeId, $standId, $force ? null : $userId);
 
+        $userNote = null;
         if ($note) {
-            $this->addNote($userId, $bikeId, $note);
+            $userNote = trim($note);
+            $this->noteRepository->addNoteToBike($bikeId, $userId, $userNote);
         } else {
             $note = $this->noteRepository->findBikeNote($bikeId)[0]['note'] ?? '';
         }
@@ -209,7 +206,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
         );
 
         $this->eventDispatcher->dispatch(
-            new BikeReturnEvent($bikeId, $standName, $userId, $force)
+            new BikeReturnEvent($bikeId, $standData['standName'], $userId, $force, $userNote)
         );
 
         return $this->success(
@@ -286,45 +283,5 @@ abstract class AbstractRentSystem implements RentSystemInterface
     protected function error(string $code, array $params = []): RentSystemResult
     {
         return new RentSystemResult(true, $code, static::getType(), $params);
-    }
-
-    private function notifyAdmins(TranslatableInterface $message, bool $bySms = true): void
-    {
-        $this->adminNotifier->notify($message, $bySms);
-    }
-
-    private function addNote(int $userId, int $bikeNum, string $message): void
-    {
-        $userNote = trim($message);
-
-        $user = $this->userRepository->findItem($userId);
-        $userName = $user['userName'] ?? '';
-        $phone = $user['number'] ?? '';
-
-        $bikeUsage = $this->bikeRepository->findBikeCurrentUsage($bikeNum);
-        $standName = $bikeUsage['standName'] ?? null;
-        if ($standName !== null) {
-            $bikeStatus = new TranslatableMessage('bike.status.at_stand', ['standName' => $standName]);
-        } else {
-            $bikeStatus = new TranslatableMessage(
-                'bike.status.in_use',
-                ['userName' => $userName, 'phone' => $phone]
-            );
-        }
-
-        $noteId = $this->noteRepository->addNoteToBike($bikeNum, $userId, $userNote);
-        $this->notifyAdmins(
-            new TranslatableMessage(
-                'bike.note.admin.notification',
-                [
-                    'noteId' => $noteId,
-                    'bikeNumber' => $bikeNum,
-                    'bikeStatus' => $bikeStatus,
-                    'userName' => $userName,
-                    'phone' => $phone,
-                    'userNote' => $userNote,
-                ]
-            )
-        );
     }
 }

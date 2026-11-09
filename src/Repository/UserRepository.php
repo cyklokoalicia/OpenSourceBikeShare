@@ -34,6 +34,16 @@ class UserRepository
         return $users;
     }
 
+    /**
+     * @return list<array{userId: int|string, number: string, mail: string}>
+     */
+    public function findAdmins(): array
+    {
+        return $this->db
+            ->query('SELECT userId, number, mail FROM users WHERE privileges & 2 != 0 ORDER BY userId')
+            ->fetchAllAssoc();
+    }
+
     public function findItem(int $userId): ?array
     {
         $user = $this->db->query(

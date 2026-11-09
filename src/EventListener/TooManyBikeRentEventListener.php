@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\BikeRentEvent;
-use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Notification\AdminRecipients;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Clock\ClockInterface;
@@ -18,7 +21,7 @@ class TooManyBikeRentEventListener
         private readonly int $numberToMany,
         private readonly UserRepository $userRepository,
         private readonly HistoryRepository $historyRepository,
-        private readonly AdminNotifier $adminNotifier,
+        private readonly NotifierInterface $notifier,
         private readonly ClockInterface $clock,
     ) {
     }
@@ -35,18 +38,21 @@ class TooManyBikeRentEventListener
 
         $rentCount = $this->historyRepository->findRentCountByUser($event->getUserId(), $offsetTime);
         if ($rentCount >= ($user['userLimit'] + $this->numberToMany)) {
-            $this->adminNotifier->notify(
-                new TranslatableMessage(
-                    'admin.notification.too_many_rents',
-                    [
-                        'hour' => $this->timeTooManyHours,
-                        'userName' => $user['userName'],
-                        'phone' => $user['number'],
-                        'count' => $rentCount,
-                    ]
+            $this->notifier->notify(
+                new Notification(
+                    NotificationType::TooManyRents,
+                    new TranslatableMessage('notification.subject.too_many_rents'),
+                    new TranslatableMessage(
+                        'admin.notification.too_many_rents',
+                        [
+                            'hour' => $this->timeTooManyHours,
+                            'userName' => $user['userName'],
+                            'phone' => $user['number'],
+                            'count' => $rentCount,
+                        ]
+                    )
                 ),
-                true,
-                [$user['userId']]
+                new AdminRecipients((int) $user['userId'])
             );
         }
     }

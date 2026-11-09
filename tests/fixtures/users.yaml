@@ -64,3 +64,9 @@ stdClass:
     userLimit: 0
     isNumberConfirmed: 0
     password: '<(password_hash("password", PASSWORD_BCRYPT, ["cost" => 13]))>'
+
+  secondAdmin (extends defaultUser):
+    userId: 12
+    privileges: 7
+    number: 421951888888
+    userLimit: 7

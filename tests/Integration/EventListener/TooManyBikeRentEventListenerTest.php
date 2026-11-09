@@ -42,8 +42,10 @@ class TooManyBikeRentEventListenerTest extends BikeSharingKernelTestCase
         $eventDispatcher->dispatch(new BikeRentEvent(self::BIKE_NUMBER, $user['userId'], false));
 
         $mailSender = self::getContainer()->get(MailSenderInterface::class);
-        $this->assertCount(1, $mailSender->getSentMessages(), 'Invalid number of sent email');
+        $adminMails = array_column(self::getContainer()->get(UserRepository::class)->findAdmins(), 'mail');
+        $this->assertEqualsCanonicalizing($adminMails, array_column($mailSender->getSentMessages(), 'recipient'));
         $sentMessage = $mailSender->getSentMessages()[0];
+        $this->assertSame('Rental limit exceeded', $sentMessage['subject']);
         $this->assertStringContainsString(
             'Bike rental over limit in ' . $_ENV['WATCHES_NUMBER_TOO_MANY'] . ' hour',
             $sentMessage['message'],

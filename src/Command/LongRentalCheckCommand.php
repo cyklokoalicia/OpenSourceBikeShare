@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace BikeShare\Command;
 
-use BikeShare\Notifier\AdminNotifier;
+use BikeShare\Notification\AdminRecipients;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\UserRecipient;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
-use BikeShare\Repository\UserSettingsRepository;
-use BikeShare\Sms\SmsSenderInterface;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -25,11 +27,9 @@ class LongRentalCheckCommand extends Command
         private readonly int $longRentalHours,
         private readonly BikeRepository $bikeRepository,
         private readonly HistoryRepository $historyRepository,
-        private readonly SmsSenderInterface $smsSender,
-        private readonly AdminNotifier $adminNotifier,
+        private readonly NotifierInterface $notifier,
         private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
-        private readonly UserSettingsRepository $userSettingsRepository,
     ) {
         parent::__construct();
     }
@@ -60,14 +60,16 @@ class LongRentalCheckCommand extends Command
                 ];
 
                 if ($this->notifyUser) {
-                    $userLocale = $this->userSettingsRepository->findByUserId($userId)['locale'] ?? null;
-                    $this->smsSender->send(
-                        $userPhone,
-                        new TranslatableMessage(
-                            'admin.notification.long_rental_user_warning',
-                            ['bikeNumber' => $bikeNumber]
+                    $this->notifier->notify(
+                        new Notification(
+                            NotificationType::LongRentalUser,
+                            new TranslatableMessage('notification.subject.long_rental_user'),
+                            new TranslatableMessage(
+                                'admin.notification.long_rental_user_warning',
+                                ['bikeNumber' => $bikeNumber]
+                            )
                         ),
-                        $userLocale
+                        new UserRecipient($userId)
                     );
                 }
             }
@@ -79,11 +81,16 @@ class LongRentalCheckCommand extends Command
                     . $abuser['userName'] . ' ' . $abuser['userPhone'];
             }
 
-            $this->adminNotifier->notify(
-                new TranslatableMessage(
-                    'admin.notification.long_rental',
-                    ['hour' => $this->longRentalHours, 'abusers' => implode(PHP_EOL, $abuserLines)]
-                )
+            $this->notifier->notify(
+                new Notification(
+                    NotificationType::LongRentalAdmin,
+                    new TranslatableMessage('notification.subject.long_rental_admin'),
+                    new TranslatableMessage(
+                        'admin.notification.long_rental',
+                        ['hour' => $this->longRentalHours, 'abusers' => implode(PHP_EOL, $abuserLines)]
+                    )
+                ),
+                new AdminRecipients()
             );
         }
 

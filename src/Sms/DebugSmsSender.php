@@ -13,6 +13,9 @@ class DebugSmsSender implements SmsSenderInterface, ResetInterface
     /** @var array<int, array{number: string, message: TranslatableInterface, locale: ?string}> */
     private array $sentMessages = [];
 
+    /** @var string[] */
+    private array $failFor = [];
+
     public function __construct(
         private readonly SmsSender $inner,
         private readonly LoggerInterface $logger,
@@ -21,6 +24,10 @@ class DebugSmsSender implements SmsSenderInterface, ResetInterface
 
     public function send(string $number, TranslatableInterface $message, ?string $locale = null): void
     {
+        if (in_array($number, $this->failFor, true)) {
+            throw new \RuntimeException('Debug delivery failure for ' . $number);
+        }
+
         $this->sentMessages[] = [
             'number' => $number,
             'message' => $message,
@@ -28,6 +35,11 @@ class DebugSmsSender implements SmsSenderInterface, ResetInterface
         ];
         $this->logger->debug('Sending sms', ['number' => $number, 'locale' => $locale]);
         $this->inner->send($number, $message, $locale);
+    }
+
+    public function failFor(string $number): void
+    {
+        $this->failFor[] = $number;
     }
 
     /**
@@ -41,5 +53,6 @@ class DebugSmsSender implements SmsSenderInterface, ResetInterface
     public function reset(): void
     {
         $this->sentMessages = [];
+        $this->failFor = [];
     }
 }

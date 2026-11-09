@@ -58,7 +58,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
 
         #One message is sent to admin, one to user
         $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
-        $this->assertCount(2, $smsSender->getSentMessages());
+        $this->assertCount(1 + count($admins), $smsSender->getSentMessages());
         $sentMessages = $smsSender->getSentMessages();
 
         $notifiedNumbers = [];
@@ -99,7 +99,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
                 $user['userName'] . ': Note "' . $note . '" for bike ' . $bikeNumber . ' saved.',
                 $sentMessage['message']
             );
-            $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
+            $this->assertSame('SMS command processed', $sentMessage['subject']);
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }
 
@@ -134,7 +134,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
 
         #One message is sent to admin, one to user
         $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
-        $this->assertCount(2, $smsSender->getSentMessages());
+        $this->assertCount(1 + count($admins), $smsSender->getSentMessages());
         $sentMessages = $smsSender->getSentMessages();
 
         $notifiedNumbers = [];
@@ -175,7 +175,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
                 $user['userName'] . ': Note "' . $note . '" for stand ' . $standName . ' saved.',
                 $sentMessage['message']
             );
-            $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
+            $this->assertSame('SMS command processed', $sentMessage['subject']);
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }
 

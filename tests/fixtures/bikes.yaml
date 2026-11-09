@@ -9,3 +9,7 @@ stdClass:
   bike_{1..25} (extends defaultBike):
     bikeNum: '<($current)>'
     currentStand: '@stand_<numberBetween(1, 5)>->standId'
+
+  bike_{26..27} (extends defaultBike):
+    bikeNum: '<($current)>'
+    currentStand: '@stand_fresh->standId'

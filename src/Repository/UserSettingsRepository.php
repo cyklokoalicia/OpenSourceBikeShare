@@ -9,6 +9,9 @@ use Psr\Log\LoggerInterface;
 
 class UserSettingsRepository
 {
+    /**
+     * @var array{locale: string, allowGeoDetection: bool, showWelcomePage: bool}
+     */
     private array $defaultSettings = [
         'locale' => 'en',
         'allowGeoDetection' => false,
@@ -23,29 +26,43 @@ class UserSettingsRepository
         $this->defaultSettings['locale'] = $this->defaultLocale;
     }
 
-    public function findByUserId(int $userId): ?array
+    /**
+     * Always a full set: a missing row, unparsable JSON or a value of the wrong type
+     * falls back to the default for that key.
+     *
+     * @return array{locale: string, allowGeoDetection: bool, showWelcomePage: bool}
+     */
+    public function findByUserId(int $userId): array
     {
-        $result = $this->db->query(
+        $row = $this->db->query(
             'SELECT userId, settings FROM userSettings WHERE userId = :userId',
             ['userId' => $userId]
-        );
-        $row = $result->fetchAssoc();
+        )->fetchAssoc();
 
-        if ($row === null) {
-            return $this->defaultSettings;
+        $stored = [];
+        if ($row !== null) {
+            try {
+                $decoded = json_decode((string) $row['settings'], true, 512, JSON_THROW_ON_ERROR);
+                $stored = is_array($decoded) ? $decoded : [];
+            } catch (\JsonException $e) {
+                $this->logger->error(
+                    'Error parsing user settings',
+                    ['userId' => $userId, 'settings' => $row['settings'], 'exception' => $e]
+                );
+            }
         }
 
-        try {
-            $settings = json_decode($row['settings'], true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            $settings = [];
-            $this->logger->error(
-                'Error parsing user settings',
-                ['userId' => $userId, 'settings' => $row['settings'], 'exception' => $e]
-            );
-        }
-
-        return array_merge($this->defaultSettings, $settings);
+        return [
+            'locale' => is_string($stored['locale'] ?? null) && $stored['locale'] !== ''
+                ? $stored['locale']
+                : $this->defaultLocale,
+            'allowGeoDetection' => is_bool($stored['allowGeoDetection'] ?? null)
+                ? $stored['allowGeoDetection']
+                : $this->defaultSettings['allowGeoDetection'],
+            'showWelcomePage' => is_bool($stored['showWelcomePage'] ?? null)
+                ? $stored['showWelcomePage']
+                : $this->defaultSettings['showWelcomePage'],
+        ];
     }
 
     public function saveLocale(int $userId, string $locale): void

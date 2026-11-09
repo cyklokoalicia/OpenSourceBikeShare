@@ -52,6 +52,7 @@ return static function (ContainerConfigurator $container): void {
     $services->instanceof(MailSenderInterface::class)->tag('mailSender');
     $services->instanceof(SmsConnectorInterface::class)->tag('smsConnector');
     $services->instanceof(SmsCommandInterface::class)->tag('smsCommand');
+    $services->instanceof(\BikeShare\Notification\ChannelSenderInterface::class)->tag('notificationChannel');
     $services->instanceof(\BikeShare\App\Api\Compat\ApiResponseTransformInterface::class)
         ->tag('app.api_compat_transform');
 
@@ -90,6 +91,10 @@ return static function (ContainerConfigurator $container): void {
             '../src/Rent/DTO',
             '../src/Rent/Enum',
             '../src/Translation',
+            '../src/Notification/Contact.php',
+            '../src/Notification/Notification.php',
+            '../src/Notification/AdminRecipients.php',
+            '../src/Notification/UserRecipient.php',
             '../src/Welcome/MessengerChat.php',
             '../src/Welcome/MessengerIcon.php',
         ]);
@@ -134,6 +139,11 @@ return static function (ContainerConfigurator $container): void {
 
     $services->get(\BikeShare\Controller\SmsRequestController::class)
         ->bind('$commandLocator', tagged_locator('smsCommand', null, 'getName'));
+
+    $services->get(\BikeShare\Notification\Notifier::class)
+        ->bind('$channelSenders', tagged_locator('notificationChannel', null, 'getChannelName'));
+
+    $services->alias(\BikeShare\Notification\NotifierInterface::class, \BikeShare\Notification\Notifier::class);
 
     $services->get(\BikeShare\Controller\HomeController::class)
         ->bind('$freeTimeHours', env('int:WATCHES_FREE_TIME'))

@@ -27,7 +27,7 @@ class BikeRevertEventListener
             !is_null($phoneNumber)
             && $event->getPreviousOwnerId() !== $event->getRevertedByUserId()
         ) {
-            $locale = $this->userSettingsRepository->findByUserId($event->getPreviousOwnerId())['locale'] ?? null;
+            $locale = $this->userSettingsRepository->findByUserId($event->getPreviousOwnerId())['locale'];
             $this->smsSender->send(
                 $phoneNumber,
                 new TranslatableMessage(

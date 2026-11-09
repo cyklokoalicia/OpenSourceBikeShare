@@ -46,8 +46,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         string $expectedCode,
         array $expectedParams,
         string $expectedMailMessage,
-        int $expectedSmsCount,
-        int $expectedMailCount,
+        bool $notifiesAdmins,
         int $expectedRemainingNotes,
         bool $expectedWarning
     ): void {
@@ -78,16 +77,16 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         $this->assertSame('', $this->client->getResponse()->getContent());
 
         $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
-        $this->assertCount($expectedSmsCount, $smsSender->getSentMessages());
+        $this->assertCount($notifiesAdmins ? 1 + count($admins) : 1, $smsSender->getSentMessages());
         $sentMessages = $smsSender->getSentMessages();
 
-        if ($expectedSmsCount === 1) {
+        if (!$notifiesAdmins) {
             $sentMessage = $sentMessages[0];
             $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
             $this->assertSame($expectedCode, $sentMessage['message']->getMessage(), 'Invalid message code');
             $this->assertSame($expectedParams, $sentMessage['message']->getParameters(), 'Invalid message params');
             $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid number');
-        } elseif ($expectedSmsCount === 2) {
+        } else {
             $notifiedNumbers = [];
             foreach ($sentMessages as $sentMessage) {
                 $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
@@ -122,21 +121,19 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                 $notifiedNumbers,
                 'Invalid notified numbers'
             );
-        } else {
-            $this->fail('Unexpected number of SMS messages sent: ' . $expectedSmsCount);
         }
 
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(
-            $expectedMailCount,
+            $notifiesAdmins ? count($admins) : 0,
             $mailSender->getSentMessages(),
-            $expectedMailCount === 0 ? 'Unexpected admin email was send' : 'No admin email was send'
+            $notifiesAdmins ? 'No admin email was send' : 'Unexpected admin email was send'
         );
 
-        if ($expectedMailCount > 0) {
+        if ($notifiesAdmins) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
                 $this->assertSame($user['userName'] . ': ' . $expectedMailMessage, $sentMessage['message']);
-                $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
+                $this->assertSame('SMS command processed', $sentMessage['subject']);
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
         }
@@ -162,8 +159,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'pattern' => '',
                 ],
                 'expectedMailMessage' => 'All 2 notes for stand ' . self::STAND_NAME . ' were deleted.',
-                'expectedSmsCount' => 2,
-                'expectedMailCount' => 1,
+                'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 0,
                 'expectedWarning' => false,
             ],
@@ -178,8 +174,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                 ],
                 'expectedMailMessage' => 'One note matching pattern "test" for stand '
                     . self::STAND_NAME . ' was deleted.',
-                'expectedSmsCount' => 2,
-                'expectedMailCount' => 1,
+                'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 1,
                 'expectedWarning' => false,
             ],
@@ -192,8 +187,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'pattern' => 'INVALID_PATTERN',
                 ],
                 'expectedMailMessage' => '',
-                'expectedSmsCount' => 1,
-                'expectedMailCount' => 0,
+                'notifiesAdmins' => false,
                 'expectedRemainingNotes' => 2,
                 'expectedWarning' => true,
             ],
@@ -206,8 +200,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         string $expectedCode,
         array $expectedParams,
         string $expectedMailMessage,
-        int $expectedSmsCount,
-        int $expectedMailCount,
+        bool $notifiesAdmins,
         int $expectedRemainingNotes,
         bool $expectedWarning
     ): void {
@@ -238,16 +231,16 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         $this->assertSame('', $this->client->getResponse()->getContent());
 
         $smsSender = $this->client->getContainer()->get(DebugSmsSender::class);
-        $this->assertCount($expectedSmsCount, $smsSender->getSentMessages());
+        $this->assertCount($notifiesAdmins ? 1 + count($admins) : 1, $smsSender->getSentMessages());
         $sentMessages = $smsSender->getSentMessages();
 
-        if ($expectedSmsCount === 1) {
+        if (!$notifiesAdmins) {
             $sentMessage = $sentMessages[0];
             $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
             $this->assertSame($expectedCode, $sentMessage['message']->getMessage(), 'Invalid message code');
             $this->assertSame($expectedParams, $sentMessage['message']->getParameters(), 'Invalid message params');
             $this->assertSame(self::ADMIN_PHONE_NUMBER, $sentMessage['number'], 'Invalid number');
-        } elseif ($expectedSmsCount === 2) {
+        } else {
             $notifiedNumbers = [];
             foreach ($sentMessages as $sentMessage) {
                 $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
@@ -286,15 +279,15 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
 
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(
-            $expectedMailCount,
+            $notifiesAdmins ? count($admins) : 0,
             $mailSender->getSentMessages(),
-            $expectedMailCount === 0 ? 'Unexpected admin email was send' : 'No admin email was send'
+            $notifiesAdmins ? 'No admin email was send' : 'Unexpected admin email was send'
         );
 
-        if ($expectedMailCount > 0) {
+        if ($notifiesAdmins) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
                 $this->assertSame($user['userName'] . ': ' . $expectedMailMessage, $sentMessage['message']);
-                $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
+                $this->assertSame('SMS command processed', $sentMessage['subject']);
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
         }
@@ -320,8 +313,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'pattern' => '',
                 ],
                 'expectedMailMessage' => 'All 2 notes for bike ' . self::BIKE_NUMBER . ' were deleted.',
-                'expectedSmsCount' => 2,
-                'expectedMailCount' => 1,
+                'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 0,
                 'expectedWarning' => false,
             ],
@@ -336,8 +328,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                 ],
                 'expectedMailMessage' => 'One note matching pattern "test" for bike '
                     . self::BIKE_NUMBER . ' was deleted.',
-                'expectedSmsCount' => 2,
-                'expectedMailCount' => 1,
+                'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 1,
                 'expectedWarning' => false,
             ],
@@ -350,8 +341,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'pattern' => 'INVALID_PATTERN',
                 ],
                 'expectedMailMessage' => '',
-                'expectedSmsCount' => 1,
-                'expectedMailCount' => 0,
+                'notifiesAdmins' => false,
                 'expectedRemainingNotes' => 2,
                 'expectedWarning' => true,
             ],
