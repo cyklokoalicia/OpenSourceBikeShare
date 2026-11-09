@@ -100,7 +100,8 @@ abstract class AbstractRentSystem implements RentSystemInterface
                 }
 
                 // An unknown stack top (no bike here was ever returned to this stand) is not a violation.
-                if ($this->stackWatchEnabled && $stackTopBike !== null && $stackTopBike !== $bikeId) {
+                $isStackViolation = $stackTopBike !== null && $stackTopBike !== $bikeId;
+                if ($this->stackWatchEnabled && $isStackViolation) {
                     $this->eventDispatcher->dispatch(
                         new StackWatchViolationEvent(
                             $bikeId,
@@ -111,7 +112,7 @@ abstract class AbstractRentSystem implements RentSystemInterface
                     );
                 }
 
-                if ($this->forceStack && $stackTopBike != $bikeId) {
+                if ($this->forceStack && $isStackViolation) {
                     return $this->error(
                         'bike.rent.error.stack_top_bike',
                         ['bikeNumber' => $bikeId, 'stackTopBike' => $stackTopBike]
