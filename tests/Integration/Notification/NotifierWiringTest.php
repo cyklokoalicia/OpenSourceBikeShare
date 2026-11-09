@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\Test\Integration\Notification;
 
 use BikeShare\Mail\MailSenderInterface;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Integration\BikeSharingKernelTestCase;
@@ -37,7 +37,7 @@ class NotifierWiringTest extends BikeSharingKernelTestCase
                 NotificationType::InactiveBikes,
                 new TranslatableMessage('admin.notification.inactive_bikes', ['lines' => 'x'])
             ),
-            Recipients::admins()
+            new AdminRecipients()
         );
 
         $recipients = array_column($mailSender->getSentMessages(), 'recipient');

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Db\DbInterface;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\SmsConnector\SmsConnectorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -61,7 +61,7 @@ class SmsControllerEventListener
                         ['uuid' => $sms_uuid]
                     )
                 ),
-                Recipients::admins()
+                new AdminRecipients()
             );
         } else {
             $this->db->query(

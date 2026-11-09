@@ -6,5 +6,5 @@ namespace BikeShare\Notification;
 
 interface NotifierInterface
 {
-    public function notify(Notification $notification, Recipients $recipients): void;
+    public function notify(Notification $notification, RecipientsInterface $recipients): void;
 }

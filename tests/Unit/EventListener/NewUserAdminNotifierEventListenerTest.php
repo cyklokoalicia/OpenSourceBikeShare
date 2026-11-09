@@ -6,10 +6,10 @@ namespace BikeShare\Test\Unit\EventListener;
 
 use BikeShare\Event\UserVerificationCompletedEvent;
 use BikeShare\EventListener\NewUserAdminNotifierEventListener;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -89,7 +89,7 @@ class NewUserAdminNotifierEventListenerTest extends TestCase
 
                     return true;
                 }),
-                $this->equalTo(Recipients::admins())
+                $this->equalTo(new AdminRecipients())
             );
 
         ($this->createListener(isSmsSystemEnabled: true))(new UserVerificationCompletedEvent($userId));
@@ -150,7 +150,7 @@ class NewUserAdminNotifierEventListenerTest extends TestCase
                         && $n->body instanceof TranslatableMessage
                         && $n->body->getMessage() === 'admin.notification.new_verified_user'
                 ),
-                $this->equalTo(Recipients::admins())
+                $this->equalTo(new AdminRecipients())
             );
 
         ($this->createListener(isSmsSystemEnabled: false))(new UserVerificationCompletedEvent($userId));

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\BikeReturnEvent;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -58,7 +58,7 @@ class BikeNoteNotificationListener
                     ]
                 )
             ),
-            Recipients::admins()
+            new AdminRecipients()
         );
     }
 }

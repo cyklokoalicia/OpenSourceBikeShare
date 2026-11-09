@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace BikeShare\Command;
 
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
+use BikeShare\Notification\UserRecipient;
 use BikeShare\Repository\BikeRepository;
 use BikeShare\Repository\HistoryRepository;
 use Psr\Clock\ClockInterface;
@@ -67,7 +68,7 @@ class LongRentalCheckCommand extends Command
                                 ['bikeNumber' => $bikeNumber]
                             )
                         ),
-                        Recipients::user($userId)
+                        new UserRecipient($userId)
                     );
                 }
             }
@@ -87,7 +88,7 @@ class LongRentalCheckCommand extends Command
                         ['hour' => $this->longRentalHours, 'abusers' => implode(PHP_EOL, $abuserLines)]
                     )
                 ),
-                Recipients::admins()
+                new AdminRecipients()
             );
         }
 

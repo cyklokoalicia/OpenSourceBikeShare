@@ -16,7 +16,7 @@ class Notifier implements NotifierInterface
     ) {
     }
 
-    public function notify(Notification $notification, Recipients $recipients): void
+    public function notify(Notification $notification, RecipientsInterface $recipients): void
     {
         try {
             $contacts = $this->contactResolver->resolve($recipients);

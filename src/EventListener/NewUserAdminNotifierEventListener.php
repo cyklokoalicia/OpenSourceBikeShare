@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\UserVerificationCompletedEvent;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -54,7 +54,7 @@ class NewUserAdminNotifierEventListener
                     ]
                 )
             ),
-            Recipients::admins()
+            new AdminRecipients()
         );
     }
 }

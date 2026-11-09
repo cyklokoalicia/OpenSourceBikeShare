@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Unit\Notification;
 
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Channel;
 use BikeShare\Notification\ChannelSenderInterface;
 use BikeShare\Notification\Contact;
@@ -11,7 +12,6 @@ use BikeShare\Notification\ContactResolver;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\Notifier;
 use BikeShare\Notification\NotificationType;
-use BikeShare\Notification\Recipients;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
@@ -42,7 +42,7 @@ class NotifierTest extends TestCase
         ]);
         $this->logger->expects($this->never())->method('error');
 
-        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), Recipients::admins());
+        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), new AdminRecipients());
 
         $this->assertSame([
             ['email', 'a@x.com', 'en'],
@@ -57,7 +57,7 @@ class NotifierTest extends TestCase
         $this->resolver->method('resolve')->willReturn([new Contact(1, 'en', ['email' => 'a@x.com'])]);
         $this->logger->expects($this->never())->method('error');
 
-        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), Recipients::admins());
+        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), new AdminRecipients());
 
         $this->assertSame([['email', 'a@x.com', 'en']], $this->calls);
     }
@@ -69,7 +69,7 @@ class NotifierTest extends TestCase
         ]);
         $this->logger->expects($this->never())->method('error');
 
-        $this->notifier()->notify($this->notification(NotificationType::StackWatch), Recipients::admins());
+        $this->notifier()->notify($this->notification(NotificationType::StackWatch), new AdminRecipients());
 
         $this->assertSame([['email', 'a@x.com', 'en']], $this->calls);
     }
@@ -92,7 +92,7 @@ class NotifierTest extends TestCase
             )
         );
 
-        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), Recipients::admins());
+        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), new AdminRecipients());
 
         $this->assertSame([
             ['email', 'a@x.com', 'en'],
@@ -118,7 +118,7 @@ class NotifierTest extends TestCase
             )
         );
 
-        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), Recipients::admins());
+        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), new AdminRecipients());
 
         $this->assertSame([], $this->calls);
     }
@@ -132,7 +132,7 @@ class NotifierTest extends TestCase
 
         $this->notifier([Channel::Email])->notify(
             $this->notification(NotificationType::BikeNoteAdded),
-            Recipients::admins()
+            new AdminRecipients()
         );
 
         $this->assertSame([['email', 'a@x.com', 'en']], $this->calls);
@@ -143,7 +143,7 @@ class NotifierTest extends TestCase
         $this->resolver->method('resolve')->willReturn([]);
         $this->logger->expects($this->never())->method('error');
 
-        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), Recipients::admins([1]));
+        $this->notifier()->notify($this->notification(NotificationType::BikeNoteAdded), new AdminRecipients(1));
 
         $this->assertSame([], $this->calls);
     }

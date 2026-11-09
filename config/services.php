@@ -93,7 +93,8 @@ return static function (ContainerConfigurator $container): void {
             '../src/Translation',
             '../src/Notification/Contact.php',
             '../src/Notification/Notification.php',
-            '../src/Notification/Recipients.php',
+            '../src/Notification/AdminRecipients.php',
+            '../src/Notification/UserRecipient.php',
             '../src/Welcome/MessengerChat.php',
             '../src/Welcome/MessengerIcon.php',
         ]);

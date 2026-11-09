@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace BikeShare\Command;
 
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\Repository\BikeRepository;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -81,7 +81,7 @@ class InactiveStandBikesCheckCommand extends Command
                     ['lines' => implode("\n", $lines)]
                 )
             ),
-            Recipients::admins()
+            new AdminRecipients()
         );
 
         if (!$isSilent) {

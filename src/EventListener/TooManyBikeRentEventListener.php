@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\BikeRentEvent;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Component\Clock\ClockInterface;
@@ -51,7 +51,7 @@ class TooManyBikeRentEventListener
                         ]
                     )
                 ),
-                Recipients::admins([$user['userId']])
+                new AdminRecipients((int) $user['userId'])
             );
         }
     }

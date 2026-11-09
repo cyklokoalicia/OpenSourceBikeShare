@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Unit\Notification;
 
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Channel;
 use BikeShare\Notification\ContactResolver;
-use BikeShare\Notification\Recipients;
+use BikeShare\Notification\RecipientsInterface;
+use BikeShare\Notification\UserRecipient;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Repository\UserSettingsRepository;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -38,7 +40,7 @@ class ContactResolverTest extends TestCase
             static fn(int $id): array => ['locale' => $id === 2 ? 'sk' : 'de']
         );
 
-        $contacts = $this->resolver->resolve(Recipients::admins([1]));
+        $contacts = $this->resolver->resolve(new AdminRecipients(1));
 
         $this->assertCount(2, $contacts);
         $this->assertSame(2, $contacts[0]->userId);
@@ -57,7 +59,7 @@ class ContactResolverTest extends TestCase
         ]);
         $this->settingsRepository->method('findByUserId')->willReturn(['locale' => 'en']);
 
-        $contacts = $this->resolver->resolve(Recipients::admins());
+        $contacts = $this->resolver->resolve(new AdminRecipients());
 
         $this->assertCount(1, $contacts);
         $this->assertNull($contacts[0]->addressFor(Channel::Email));
@@ -72,7 +74,7 @@ class ContactResolverTest extends TestCase
         );
         $this->settingsRepository->method('findByUserId')->with(5)->willReturn(['locale' => 'uk']);
 
-        $contacts = $this->resolver->resolve(Recipients::user(5));
+        $contacts = $this->resolver->resolve(new UserRecipient(5));
 
         $this->assertCount(1, $contacts);
         $this->assertSame(5, $contacts[0]->userId);
@@ -84,6 +86,14 @@ class ContactResolverTest extends TestCase
     {
         $this->userRepository->method('findItem')->willReturn(null);
 
-        $this->assertSame([], $this->resolver->resolve(Recipients::user(99)));
+        $this->assertSame([], $this->resolver->resolve(new UserRecipient(99)));
+    }
+
+    public function testUnsupportedRecipientsThrow(): void
+    {
+        $this->expectException(\LogicException::class);
+
+        $this->resolver->resolve(new class implements RecipientsInterface {
+        });
     }
 }

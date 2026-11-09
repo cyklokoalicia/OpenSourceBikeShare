@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\Controller;
 
 use BikeShare\App\Security\UserProvider;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\UserSettingsRepository;
 use BikeShare\Sms\SmsSenderInterface;
@@ -87,7 +87,7 @@ class SmsRequestController extends AbstractController
                         ]
                     )
                 ),
-                Recipients::admins()
+                new AdminRecipients()
             );
         }
 

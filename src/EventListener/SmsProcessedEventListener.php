@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\SmsProcessedEvent;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use Symfony\Component\Translation\TranslatableMessage;
 
 class SmsProcessedEventListener
@@ -35,7 +35,7 @@ class SmsProcessedEventListener
                             ]
                         )
                     ),
-                    Recipients::admins([$event->getUser()->getUserId()])
+                    new AdminRecipients($event->getUser()->getUserId())
                 );
                 break;
             default:

@@ -18,17 +18,33 @@ class ContactResolver
     /**
      * @return list<Contact>
      */
-    public function resolve(Recipients $recipients): array
+    public function resolve(RecipientsInterface $recipients): array
     {
-        if ($recipients->userId !== null) {
-            $user = $this->userRepository->findItem($recipients->userId);
+        return match (true) {
+            $recipients instanceof UserRecipient => $this->resolveUser($recipients),
+            $recipients instanceof AdminRecipients => $this->resolveAdmins($recipients),
+            default => throw new \LogicException('Unsupported recipients: ' . $recipients::class),
+        };
+    }
 
-            return $user === null ? [] : [$this->buildContact($user)];
-        }
+    /**
+     * @return list<Contact>
+     */
+    private function resolveUser(UserRecipient $recipient): array
+    {
+        $user = $this->userRepository->findItem($recipient->userId);
 
+        return $user === null ? [] : [$this->buildContact($user)];
+    }
+
+    /**
+     * @return list<Contact>
+     */
+    private function resolveAdmins(AdminRecipients $recipients): array
+    {
         $contacts = [];
         foreach ($this->userRepository->findAdmins() as $admin) {
-            if (in_array((int) $admin['userId'], $recipients->excludeUserIds, true)) {
+            if ((int) $admin['userId'] === $recipients->exceptUserId) {
                 continue;
             }
             $contacts[] = $this->buildContact($admin);

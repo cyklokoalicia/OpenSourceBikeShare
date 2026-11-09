@@ -6,10 +6,10 @@ namespace BikeShare\Test\Unit\EventListener;
 
 use BikeShare\Event\StackWatchViolationEvent;
 use BikeShare\EventListener\StackWatchNotificationListener;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\Repository\UserRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -53,7 +53,7 @@ class StackWatchNotificationListenerTest extends TestCase
 
                     return true;
                 }),
-                $this->equalTo(Recipients::admins())
+                $this->equalTo(new AdminRecipients())
             );
 
         (new StackWatchNotificationListener($this->userRepositoryMock, $this->notifierMock))(

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace BikeShare\Test\Unit\Command;
 
 use BikeShare\Command\InactiveStandBikesCheckCommand;
+use BikeShare\Notification\AdminRecipients;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
-use BikeShare\Notification\Recipients;
 use BikeShare\Repository\BikeRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -95,7 +95,7 @@ class InactiveStandBikesCheckCommandTest extends TestCase
                         && $n->body instanceof TranslatableMessage
                         && $n->body->getMessage() === 'admin.notification.inactive_bikes'
                 ),
-                $this->equalTo(Recipients::admins())
+                $this->equalTo(new AdminRecipients())
             )
             ->willReturnCallback(
                 static function (Notification $notification) use (&$notifiedKey, &$notifiedLines): void {
