@@ -26,7 +26,7 @@ class PHPMailerMailSender implements MailSenderInterface
         string $recipient,
         TranslatableInterface $subject,
         TranslatableInterface $body,
-        ?string $locale = null,
+        string $locale,
     ): void {
         $renderedSubject = $subject->trans($this->translator, $locale);
         $renderedBody = $body->trans($this->translator, $locale);

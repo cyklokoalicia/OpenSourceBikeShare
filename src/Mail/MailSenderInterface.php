@@ -12,6 +12,6 @@ interface MailSenderInterface
         string $recipient,
         TranslatableInterface $subject,
         TranslatableInterface $body,
-        ?string $locale = null,
+        string $locale,
     ): void;
 }

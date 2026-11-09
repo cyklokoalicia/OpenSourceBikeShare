@@ -15,7 +15,7 @@ class DebugMailSender implements MailSenderInterface, ResetInterface
      *     recipient: string,
      *     subject: TranslatableInterface,
      *     message: TranslatableInterface,
-     *     locale: ?string
+     *     locale: string
      * }>
      */
     private array $sentMessages = [];
@@ -32,7 +32,7 @@ class DebugMailSender implements MailSenderInterface, ResetInterface
         string $recipient,
         TranslatableInterface $subject,
         TranslatableInterface $body,
-        ?string $locale = null,
+        string $locale,
     ): void {
         if (in_array($recipient, $this->failFor, true)) {
             throw new \RuntimeException('Debug delivery failure for ' . $recipient);
@@ -57,7 +57,7 @@ class DebugMailSender implements MailSenderInterface, ResetInterface
      *     recipient: string,
      *     subject: TranslatableInterface,
      *     message: TranslatableInterface,
-     *     locale: ?string
+     *     locale: string
      * }>
      */
     public function getSentMessages(): array

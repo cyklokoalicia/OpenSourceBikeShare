@@ -104,6 +104,6 @@ class PHPMailerSenderTest extends TestCase
         );
 
         $this->expectException(\PHPMailer\PHPMailer\Exception::class);
-        $mailSender->sendMail('recipient', new TranslatableMessage('s'), new TranslatableMessage('b'));
+        $mailSender->sendMail('recipient', new TranslatableMessage('s'), new TranslatableMessage('b'), 'en');
     }
 }
