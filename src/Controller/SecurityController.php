@@ -73,7 +73,7 @@ class SecurityController extends AbstractController
                 );
                 $userProvider->upgradePassword($user, $hashedPassword);
 
-                $names = preg_split("/[\s,]+/", $user->getUserIdentifier());
+                $names = preg_split("/[\s,]+/", $user->getUsername());
                 $notifier->notify(
                     new Notification(
                         NotificationType::PasswordReset,

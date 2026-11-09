@@ -46,7 +46,9 @@ class ResetPasswordTest extends BikeSharingWebTestCase
         $this->assertResponseRedirects('/resetPassword');
 
         $container = $this->client->getContainer();
-        $userMail = $container->get(UserRepository::class)->findItem(self::USER_ID)['mail'];
+        $userItem = $container->get(UserRepository::class)->findItem(self::USER_ID);
+        $userMail = $userItem['mail'];
+        $firstName = preg_split('/[\s,]+/', $userItem['userName'])[0];
         $mails = $container->get(MailSenderInterface::class)->getSentMessages();
         $this->assertCount(1, $mails);
         $mail = $mails[0];
@@ -55,7 +57,7 @@ class ResetPasswordTest extends BikeSharingWebTestCase
         $message = $mail['message'];
         $this->assertInstanceOf(TranslatableMessage::class, $message);
         $this->assertSame('password.reset.mail', $message->getMessage());
-        $this->assertSame(self::USER_PHONE_NUMBER, $message->getParameters()['name']);
+        $this->assertSame($firstName, $message->getParameters()['name']);
         $newPassword = $message->getParameters()['password'];
         $this->assertSame(8, strlen($newPassword));
 
