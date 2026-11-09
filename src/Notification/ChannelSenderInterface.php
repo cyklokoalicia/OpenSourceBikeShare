@@ -8,5 +8,5 @@ interface ChannelSenderInterface
 {
     public static function getChannelName(): string;
 
-    public function send(string $address, Notification $notification, ?string $locale): void;
+    public function send(string $address, Notification $notification, string $locale): void;
 }

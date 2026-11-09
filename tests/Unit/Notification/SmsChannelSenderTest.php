@@ -41,7 +41,7 @@ class SmsChannelSenderTest extends TestCase
         (new SmsChannelSender($smsSender))->send(
             '421900',
             new Notification(NotificationType::cases()[0], new TranslatableMessage('s'), new TranslatableMessage('b')),
-            null
+            'en'
         );
     }
 }

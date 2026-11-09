@@ -20,7 +20,7 @@ class EmailChannelSender implements ChannelSenderInterface
         return Channel::Email->value;
     }
 
-    public function send(string $address, Notification $notification, ?string $locale): void
+    public function send(string $address, Notification $notification, string $locale): void
     {
         $this->mailSender->sendMail(
             $address,

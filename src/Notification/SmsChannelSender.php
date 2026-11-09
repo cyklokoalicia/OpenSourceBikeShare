@@ -17,7 +17,7 @@ class SmsChannelSender implements ChannelSenderInterface
         return Channel::Sms->value;
     }
 
-    public function send(string $address, Notification $notification, ?string $locale): void
+    public function send(string $address, Notification $notification, string $locale): void
     {
         $this->smsSender->send($address, $notification->body, $locale);
     }
