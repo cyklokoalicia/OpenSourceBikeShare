@@ -18,6 +18,16 @@ class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
     private const USER_PHONE_NUMBER = '421951111111';
     private const USER_KEY = 'reconfirmkey123';
 
+    protected function tearDown(): void
+    {
+        // The throttle lives in a filesystem pool that outlives the test; do not leak it into other runs.
+        $userId = (int)self::getContainer()->get(UserRepository::class)
+            ->findItemByPhoneNumber(self::USER_PHONE_NUMBER)['userId'];
+        self::getContainer()->get('cache.reconfirmation_throttle')->deleteItem('reconfirmation_email.' . $userId);
+
+        parent::tearDown();
+    }
+
     public function testReconfirmationEmailUsesEventUserKeyAndIsThrottled(): void
     {
         $user = $this->buildUser();

@@ -45,11 +45,7 @@ class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
         $this->assertCount(1, $emailsAfterRegister, 'Expected only the registration confirmation link');
 
         // Extract confirmation link.
-        $body = $emailsAfterRegister[0]['message'];
-        $this->assertInstanceOf(TranslatableMessage::class, $body);
-        $this->assertSame('success.registration.mail', $body->getMessage());
-        $confirmationLink = parse_url((string)($body->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
-        $this->assertNotEmpty($confirmationLink, 'Email confirmation link not found');
+        $confirmationLink = $this->confirmationLinkFrom($emailsAfterRegister[0], 'success.registration.mail');
 
         // Confirm email.
         $this->client->request(Request::METHOD_GET, $confirmationLink);

@@ -81,11 +81,7 @@ class PhoneConfirmApiTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $sendEmails = $mailSender->getSentMessages();
         $this->assertCount(1, $sendEmails);
-        $body = $sendEmails[0]['message'];
-        $this->assertInstanceOf(TranslatableMessage::class, $body);
-        $this->assertSame('success.registration.mail', $body->getMessage());
-        $confirmationLink = parse_url((string)($body->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
-        $this->assertNotEmpty($confirmationLink, 'Email confirmation link not found');
+        $confirmationLink = $this->confirmationLinkFrom($sendEmails[0], 'success.registration.mail');
 
         $this->client->request(Request::METHOD_GET, $confirmationLink);
         $this->assertResponseRedirects();
@@ -182,11 +178,10 @@ class PhoneConfirmApiTest extends BikeSharingWebTestCase
         $this->assertResponseStatusCodeSame(201);
 
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
-        $body = $mailSender->getSentMessages()[0]['message'];
-        $this->assertInstanceOf(TranslatableMessage::class, $body);
-        $this->assertSame('success.registration.mail', $body->getMessage());
-        $confirmationLink = parse_url((string)($body->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
-        $this->assertNotEmpty($confirmationLink, 'Email confirmation link not found');
+        $confirmationLink = $this->confirmationLinkFrom(
+            $mailSender->getSentMessages()[0],
+            'success.registration.mail'
+        );
         $this->client->request(Request::METHOD_GET, $confirmationLink);
 
         $phonePurifier = $this->client->getContainer()->get(PhonePurifierInterface::class);

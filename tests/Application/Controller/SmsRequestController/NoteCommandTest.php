@@ -95,20 +95,13 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
-            $this->assertEquals(
-                new TranslatableMessage('admin.notification.sms_processed', [
-                    'userName' => $user['userName'],
-                    'message' => new TranslatableMessage(
-                        'command.note.success_bike',
-                        ['note' => $note, 'bikeNumber' => $bikeNumber]
-                    ),
-                ]),
-                $sentMessage['message']
-            );
-            $this->assertEquals(
-                new TranslatableMessage('notification.subject.sms_command_audit'),
-                $sentMessage['subject']
+            $this->assertSmsAuditMail(
+                $sentMessage,
+                $user['userName'],
+                new TranslatableMessage(
+                    'command.note.success_bike',
+                    ['note' => $note, 'bikeNumber' => $bikeNumber]
+                )
             );
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }
@@ -181,20 +174,13 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
-            $this->assertEquals(
-                new TranslatableMessage('admin.notification.sms_processed', [
-                    'userName' => $user['userName'],
-                    'message' => new TranslatableMessage(
-                        'command.note.success_stand',
-                        ['note' => $note, 'standName' => $standName]
-                    ),
-                ]),
-                $sentMessage['message']
-            );
-            $this->assertEquals(
-                new TranslatableMessage('notification.subject.sms_command_audit'),
-                $sentMessage['subject']
+            $this->assertSmsAuditMail(
+                $sentMessage,
+                $user['userName'],
+                new TranslatableMessage(
+                    'command.note.success_stand',
+                    ['note' => $note, 'standName' => $standName]
+                )
             );
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }

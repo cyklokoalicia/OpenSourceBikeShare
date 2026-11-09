@@ -128,17 +128,10 @@ class UnTagCommandTest extends BikeSharingWebTestCase
 
         if ($notifiesAdmins) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertInstanceOf(TranslatableMessage::class, $sentMessage['message']);
-                $this->assertEquals(
-                    new TranslatableMessage('admin.notification.sms_processed', [
-                        'userName' => $user['userName'],
-                        'message' => new TranslatableMessage($expectedCode, $expectedParams),
-                    ]),
-                    $sentMessage['message']
-                );
-                $this->assertEquals(
-                    new TranslatableMessage('notification.subject.sms_command_audit'),
-                    $sentMessage['subject']
+                $this->assertSmsAuditMail(
+                    $sentMessage,
+                    $user['userName'],
+                    new TranslatableMessage($expectedCode, $expectedParams)
                 );
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }

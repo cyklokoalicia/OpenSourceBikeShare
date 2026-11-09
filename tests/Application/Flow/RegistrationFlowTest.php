@@ -54,11 +54,7 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
         $email = $sendEmails[0];
 
         // Extract confirmation link
-        $body = $email['message'];
-        $this->assertInstanceOf(TranslatableMessage::class, $body);
-        $this->assertSame('success.registration.mail', $body->getMessage());
-        $confirmationLink = parse_url((string)($body->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
-        $this->assertNotEmpty($confirmationLink, 'Email confirmation link not found');
+        $confirmationLink = $this->confirmationLinkFrom($email, 'success.registration.mail');
 
         $this->client->request(Request::METHOD_GET, $confirmationLink);
         $this->assertResponseRedirects('/');
