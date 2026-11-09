@@ -50,6 +50,11 @@ class EmailUnconfirmedFirewallApiTest extends BikeSharingWebTestCase
         $user = $userProvider->loadUserByIdentifier($purifiedPhone);
         $accessToken = $jwtTokenService->createAccessToken($user)['token'];
 
+        // The throttle pool survives between runs and fixtures reuse user ids, so clear it
+        // or a run within 15 minutes of the previous one gets no reconfirmation mail.
+        $container->get('cache.reconfirmation_throttle')
+            ->deleteItem('reconfirmation_email.' . $userRow['userId']);
+
         // /user/phone-confirm/request is reachable by ROLE_NEWBIE, so a 403 here isolates
         // the email UserChecker rather than the phone access-control gate.
         $this->client->request(
