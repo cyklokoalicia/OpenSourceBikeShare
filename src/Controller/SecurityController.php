@@ -9,13 +9,13 @@ use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
 use BikeShare\Notification\UserRecipient;
-use BikeShare\Translation\PlainText;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SecurityController extends AbstractController
@@ -73,18 +73,15 @@ class SecurityController extends AbstractController
                 );
                 $userProvider->upgradePassword($user, $hashedPassword);
 
-                $subject = $translator->trans('Password reset');
                 $names = preg_split("/[\s,]+/", $user->getUserIdentifier());
-                $firstname = $names[0];
-                $message = $translator->trans('Hello') . ' ' . $firstname . ",\n\n" .
-                    $translator->trans('Your password has been reset successfully.') . "\n\n" .
-                    $translator->trans('Your new password is:') . "\n" . $plainPassword;
-
                 $notifier->notify(
                     new Notification(
                         NotificationType::PasswordReset,
-                        new PlainText($subject),
-                        new PlainText($message)
+                        new TranslatableMessage('Password reset'),
+                        new TranslatableMessage(
+                            'password.reset.mail',
+                            ['name' => $names[0], 'password' => $plainPassword]
+                        )
                     ),
                     new UserRecipient($user->getUserId())
                 );

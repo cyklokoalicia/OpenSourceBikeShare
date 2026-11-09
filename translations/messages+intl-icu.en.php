@@ -92,6 +92,12 @@ By clicking the following link you will confirm your email: {emailConfirmURL}',
   'Hello' => 'Hello',
   'Your password has been reset successfully.' => 'Your password has been reset successfully.',
   'Your new password is:' => 'Your new password is:',
+  'password.reset.mail' => 'Hello {name},
+
+Your password has been reset successfully.
+
+Your new password is:
+{password}',
   'Check your email.' => 'Check your email.',
   'Registration' => 'Registration',
   'Email confirmation' => 'Email confirmation',

@@ -105,6 +105,12 @@ Kliknutím na nasledujúci odkaz potvrdíte svoj e-mail: {emailConfirmURL}',
     'Hello' => 'Dobrý deň',
     'Your password has been reset successfully.' => 'Vaše heslo bolo úspešne obnovené.',
     'Your new password is:' => 'Vaše nové heslo je:',
+    'password.reset.mail' => 'Dobrý deň {name},
+
+Vaše heslo bolo úspešne obnovené.
+
+Vaše nové heslo je:
+{password}',
     'Check your email.' => 'Skontrolujte si e-mail.',
     'Registration' => 'Registrácia',
     'Email confirmation' => 'Potvrdenie e-mailu',

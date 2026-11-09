@@ -105,6 +105,12 @@ return [
     'Hello' => 'Привіт',
     'Your password has been reset successfully.' => 'Ваш пароль було успішно скинуто.',
     'Your new password is:' => 'Ваш новий пароль:',
+    'password.reset.mail' => 'Привіт {name},
+
+Ваш пароль було успішно скинуто.
+
+Ваш новий пароль:
+{password}',
     'Check your email.' => 'Перевірте свою електронну пошту.',
     'Registration' => 'Реєстрація',
     'Email confirmation' => 'Підтвердження електронної пошти',

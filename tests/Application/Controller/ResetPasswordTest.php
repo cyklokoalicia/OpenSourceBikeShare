@@ -9,11 +9,11 @@ use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
-use BikeShare\Translation\PlainText;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ResetPasswordTest extends BikeSharingWebTestCase
@@ -51,16 +51,19 @@ class ResetPasswordTest extends BikeSharingWebTestCase
         $this->assertCount(1, $mails);
         $mail = $mails[0];
         $this->assertSame($userMail, $mail['recipient']);
-        $this->assertInstanceOf(PlainText::class, $mail['subject']);
-        $this->assertInstanceOf(PlainText::class, $mail['message']);
+        $this->assertEquals(new TranslatableMessage('Password reset'), $mail['subject']);
+        $message = $mail['message'];
+        $this->assertInstanceOf(TranslatableMessage::class, $message);
+        $this->assertSame('password.reset.mail', $message->getMessage());
+        $this->assertSame(self::USER_PHONE_NUMBER, $message->getParameters()['name']);
+        $newPassword = $message->getParameters()['password'];
+        $this->assertSame(8, strlen($newPassword));
 
         $translator = $container->get(TranslatorInterface::class);
-        $this->assertSame('Password reset', $mail['subject']->trans($translator));
-        $body = $mail['message']->trans($translator);
-        $this->assertStringContainsString("Your new password is:\n", $body);
-        $lines = explode("\n", $body);
-        $newPassword = end($lines);
-        $this->assertSame(8, strlen($newPassword));
+        $this->assertStringEndsWith(
+            "Your new password is:\n" . $newPassword,
+            $message->trans($translator, $mail['locale'])
+        );
         $this->assertFlashSuccess();
 
         $user = $container->get(UserProvider::class)->loadUserByIdentifier(self::USER_PHONE_NUMBER);
