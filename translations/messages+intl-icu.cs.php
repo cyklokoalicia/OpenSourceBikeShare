@@ -226,6 +226,7 @@ Kliknutím na následující odkaz potvrdíte svůj e-mail: {emailConfirmURL}',
     'notification.subject.long_rental_admin' => 'Dlouhé výpůjčky',
     'notification.subject.long_rental_user' => 'Prosím, vraťte kolo',
     'notification.subject.inactive_bikes' => 'Neaktivní kola na stojanech',
+    'notification.subject.bike_reverted_owner' => 'Vaše kolo bylo vráceno',
     'admin.notification.new_verified_user' => 'Nový uživatel právě potvrdil e-mail a telefon. Prosím, kontaktujte ho na uvítací / onboarding hovor.
 Jméno: {userName}
 E-mail: {email}

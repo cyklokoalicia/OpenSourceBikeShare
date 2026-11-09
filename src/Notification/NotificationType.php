@@ -16,6 +16,7 @@ enum NotificationType: string
     case LongRentalAdmin = 'long-rental-admin';
     case LongRentalUser = 'long-rental-user';
     case InactiveBikes = 'inactive-bikes';
+    case BikeRevertedOwner = 'bike-reverted-owner';
 
     /**
      * @return list<Channel>
@@ -32,7 +33,8 @@ enum NotificationType: string
             self::SmsProblem,
             self::DuplicateSms,
             self::InactiveBikes => [Channel::Email],
-            self::LongRentalUser => [Channel::Sms],
+            self::LongRentalUser,
+            self::BikeRevertedOwner => [Channel::Sms],
         };
     }
 }

@@ -236,6 +236,7 @@ return [
     'notification.subject.long_rental_admin' => 'Довгі оренди',
     'notification.subject.long_rental_user' => 'Будь ласка, поверніть велосипед',
     'notification.subject.inactive_bikes' => 'Неактивні велосипеди на стоянках',
+    'notification.subject.bike_reverted_owner' => 'Ваш велосипед повернено',
     'admin.notification.new_verified_user' => 'Новий користувач щойно підтвердив email і телефон. Будь ласка, зв\'яжіться з ним для привітання / онбордингу.
 Ім\'я: {userName}
 Email: {email}

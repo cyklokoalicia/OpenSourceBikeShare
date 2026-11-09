@@ -230,6 +230,7 @@ By clicking the following link you will confirm your email: {emailConfirmURL}',
   'notification.subject.long_rental_admin' => 'Long rentals',
   'notification.subject.long_rental_user' => 'Please return your bike',
   'notification.subject.inactive_bikes' => 'Inactive bikes on stands',
+  'notification.subject.bike_reverted_owner' => 'Your bike was returned',
   'admin.notification.new_verified_user' => 'New user has just verified email and phone. Please contact them for the welcome / onboarding call.
 Name: {userName}
 Email: {email}
