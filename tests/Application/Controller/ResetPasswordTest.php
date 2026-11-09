@@ -74,7 +74,11 @@ class ResetPasswordTest extends BikeSharingWebTestCase
 
     public function testResetSucceedsWhenTheMailFails(): void
     {
-        $this->expectLog(Logger::ERROR, '/Notification delivery failed/');
+        $this->expectLog(
+            Logger::ERROR,
+            '/Notification delivery failed/',
+            ['type' => 'password-reset', 'channel' => 'email', 'userId' => self::USER_ID]
+        );
 
         $container = $this->client->getContainer();
         $userMail = $container->get(UserRepository::class)->findItem(self::USER_ID)['mail'];

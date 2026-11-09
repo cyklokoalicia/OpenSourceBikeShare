@@ -80,7 +80,12 @@ class RegistrationMailTest extends BikeSharingWebTestCase
 
     public function testRegistrationSucceedsWhenTheMailFails(): void
     {
-        $this->expectLog(Logger::ERROR, '/Notification delivery failed/');
+        // The new user's id is not known before the request, so pin the notification and channel only.
+        $this->expectLog(
+            Logger::ERROR,
+            '/Notification delivery failed/',
+            ['type' => 'registration', 'channel' => 'email']
+        );
         $email = $this->uniqueEmail();
         $this->client->getContainer()->get(MailSenderInterface::class)->failFor($email);
 

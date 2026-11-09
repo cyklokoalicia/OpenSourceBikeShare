@@ -184,12 +184,16 @@ class BikeRevertTest extends BikeSharingWebTestCase
 
     public function testRevertSucceedsWhenThePreviousOwnerSmsFails(): void
     {
-        $this->expectLog(Logger::ERROR, '/Notification delivery failed/');
         $this->setEnvVar('WATCHES_NUMBER_TOO_MANY', '9999');
 
         $container = $this->client->getContainer();
         $userProvider = $container->get(UserProvider::class);
         $user = $userProvider->loadUserByIdentifier(self::USER_PHONE_NUMBER);
+        $this->expectLog(
+            Logger::ERROR,
+            '/Notification delivery failed/',
+            ['type' => 'bike-reverted-owner', 'channel' => 'sms', 'userId' => $user->getUserId()]
+        );
         $admin = $userProvider->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
 
         $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB)

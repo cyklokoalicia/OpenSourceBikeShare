@@ -59,8 +59,12 @@ class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
 
     public function testFailedSendStillThrottles(): void
     {
-        $this->expectLog(Logger::ERROR, '/Notification delivery failed/');
         $user = $this->buildUser();
+        $this->expectLog(
+            Logger::ERROR,
+            '/Notification delivery failed/',
+            ['type' => 'reconfirmation', 'channel' => 'email', 'userId' => $user->getUserId()]
+        );
         $cache = self::getContainer()->get('cache.reconfirmation_throttle');
         $cache->deleteItem('reconfirmation_email.' . $user->getUserId());
 

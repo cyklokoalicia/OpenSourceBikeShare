@@ -107,9 +107,13 @@ class ReturnWithNoteNotificationTest extends BikeSharingWebTestCase
 
     public function testAdminSmsFailureDoesNotBreakReturn(): void
     {
-        $this->expectLog(Logger::ERROR, '/Notification delivery failed/');
         $admins = $this->admins();
         $this->assertCount(2, $admins);
+        $this->expectLog(
+            Logger::ERROR,
+            '/Notification delivery failed/',
+            ['type' => 'bike-note-added', 'channel' => 'sms', 'userId' => $admins[0]['userId']]
+        );
         $failing = $admins[0]['number'];
         $this->client->getContainer()->get(DebugSmsSender::class)->failFor($failing);
 

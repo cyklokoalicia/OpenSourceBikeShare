@@ -123,7 +123,6 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
 
     public function testFailedWarningToOneRiderDoesNotStopTheRun(): void
     {
-        $this->expectLog(Logger::ERROR, '/Notification delivery failed/');
         $_ENV['WATCHES_NUMBER_TOO_MANY'] = 999;
         $_ENV['NOTIFY_USER_ABOUT_LONG_RENTAL'] = 1;
         static::mockTime();
@@ -134,6 +133,11 @@ class LongRentalCheckCommandTest extends BikeSharingKernelTestCase
         $first = $userRepository->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
         $second = $userRepository->findItemByPhoneNumber(self::SECOND_USER_PHONE_NUMBER);
         $admin = $userRepository->findItemByPhoneNumber(self::ADMIN_PHONE_NUMBER);
+        $this->expectLog(
+            Logger::ERROR,
+            '/Notification delivery failed/',
+            ['type' => 'long-rental-user', 'channel' => 'sms', 'userId' => $first['userId']]
+        );
         $rentSystem->returnBike($admin['userId'], self::SECOND_BIKE_NUMBER, self::STAND_NAME, '', true);
         $this->assertFalse($rentSystem->rentBike($first['userId'], self::BIKE_NUMBER)->isError());
         $this->assertFalse($rentSystem->rentBike($second['userId'], self::SECOND_BIKE_NUMBER)->isError());
