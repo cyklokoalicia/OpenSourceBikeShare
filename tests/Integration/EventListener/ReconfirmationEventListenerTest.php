@@ -10,6 +10,7 @@ use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Integration\BikeSharingKernelTestCase;
 use Monolog\Logger;
+use Monolog\LogRecord;
 use Symfony\Component\Translation\TranslatableMessage;
 
 class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
@@ -37,7 +38,7 @@ class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
         $this->assertInstanceOf(TranslatableMessage::class, $mail['message']);
         $this->assertSame('email.confirmation.mail', $mail['message']->getMessage());
         $params = $mail['message']->getParameters();
-        $this->assertSame(preg_split('/[\s,]+/', $user->getUsername())[0], $params['name']);
+        $this->assertSame('Eve', $params['name']);
         $this->assertSame($user->getEmail(), $mail['recipient']);
         $this->assertStringEndsWith('/user/confirm/email/' . self::USER_KEY, $params['emailConfirmURL']);
 
@@ -59,9 +60,19 @@ class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
         $event = new UserReconfirmationEvent($user, self::USER_KEY);
         $eventDispatcher = self::getContainer()->get('event_dispatcher');
         $eventDispatcher->dispatch($event);
+        $this->assertTrue(
+            $cache->getItem('reconfirmation_email.' . $user->getUserId())->isHit(),
+            'A failed send must still leave the throttle in place'
+        );
         $eventDispatcher->dispatch($event);
 
         $this->assertCount(0, $mailSender->getSentMessages());
+        $failures = array_filter(
+            $this->logHandler->getRecords(),
+            static fn (LogRecord $r): bool => $r->level->value === Logger::ERROR
+                && preg_match('/Notification delivery failed/', $r->message) === 1
+        );
+        $this->assertCount(1, $failures, 'The second dispatch must be throttled, not retried');
     }
 
     private function buildUser(): User
@@ -74,7 +85,7 @@ class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
             $row['mail'],
             'hash',
             'Default City',
-            $row['userName'],
+            'Eve Doe',
             0,
             false,
             new \DateTimeImmutable('2026-01-01 00:00:00'),
