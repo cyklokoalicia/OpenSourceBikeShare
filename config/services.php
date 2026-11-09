@@ -205,7 +205,7 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$debugLevel', env('int:SMTP_DEBUG_LEVEL'))
         ->bind(
             '$mailer',
-            inline_service(PHPMailer::class)->args([false])->property('Debugoutput', service('logger')),
+            inline_service(PHPMailer::class)->args([true])->property('Debugoutput', service('logger')),
         );
 
     $services->set(PhoneNumberUtil::class)

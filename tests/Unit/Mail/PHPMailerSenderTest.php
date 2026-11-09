@@ -8,6 +8,7 @@ use BikeShare\Mail\PHPMailerMailSender;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Translation\Translator;
@@ -81,5 +82,28 @@ class PHPMailerSenderTest extends TestCase
         $this->assertEquals($this->mailer->FromName, 'fromName');
         $this->assertEquals($this->mailer->Subject, 'Predmet');
         $this->assertEquals($this->mailer->Body, 'Ahoj Jane');
+    }
+
+    public function testSendFailurePropagatesAndIsNotLoggedAsSent(): void
+    {
+        $this->mailer
+            ->expects($this->once())
+            ->method('send')
+            ->willThrowException(new \PHPMailer\PHPMailer\Exception('smtp down'));
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('info');
+
+        $mailSender = new PHPMailerMailSender(
+            'fromEmail',
+            'fromName',
+            ['smtp_host' => 'h', 'smtp_port' => 1, 'smtp_user' => 'u', 'smtp_password' => 'p'],
+            $this->mailer,
+            new Translator('en'),
+            0,
+            $logger,
+        );
+
+        $this->expectException(\PHPMailer\PHPMailer\Exception::class);
+        $mailSender->sendMail('recipient', new TranslatableMessage('s'), new TranslatableMessage('b'));
     }
 }
