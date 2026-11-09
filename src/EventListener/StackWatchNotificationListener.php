@@ -32,7 +32,7 @@ class StackWatchNotificationListener
                     'bike.rent.admin.stack_watch',
                     [
                         'bikeNumber' => $event->getBikeNumber(),
-                        'userName' => $user['userName'] ?? '',
+                        'userName' => $user['userName'],
                         'stackTopBike' => $event->getStackTopBike(),
                         'standName' => $event->getStandName(),
                     ]

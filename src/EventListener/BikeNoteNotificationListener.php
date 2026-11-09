@@ -29,8 +29,8 @@ class BikeNoteNotificationListener
         }
 
         $user = $this->userRepository->findItem($event->getUserId());
-        $userName = $user['userName'] ?? '';
-        $phone = $user['number'] ?? '';
+        $userName = $user['userName'];
+        $phone = $user['number'];
 
         $bikeUsage = $this->bikeRepository->findBikeCurrentUsage($event->getBikeNumber());
         $standName = $bikeUsage['standName'] ?? null;
