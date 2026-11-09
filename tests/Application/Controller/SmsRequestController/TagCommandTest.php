@@ -99,7 +99,7 @@ class TagCommandTest extends BikeSharingWebTestCase
                 $user['userName'] . ': All bikes on stand ' . $standName . ' tagged with note "' . $note . '".',
                 $sentMessage['message']
             );
-            $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
+            $this->assertSame('SMS command processed', $sentMessage['subject']);
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }
 

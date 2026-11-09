@@ -221,7 +221,16 @@ By clicking the following link you will confirm your email: {emailConfirmURL}',
   'user.error.invalid_email' => 'Email address is incorrect.',
   'user.error.phone_already_registered' => 'User with this phone number already registered.',
   'user.error.email_already_registered' => 'User with this email already registered.',
-  'admin.notification.subject' => '{appName} notification',
+  'notification.subject.bike-note-added' => 'Bike note added',
+  'notification.subject.stack-watch' => 'Bike rented out of stack order',
+  'notification.subject.too-many-rents' => 'Rental limit exceeded',
+  'notification.subject.sms-command-audit' => 'SMS command processed',
+  'notification.subject.new-verified-user' => 'New verified user',
+  'notification.subject.sms-problem' => 'Problem with SMS',
+  'notification.subject.duplicate-sms' => 'Duplicate SMS received',
+  'notification.subject.long-rental-admin' => 'Long rentals',
+  'notification.subject.long-rental-user' => 'Please return your bike',
+  'notification.subject.inactive-bikes' => 'Inactive bikes on stands',
   'admin.notification.new_verified_user' => 'New user has just verified email and phone. Please contact them for the welcome / onboarding call.
 Name: {userName}
 Email: {email}

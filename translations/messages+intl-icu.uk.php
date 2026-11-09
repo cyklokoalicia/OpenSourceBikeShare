@@ -227,7 +227,16 @@ return [
     'user.error.invalid_email' => 'Неправильна електронна адреса.',
     'user.error.phone_already_registered' => 'Користувача з таким номером телефону вже зареєстровано.',
     'user.error.email_already_registered' => 'Користувача з таким email вже зареєстровано.',
-    'admin.notification.subject' => '{appName} сповіщення',
+    'notification.subject.bike-note-added' => 'Нова примітка до велосипеда',
+    'notification.subject.stack-watch' => 'Велосипед орендовано поза стеком',
+    'notification.subject.too-many-rents' => 'Перевищено ліміт оренд',
+    'notification.subject.sms-command-audit' => 'Оброблено SMS-команду',
+    'notification.subject.new-verified-user' => 'Новий підтверджений користувач',
+    'notification.subject.sms-problem' => 'Проблема з SMS',
+    'notification.subject.duplicate-sms' => 'Отримано повторне SMS',
+    'notification.subject.long-rental-admin' => 'Довгі оренди',
+    'notification.subject.long-rental-user' => 'Будь ласка, поверніть велосипед',
+    'notification.subject.inactive-bikes' => 'Неактивні велосипеди на стоянках',
     'admin.notification.new_verified_user' => 'Новий користувач щойно підтвердив email і телефон. Будь ласка, зв\'яжіться з ним для привітання / онбордингу.
 Ім\'я: {userName}
 Email: {email}

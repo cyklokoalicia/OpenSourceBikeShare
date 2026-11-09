@@ -131,7 +131,7 @@ class UnTagCommandTest extends BikeSharingWebTestCase
         if ($expectedMailCount > 0) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
                 $this->assertMatchesRegularExpression($expectedMailMessagePattern, $sentMessage['message']);
-                $this->assertSame('OpenSourceBikeShare notification', $sentMessage['subject']);
+                $this->assertSame('SMS command processed', $sentMessage['subject']);
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
         }

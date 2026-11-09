@@ -227,7 +227,16 @@ Kliknutím na nasledujúci odkaz potvrdíte svoj e-mail: {emailConfirmURL}',
     'user.error.invalid_email' => 'E-mailová adresa je nesprávna.',
     'user.error.phone_already_registered' => 'Používateľ s týmto telefónnym číslom je už registrovaný.',
     'user.error.email_already_registered' => 'Používateľ s týmto e-mailom je už registrovaný.',
-    'admin.notification.subject' => '{appName} oznámenie',
+    'notification.subject.bike-note-added' => 'Nová poznámka k bicyklu',
+    'notification.subject.stack-watch' => 'Bicykel požičaný mimo poradia',
+    'notification.subject.too-many-rents' => 'Prekročený limit výpožičiek',
+    'notification.subject.sms-command-audit' => 'Spracovaný SMS príkaz',
+    'notification.subject.new-verified-user' => 'Nový overený používateľ',
+    'notification.subject.sms-problem' => 'Problém so SMS',
+    'notification.subject.duplicate-sms' => 'Prijatá duplicitná SMS',
+    'notification.subject.long-rental-admin' => 'Dlhé výpožičky',
+    'notification.subject.long-rental-user' => 'Prosím, vráťte bicykel',
+    'notification.subject.inactive-bikes' => 'Neaktívne bicykle na stojanoch',
     'admin.notification.new_verified_user' => 'Nový používateľ práve potvrdil e-mail a telefón. Prosím, kontaktujte ho na uvítací / onboarding hovor.
 Meno: {userName}
 E-mail: {email}

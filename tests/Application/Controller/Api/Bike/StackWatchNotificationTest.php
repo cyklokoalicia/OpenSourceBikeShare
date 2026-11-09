@@ -77,6 +77,7 @@ class StackWatchNotificationTest extends BikeSharingWebTestCase
         foreach ($sent as $mail) {
             $this->assertStringContainsString((string)$this->otherBike, (string)$mail['message']);
             $this->assertStringContainsString((string)self::STACK_TOP_BIKE, (string)$mail['message']);
+            $this->assertSame('Bike rented out of stack order', $mail['subject']);
         }
         $this->assertSame([], $container->get(DebugSmsSender::class)->getSentMessages());
     }

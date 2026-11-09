@@ -220,7 +220,16 @@ Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmU
     'user.error.invalid_email' => 'E-Mail-Adresse ist ungültig.',
     'user.error.phone_already_registered' => 'Benutzer mit dieser Telefonnummer ist bereits registriert.',
     'user.error.email_already_registered' => 'Benutzer mit dieser E-Mail ist bereits registriert.',
-    'admin.notification.subject' => '{appName} Benachrichtigung',
+    'notification.subject.bike-note-added' => 'Neue Notiz zum Fahrrad',
+    'notification.subject.stack-watch' => 'Fahrrad außerhalb der Reihe ausgeliehen',
+    'notification.subject.too-many-rents' => 'Ausleihlimit überschritten',
+    'notification.subject.sms-command-audit' => 'SMS-Befehl verarbeitet',
+    'notification.subject.new-verified-user' => 'Neuer verifizierter Benutzer',
+    'notification.subject.sms-problem' => 'Problem mit SMS',
+    'notification.subject.duplicate-sms' => 'Doppelte SMS empfangen',
+    'notification.subject.long-rental-admin' => 'Lange Ausleihen',
+    'notification.subject.long-rental-user' => 'Bitte gib dein Fahrrad zurück',
+    'notification.subject.inactive-bikes' => 'Inaktive Fahrräder an Ständern',
     'admin.notification.new_verified_user' => 'Ein neuer Benutzer hat gerade E-Mail und Telefon bestätigt. Bitte kontaktiere ihn für das Willkommens- / Onboarding-Gespräch.
 Name: {userName}
 E-Mail: {email}

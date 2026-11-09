@@ -11,7 +11,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class EmailChannelSender implements ChannelSenderInterface
 {
     public function __construct(
-        private readonly string $appName,
         private readonly MailSenderInterface $mailSender,
         private readonly TranslatorInterface $translator,
     ) {
@@ -24,8 +23,7 @@ class EmailChannelSender implements ChannelSenderInterface
 
     public function send(string $address, Notification $notification, ?string $locale): void
     {
-        $subject = $notification->subject
-            ?? new TranslatableMessage('admin.notification.subject', ['appName' => $this->appName]);
+        $subject = new TranslatableMessage($notification->type->subjectKey());
 
         $this->mailSender->sendMail(
             $address,
