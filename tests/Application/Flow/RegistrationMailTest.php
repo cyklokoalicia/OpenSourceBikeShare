@@ -54,6 +54,7 @@ class RegistrationMailTest extends BikeSharingWebTestCase
 
         $userId = $container->get(UserRepository::class)->findItemByEmail($email)['userId'];
         $key = $container->get(RegistrationRepository::class)->findItemByUserId($userId)['userKey'];
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $key);
         $url = $mails[0]['message']->getParameters()['emailConfirmURL'];
         $this->assertStringEndsWith('/user/confirm/email/' . $key, $url);
     }

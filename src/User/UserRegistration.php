@@ -59,7 +59,7 @@ class UserRegistration
         );
         $this->userRepository->updateUserLimit($user->getUserId(), 0);
 
-        $userKey = hash('sha256', md5(mt_rand() . microtime() . $email));
+        $userKey = bin2hex(random_bytes(32));
         $this->registrationRepository->addItem($user->getUserId(), $userKey);
         // The mail is translated in the recipient's saved locale, so persist the one they registered in.
         $this->userSettingsRepository->saveLocale($user->getUserId(), $this->translator->getLocale());
