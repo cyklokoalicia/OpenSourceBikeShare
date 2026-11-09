@@ -41,6 +41,7 @@ class TooManyBikeRentEventListener
             $this->notifier->notify(
                 new Notification(
                     NotificationType::TooManyRents,
+                    new TranslatableMessage('notification.subject.too_many_rents'),
                     new TranslatableMessage(
                         'admin.notification.too_many_rents',
                         [

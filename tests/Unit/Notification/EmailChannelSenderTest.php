@@ -26,13 +26,13 @@ class EmailChannelSenderTest extends TestCase
         $domain = 'messages+intl-icu';
         $translator->addResource(
             'array',
-            ['notification.subject.stack-watch' => 'Bike rented out of stack order'],
+            ['notification.subject.stack_watch' => 'Bike rented out of stack order'],
             'en',
             $domain
         );
         $translator->addResource(
             'array',
-            ['notification.subject.stack-watch' => 'Bicykel požičaný mimo poradia'],
+            ['notification.subject.stack_watch' => 'Bicykel požičaný mimo poradia'],
             'sk',
             $domain
         );
@@ -46,7 +46,7 @@ class EmailChannelSenderTest extends TestCase
         $this->mailSender->expects($this->never())->method('sendMail');
     }
 
-    public function testSubjectComesFromTheTypeAndBodyIsTranslated(): void
+    public function testSubjectAndBodyAreTranslated(): void
     {
         $this->mailSender->expects($this->once())->method('sendMail')
             ->with('a@x', 'Bike rented out of stack order', 'hello body');
@@ -73,6 +73,10 @@ class EmailChannelSenderTest extends TestCase
 
     private function notification(TranslatableMessage $body): Notification
     {
-        return new Notification(NotificationType::StackWatch, $body);
+        return new Notification(
+            NotificationType::StackWatch,
+            new TranslatableMessage('notification.subject.stack_watch'),
+            $body
+        );
     }
 }

@@ -45,6 +45,7 @@ class NewUserAdminNotifierEventListener
         $this->notifier->notify(
             new Notification(
                 NotificationType::NewVerifiedUser,
+                new TranslatableMessage('notification.subject.new_verified_user'),
                 new TranslatableMessage(
                     'admin.notification.new_verified_user',
                     [

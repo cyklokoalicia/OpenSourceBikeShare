@@ -27,7 +27,7 @@ class SmsChannelSenderTest extends TestCase
 
         (new SmsChannelSender($smsSender))->send(
             '421900',
-            new Notification(NotificationType::cases()[0], $body),
+            new Notification(NotificationType::cases()[0], new TranslatableMessage('subject'), $body),
             'sk'
         );
     }
@@ -40,7 +40,7 @@ class SmsChannelSenderTest extends TestCase
         $this->expectException(\RuntimeException::class);
         (new SmsChannelSender($smsSender))->send(
             '421900',
-            new Notification(NotificationType::cases()[0], new TranslatableMessage('b')),
+            new Notification(NotificationType::cases()[0], new TranslatableMessage('s'), new TranslatableMessage('b')),
             null
         );
     }

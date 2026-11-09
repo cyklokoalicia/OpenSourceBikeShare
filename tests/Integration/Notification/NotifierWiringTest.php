@@ -35,6 +35,7 @@ class NotifierWiringTest extends BikeSharingKernelTestCase
         $container->get(NotifierInterface::class)->notify(
             new Notification(
                 NotificationType::InactiveBikes,
+                new TranslatableMessage('notification.subject.inactive_bikes'),
                 new TranslatableMessage('admin.notification.inactive_bikes', ['lines' => 'x'])
             ),
             new AdminRecipients()

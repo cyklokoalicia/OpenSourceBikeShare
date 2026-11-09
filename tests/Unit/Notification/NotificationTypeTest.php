@@ -34,14 +34,4 @@ class NotificationTypeTest extends TestCase
         yield 'long rental user' => [NotificationType::LongRentalUser, $sms];
         yield 'inactive bikes' => [NotificationType::InactiveBikes, $email];
     }
-
-    public function testEverySubjectKeyIsDistinctAndNamespaced(): void
-    {
-        $keys = array_map(static fn (NotificationType $type): string => $type->subjectKey(), NotificationType::cases());
-
-        $this->assertSame($keys, array_values(array_unique($keys)));
-        foreach (NotificationType::cases() as $type) {
-            $this->assertSame('notification.subject.' . $type->value, $type->subjectKey());
-        }
-    }
 }

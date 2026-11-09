@@ -27,6 +27,7 @@ class StackWatchNotificationListener
         $this->notifier->notify(
             new Notification(
                 NotificationType::StackWatch,
+                new TranslatableMessage('notification.subject.stack_watch'),
                 new TranslatableMessage(
                     'bike.rent.admin.stack_watch',
                     [

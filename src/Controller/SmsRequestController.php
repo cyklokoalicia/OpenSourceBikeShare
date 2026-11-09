@@ -79,6 +79,7 @@ class SmsRequestController extends AbstractController
             $this->notifier->notify(
                 new Notification(
                     NotificationType::SmsProblem,
+                    new TranslatableMessage('notification.subject.sms_problem'),
                     new TranslatableMessage(
                         'admin.notification.sms_problem',
                         [

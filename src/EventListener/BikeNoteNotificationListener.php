@@ -46,6 +46,7 @@ class BikeNoteNotificationListener
         $this->notifier->notify(
             new Notification(
                 NotificationType::BikeNoteAdded,
+                new TranslatableMessage('notification.subject.bike_note_added'),
                 new TranslatableMessage(
                     'bike.note.admin.notification',
                     [

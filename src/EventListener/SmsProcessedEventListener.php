@@ -27,6 +27,7 @@ class SmsProcessedEventListener
                 $this->notifier->notify(
                     new Notification(
                         NotificationType::SmsCommandAudit,
+                        new TranslatableMessage('notification.subject.sms_command_audit'),
                         new TranslatableMessage(
                             'admin.notification.sms_processed',
                             [

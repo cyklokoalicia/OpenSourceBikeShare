@@ -76,6 +76,7 @@ class InactiveStandBikesCheckCommand extends Command
         $this->notifier->notify(
             new Notification(
                 NotificationType::InactiveBikes,
+                new TranslatableMessage('notification.subject.inactive_bikes'),
                 new TranslatableMessage(
                     'admin.notification.inactive_bikes',
                     ['lines' => implode("\n", $lines)]

@@ -63,6 +63,7 @@ class LongRentalCheckCommand extends Command
                     $this->notifier->notify(
                         new Notification(
                             NotificationType::LongRentalUser,
+                            new TranslatableMessage('notification.subject.long_rental_user'),
                             new TranslatableMessage(
                                 'admin.notification.long_rental_user_warning',
                                 ['bikeNumber' => $bikeNumber]
@@ -83,6 +84,7 @@ class LongRentalCheckCommand extends Command
             $this->notifier->notify(
                 new Notification(
                     NotificationType::LongRentalAdmin,
+                    new TranslatableMessage('notification.subject.long_rental_admin'),
                     new TranslatableMessage(
                         'admin.notification.long_rental',
                         ['hour' => $this->longRentalHours, 'abusers' => implode(PHP_EOL, $abuserLines)]

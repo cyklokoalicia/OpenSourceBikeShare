@@ -150,7 +150,7 @@ class NotifierTest extends TestCase
 
     private function notification(NotificationType $type): Notification
     {
-        return new Notification($type, new TranslatableMessage('some.key'));
+        return new Notification($type, new TranslatableMessage('some.subject'), new TranslatableMessage('some.key'));
     }
 
     /**

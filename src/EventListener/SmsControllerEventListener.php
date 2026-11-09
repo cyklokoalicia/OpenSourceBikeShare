@@ -56,6 +56,7 @@ class SmsControllerEventListener
             $this->notifier->notify(
                 new Notification(
                     NotificationType::DuplicateSms,
+                    new TranslatableMessage('notification.subject.duplicate_sms'),
                     new TranslatableMessage(
                         'admin.notification.duplicate_sms',
                         ['uuid' => $sms_uuid]
