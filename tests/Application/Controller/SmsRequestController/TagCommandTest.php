@@ -11,6 +11,7 @@ use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Test\Assert\MailAssertions;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -95,11 +96,14 @@ class TagCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            $this->assertSame(
-                $user['userName'] . ': All bikes on stand ' . $standName . ' tagged with note "' . $note . '".',
-                $sentMessage['message']
+            MailAssertions::assertSmsAudit(
+                $sentMessage,
+                $user['userName'],
+                new TranslatableMessage(
+                    'command.tag.success',
+                    ['standName' => $standName, 'note' => $note]
+                )
             );
-            $this->assertSame('SMS command processed', $sentMessage['subject']);
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }
 

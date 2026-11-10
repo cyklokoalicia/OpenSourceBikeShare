@@ -10,6 +10,7 @@ use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Test\Assert\MailAssertions;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -95,11 +96,14 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            $this->assertSame(
-                $user['userName'] . ': Note "' . $note . '" for bike ' . $bikeNumber . ' saved.',
-                $sentMessage['message']
+            MailAssertions::assertSmsAudit(
+                $sentMessage,
+                $user['userName'],
+                new TranslatableMessage(
+                    'command.note.success_bike',
+                    ['note' => $note, 'bikeNumber' => $bikeNumber]
+                )
             );
-            $this->assertSame('SMS command processed', $sentMessage['subject']);
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }
 
@@ -171,11 +175,14 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            $this->assertSame(
-                $user['userName'] . ': Note "' . $note . '" for stand ' . $standName . ' saved.',
-                $sentMessage['message']
+            MailAssertions::assertSmsAudit(
+                $sentMessage,
+                $user['userName'],
+                new TranslatableMessage(
+                    'command.note.success_stand',
+                    ['note' => $note, 'standName' => $standName]
+                )
             );
-            $this->assertSame('SMS command processed', $sentMessage['subject']);
             $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
         }
 

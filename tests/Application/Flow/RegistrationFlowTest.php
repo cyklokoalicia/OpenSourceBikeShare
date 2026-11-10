@@ -10,6 +10,7 @@ use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Test\Assert\MailAssertions;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -54,10 +55,7 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
         $email = $sendEmails[0];
 
         // Extract confirmation link
-        $body = $email['message'];
-        $this->assertNotNull($body);
-        preg_match('/(\/user\/confirm\/email\/[a-z0-9]+)/', $body, $matches);
-        $confirmationLink = $matches[1];
+        $confirmationLink = MailAssertions::assertConfirmationLink($email, 'success.registration.mail');
 
         $this->client->request(Request::METHOD_GET, $confirmationLink);
         $this->assertResponseRedirects('/');
@@ -133,7 +131,9 @@ class RegistrationFlowTest extends BikeSharingWebTestCase
             $emailsAfterPhoneConfirm,
             static fn (array $m): bool => $m['recipient'] === $superAdmin['mail']
         ))[0];
-        $this->assertStringContainsString($userEmail, $adminEmail['message']);
-        $this->assertStringContainsString($phonePurifier->purify($userPhone), $adminEmail['message']);
+        $this->assertInstanceOf(TranslatableMessage::class, $adminEmail['message']);
+        $this->assertSame('admin.notification.new_verified_user', $adminEmail['message']->getMessage());
+        $this->assertSame($userEmail, $adminEmail['message']->getParameters()['email']);
+        $this->assertSame($phonePurifier->purify($userPhone), $adminEmail['message']->getParameters()['phone']);
     }
 }

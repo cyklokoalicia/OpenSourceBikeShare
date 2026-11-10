@@ -17,7 +17,7 @@ abstract class BikeSharingWebTestCase extends WebTestCase
 
     protected KernelBrowser $client;
 
-    /** @var array<array{level:int, pattern:string|callable}> */
+    /** @var array<array{level:int, pattern:string|callable, context:array<string, mixed>}> */
     private array $expected = [];
 
     /** @var array<string, array{server: bool, env: bool, serverValue: string|null, envValue: string|null}> */
@@ -64,10 +64,14 @@ abstract class BikeSharingWebTestCase extends WebTestCase
      * Examples:
      *  $this->expectLog(Logger::ERROR, '/DB timeout/');
      *  $this->expectLog(Logger::CRITICAL, fn(string $m) => str_contains($m,'payment failed'));
+     *  $this->expectLog(Logger::ERROR, '/Notification delivery failed/', ['type' => 'password-reset', 'userId' => 4]);
+     *
+     * @param array<string, mixed> $context the record's context must contain every given key with an equal value
+     *                                      (subset match, loose `==` so ints match numeric strings)
      */
-    protected function expectLog(int $level, $pattern): void
+    protected function expectLog(int $level, $pattern, array $context = []): void
     {
-        $this->expected[] = ['level' => $level, 'pattern' => $pattern];
+        $this->expected[] = ['level' => $level, 'pattern' => $pattern, 'context' => $context];
     }
 
     protected function decodeJsonResponse(): array
@@ -100,6 +104,12 @@ abstract class BikeSharingWebTestCase extends WebTestCase
                 return false;
             }
 
+            foreach ($expected['context'] ?? [] as $key => $value) {
+                if (!\array_key_exists($key, $record->context) || $record->context[$key] != $value) {
+                    return false;
+                }
+            }
+
             $message = $record->message;
 
             return \is_callable($expected['pattern'])
@@ -119,9 +129,10 @@ abstract class BikeSharingWebTestCase extends WebTestCase
             self::assertTrue(
                 $found,
                 sprintf(
-                    'Expected %s log matching %s but did not find it.',
+                    'Expected %s log matching %s%s but did not find it.',
                     Logger::getLevelName((int)$expected['level']),
-                    \is_callable($expected['pattern']) ? 'closure' : $expected['pattern']
+                    \is_callable($expected['pattern']) ? 'closure' : $expected['pattern'],
+                    $expected['context'] === [] ? '' : ' with context ' . \json_encode($expected['context'])
                 )
             );
         }

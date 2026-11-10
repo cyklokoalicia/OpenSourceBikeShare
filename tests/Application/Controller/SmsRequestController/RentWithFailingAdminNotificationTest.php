@@ -48,8 +48,6 @@ class RentWithFailingAdminNotificationTest extends BikeSharingWebTestCase
 
     public function testFailingTooManyRentsAdminSmsDoesNotBreakRent(): void
     {
-        $this->expectLog(Logger::ERROR, '/Notification delivery failed/');
-
         $container = $this->client->getContainer();
         $user = $container->get(UserRepository::class)->findItemByPhoneNumber(self::USER_PHONE_NUMBER);
         $admins = array_values(array_filter(
@@ -58,6 +56,11 @@ class RentWithFailingAdminNotificationTest extends BikeSharingWebTestCase
         ));
         $this->assertGreaterThanOrEqual(2, count($admins), 'Need a failing admin and a surviving one');
         $failing = $admins[0]['number'];
+        $this->expectLog(
+            Logger::ERROR,
+            '/Notification delivery failed/',
+            ['type' => 'too-many-rents', 'channel' => 'sms', 'userId' => $admins[0]['userId']]
+        );
         $container->get(DebugSmsSender::class)->failFor($failing);
 
         $this->client->request(

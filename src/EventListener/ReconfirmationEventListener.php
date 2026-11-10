@@ -5,20 +5,22 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\UserReconfirmationEvent;
-use BikeShare\Mail\MailSenderInterface;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\UserRecipient;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class ReconfirmationEventListener
 {
     public function __construct(
-        private readonly MailSenderInterface $mailSender,
-        private readonly TranslatorInterface $translator,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly LoggerInterface $logger,
         private readonly CacheItemPoolInterface $cache,
+        private readonly NotifierInterface $notifier,
     ) {
     }
 
@@ -38,12 +40,11 @@ class ReconfirmationEventListener
         $throttleItem->set(true);
         $this->cache->save($throttleItem);
 
-        $subject = $this->translator->trans('Email confirmation');
         $emailRecipient = $user->getEmail();
 
         $names = preg_split("/[\s,]+/", $user->getUsername());
         $firstName = $names[0];
-        $message = $this->translator->trans(
+        $message = new TranslatableMessage(
             'email.confirmation.mail',
             [
                 'name' => $firstName,
@@ -60,9 +61,15 @@ class ReconfirmationEventListener
             [
                 'userId' => $userId,
                 'email' => $emailRecipient,
-                'mailSenderClass' => $this->mailSender::class,
             ]
         );
-        $this->mailSender->sendMail($emailRecipient, $subject, $message);
+        $this->notifier->notify(
+            new Notification(
+                NotificationType::Reconfirmation,
+                new TranslatableMessage('Email confirmation'),
+                $message
+            ),
+            new UserRecipient($userId)
+        );
     }
 }

@@ -98,6 +98,12 @@ Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmU
     'Hello' => 'Hallo',
     'Your password has been reset successfully.' => 'Dein Passwort wurde erfolgreich zurückgesetzt.',
     'Your new password is:' => 'Dein neues Passwort lautet:',
+    'password.reset.mail' => 'Hallo {name},
+
+Dein Passwort wurde erfolgreich zurückgesetzt.
+
+Dein neues Passwort lautet:
+{password}',
     'Check your email.' => 'Überprüfe deine E-Mail.',
     'Registration' => 'Registrierung',
     'Email confirmation' => 'E-Mail-Bestätigung',
@@ -229,6 +235,7 @@ Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmU
     'notification.subject.long_rental_admin' => 'Lange Ausleihen',
     'notification.subject.long_rental_user' => 'Bitte gib dein Fahrrad zurück',
     'notification.subject.inactive_bikes' => 'Inaktive Fahrräder an Ständern',
+    'notification.subject.bike_reverted_owner' => 'Dein Fahrrad wurde zurückgegeben',
     'admin.notification.new_verified_user' => 'Ein neuer Benutzer hat gerade E-Mail und Telefon bestätigt. Bitte kontaktiere ihn für das Willkommens- / Onboarding-Gespräch.
 Name: {userName}
 E-Mail: {email}

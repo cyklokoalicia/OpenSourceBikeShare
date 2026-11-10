@@ -16,6 +16,10 @@ enum NotificationType: string
     case LongRentalAdmin = 'long-rental-admin';
     case LongRentalUser = 'long-rental-user';
     case InactiveBikes = 'inactive-bikes';
+    case BikeRevertedOwner = 'bike-reverted-owner';
+    case Registration = 'registration';
+    case Reconfirmation = 'reconfirmation';
+    case PasswordReset = 'password-reset';
 
     /**
      * @return list<Channel>
@@ -31,8 +35,12 @@ enum NotificationType: string
             self::NewVerifiedUser,
             self::SmsProblem,
             self::DuplicateSms,
-            self::InactiveBikes => [Channel::Email],
-            self::LongRentalUser => [Channel::Sms],
+            self::InactiveBikes,
+            self::Registration,
+            self::Reconfirmation,
+            self::PasswordReset => [Channel::Email],
+            self::LongRentalUser,
+            self::BikeRevertedOwner => [Channel::Sms],
         };
     }
 }

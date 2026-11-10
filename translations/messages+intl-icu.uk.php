@@ -105,6 +105,12 @@ return [
     'Hello' => 'Привіт',
     'Your password has been reset successfully.' => 'Ваш пароль було успішно скинуто.',
     'Your new password is:' => 'Ваш новий пароль:',
+    'password.reset.mail' => 'Привіт {name},
+
+Ваш пароль було успішно скинуто.
+
+Ваш новий пароль:
+{password}',
     'Check your email.' => 'Перевірте свою електронну пошту.',
     'Registration' => 'Реєстрація',
     'Email confirmation' => 'Підтвердження електронної пошти',
@@ -236,6 +242,7 @@ return [
     'notification.subject.long_rental_admin' => 'Довгі оренди',
     'notification.subject.long_rental_user' => 'Будь ласка, поверніть велосипед',
     'notification.subject.inactive_bikes' => 'Неактивні велосипеди на стоянках',
+    'notification.subject.bike_reverted_owner' => 'Ваш велосипед повернено',
     'admin.notification.new_verified_user' => 'Новий користувач щойно підтвердив email і телефон. Будь ласка, зв\'яжіться з ним для привітання / онбордингу.
 Ім\'я: {userName}
 Email: {email}

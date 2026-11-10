@@ -10,6 +10,7 @@ use BikeShare\Repository\HistoryRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Integration\BikeSharingKernelTestCase;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
+use Symfony\Component\Translation\TranslatableMessage;
 
 class TooManyBikeRentEventListenerTest extends BikeSharingKernelTestCase
 {
@@ -45,14 +46,14 @@ class TooManyBikeRentEventListenerTest extends BikeSharingKernelTestCase
         $adminMails = array_column(self::getContainer()->get(UserRepository::class)->findAdmins(), 'mail');
         $this->assertEqualsCanonicalizing($adminMails, array_column($mailSender->getSentMessages(), 'recipient'));
         $sentMessage = $mailSender->getSentMessages()[0];
-        $this->assertSame('Rental limit exceeded', $sentMessage['subject']);
-        $this->assertStringContainsString(
-            'Bike rental over limit in ' . $_ENV['WATCHES_NUMBER_TOO_MANY'] . ' hour',
-            $sentMessage['message'],
-            'Invalid message for admin email'
-        );
-        $this->assertStringContainsString(
-            self::USER_PHONE_NUMBER,
+        $this->assertEquals(new TranslatableMessage('notification.subject.too_many_rents'), $sentMessage['subject']);
+        $this->assertEquals(
+            new TranslatableMessage('admin.notification.too_many_rents', [
+                'hour' => $_ENV['WATCHES_NUMBER_TOO_MANY'],
+                'userName' => $user['userName'],
+                'phone' => self::USER_PHONE_NUMBER,
+                'count' => self::RENT_COUNT,
+            ]),
             $sentMessage['message'],
             'Invalid message for admin email'
         );

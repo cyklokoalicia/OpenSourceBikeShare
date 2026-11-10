@@ -80,7 +80,9 @@ class ApiPhoneConfirmAdminNotifyTest extends BikeSharingWebTestCase
             $emailsAfterVerify,
             static fn (array $m): bool => $m['recipient'] === $superAdmin['mail']
         ))[0];
-        $this->assertStringContainsString($user['mail'], $adminEmail['message']);
-        $this->assertStringContainsString($user['number'], $adminEmail['message']);
+        $this->assertInstanceOf(TranslatableMessage::class, $adminEmail['message']);
+        $this->assertSame('admin.notification.new_verified_user', $adminEmail['message']->getMessage());
+        $this->assertSame($user['mail'], $adminEmail['message']->getParameters()['email']);
+        $this->assertSame($user['number'], $adminEmail['message']->getParameters()['phone']);
     }
 }

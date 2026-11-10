@@ -6,6 +6,8 @@ namespace BikeShare\Mail;
 
 use PHPMailer\PHPMailer\PHPMailer;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PHPMailerMailSender implements MailSenderInterface
 {
@@ -14,13 +16,21 @@ class PHPMailerMailSender implements MailSenderInterface
         private readonly string $fromName,
         private readonly array $emailConfig,
         private readonly PHPMailer $mailer,
+        private readonly TranslatorInterface $translator,
         private readonly int $debugLevel = 0,
         private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
-    public function sendMail($recipient, $subject, $message)
-    {
+    public function sendMail(
+        string $recipient,
+        TranslatableInterface $subject,
+        TranslatableInterface $body,
+        string $locale,
+    ): void {
+        $renderedSubject = $subject->trans($this->translator, $locale);
+        $renderedBody = $body->trans($this->translator, $locale);
+
         $this->mailer->clearAllRecipients();
 
         $this->mailer->isSMTP(); // Set mailer to use SMTP
@@ -36,14 +46,14 @@ class PHPMailerMailSender implements MailSenderInterface
         $this->mailer->From = $this->fromEmail;
         $this->mailer->FromName = $this->fromName;
         $this->mailer->addAddress($recipient);     // Add a recipient
-        $this->mailer->Subject = $subject;
-        $this->mailer->Body = $message;
+        $this->mailer->Subject = $renderedSubject;
+        $this->mailer->Body = $renderedBody;
 
         $this->mailer->send();
 
         $this->logger?->info('Email sent', [
             'recipient' => $recipient,
-            'subject' => $subject,
+            'subject' => $renderedSubject,
         ]);
     }
 }

@@ -10,9 +10,7 @@ use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\TranslatableMessage;
-use Symfony\Component\Translation\Translator;
 
 class EmailChannelSenderTest extends TestCase
 {
@@ -21,23 +19,8 @@ class EmailChannelSenderTest extends TestCase
 
     protected function setUp(): void
     {
-        $translator = new Translator('en');
-        $translator->addLoader('array', new ArrayLoader());
-        $domain = 'messages+intl-icu';
-        $translator->addResource(
-            'array',
-            ['notification.subject.stack_watch' => 'Bike rented out of stack order'],
-            'en',
-            $domain
-        );
-        $translator->addResource(
-            'array',
-            ['notification.subject.stack_watch' => 'Bicykel požičaný mimo poradia'],
-            'sk',
-            $domain
-        );
         $this->mailSender = $this->createMock(MailSenderInterface::class);
-        $this->sender = new EmailChannelSender($this->mailSender, $translator);
+        $this->sender = new EmailChannelSender($this->mailSender);
     }
 
     public function testChannelName(): void
@@ -46,20 +29,18 @@ class EmailChannelSenderTest extends TestCase
         $this->mailSender->expects($this->never())->method('sendMail');
     }
 
-    public function testSubjectAndBodyAreTranslated(): void
+    public function testPassesTranslatablesAndLocaleToTransport(): void
     {
+        $notification = $this->notification(new TranslatableMessage('hello body'));
         $this->mailSender->expects($this->once())->method('sendMail')
-            ->with('a@x', 'Bike rented out of stack order', 'hello body');
+            ->with(
+                'a@x',
+                $this->identicalTo($notification->subject),
+                $this->identicalTo($notification->body),
+                'sk'
+            );
 
-        $this->sender->send('a@x', $this->notification(new TranslatableMessage('hello body')), 'en');
-    }
-
-    public function testUsesGivenLocale(): void
-    {
-        $this->mailSender->expects($this->once())->method('sendMail')
-            ->with('a@x', 'Bicykel požičaný mimo poradia', 'hello body');
-
-        $this->sender->send('a@x', $this->notification(new TranslatableMessage('hello body')), 'sk');
+        $this->sender->send('a@x', $notification, 'sk');
     }
 
     public function testExceptionPropagates(): void

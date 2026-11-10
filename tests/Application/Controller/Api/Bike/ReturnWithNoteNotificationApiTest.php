@@ -54,11 +54,14 @@ class ReturnWithNoteNotificationApiTest extends BikeSharingWebTestCase
 
     public function testApiReturnWithNoteAndFailingAdminMailStillSucceeds(): void
     {
-        $this->expectLog(Logger::ERROR, '/Notification delivery failed/');
-
         $container = $this->client->getContainer();
         $admins = $container->get(UserRepository::class)->findAdmins();
         $this->assertCount(2, $admins);
+        $this->expectLog(
+            Logger::ERROR,
+            '/Notification delivery failed/',
+            ['type' => 'bike-note-added', 'channel' => 'email', 'userId' => $admins[0]['userId']]
+        );
         $failing = $admins[0]['mail'];
         $container->get(MailSenderInterface::class)->failFor($failing);
 

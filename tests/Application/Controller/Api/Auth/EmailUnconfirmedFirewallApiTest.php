@@ -19,6 +19,7 @@ use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Test\Assert\MailAssertions;
 use Symfony\Component\HttpFoundation\Request;
 
 class EmailUnconfirmedFirewallApiTest extends BikeSharingWebTestCase
@@ -49,6 +50,11 @@ class EmailUnconfirmedFirewallApiTest extends BikeSharingWebTestCase
         $user = $userProvider->loadUserByIdentifier($purifiedPhone);
         $accessToken = $jwtTokenService->createAccessToken($user)['token'];
 
+        // The throttle pool survives between runs and fixtures reuse user ids, so clear it
+        // or a run within 15 minutes of the previous one gets no reconfirmation mail.
+        $container->get('cache.reconfirmation_throttle')
+            ->deleteItem('reconfirmation_email.' . $userRow['userId']);
+
         // /user/phone-confirm/request is reachable by ROLE_NEWBIE, so a 403 here isolates
         // the email UserChecker rather than the phone access-control gate.
         $this->client->request(
@@ -66,10 +72,11 @@ class EmailUnconfirmedFirewallApiTest extends BikeSharingWebTestCase
 
         // Confirm the email out-of-band via the link from the registration mail.
         $mailSender = $container->get(MailSenderInterface::class);
-        $body = $mailSender->getSentMessages()[0]['message'] ?? '';
-        preg_match('/(\/user\/confirm\/email\/[a-z0-9]+)/', (string)$body, $matches);
-        $this->assertNotEmpty($matches[1] ?? null, 'Email confirmation link not found');
-        $this->client->request(Request::METHOD_GET, $matches[1]);
+        $confirmationLink = MailAssertions::assertConfirmationLink(
+            $mailSender->getSentMessages()[0],
+            'email.confirmation.mail'
+        );
+        $this->client->request(Request::METHOD_GET, $confirmationLink);
         $this->assertResponseRedirects();
         $this->assertNull($registrationRepository->findItemByUserId($userRow['userId']));
 

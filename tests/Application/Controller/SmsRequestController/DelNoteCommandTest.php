@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
+use BikeShare\Test\Assert\MailAssertions;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
@@ -45,7 +46,6 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         ?string $pattern,
         string $expectedCode,
         array $expectedParams,
-        string $expectedMailMessage,
         bool $notifiesAdmins,
         int $expectedRemainingNotes,
         bool $expectedWarning
@@ -132,8 +132,11 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
 
         if ($notifiesAdmins) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertSame($user['userName'] . ': ' . $expectedMailMessage, $sentMessage['message']);
-                $this->assertSame('SMS command processed', $sentMessage['subject']);
+                MailAssertions::assertSmsAudit(
+                    $sentMessage,
+                    $user['userName'],
+                    new TranslatableMessage($expectedCode, $expectedParams)
+                );
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
         }
@@ -158,7 +161,6 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'hasPattern' => 'false',
                     'pattern' => '',
                 ],
-                'expectedMailMessage' => 'All 2 notes for stand ' . self::STAND_NAME . ' were deleted.',
                 'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 0,
                 'expectedWarning' => false,
@@ -172,8 +174,6 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'hasPattern' => 'true',
                     'pattern' => 'test',
                 ],
-                'expectedMailMessage' => 'One note matching pattern "test" for stand '
-                    . self::STAND_NAME . ' was deleted.',
                 'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 1,
                 'expectedWarning' => false,
@@ -186,7 +186,6 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'hasPattern' => 'true',
                     'pattern' => 'INVALID_PATTERN',
                 ],
-                'expectedMailMessage' => '',
                 'notifiesAdmins' => false,
                 'expectedRemainingNotes' => 2,
                 'expectedWarning' => true,
@@ -199,7 +198,6 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
         ?string $pattern,
         string $expectedCode,
         array $expectedParams,
-        string $expectedMailMessage,
         bool $notifiesAdmins,
         int $expectedRemainingNotes,
         bool $expectedWarning
@@ -286,8 +284,11 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
 
         if ($notifiesAdmins) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertSame($user['userName'] . ': ' . $expectedMailMessage, $sentMessage['message']);
-                $this->assertSame('SMS command processed', $sentMessage['subject']);
+                MailAssertions::assertSmsAudit(
+                    $sentMessage,
+                    $user['userName'],
+                    new TranslatableMessage($expectedCode, $expectedParams)
+                );
                 $this->assertContains($sentMessage['recipient'], array_column($admins, 'mail'));
             }
         }
@@ -312,7 +313,6 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'hasPattern' => 'false',
                     'pattern' => '',
                 ],
-                'expectedMailMessage' => 'All 2 notes for bike ' . self::BIKE_NUMBER . ' were deleted.',
                 'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 0,
                 'expectedWarning' => false,
@@ -326,8 +326,6 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'hasPattern' => 'true',
                     'pattern' => 'test',
                 ],
-                'expectedMailMessage' => 'One note matching pattern "test" for bike '
-                    . self::BIKE_NUMBER . ' was deleted.',
                 'notifiesAdmins' => true,
                 'expectedRemainingNotes' => 1,
                 'expectedWarning' => false,
@@ -340,7 +338,6 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
                     'hasPattern' => 'true',
                     'pattern' => 'INVALID_PATTERN',
                 ],
-                'expectedMailMessage' => '',
                 'notifiesAdmins' => false,
                 'expectedRemainingNotes' => 2,
                 'expectedWarning' => true,

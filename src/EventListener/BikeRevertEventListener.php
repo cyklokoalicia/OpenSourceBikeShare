@@ -5,37 +5,35 @@ declare(strict_types=1);
 namespace BikeShare\EventListener;
 
 use BikeShare\Event\BikeRevertEvent;
-use BikeShare\Repository\UserRepository;
-use BikeShare\Repository\UserSettingsRepository;
-use BikeShare\Sms\SmsSenderInterface;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\UserRecipient;
 use Symfony\Component\Translation\TranslatableMessage;
 
 class BikeRevertEventListener
 {
     public function __construct(
-        private readonly UserRepository $userRepository,
-        private readonly SmsSenderInterface $smsSender,
-        private readonly UserSettingsRepository $userSettingsRepository,
+        private readonly NotifierInterface $notifier,
     ) {
     }
 
     public function __invoke(BikeRevertEvent $event): void
     {
-        $user = $this->userRepository->findItem($event->getPreviousOwnerId());
-        $phoneNumber = $user['number'] ?? null;
-        if (
-            !is_null($phoneNumber)
-            && $event->getPreviousOwnerId() !== $event->getRevertedByUserId()
-        ) {
-            $locale = $this->userSettingsRepository->findByUserId($event->getPreviousOwnerId())['locale'];
-            $this->smsSender->send(
-                $phoneNumber,
+        if ($event->getPreviousOwnerId() === $event->getRevertedByUserId()) {
+            return;
+        }
+
+        $this->notifier->notify(
+            new Notification(
+                NotificationType::BikeRevertedOwner,
+                new TranslatableMessage('notification.subject.bike_reverted_owner'),
                 new TranslatableMessage(
                     'bike.revert.notification.previous_owner',
                     ['bikeNumber' => $event->getBikeNumber()]
-                ),
-                $locale
-            );
-        }
+                )
+            ),
+            new UserRecipient($event->getPreviousOwnerId())
+        );
     }
 }

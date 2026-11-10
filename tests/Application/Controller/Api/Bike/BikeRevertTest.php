@@ -14,6 +14,7 @@ use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -179,5 +180,38 @@ class BikeRevertTest extends BikeSharingWebTestCase
             $sent['text'],
             'Send message is not logged'
         );
+    }
+
+    public function testRevertSucceedsWhenThePreviousOwnerSmsFails(): void
+    {
+        $this->setEnvVar('WATCHES_NUMBER_TOO_MANY', '9999');
+
+        $container = $this->client->getContainer();
+        $userProvider = $container->get(UserProvider::class);
+        $user = $userProvider->loadUserByIdentifier(self::USER_PHONE_NUMBER);
+        $this->expectLog(
+            Logger::ERROR,
+            '/Notification delivery failed/',
+            ['type' => 'bike-reverted-owner', 'channel' => 'sms', 'userId' => $user->getUserId()]
+        );
+        $admin = $userProvider->loadUserByIdentifier(self::ADMIN_PHONE_NUMBER);
+
+        $container->get(RentSystemFactory::class)->getRentSystem(RentSystemType::WEB)
+            ->rentBike($user->getUserId(), self::BIKE_NUMBER);
+        $container->get(DebugSmsSender::class)->failFor(self::USER_PHONE_NUMBER);
+
+        $this->client->loginUser($admin);
+        $this->client->request(Request::METHOD_POST, '/api/v1/admin/reverts', [
+            'bikeNumber' => self::BIKE_NUMBER,
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $response = $this->decodeApiResponseData();
+        $this->assertFalse($response['error'], 'Response with error: ' . $response['message']);
+        $this->assertSame('bike.revert.success', $response['code']);
+
+        $bike = $this->client->getContainer()->get(BikeRepository::class)->findItem(self::BIKE_NUMBER);
+        $this->assertNull($bike['userId'], 'Bike is still rented by user');
+        $this->assertSame(self::STAND_NAME, $bike['standName'], 'Bike is not back on its stand');
     }
 }

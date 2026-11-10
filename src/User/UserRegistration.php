@@ -7,9 +7,12 @@ namespace BikeShare\User;
 use BikeShare\App\Entity\User;
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Event\UserRegistrationEvent;
+use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
+use BikeShare\Repository\UserSettingsRepository;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserRegistration
 {
@@ -18,6 +21,9 @@ class UserRegistration
         private readonly UserRepository $userRepository,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly RegistrationRepository $registrationRepository,
+        private readonly UserSettingsRepository $userSettingsRepository,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -53,7 +59,12 @@ class UserRegistration
         );
         $this->userRepository->updateUserLimit($user->getUserId(), 0);
 
-        $this->eventDispatcher->dispatch(new UserRegistrationEvent($user));
+        $userKey = bin2hex(random_bytes(32));
+        $this->registrationRepository->addItem($user->getUserId(), $userKey);
+        // The mail is translated in the recipient's saved locale, so persist the one they registered in.
+        $this->userSettingsRepository->saveLocale($user->getUserId(), $this->translator->getLocale());
+
+        $this->eventDispatcher->dispatch(new UserRegistrationEvent($user, $userKey));
 
         return $user;
     }

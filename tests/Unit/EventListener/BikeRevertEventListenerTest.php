@@ -6,90 +6,53 @@ namespace BikeShare\Test\Unit\EventListener;
 
 use BikeShare\Event\BikeRevertEvent;
 use BikeShare\EventListener\BikeRevertEventListener;
-use BikeShare\Repository\UserRepository;
-use BikeShare\Repository\UserSettingsRepository;
-use BikeShare\Sms\SmsSenderInterface;
+use BikeShare\Notification\Notification;
+use BikeShare\Notification\NotificationType;
+use BikeShare\Notification\NotifierInterface;
+use BikeShare\Notification\UserRecipient;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Translation\TranslatableMessage;
 
 class BikeRevertEventListenerTest extends TestCase
 {
-    private UserRepository&MockObject $userRepositoryMock;
-    private SmsSenderInterface&MockObject $smsSenderMock;
-    private UserSettingsRepository&MockObject $userSettingsRepositoryMock;
+    private NotifierInterface&MockObject $notifierMock;
     private BikeRevertEventListener $listener;
 
     protected function setUp(): void
     {
-        $this->userRepositoryMock = $this->createMock(UserRepository::class);
-        $this->smsSenderMock = $this->createMock(SmsSenderInterface::class);
-        $this->userSettingsRepositoryMock = $this->createMock(UserSettingsRepository::class);
-
-        $this->listener = new BikeRevertEventListener(
-            $this->userRepositoryMock,
-            $this->smsSenderMock,
-            $this->userSettingsRepositoryMock,
-        );
+        $this->notifierMock = $this->createMock(NotifierInterface::class);
+        $this->listener = new BikeRevertEventListener($this->notifierMock);
     }
 
     protected function tearDown(): void
     {
-        unset(
-            $this->userRepositoryMock,
-            $this->smsSenderMock,
-            $this->userSettingsRepositoryMock,
-            $this->listener,
-        );
+        unset($this->notifierMock, $this->listener);
     }
 
-    public function testNotifiesPreviousOwnerInTheirLocale(): void
+    public function testNotifiesPreviousOwner(): void
     {
-        $bikeNumber = 42;
-        $previousOwnerId = 7;
-
-        $this->userRepositoryMock
+        $this->notifierMock
             ->expects($this->once())
-            ->method('findItem')
-            ->with($previousOwnerId)
-            ->willReturn(['number' => '421951111111']);
-        $this->userSettingsRepositoryMock
-            ->expects($this->once())
-            ->method('findByUserId')
-            ->with($previousOwnerId)
-            ->willReturn(['locale' => 'de']);
-        $this->smsSenderMock
-            ->expects($this->once())
-            ->method('send')
+            ->method('notify')
             ->with(
-                '421951111111',
-                $this->callback(function (TranslatableMessage $msg) use ($bikeNumber): bool {
-                    $this->assertSame('bike.revert.notification.previous_owner', $msg->getMessage());
-                    $this->assertSame(['bikeNumber' => $bikeNumber], $msg->getParameters());
-
-                    return true;
-                }),
-                'de'
+                $this->equalTo(
+                    new Notification(
+                        NotificationType::BikeRevertedOwner,
+                        new TranslatableMessage('notification.subject.bike_reverted_owner'),
+                        new TranslatableMessage('bike.revert.notification.previous_owner', ['bikeNumber' => 5])
+                    )
+                ),
+                $this->equalTo(new UserRecipient(7))
             );
 
-        ($this->listener)(new BikeRevertEvent($bikeNumber, 99, $previousOwnerId));
+        ($this->listener)(new BikeRevertEvent(5, 99, 7));
     }
 
-    public function testSkipsNotificationWhenPhoneMissing(): void
+    public function testNoSmsWhenOwnerRevertsOwnBike(): void
     {
-        $this->userRepositoryMock->expects($this->once())->method('findItem')->willReturn(['number' => null]);
-        $this->userSettingsRepositoryMock->expects($this->never())->method('findByUserId');
-        $this->smsSenderMock->expects($this->never())->method('send');
+        $this->notifierMock->expects($this->never())->method('notify');
 
-        ($this->listener)(new BikeRevertEvent(1, 2, 3));
-    }
-
-    public function testSkipsNotificationWhenPreviousOwnerIsRevertedByUser(): void
-    {
-        $this->userRepositoryMock->expects($this->once())->method('findItem')->willReturn(['number' => '111']);
-        $this->userSettingsRepositoryMock->expects($this->never())->method('findByUserId');
-        $this->smsSenderMock->expects($this->never())->method('send');
-
-        ($this->listener)(new BikeRevertEvent(1, 5, 5));
+        ($this->listener)(new BikeRevertEvent(5, 7, 7));
     }
 }

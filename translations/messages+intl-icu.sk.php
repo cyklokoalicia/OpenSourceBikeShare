@@ -105,6 +105,12 @@ Kliknutím na nasledujúci odkaz potvrdíte svoj e-mail: {emailConfirmURL}',
     'Hello' => 'Dobrý deň',
     'Your password has been reset successfully.' => 'Vaše heslo bolo úspešne obnovené.',
     'Your new password is:' => 'Vaše nové heslo je:',
+    'password.reset.mail' => 'Dobrý deň {name},
+
+Vaše heslo bolo úspešne obnovené.
+
+Vaše nové heslo je:
+{password}',
     'Check your email.' => 'Skontrolujte si e-mail.',
     'Registration' => 'Registrácia',
     'Email confirmation' => 'Potvrdenie e-mailu',
@@ -236,6 +242,7 @@ Kliknutím na nasledujúci odkaz potvrdíte svoj e-mail: {emailConfirmURL}',
     'notification.subject.long_rental_admin' => 'Dlhé výpožičky',
     'notification.subject.long_rental_user' => 'Prosím, vráťte bicykel',
     'notification.subject.inactive_bikes' => 'Neaktívne bicykle na stojanoch',
+    'notification.subject.bike_reverted_owner' => 'Váš bicykel bol vrátený',
     'admin.notification.new_verified_user' => 'Nový používateľ práve potvrdil e-mail a telefón. Prosím, kontaktujte ho na uvítací / onboarding hovor.
 Meno: {userName}
 E-mail: {email}
