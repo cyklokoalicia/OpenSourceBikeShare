@@ -129,12 +129,15 @@ class SmsSenderTest extends TestCase
             )
             ->willReturn($this->createStub(DbResultInterface::class));
 
+        $caught = null;
         try {
             $this->smsSender->send('123', new TranslatableMessage($message));
-            $this->fail('The failed part must propagate');
         } catch (\RuntimeException $e) {
-            $this->assertSame('gateway down', $e->getMessage());
+            $caught = $e;
         }
+
+        $this->assertInstanceOf(\RuntimeException::class, $caught, 'The failed part must propagate');
+        $this->assertSame('gateway down', $caught->getMessage());
     }
 
     #[DataProvider('sendDataProvider')]

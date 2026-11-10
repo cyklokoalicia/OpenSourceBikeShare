@@ -38,12 +38,15 @@ class DebugConnectorTest extends TestCase
         );
         $debugConnector->failFor('421951111111');
 
+        $caught = null;
         try {
             $debugConnector->send('421951111111', 'Hello');
-            $this->fail('Expected the debug failure');
         } catch (\RuntimeException $e) {
-            $this->assertSame('Debug delivery failure for 421951111111', $e->getMessage());
+            $caught = $e;
         }
+
+        $this->assertInstanceOf(\RuntimeException::class, $caught, 'Expected the debug failure');
+        $this->assertSame('Debug delivery failure for 421951111111', $caught->getMessage());
         $debugConnector->send('421951222222', 'Hello');
         $this->assertSame([['number' => '421951222222', 'text' => 'Hello']], $debugConnector->getSentMessages());
 
