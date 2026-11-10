@@ -58,7 +58,22 @@ class TextmagicSmsConnector extends AbstractConnector
             $um
         );
 
-        fopen($url, "r");
+        $handle = $this->openUrl($url);
+        if ($handle === false) {
+            // The URL carries the gateway password; keep it out of the message.
+            throw new \RuntimeException('Textmagic did not accept the SMS to ' . $number);
+        }
+
+        fclose($handle);
+    }
+
+    /**
+     * @return resource|false
+     */
+    protected function openUrl(string $url): mixed
+    {
+        // Suppressed: the PHP warning would contain the URL, password included.
+        return @fopen($url, 'r');
     }
 
     public function receive(): void
