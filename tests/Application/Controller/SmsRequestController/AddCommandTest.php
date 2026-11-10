@@ -90,7 +90,6 @@ class AddCommandTest extends BikeSharingWebTestCase
         $mail = $sentMessages[0];
         $this->assertEquals(new TranslatableMessage('Registration'), $mail['subject']);
         $this->assertInstanceOf(TranslatableMessage::class, $mail['message']);
-        $this->assertSame('success.registration.mail', $mail['message']->getMessage());
         $params = $mail['message']->getParameters();
         # Assert that the email addresses only the first name of the user
         $this->assertSame($firstName, $params['name'], "Email does not contain the user's first name");
@@ -104,11 +103,9 @@ class AddCommandTest extends BikeSharingWebTestCase
         $registrationKey = $this->client->getContainer()
             ->get(RegistrationRepository::class)->findItemByUserId($newUser['userId'])['userKey'] ?? null;
         $this->assertNotEmpty($registrationKey);
-        # Assert that the email contains the registration key for the user
-        $this->assertStringContainsString(
-            $registrationKey,
-            $params['emailConfirmURL'],
-            'Email does not contain the registration key'
+        $this->assertSame(
+            '/user/confirm/email/' . $registrationKey,
+            $this->confirmationLinkFrom($mail, 'success.registration.mail')
         );
 
         $notCalledListeners = $this->client->getContainer()->get('event_dispatcher')->getNotCalledListeners();
