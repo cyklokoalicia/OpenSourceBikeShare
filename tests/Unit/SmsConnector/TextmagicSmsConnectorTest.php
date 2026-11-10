@@ -57,4 +57,33 @@ class TextmagicSmsConnectorTest extends TestCase
         $this->assertStringContainsString('phone=421951111111', (string)$connector->url);
         $this->assertStringContainsString('text=Hello+world', (string)$connector->url);
     }
+
+    public function testFailedRequestRaisesNoWarningWithTheUrl(): void
+    {
+        $connector = new class (new RequestStack(), ['textmagic' => self::CONFIG]) extends TextmagicSmsConnector {
+            public function open(string $url): mixed
+            {
+                return $this->openUrl($url);
+            }
+        };
+        $reported = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$reported): bool {
+            if ((error_reporting() & $errno) !== 0) {
+                $reported[] = $errstr;
+            }
+
+            return true;
+        });
+        // The test environment may run with a reduced error_reporting; report everything here.
+        $previousLevel = error_reporting(E_ALL);
+        try {
+            $result = $connector->open('/nonexistent/path?password=s3cr3t');
+        } finally {
+            error_reporting($previousLevel);
+            restore_error_handler();
+        }
+
+        $this->assertFalse($result);
+        $this->assertSame([], $reported, 'The failed request must not raise a warning carrying the URL');
+    }
 }
