@@ -40,31 +40,30 @@ class SmsRequestController extends AbstractController
     public function index(): Response
     {
         $this->smsConnector->receive();
+        $number = $this->smsConnector->getNumber();
+        $sms = $this->smsConnector->getProcessedMessage();
 
-        if (!$this->phonePurifier->isValid($this->smsConnector->getNumber())) {
+        if (!$this->phonePurifier->isValid($number)) {
             $this->logger->error(
                 "Invalid phone number",
-                ["number" => $this->smsConnector->getNumber(), 'sms' => $this->smsConnector]
+                ["number" => $number, 'sms' => $this->smsConnector]
             );
 
             return new Response("Invalid phone number", Response::HTTP_BAD_REQUEST);
         }
 
         try {
-            $user = $this->userProvider->loadUserByIdentifier($this->smsConnector->getNumber());
+            $user = $this->userProvider->loadUserByIdentifier($number);
         } catch (UserNotFoundException) {
             $this->logger->error(
                 "User not found",
-                ["number" => $this->smsConnector->getNumber(), 'sms' => $this->smsConnector]
+                ["number" => $number, 'sms' => $this->smsConnector]
             );
 
             return new Response("User not found", Response::HTTP_BAD_REQUEST);
         }
 
         $userSettings = $this->userSettingsRepository->findByUserId($user->getUserId());
-
-        $number = $this->smsConnector->getNumber();
-        $sms = $this->smsConnector->getProcessedMessage();
 
         try {
             $reply = $this->commandExecutor->execute($sms, $user);
