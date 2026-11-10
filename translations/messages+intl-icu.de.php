@@ -231,6 +231,7 @@ Dein neues Passwort lautet:
     'notification.subject.sms_command_audit' => 'SMS-Befehl verarbeitet',
     'notification.subject.new_verified_user' => 'Neuer verifizierter Benutzer',
     'notification.subject.sms_problem' => 'Problem mit SMS',
+    'notification.subject.sms_reply_failed' => 'SMS-Antwort nicht zugestellt',
     'notification.subject.duplicate_sms' => 'Doppelte SMS empfangen',
     'notification.subject.long_rental_admin' => 'Lange Ausleihen',
     'notification.subject.long_rental_user' => 'Bitte gib dein Fahrrad zurück',
@@ -241,6 +242,7 @@ Name: {userName}
 E-Mail: {email}
 Telefon: {phone}',
     'admin.notification.sms_problem' => 'Problem mit SMS: {number}-{sms}',
+    'admin.notification.sms_reply_failed' => 'Befehl "{sms}" von {number} wurde verarbeitet, aber die Antwort wurde nicht zugestellt: {reply}',
     'admin.notification.sms_processed' => '{userName}: {message}',
     'admin.notification.duplicate_sms' => 'Problem mit SMS: {uuid}',
     'admin.notification.long_rental' => '{hour, plural, one {Fahrradausleihe überschreitet 1 Stunde} other {Fahrradausleihe überschreitet # Stunden}}

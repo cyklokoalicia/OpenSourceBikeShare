@@ -238,6 +238,7 @@ return [
     'notification.subject.sms_command_audit' => 'Оброблено SMS-команду',
     'notification.subject.new_verified_user' => 'Новий підтверджений користувач',
     'notification.subject.sms_problem' => 'Проблема з SMS',
+    'notification.subject.sms_reply_failed' => 'Відповідь на SMS не доставлено',
     'notification.subject.duplicate_sms' => 'Отримано повторне SMS',
     'notification.subject.long_rental_admin' => 'Довгі оренди',
     'notification.subject.long_rental_user' => 'Будь ласка, поверніть велосипед',
@@ -248,6 +249,7 @@ return [
 Email: {email}
 Телефон: {phone}',
     'admin.notification.sms_problem' => 'Проблема з SMS: {number}-{sms}',
+    'admin.notification.sms_reply_failed' => 'Команду "{sms}" від {number} оброблено, але відповідь не доставлено: {reply}',
     'admin.notification.sms_processed' => '{userName}: {message}',
     'admin.notification.duplicate_sms' => 'Проблема з SMS: {uuid}',
     'admin.notification.long_rental' => '{hour, plural, one {Оренда велосипеда перевищила 1 годину} few {Оренда велосипеда перевищила # години} other {Оренда велосипеда перевищила # годин}}

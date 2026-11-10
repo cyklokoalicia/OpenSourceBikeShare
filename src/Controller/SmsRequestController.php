@@ -19,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SmsRequestController extends AbstractController
 {
@@ -31,6 +32,7 @@ class SmsRequestController extends AbstractController
         private readonly NotifierInterface $notifier,
         private readonly CommandExecutor $commandExecutor,
         private readonly UserSettingsRepository $userSettingsRepository,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -60,19 +62,17 @@ class SmsRequestController extends AbstractController
 
         $userSettings = $this->userSettingsRepository->findByUserId($user->getUserId());
 
+        $number = $this->smsConnector->getNumber();
+        $sms = $this->smsConnector->getProcessedMessage();
+
         try {
-            $message = $this->commandExecutor->execute($this->smsConnector->getProcessedMessage(), $user);
-            $this->smsSender->send(
-                $this->smsConnector->getNumber(),
-                $message,
-                $userSettings['locale']
-            );
+            $reply = $this->commandExecutor->execute($sms, $user);
         } catch (\Throwable $exception) {
             $this->logger->error(
                 "Error processing SMS",
                 [
-                    "number" => $this->smsConnector->getNumber(),
-                    'sms' => $this->smsConnector->getProcessedMessage(),
+                    "number" => $number,
+                    'sms' => $sms,
                     'exception' => $exception
                 ]
             );
@@ -80,11 +80,32 @@ class SmsRequestController extends AbstractController
                 new Notification(
                     NotificationType::SmsProblem,
                     new TranslatableMessage('notification.subject.sms_problem'),
+                    new TranslatableMessage('admin.notification.sms_problem', ['number' => $number, 'sms' => $sms])
+                ),
+                new AdminRecipients()
+            );
+
+            return new Response($this->smsConnector->respond());
+        }
+
+        try {
+            $this->smsSender->send($number, $reply, $userSettings['locale']);
+        } catch (\Throwable $exception) {
+            // The command already ran: keep its result and hand the reply to the admins.
+            $this->logger->error(
+                'SMS reply not delivered',
+                ['number' => $number, 'sms' => $sms, 'exception' => $exception]
+            );
+            $this->notifier->notify(
+                new Notification(
+                    NotificationType::SmsReplyFailed,
+                    new TranslatableMessage('notification.subject.sms_reply_failed'),
                     new TranslatableMessage(
-                        'admin.notification.sms_problem',
+                        'admin.notification.sms_reply_failed',
                         [
-                            'number' => $this->smsConnector->getNumber(),
-                            'sms' => $this->smsConnector->getProcessedMessage(),
+                            'number' => $number,
+                            'sms' => $sms,
+                            'reply' => $reply->trans($this->translator, $userSettings['locale']),
                         ]
                     )
                 ),
