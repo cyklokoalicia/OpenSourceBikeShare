@@ -12,6 +12,9 @@ class DebugConnector extends AbstractConnector implements ResetInterface
 {
     private array $sentMessages = [];
 
+    /** @var string[] */
+    private array $failFor = [];
+
     public function __construct(
         private readonly RequestStack $requestStack,
         private readonly LoggerInterface $logger,
@@ -31,6 +34,10 @@ class DebugConnector extends AbstractConnector implements ResetInterface
 
     public function send($number, $text): void
     {
+        if (in_array($number, $this->failFor, true)) {
+            throw new \RuntimeException('Debug delivery failure for ' . $number);
+        }
+
         $this->logger->debug($number . ' -> ' . $text);
         $this->sentMessages[] = [
             'number' => $number,
@@ -63,8 +70,17 @@ class DebugConnector extends AbstractConnector implements ResetInterface
         return $this->sentMessages;
     }
 
+    /**
+     * Test hook: later sends to this number throw, as a gateway failure would.
+     */
+    public function failFor(string $number): void
+    {
+        $this->failFor[] = $number;
+    }
+
     public function reset(): void
     {
         $this->sentMessages = [];
+        $this->failFor = [];
     }
 }

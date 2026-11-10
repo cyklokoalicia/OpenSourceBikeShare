@@ -28,4 +28,27 @@ class DebugConnectorTest extends TestCase
 
         $debugConnector->send('123456789', 'Hello, World!');
     }
+
+    public function testFailForThrowsAndRecordsNothing(): void
+    {
+        $debugConnector = new DebugConnector(
+            $this->createStub(RequestStack::class),
+            $this->createStub(LoggerInterface::class),
+            [],
+        );
+        $debugConnector->failFor('421951111111');
+
+        try {
+            $debugConnector->send('421951111111', 'Hello');
+            $this->fail('Expected the debug failure');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Debug delivery failure for 421951111111', $e->getMessage());
+        }
+        $debugConnector->send('421951222222', 'Hello');
+        $this->assertSame([['number' => '421951222222', 'text' => 'Hello']], $debugConnector->getSentMessages());
+
+        $debugConnector->reset();
+        $debugConnector->send('421951111111', 'Again');
+        $this->assertSame([['number' => '421951111111', 'text' => 'Again']], $debugConnector->getSentMessages());
+    }
 }
