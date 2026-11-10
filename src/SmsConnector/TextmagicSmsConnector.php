@@ -18,6 +18,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class TextmagicSmsConnector extends AbstractConnector
 {
     private const API_URL = 'https://www.textmagic.com/app/api';
+    private const MAX_DURATION = 10;
 
     private string $gatewayUser = '';
     private string $gatewayPassword = '';
@@ -55,15 +56,16 @@ class TextmagicSmsConnector extends AbstractConnector
     // send SMS message via API
     public function send($number, $text): void
     {
-        // The query carries the gateway password, so no message below may quote the URL,
-        // and HttpClient's own transport errors (which do) are not chained.
+        // HttpClient's log and Sentry's HTTP tracing record the URL, so the credentials and the
+        // text travel in the body. No message below may quote the request, and HttpClient's own
+        // transport errors (which quote the URL) are not chained.
         try {
-            $statusCode = $this->httpClient->request(
-                Request::METHOD_GET,
+            $response = $this->httpClient->request(
+                Request::METHOD_POST,
                 self::API_URL,
                 [
-                    'query' => [
-                        'cmd' => 'send',
+                    'query' => ['cmd' => 'send'],
+                    'body' => [
                         'unicode' => 0,
                         'from' => $this->gatewaySenderNumber,
                         'username' => $this->gatewayUser,
@@ -71,8 +73,11 @@ class TextmagicSmsConnector extends AbstractConnector
                         'phone' => $number,
                         'text' => (string)$text,
                     ],
+                    'max_duration' => self::MAX_DURATION,
                 ]
-            )->getStatusCode();
+            );
+            $statusCode = $response->getStatusCode();
+            $content = $response->getContent(false);
         } catch (TransportExceptionInterface) {
             throw new \RuntimeException('Textmagic could not be reached to send the SMS to ' . $number);
         }
@@ -80,6 +85,14 @@ class TextmagicSmsConnector extends AbstractConnector
         if ($statusCode < Response::HTTP_OK || $statusCode >= Response::HTTP_MULTIPLE_CHOICES) {
             throw new \RuntimeException(
                 'Textmagic did not accept the SMS to ' . $number . ': status code ' . $statusCode
+            );
+        }
+
+        // The API reports a refusal (no credit, invalid number, ...) with status 200 and an error_code.
+        $result = json_decode($content, true);
+        if (is_array($result) && isset($result['error_code'])) {
+            throw new \RuntimeException(
+                'Textmagic did not accept the SMS to ' . $number . ': error code ' . $result['error_code']
             );
         }
     }
