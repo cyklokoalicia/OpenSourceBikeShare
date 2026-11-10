@@ -19,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Translation\TranslatableMessage;
+use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SmsRequestController extends AbstractController
@@ -105,7 +106,7 @@ class SmsRequestController extends AbstractController
                         [
                             'number' => $number,
                             'sms' => $sms,
-                            'reply' => $reply->trans($this->translator, $userSettings['locale']),
+                            'reply' => $this->renderReply($reply, $userSettings['locale']),
                         ]
                     )
                 ),
@@ -114,5 +115,18 @@ class SmsRequestController extends AbstractController
         }
 
         return new Response($this->smsConnector->respond());
+    }
+
+    /**
+     * The send may have failed while translating, so rendering here must not throw:
+     * an exception would turn into a 500 and make the gateway redeliver the command.
+     */
+    private function renderReply(TranslatableInterface $reply, string $locale): string
+    {
+        try {
+            return $reply->trans($this->translator, $locale);
+        } catch (\Throwable) {
+            return $reply instanceof TranslatableMessage ? $reply->getMessage() : get_debug_type($reply);
+        }
     }
 }
