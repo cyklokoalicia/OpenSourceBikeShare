@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace BikeShare\SmsConnector;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * http://textmagic.com
@@ -13,12 +17,15 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 class TextmagicSmsConnector extends AbstractConnector
 {
+    private const API_URL = 'https://www.textmagic.com/app/api';
+
     private string $gatewayUser = '';
     private string $gatewayPassword = '';
     private string $gatewaySenderNumber = '';
 
     public function __construct(
         private readonly RequestStack $requestStack,
+        private readonly HttpClientInterface $httpClient,
         array $configuration,
     ) {
         parent::__construct($configuration);
@@ -48,32 +55,33 @@ class TextmagicSmsConnector extends AbstractConnector
     // send SMS message via API
     public function send($number, $text): void
     {
-        $um = urlencode((string) $text);
-        $url = sprintf(
-            "https://www.textmagic.com/app/api?cmd=send&unicode=0&from=%s&username=%s&password=%s&phone=%s&text=%s",
-            $this->gatewaySenderNumber,
-            $this->gatewayUser,
-            $this->gatewayPassword,
-            $number,
-            $um
-        );
-
-        $handle = $this->openUrl($url);
-        if ($handle === false) {
-            // The URL carries the gateway password; keep it out of the message.
-            throw new \RuntimeException('Textmagic did not accept the SMS to ' . $number);
+        // The query carries the gateway password, so no message below may quote the URL,
+        // and HttpClient's own transport errors (which do) are not chained.
+        try {
+            $statusCode = $this->httpClient->request(
+                Request::METHOD_GET,
+                self::API_URL,
+                [
+                    'query' => [
+                        'cmd' => 'send',
+                        'unicode' => 0,
+                        'from' => $this->gatewaySenderNumber,
+                        'username' => $this->gatewayUser,
+                        'password' => $this->gatewayPassword,
+                        'phone' => $number,
+                        'text' => (string)$text,
+                    ],
+                ]
+            )->getStatusCode();
+        } catch (TransportExceptionInterface) {
+            throw new \RuntimeException('Textmagic could not be reached to send the SMS to ' . $number);
         }
 
-        fclose($handle);
-    }
-
-    /**
-     * @return resource|false
-     */
-    protected function openUrl(string $url): mixed
-    {
-        // Suppressed: the PHP warning would contain the URL, password included.
-        return @fopen($url, 'r');
+        if ($statusCode < Response::HTTP_OK || $statusCode >= Response::HTTP_MULTIPLE_CHOICES) {
+            throw new \RuntimeException(
+                'Textmagic did not accept the SMS to ' . $number . ': status code ' . $statusCode
+            );
+        }
     }
 
     public function receive(): void

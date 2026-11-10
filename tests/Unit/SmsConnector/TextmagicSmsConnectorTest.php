@@ -6,84 +6,97 @@ namespace BikeShare\Test\Unit\SmsConnector;
 
 use BikeShare\SmsConnector\TextmagicSmsConnector;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class TextmagicSmsConnectorTest extends TestCase
 {
     private const CONFIG = [
-        'gatewayUser' => 'u',
-        'gatewayPassword' => 's3cr3t',
-        'gatewaySenderNumber' => '421900000000',
+        'textmagic' => [
+            'gatewayUser' => 'u',
+            'gatewayPassword' => 's3cr3t',
+            'gatewaySenderNumber' => '421900000000',
+        ],
     ];
 
-    public function testSendThrowsWhenTheRequestFails(): void
+    public function testSendRequestsTheGateway(): void
     {
-        $connector = new class (new RequestStack(), ['textmagic' => self::CONFIG]) extends TextmagicSmsConnector {
-            protected function openUrl(string $url): mixed
-            {
-                return false;
-            }
-        };
+        $requests = [];
+        $httpClient = new MockHttpClient(
+            static function (string $method, string $url) use (&$requests): MockResponse {
+                $requests[] = [$method, $url];
 
-        $caught = null;
+                return new MockResponse('', ['http_code' => 200]);
+            }
+        );
+
+        $this->connector($httpClient)->send('421951111111', 'Hello world');
+
+        $this->assertCount(1, $requests);
+        [$method, $url] = $requests[0];
+        $this->assertSame('GET', $method);
+        $this->assertStringStartsWith('https://www.textmagic.com/app/api?', $url);
+        parse_str((string)parse_url($url, PHP_URL_QUERY), $query);
+        $this->assertSame(
+            [
+                'cmd' => 'send',
+                'unicode' => '0',
+                'from' => '421900000000',
+                'username' => 'u',
+                'password' => 's3cr3t',
+                'phone' => '421951111111',
+                'text' => 'Hello world',
+            ],
+            $query
+        );
+    }
+
+    public function testRejectedRequestRaisesWithoutTheUrl(): void
+    {
+        $httpClient = new MockHttpClient(new MockResponse('', ['http_code' => 500]));
+
+        $caught = $this->sendAndCatch($this->connector($httpClient));
+
+        $this->assertInstanceOf(\RuntimeException::class, $caught, 'A rejected request must raise');
+        $this->assertStringContainsString('500', $caught->getMessage());
+        $this->assertSecretsNotExposed($caught);
+    }
+
+    public function testTransportFailureRaisesWithoutTheUrl(): void
+    {
+        // HttpClient's own transport errors quote the full URL, password included.
+        $httpClient = new MockHttpClient(new MockResponse('', ['error' => 'Could not resolve host']));
+
+        $caught = $this->sendAndCatch($this->connector($httpClient));
+
+        $this->assertInstanceOf(\RuntimeException::class, $caught, 'A transport failure must raise');
+        $this->assertSecretsNotExposed($caught);
+        $this->assertNull($caught->getPrevious(), 'A chained exception would carry the URL to Sentry');
+    }
+
+    private function connector(MockHttpClient $httpClient): TextmagicSmsConnector
+    {
+        return new TextmagicSmsConnector(new RequestStack(), $httpClient, self::CONFIG);
+    }
+
+    private function sendAndCatch(TextmagicSmsConnector $connector): ?\Throwable
+    {
         try {
             $connector->send('421951111111', 'Hello world');
-        } catch (\RuntimeException $e) {
-            $caught = $e;
+        } catch (\Throwable $e) {
+            return $e;
         }
 
-        $this->assertInstanceOf(\RuntimeException::class, $caught, 'A failed request must raise');
-        $this->assertStringNotContainsString('s3cr3t', $caught->getMessage());
-        $this->assertStringNotContainsString('textmagic.com/app/api', $caught->getMessage());
-        $this->assertStringContainsString('421951111111', $caught->getMessage());
+        return null;
     }
 
-    public function testSendBuildsTheRequestUrl(): void
+    private function assertSecretsNotExposed(\Throwable $exception): void
     {
-        $connector = new class (new RequestStack(), ['textmagic' => self::CONFIG]) extends TextmagicSmsConnector {
-            public ?string $url = null;
-
-            protected function openUrl(string $url): mixed
-            {
-                $this->url = $url;
-
-                return fopen('php://memory', 'r');
-            }
-        };
-
-        $connector->send('421951111111', 'Hello world');
-
-        $this->assertStringStartsWith('https://www.textmagic.com/app/api?cmd=send', (string)$connector->url);
-        $this->assertStringContainsString('phone=421951111111', (string)$connector->url);
-        $this->assertStringContainsString('text=Hello+world', (string)$connector->url);
-    }
-
-    public function testFailedRequestRaisesNoWarningWithTheUrl(): void
-    {
-        $connector = new class (new RequestStack(), ['textmagic' => self::CONFIG]) extends TextmagicSmsConnector {
-            public function open(string $url): mixed
-            {
-                return $this->openUrl($url);
-            }
-        };
-        $reported = [];
-        set_error_handler(static function (int $errno, string $errstr) use (&$reported): bool {
-            if ((error_reporting() & $errno) !== 0) {
-                $reported[] = $errstr;
-            }
-
-            return true;
-        });
-        // The test environment may run with a reduced error_reporting; report everything here.
-        $previousLevel = error_reporting(E_ALL);
-        try {
-            $result = $connector->open('/nonexistent/path?password=s3cr3t');
-        } finally {
-            error_reporting($previousLevel);
-            restore_error_handler();
+        $this->assertStringContainsString('421951111111', $exception->getMessage());
+        for ($e = $exception; $e !== null; $e = $e->getPrevious()) {
+            $this->assertStringNotContainsString('s3cr3t', $e->getMessage());
+            $this->assertStringNotContainsString('textmagic.com/app/api', $e->getMessage());
         }
-
-        $this->assertFalse($result);
-        $this->assertSame([], $reported, 'The failed request must not raise a warning carrying the URL');
     }
 }
