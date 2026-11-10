@@ -11,6 +11,7 @@ use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Test\Support\MailAssert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -105,7 +106,7 @@ class AddCommandTest extends BikeSharingWebTestCase
         $this->assertNotEmpty($registrationKey);
         $this->assertSame(
             '/user/confirm/email/' . $registrationKey,
-            $this->confirmationLinkFrom($mail, 'success.registration.mail')
+            MailAssert::confirmationLink($mail, 'success.registration.mail')
         );
 
         $notCalledListeners = $this->client->getContainer()->get('event_dispatcher')->getNotCalledListeners();

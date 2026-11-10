@@ -8,6 +8,7 @@ use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Test\Support\MailAssert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -45,7 +46,7 @@ class SmsDisabledRegistrationFlowTest extends BikeSharingWebTestCase
         $this->assertCount(1, $emailsAfterRegister, 'Expected only the registration confirmation link');
 
         // Extract confirmation link.
-        $confirmationLink = $this->confirmationLinkFrom($emailsAfterRegister[0], 'success.registration.mail');
+        $confirmationLink = MailAssert::confirmationLink($emailsAfterRegister[0], 'success.registration.mail');
 
         // Confirm email.
         $this->client->request(Request::METHOD_GET, $confirmationLink);

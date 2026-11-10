@@ -19,6 +19,7 @@ use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Test\Support\MailAssert;
 use Symfony\Component\HttpFoundation\Request;
 
 class EmailUnconfirmedFirewallApiTest extends BikeSharingWebTestCase
@@ -71,7 +72,7 @@ class EmailUnconfirmedFirewallApiTest extends BikeSharingWebTestCase
 
         // Confirm the email out-of-band via the link from the registration mail.
         $mailSender = $container->get(MailSenderInterface::class);
-        $confirmationLink = $this->confirmationLinkFrom(
+        $confirmationLink = MailAssert::confirmationLink(
             $mailSender->getSentMessages()[0],
             'email.confirmation.mail'
         );

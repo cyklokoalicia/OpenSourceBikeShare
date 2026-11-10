@@ -11,6 +11,7 @@ use BikeShare\Repository\StandRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
+use BikeShare\Test\Support\MailAssert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -95,7 +96,7 @@ class TagCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            $this->assertSmsAuditMail(
+            MailAssert::smsAudit(
                 $sentMessage,
                 $user['userName'],
                 new TranslatableMessage(

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
+use BikeShare\Test\Support\MailAssert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
@@ -128,7 +129,7 @@ class UnTagCommandTest extends BikeSharingWebTestCase
 
         if ($notifiesAdmins) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                $this->assertSmsAuditMail(
+                MailAssert::smsAudit(
                     $sentMessage,
                     $user['userName'],
                     new TranslatableMessage($expectedCode, $expectedParams)

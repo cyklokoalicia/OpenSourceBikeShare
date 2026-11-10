@@ -9,6 +9,7 @@ use BikeShare\Event\UserReconfirmationEvent;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Test\Integration\BikeSharingKernelTestCase;
+use BikeShare\Test\Support\MailAssert;
 use Monolog\Logger;
 use Monolog\LogRecord;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -45,12 +46,12 @@ class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
         $this->assertCount(1, $mailSender->getSentMessages());
         $mail = $mailSender->getSentMessages()[0];
         $this->assertEquals(new TranslatableMessage('Email confirmation'), $mail['subject']);
-        $this->assertInstanceOf(TranslatableMessage::class, $mail['message']);
-        $this->assertSame('email.confirmation.mail', $mail['message']->getMessage());
-        $params = $mail['message']->getParameters();
-        $this->assertSame('Eve', $params['name']);
+        $this->assertSame(
+            '/user/confirm/email/' . self::USER_KEY,
+            MailAssert::confirmationLink($mail, 'email.confirmation.mail')
+        );
+        $this->assertSame('Eve', $mail['message']->getParameters()['name']);
         $this->assertSame($user->getEmail(), $mail['recipient']);
-        $this->assertStringEndsWith('/user/confirm/email/' . self::USER_KEY, $params['emailConfirmURL']);
 
         // Second dispatch within the window is throttled — no additional email.
         $eventDispatcher->dispatch($event);

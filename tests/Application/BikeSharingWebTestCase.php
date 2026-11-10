@@ -9,7 +9,6 @@ use Monolog\Level;
 use Monolog\LogRecord;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Translation\TranslatableMessage;
 
 abstract class BikeSharingWebTestCase extends WebTestCase
 {
@@ -73,43 +72,6 @@ abstract class BikeSharingWebTestCase extends WebTestCase
     protected function expectLog(int $level, $pattern, array $context = []): void
     {
         $this->expected[] = ['level' => $level, 'pattern' => $pattern, 'context' => $context];
-    }
-
-    /**
-     * Returns the path of the e-mail confirmation link carried by a captured mail,
-     * after checking the mail body is the expected translation.
-     *
-     * @param array{message: mixed} $mail a record of DebugMailSender::getSentMessages()
-     */
-    protected function confirmationLinkFrom(array $mail, string $expectedKey): string
-    {
-        $message = $mail['message'] ?? null;
-        $this->assertInstanceOf(TranslatableMessage::class, $message);
-        $this->assertSame($expectedKey, $message->getMessage());
-        $link = parse_url((string)($message->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
-        $this->assertIsString($link, 'Email confirmation link not found');
-        $this->assertNotSame('', $link, 'Email confirmation link not found');
-
-        return $link;
-    }
-
-    /**
-     * Asserts a captured mail is the admin audit copy of an SMS command result.
-     * The recipient is left to the caller, which knows the admin list.
-     *
-     * @param array{message: mixed, subject: mixed} $mail a record of DebugMailSender::getSentMessages()
-     */
-    protected function assertSmsAuditMail(array $mail, string $userName, TranslatableMessage $resultMessage): void
-    {
-        $this->assertInstanceOf(TranslatableMessage::class, $mail['message']);
-        $this->assertEquals(
-            new TranslatableMessage('admin.notification.sms_processed', [
-                'userName' => $userName,
-                'message' => $resultMessage,
-            ]),
-            $mail['message']
-        );
-        $this->assertEquals(new TranslatableMessage('notification.subject.sms_command_audit'), $mail['subject']);
     }
 
     protected function decodeJsonResponse(): array
