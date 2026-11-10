@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller\SmsRequestController;
 
-use BikeShare\Test\Support\MailAssert;
+use BikeShare\Test\Assert\MailAssertions;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
@@ -132,7 +132,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
 
         if ($notifiesAdmins) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                MailAssert::smsAudit(
+                MailAssertions::assertSmsAudit(
                     $sentMessage,
                     $user['userName'],
                     new TranslatableMessage($expectedCode, $expectedParams)
@@ -284,7 +284,7 @@ class DelNoteCommandTest extends BikeSharingWebTestCase
 
         if ($notifiesAdmins) {
             foreach ($mailSender->getSentMessages() as $sentMessage) {
-                MailAssert::smsAudit(
+                MailAssertions::assertSmsAudit(
                     $sentMessage,
                     $user['userName'],
                     new TranslatableMessage($expectedCode, $expectedParams)

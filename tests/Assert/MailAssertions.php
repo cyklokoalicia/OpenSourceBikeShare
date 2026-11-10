@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace BikeShare\Test\Support;
+namespace BikeShare\Test\Assert;
 
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -10,7 +10,7 @@ use Symfony\Component\Translation\TranslatableMessage;
 /**
  * Assertions on mails captured by DebugMailSender::getSentMessages().
  */
-class MailAssert
+class MailAssertions
 {
     /**
      * Returns the path of the e-mail confirmation link carried by a captured mail,
@@ -18,7 +18,7 @@ class MailAssert
      *
      * @param array{message: mixed} $mail
      */
-    public static function confirmationLink(array $mail, string $expectedKey): string
+    public static function assertConfirmationLink(array $mail, string $expectedKey): string
     {
         $message = $mail['message'] ?? null;
         Assert::assertInstanceOf(TranslatableMessage::class, $message);
@@ -36,7 +36,7 @@ class MailAssert
      *
      * @param array{message: mixed, subject: mixed} $mail
      */
-    public static function smsAudit(array $mail, string $userName, TranslatableMessage $resultMessage): void
+    public static function assertSmsAudit(array $mail, string $userName, TranslatableMessage $resultMessage): void
     {
         Assert::assertEquals(
             new TranslatableMessage('admin.notification.sms_processed', [

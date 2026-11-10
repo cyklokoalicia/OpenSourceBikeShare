@@ -10,7 +10,7 @@ use BikeShare\Repository\NoteRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
-use BikeShare\Test\Support\MailAssert;
+use BikeShare\Test\Assert\MailAssertions;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -96,7 +96,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            MailAssert::smsAudit(
+            MailAssertions::assertSmsAudit(
                 $sentMessage,
                 $user['userName'],
                 new TranslatableMessage(
@@ -175,7 +175,7 @@ class NoteCommandTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $this->assertCount(count($admins), $mailSender->getSentMessages(), 'No admin email was send');
         foreach ($mailSender->getSentMessages() as $sentMessage) {
-            MailAssert::smsAudit(
+            MailAssertions::assertSmsAudit(
                 $sentMessage,
                 $user['userName'],
                 new TranslatableMessage(

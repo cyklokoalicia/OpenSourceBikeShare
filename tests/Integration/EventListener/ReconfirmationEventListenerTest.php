@@ -8,8 +8,8 @@ use BikeShare\App\Entity\User;
 use BikeShare\Event\UserReconfirmationEvent;
 use BikeShare\Mail\MailSenderInterface;
 use BikeShare\Repository\UserRepository;
+use BikeShare\Test\Assert\MailAssertions;
 use BikeShare\Test\Integration\BikeSharingKernelTestCase;
-use BikeShare\Test\Support\MailAssert;
 use Monolog\Logger;
 use Monolog\LogRecord;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -48,7 +48,7 @@ class ReconfirmationEventListenerTest extends BikeSharingKernelTestCase
         $this->assertEquals(new TranslatableMessage('Email confirmation'), $mail['subject']);
         $this->assertSame(
             '/user/confirm/email/' . self::USER_KEY,
-            MailAssert::confirmationLink($mail, 'email.confirmation.mail')
+            MailAssertions::assertConfirmationLink($mail, 'email.confirmation.mail')
         );
         $this->assertSame('Eve', $mail['message']->getParameters()['name']);
         $this->assertSame($user->getEmail(), $mail['recipient']);

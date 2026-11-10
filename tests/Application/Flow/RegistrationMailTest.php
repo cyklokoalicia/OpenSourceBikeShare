@@ -9,7 +9,7 @@ use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Repository\UserSettingsRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
-use BikeShare\Test\Support\MailAssert;
+use BikeShare\Test\Assert\MailAssertions;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -58,7 +58,7 @@ class RegistrationMailTest extends BikeSharingWebTestCase
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $key);
         $this->assertSame(
             '/user/confirm/email/' . $key,
-            MailAssert::confirmationLink($mails[0], 'success.registration.mail')
+            MailAssertions::assertConfirmationLink($mails[0], 'success.registration.mail')
         );
     }
 

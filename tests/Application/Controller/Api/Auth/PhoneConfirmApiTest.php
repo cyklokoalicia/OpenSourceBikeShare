@@ -15,7 +15,7 @@ use BikeShare\Repository\RegistrationRepository;
 use BikeShare\Repository\UserRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
-use BikeShare\Test\Support\MailAssert;
+use BikeShare\Test\Assert\MailAssertions;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -82,7 +82,7 @@ class PhoneConfirmApiTest extends BikeSharingWebTestCase
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
         $sendEmails = $mailSender->getSentMessages();
         $this->assertCount(1, $sendEmails);
-        $confirmationLink = MailAssert::confirmationLink($sendEmails[0], 'success.registration.mail');
+        $confirmationLink = MailAssertions::assertConfirmationLink($sendEmails[0], 'success.registration.mail');
 
         $this->client->request(Request::METHOD_GET, $confirmationLink);
         $this->assertResponseRedirects();
@@ -179,7 +179,7 @@ class PhoneConfirmApiTest extends BikeSharingWebTestCase
         $this->assertResponseStatusCodeSame(201);
 
         $mailSender = $this->client->getContainer()->get(MailSenderInterface::class);
-        $confirmationLink = MailAssert::confirmationLink(
+        $confirmationLink = MailAssertions::assertConfirmationLink(
             $mailSender->getSentMessages()[0],
             'success.registration.mail'
         );
