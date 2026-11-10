@@ -232,6 +232,7 @@ Your new password is:
   'notification.subject.sms_command_audit' => 'SMS command processed',
   'notification.subject.new_verified_user' => 'New verified user',
   'notification.subject.sms_problem' => 'Problem with SMS',
+  'notification.subject.sms_reply_failed' => 'SMS reply not delivered',
   'notification.subject.duplicate_sms' => 'Duplicate SMS received',
   'notification.subject.long_rental_admin' => 'Long rentals',
   'notification.subject.long_rental_user' => 'Please return your bike',
@@ -242,6 +243,7 @@ Name: {userName}
 Email: {email}
 Phone: {phone}',
   'admin.notification.sms_problem' => 'Problem with SMS: {number}-{sms}',
+  'admin.notification.sms_reply_failed' => 'Command "{sms}" from {number} was processed, but the reply was not delivered: {reply}',
   'admin.notification.sms_processed' => '{userName}: {message}',
   'admin.notification.duplicate_sms' => 'Problem with SMS: {uuid}',
   'admin.notification.long_rental' => '{hour, plural, one {Bike rental exceed 1 hour} other {Bike rental exceed # hours}}

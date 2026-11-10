@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace BikeShare\SmsConnector;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * http://textmagic.com
@@ -13,12 +17,16 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 class TextmagicSmsConnector extends AbstractConnector
 {
+    private const API_URL = 'https://www.textmagic.com/app/api';
+    private const MAX_DURATION = 10;
+
     private string $gatewayUser = '';
     private string $gatewayPassword = '';
     private string $gatewaySenderNumber = '';
 
     public function __construct(
         private readonly RequestStack $requestStack,
+        private readonly HttpClientInterface $httpClient,
         array $configuration,
     ) {
         parent::__construct($configuration);
@@ -48,17 +56,45 @@ class TextmagicSmsConnector extends AbstractConnector
     // send SMS message via API
     public function send($number, $text): void
     {
-        $um = urlencode((string) $text);
-        $url = sprintf(
-            "https://www.textmagic.com/app/api?cmd=send&unicode=0&from=%s&username=%s&password=%s&phone=%s&text=%s",
-            $this->gatewaySenderNumber,
-            $this->gatewayUser,
-            $this->gatewayPassword,
-            $number,
-            $um
-        );
+        // HttpClient's log and Sentry's HTTP tracing record the URL, so the credentials and the
+        // text travel in the body. No message below may quote the request, and HttpClient's own
+        // transport errors (which quote the URL) are not chained.
+        try {
+            $response = $this->httpClient->request(
+                Request::METHOD_POST,
+                self::API_URL,
+                [
+                    'query' => ['cmd' => 'send'],
+                    'body' => [
+                        'unicode' => 0,
+                        'from' => $this->gatewaySenderNumber,
+                        'username' => $this->gatewayUser,
+                        'password' => $this->gatewayPassword,
+                        'phone' => $number,
+                        'text' => (string)$text,
+                    ],
+                    'max_duration' => self::MAX_DURATION,
+                ]
+            );
+            $statusCode = $response->getStatusCode();
+            $content = $response->getContent(false);
+        } catch (TransportExceptionInterface) {
+            throw new \RuntimeException('Textmagic could not be reached to send the SMS to ' . $number);
+        }
 
-        fopen($url, "r");
+        if ($statusCode < Response::HTTP_OK || $statusCode >= Response::HTTP_MULTIPLE_CHOICES) {
+            throw new \RuntimeException(
+                'Textmagic did not accept the SMS to ' . $number . ': status code ' . $statusCode
+            );
+        }
+
+        // The API reports a refusal (no credit, invalid number, ...) with status 200 and an error_code.
+        $result = json_decode($content, true);
+        if (is_array($result) && isset($result['error_code'])) {
+            throw new \RuntimeException(
+                'Textmagic did not accept the SMS to ' . $number . ': error code ' . $result['error_code']
+            );
+        }
     }
 
     public function receive(): void

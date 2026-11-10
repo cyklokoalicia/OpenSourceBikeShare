@@ -95,6 +95,51 @@ class SmsSenderTest extends TestCase
         ];
     }
 
+    public function testFailedSendIsNotLogged(): void
+    {
+        $this->translatorMock->expects($this->once())->method('trans')->willReturn('Hello');
+        $this->smsTextNormalizerMock->expects($this->once())->method('normalize')->willReturn('Hello');
+        $this->smsConnectorMock->method('getMaxMessageLength')->willReturn(160);
+        $this->smsConnectorMock->expects($this->once())->method('send')
+            ->willThrowException(new \RuntimeException('gateway down'));
+        $this->dbMock->expects($this->never())->method('query');
+
+        $this->expectException(\RuntimeException::class);
+        $this->smsSender->send('123', new TranslatableMessage('Hello'));
+    }
+
+    public function testMultipartStopsLoggingAtTheFailedPart(): void
+    {
+        $this->clockMock->modify('2024-01-01 10:00:00');
+        $message = 'aaaaaaaaaabbbbbbbbbbccccc';
+        $this->translatorMock->expects($this->once())->method('trans')->willReturn($message);
+        $this->smsTextNormalizerMock->expects($this->once())->method('normalize')->willReturn($message);
+        $this->smsConnectorMock->method('getMaxMessageLength')->willReturn(10);
+        $sendCalls = $this->exactly(2);
+        $this->smsConnectorMock->expects($sendCalls)->method('send')
+            ->willReturnCallback(static function (string $number, string $text) use ($sendCalls): void {
+                if ($sendCalls->numberOfInvocations() === 2) {
+                    throw new \RuntimeException('gateway down');
+                }
+            });
+        $this->dbMock->expects($this->once())->method('query')
+            ->with(
+                'INSERT INTO sent SET number = :number, text = :message, time = :time',
+                ['number' => '123', 'message' => 'aaaaaaaaaa', 'time' => '2024-01-01 10:00:00']
+            )
+            ->willReturn($this->createStub(DbResultInterface::class));
+
+        $caught = null;
+        try {
+            $this->smsSender->send('123', new TranslatableMessage($message));
+        } catch (\RuntimeException $e) {
+            $caught = $e;
+        }
+
+        $this->assertInstanceOf(\RuntimeException::class, $caught, 'The failed part must propagate');
+        $this->assertSame('gateway down', $caught->getMessage());
+    }
+
     #[DataProvider('sendDataProvider')]
     public function testSend(
         $number,

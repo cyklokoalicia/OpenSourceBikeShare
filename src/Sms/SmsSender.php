@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BikeShare\Sms;
 
 use BikeShare\Db\DbInterface;
@@ -29,13 +31,13 @@ class SmsSender implements SmsSenderInterface
             foreach ($messageParts as $text) {
                 $text = trim($text);
                 if ($text) {
-                    $this->log($number, $text);
                     $this->smsConnector->send($number, $text);
+                    $this->log($number, $text);
                 }
             }
         } else {
-            $this->log($number, $message);
             $this->smsConnector->send($number, $message);
+            $this->log($number, $message);
         }
     }
 

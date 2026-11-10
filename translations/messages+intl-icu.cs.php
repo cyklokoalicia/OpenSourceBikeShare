@@ -228,6 +228,7 @@ Vaše nové heslo je:
     'notification.subject.sms_command_audit' => 'Zpracovaný SMS příkaz',
     'notification.subject.new_verified_user' => 'Nový ověřený uživatel',
     'notification.subject.sms_problem' => 'Problém se SMS',
+    'notification.subject.sms_reply_failed' => 'Odpověď na SMS nebyla doručena',
     'notification.subject.duplicate_sms' => 'Přijata duplicitní SMS',
     'notification.subject.long_rental_admin' => 'Dlouhé výpůjčky',
     'notification.subject.long_rental_user' => 'Prosím, vraťte kolo',
@@ -238,6 +239,7 @@ Jméno: {userName}
 E-mail: {email}
 Telefon: {phone}',
     'admin.notification.sms_problem' => 'Problém s SMS: {number}-{sms}',
+    'admin.notification.sms_reply_failed' => 'Příkaz "{sms}" od {number} byl zpracován, ale odpověď nebyla doručena: {reply}',
     'admin.notification.sms_processed' => '{userName}: {message}',
     'admin.notification.duplicate_sms' => 'Problém s SMS: {uuid}',
     'admin.notification.long_rental' => '{hour, plural, one {Půjčení kola přesáhlo 1 hodinu} few {Půjčení kola přesáhlo # hodiny} other {Půjčení kola přesáhlo # hodin}}

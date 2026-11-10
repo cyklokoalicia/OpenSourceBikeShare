@@ -12,6 +12,7 @@ enum NotificationType: string
     case SmsCommandAudit = 'sms-command-audit';
     case NewVerifiedUser = 'new-verified-user';
     case SmsProblem = 'sms-problem';
+    case SmsReplyFailed = 'sms-reply-failed';
     case DuplicateSms = 'duplicate-sms';
     case LongRentalAdmin = 'long-rental-admin';
     case LongRentalUser = 'long-rental-user';
@@ -34,6 +35,7 @@ enum NotificationType: string
             self::StackWatch,
             self::NewVerifiedUser,
             self::SmsProblem,
+            self::SmsReplyFailed,
             self::DuplicateSms,
             self::InactiveBikes,
             self::Registration,

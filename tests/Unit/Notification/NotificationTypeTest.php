@@ -29,6 +29,7 @@ class NotificationTypeTest extends TestCase
         yield 'sms command audit' => [NotificationType::SmsCommandAudit, $both];
         yield 'new verified user' => [NotificationType::NewVerifiedUser, $email];
         yield 'sms problem' => [NotificationType::SmsProblem, $email];
+        yield 'sms reply failed' => [NotificationType::SmsReplyFailed, $email];
         yield 'duplicate sms' => [NotificationType::DuplicateSms, $email];
         yield 'long rental admin' => [NotificationType::LongRentalAdmin, $both];
         yield 'long rental user' => [NotificationType::LongRentalUser, $sms];
