@@ -6,6 +6,8 @@ namespace BikeShare\Test\Application\Controller\Api\Bike;
 
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Db\DbInterface;
+use BikeShare\Enum\Action;
+use BikeShare\Repository\HistoryRepository;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
@@ -87,6 +89,38 @@ class BikeRentalPairingTest extends BikeSharingWebTestCase
         $rows = $this->history();
         self::assertSame(['FORCERETURN'], array_column($rows, 'action'));
         self::assertNull($rows[0]['pairActionId']);
+    }
+
+    public function testBackfilledClosingOfOlderRentDoesNotHideCurrentForcedRentAtTheSameTime(): void
+    {
+        $this->client->request('POST', '/api/v1/rentals', ['bikeNumber' => self::BIKE_NUMBER]);
+        self::assertResponseIsSuccessful();
+        $old = $this->history()[0];
+        $adminId = $this->login(self::ADMIN_PHONE_NUMBER);
+        $this->client->request('POST', '/api/v1/admin/rentals/force', ['bikeNumber' => self::BIKE_NUMBER]);
+        self::assertResponseIsSuccessful();
+        $current = $this->history()[1];
+        $repository = $this->client->getContainer()->get(HistoryRepository::class);
+        $repository->addItem($adminId, self::BIKE_NUMBER, Action::FORCE_RETURN, '1', (int)$old['id']);
+        self::assertSame((int)$current['id'], $repository->findCurrentRentId(self::BIKE_NUMBER, $adminId));
+        $this->returnBike();
+        self::assertSame($current['id'], $this->history()[3]['pairActionId']);
+    }
+
+    public function testAlreadyLinkedClosingAndUnpairedTerminalEventBlockAnotherPair(): void
+    {
+        $this->client->request('POST', '/api/v1/rentals', ['bikeNumber' => self::BIKE_NUMBER]);
+        self::assertResponseIsSuccessful();
+        $start = $this->history()[0];
+        $repository = $this->client->getContainer()->get(HistoryRepository::class);
+        $repository->addItem($this->userId, self::BIKE_NUMBER, Action::RETURN, '1', (int)$start['id']);
+        self::assertNull($repository->findCurrentRentId(self::BIKE_NUMBER, $this->userId));
+        $adminId = $this->login(self::ADMIN_PHONE_NUMBER);
+        $this->client->request('POST', '/api/v1/admin/rentals/force', ['bikeNumber' => self::BIKE_NUMBER]);
+        self::assertResponseIsSuccessful();
+        $repository = $this->client->getContainer()->get(HistoryRepository::class);
+        $repository->addItem($adminId, self::BIKE_NUMBER, Action::FORCE_RETURN, '1');
+        self::assertNull($repository->findCurrentRentId(self::BIKE_NUMBER, $adminId));
     }
 
     private function returnBike(bool $force = false): void
