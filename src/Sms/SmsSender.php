@@ -26,18 +26,19 @@ class SmsSender implements SmsSenderInterface
     {
         $message = $this->smsTextNormalizer->normalize($message->trans($this->translator, $locale));
         $maxMessageLength = $this->smsConnector->getMaxMessageLength();
-        if (strlen($message) > $maxMessageLength) {
-            $messageParts = str_split($message, $maxMessageLength);
-            foreach ($messageParts as $text) {
-                $text = trim($text);
-                if ($text) {
-                    $this->smsConnector->send($number, $text);
-                    $this->log($number, $text);
-                }
-            }
-        } else {
-            $this->smsConnector->send($number, $message);
-            $this->log($number, $message);
+        $parts = strlen($message) > $maxMessageLength
+            ? array_filter(
+                array_map(trim(...), str_split($message, $maxMessageLength)),
+                static fn (string $part): bool => $part !== ''
+            )
+            : [$message];
+
+        // `sent` is the history of what the user should have received, so a part is logged even if it never arrives.
+        foreach ($parts as $text) {
+            $this->log($number, $text);
+        }
+        foreach ($parts as $text) {
+            $this->smsConnector->send($number, $text);
         }
     }
 

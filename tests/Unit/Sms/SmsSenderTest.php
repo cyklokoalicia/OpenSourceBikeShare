@@ -95,20 +95,26 @@ class SmsSenderTest extends TestCase
         ];
     }
 
-    public function testFailedSendIsNotLogged(): void
+    public function testFailedSendIsStillLogged(): void
     {
+        $this->clockMock->modify('2024-01-01 10:00:00');
         $this->translatorMock->expects($this->once())->method('trans')->willReturn('Hello');
         $this->smsTextNormalizerMock->expects($this->once())->method('normalize')->willReturn('Hello');
         $this->smsConnectorMock->method('getMaxMessageLength')->willReturn(160);
         $this->smsConnectorMock->expects($this->once())->method('send')
             ->willThrowException(new \RuntimeException('gateway down'));
-        $this->dbMock->expects($this->never())->method('query');
+        $this->dbMock->expects($this->once())->method('query')
+            ->with(
+                'INSERT INTO sent SET number = :number, text = :message, time = :time',
+                ['number' => '123', 'message' => 'Hello', 'time' => '2024-01-01 10:00:00']
+            )
+            ->willReturn($this->createStub(DbResultInterface::class));
 
         $this->expectException(\RuntimeException::class);
         $this->smsSender->send('123', new TranslatableMessage('Hello'));
     }
 
-    public function testMultipartStopsLoggingAtTheFailedPart(): void
+    public function testMultipartLogsEveryPartEvenWhenOneFails(): void
     {
         $this->clockMock->modify('2024-01-01 10:00:00');
         $message = 'aaaaaaaaaabbbbbbbbbbccccc';
@@ -122,22 +128,30 @@ class SmsSenderTest extends TestCase
                     throw new \RuntimeException('gateway down');
                 }
             });
-        $this->dbMock->expects($this->once())->method('query')
-            ->with(
-                'INSERT INTO sent SET number = :number, text = :message, time = :time',
-                ['number' => '123', 'message' => 'aaaaaaaaaa', 'time' => '2024-01-01 10:00:00']
-            )
-            ->willReturn($this->createStub(DbResultInterface::class));
+        $logged = [];
+        $this->dbMock->expects($this->exactly(3))->method('query')
+            ->willReturnCallback(function (string $sql, array $params) use (&$logged): DbResultInterface {
+                $this->assertSame('INSERT INTO sent SET number = :number, text = :message, time = :time', $sql);
+                $logged[] = $params;
 
-        $caught = null;
+                return $this->createStub(DbResultInterface::class);
+            });
+
         try {
             $this->smsSender->send('123', new TranslatableMessage($message));
+            $this->fail('The failed part must propagate');
         } catch (\RuntimeException $e) {
-            $caught = $e;
+            $this->assertSame('gateway down', $e->getMessage());
         }
-
-        $this->assertInstanceOf(\RuntimeException::class, $caught, 'The failed part must propagate');
-        $this->assertSame('gateway down', $caught->getMessage());
+        $this->assertSame(
+            [
+                ['number' => '123', 'message' => 'aaaaaaaaaa', 'time' => '2024-01-01 10:00:00'],
+                ['number' => '123', 'message' => 'bbbbbbbbbb', 'time' => '2024-01-01 10:00:00'],
+                ['number' => '123', 'message' => 'ccccc', 'time' => '2024-01-01 10:00:00'],
+            ],
+            $logged,
+            'The whole message stays in the history, including the parts never attempted'
+        );
     }
 
     #[DataProvider('sendDataProvider')]
