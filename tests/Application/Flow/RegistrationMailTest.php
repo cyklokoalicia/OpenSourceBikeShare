@@ -93,6 +93,7 @@ class RegistrationMailTest extends BikeSharingWebTestCase
         // One request only: a second one would reboot the kernel and drop failFor().
         $this->client->request(Request::METHOD_POST, '/register', [
             'registration_form' => [
+                '_token' => $this->csrfToken('registration_form'),
                 'fullname' => 'John Doe',
                 'city' => 'Default City',
                 'useremail' => $email,

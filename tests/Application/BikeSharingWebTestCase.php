@@ -9,6 +9,8 @@ use Monolog\Level;
 use Monolog\LogRecord;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class BikeSharingWebTestCase extends WebTestCase
 {
@@ -69,6 +71,30 @@ abstract class BikeSharingWebTestCase extends WebTestCase
      * @param array<string, mixed> $context the record's context must contain every given key with an equal value
      *                                      (subset match, loose `==` so ints match numeric strings)
      */
+    /**
+     * A CSRF token valid for the client's next request, issued without a request of its own.
+     * Lets a test post a form in one request, keeping per-request state such as failFor().
+     */
+    protected function csrfToken(string $tokenId): string
+    {
+        $container = $this->client->getContainer();
+        $session = $container->get('session.factory')->createSession();
+        $request = new Request();
+        $request->setSession($session);
+
+        $requestStack = $container->get('request_stack');
+        $requestStack->push($request);
+        try {
+            $token = $container->get('security.csrf.token_manager')->getToken($tokenId)->getValue();
+        } finally {
+            $requestStack->pop();
+        }
+        $session->save();
+        $this->client->getCookieJar()->set(new Cookie($session->getName(), $session->getId()));
+
+        return $token;
+    }
+
     protected function expectLog(int $level, $pattern, array $context = []): void
     {
         $this->expected[] = ['level' => $level, 'pattern' => $pattern, 'context' => $context];

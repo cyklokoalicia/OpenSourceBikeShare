@@ -12,6 +12,6 @@ return static function (FrameworkConfig $framework): void {
     ;
 
     $framework->csrfProtection()
-        ->enabled(false)
+        ->enabled(true)
     ;
 };
