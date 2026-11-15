@@ -64,7 +64,8 @@ class AuthController extends AbstractController
     public function register(Request $request): Response
     {
         $payload = $request->getPayload()->all();
-        // A JSON API authenticated by bearer tokens has no session cookie to forge, and no CSRF token to send.
+        // API clients have no CSRF token to send. Registration is anonymous, so a forged cross-site request
+        // gains nothing over calling the endpoint directly.
         $form = $this->createForm(RegistrationFormType::class, null, ['csrf_protection' => false]);
         $form->submit($payload);
 

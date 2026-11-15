@@ -13,6 +13,26 @@ class AuthFlowTest extends BikeSharingWebTestCase
     private const USER_PHONE_NUMBER = '421951555555';
     private const USER_PASSWORD = 'password';
 
+    public function testJsonRegistrationNeedsNoCsrfToken(): void
+    {
+        $this->client->request(
+            Request::METHOD_POST,
+            '/api/v1/auth/register',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'fullname' => 'Csrf Free',
+                'city' => 'Default City',
+                'useremail' => 'csrf_free_' . bin2hex(random_bytes(4)) . '@example.com',
+                'password' => 'password123',
+                'password2' => 'password123',
+                'number' => '+421905' . random_int(100000, 999999),
+                'agree' => true,
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        $this->assertResponseStatusCodeSame(201);
+    }
+
     public function testTokenRefreshAndAccessFlow(): void
     {
         $this->client->request(

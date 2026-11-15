@@ -60,26 +60,19 @@ abstract class BikeSharingWebTestCase extends WebTestCase
     }
 
     /**
-     * Declare that the current test *should* write a log entry.
-     * @param string|callable $pattern
-     *
-     * Examples:
-     *  $this->expectLog(Logger::ERROR, '/DB timeout/');
-     *  $this->expectLog(Logger::CRITICAL, fn(string $m) => str_contains($m,'payment failed'));
-     *  $this->expectLog(Logger::ERROR, '/Notification delivery failed/', ['type' => 'password-reset', 'userId' => 4]);
-     *
-     * @param array<string, mixed> $context the record's context must contain every given key with an equal value
-     *                                      (subset match, loose `==` so ints match numeric strings)
-     */
-    /**
      * A CSRF token valid for the client's next request, issued without a request of its own.
      * Lets a test post a form in one request, keeping per-request state such as failFor().
+     * Joins the client's current session when it has one, so a logged-in client stays logged in.
      */
     protected function csrfToken(string $tokenId): string
     {
         $container = $this->client->getContainer();
         $session = $container->get('session.factory')->createSession();
-        $request = new Request();
+        $sessionCookie = $this->client->getCookieJar()->get($session->getName());
+        if ($sessionCookie !== null) {
+            $session->setId($sessionCookie->getValue());
+        }
+        $request = Request::create('/', server: static::SERVER_OPTIONS);
         $request->setSession($session);
 
         $requestStack = $container->get('request_stack');
@@ -95,6 +88,18 @@ abstract class BikeSharingWebTestCase extends WebTestCase
         return $token;
     }
 
+    /**
+     * Declare that the current test *should* write a log entry.
+     * @param string|callable $pattern
+     *
+     * Examples:
+     *  $this->expectLog(Logger::ERROR, '/DB timeout/');
+     *  $this->expectLog(Logger::CRITICAL, fn(string $m) => str_contains($m,'payment failed'));
+     *  $this->expectLog(Logger::ERROR, '/Notification delivery failed/', ['type' => 'password-reset', 'userId' => 4]);
+     *
+     * @param array<string, mixed> $context the record's context must contain every given key with an equal value
+     *                                      (subset match, loose `==` so ints match numeric strings)
+     */
     protected function expectLog(int $level, $pattern, array $context = []): void
     {
         $this->expected[] = ['level' => $level, 'pattern' => $pattern, 'context' => $context];
