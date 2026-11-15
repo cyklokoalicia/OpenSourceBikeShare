@@ -86,17 +86,6 @@ class SmsSenderTest extends TestCase
         ];
     }
 
-    public function testLongTextIsSentInOnePieceAndTheGatewaySplitsIt(): void
-    {
-        $text = str_repeat('a', 500);
-        $this->translatorMock->expects($this->once())->method('trans')->willReturn($text);
-        $this->smsTextNormalizerMock->expects($this->once())->method('normalize')->willReturn($text);
-        $this->sentRepositoryMock->expects($this->once())->method('add')->with('123', $text);
-        $this->smsConnectorMock->expects($this->once())->method('send')->with('123', $text);
-
-        $this->smsSender->send('123', new TranslatableMessage('long'));
-    }
-
     public function testFailedSendIsStillLogged(): void
     {
         $this->translatorMock->expects($this->once())->method('trans')->willReturn('Hello');

@@ -13,7 +13,7 @@ use Symfony\Component\Clock\ClockInterface;
 class SentRepository
 {
     /** Length of the `sent.text` column. */
-    public const MAX_TEXT_LENGTH = 2000;
+    private const MAX_TEXT_LENGTH = 2000;
     private const TRUNCATION_MARK = '...';
 
     public function __construct(

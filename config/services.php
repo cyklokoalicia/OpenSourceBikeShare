@@ -246,7 +246,6 @@ return static function (ContainerConfigurator $container): void {
         ->bind('$forceStack', env('bool:FORCE_STACK'));
 
     $services->load('BikeShare\\SmsConnector\\', '../src/SmsConnector')
-        ->bind('$request', expr("service('request_stack').getCurrentRequest()"))
         ->bind('$configuration', env('json:SMS_CONNECTOR_CONFIG'));
     $services->get(SmsConnectorFactory::class)
         ->arg('$connectorName', env('SMS_CONNECTOR'));
