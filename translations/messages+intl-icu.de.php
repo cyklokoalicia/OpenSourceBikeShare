@@ -58,6 +58,7 @@ return [
     'Email:' => 'E-Mail:',
     'Registration Date:' => 'Registrierungsdatum:',
     'Privileges:' => 'Privilegien:',
+    'Bike' => 'Fahrrad',
     'Bike limit:' => 'Fahrradlimit:',
     'City:' => 'Stadt:',
     'Select your city' => 'Wähle deine Stadt',
