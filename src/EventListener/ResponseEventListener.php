@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\EventListener;
 
-use BikeShare\Db\DbInterface;
-use Symfony\Component\Clock\ClockInterface;
+use BikeShare\Repository\SentRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
@@ -32,9 +31,8 @@ class ResponseEventListener
     ];
 
     public function __construct(
-        private readonly DbInterface $db,
+        private readonly SentRepository $sentRepository,
         private readonly Security $security,
-        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -73,16 +71,6 @@ class ResponseEventListener
             $response = $event->getResponse()->getContent();
         }
 
-        $this->db->query(
-            'INSERT INTO sent 
-             SET number = :number,
-                 text = :text,
-                 time = :time',
-            [
-                'number' => $number,
-                'text' => strip_tags((string)$response),
-                'time' => $this->clock->now()->format('Y-m-d H:i:s'),
-            ]
-        );
+        $this->sentRepository->add($number, strip_tags((string)$response));
     }
 }

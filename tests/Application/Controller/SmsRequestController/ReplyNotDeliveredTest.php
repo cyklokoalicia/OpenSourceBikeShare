@@ -10,6 +10,7 @@ use BikeShare\Repository\UserRepository;
 use BikeShare\Repository\UserSettingsRepository;
 use BikeShare\Sms\DebugSmsSender;
 use BikeShare\SmsConnector\SmsConnectorInterface;
+use BikeShare\SmsTextNormalizer\SmsTextNormalizerInterface;
 use BikeShare\Test\Application\BikeSharingWebTestCase;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,7 +43,7 @@ class ReplyNotDeliveredTest extends BikeSharingWebTestCase
         );
         $container = $this->client->getContainer();
         $container->get(SmsConnectorInterface::class)->failFor(self::USER_PHONE_NUMBER);
-        $sentBefore = $this->countSentRows();
+        $sentBefore = count($this->sentTexts());
 
         $this->client->request(
             Request::METHOD_GET,
@@ -57,7 +58,6 @@ class ReplyNotDeliveredTest extends BikeSharingWebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSame('', $this->client->getResponse()->getContent());
-        $this->assertSame($sentBefore, $this->countSentRows(), 'The undelivered reply must not be logged as sent');
 
         $container = $this->client->getContainer();
         $replies = array_values(array_filter(
@@ -71,6 +71,11 @@ class ReplyNotDeliveredTest extends BikeSharingWebTestCase
             $replies[0]['message']->trans($translator, 'en'),
             $expectedReply,
             'The reply must be rendered in the user locale'
+        );
+        $this->assertSame(
+            [$container->get(SmsTextNormalizerInterface::class)->normalize($expectedReply)],
+            array_slice($this->sentTexts(), $sentBefore),
+            'The undelivered reply stays in the history of what the user should have received'
         );
 
         $mails = $container->get(MailSenderInterface::class)->getSentMessages();
@@ -127,10 +132,13 @@ class ReplyNotDeliveredTest extends BikeSharingWebTestCase
         $container->get(UserSettingsRepository::class)->saveLocale((int)$user['userId'], $locale);
     }
 
-    private function countSentRows(): int
+    /**
+     * @return list<string>
+     */
+    private function sentTexts(): array
     {
-        return count($this->client->getContainer()->get(DbInterface::class)
-            ->query('SELECT 1 FROM sent WHERE number = :number', ['number' => self::USER_PHONE_NUMBER])
-            ->fetchAllAssoc());
+        return array_column($this->client->getContainer()->get(DbInterface::class)
+            ->query('SELECT text FROM sent WHERE number = :number ORDER BY id', ['number' => self::USER_PHONE_NUMBER])
+            ->fetchAllAssoc(), 'text');
     }
 }

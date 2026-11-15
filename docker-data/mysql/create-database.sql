@@ -108,7 +108,7 @@ CREATE TABLE `sent` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `number` varchar(20) NOT NULL,
-  `text` varchar(1024) NOT NULL,
+  `text` varchar(2000) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `number` (`number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
