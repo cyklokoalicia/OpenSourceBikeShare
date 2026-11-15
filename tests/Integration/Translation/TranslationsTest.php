@@ -6,12 +6,18 @@ namespace BikeShare\Test\Integration\Translation;
 
 use BikeShare\Test\Integration\BikeSharingKernelTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Translation\TranslatorBagInterface;
 
-class TranslationsCompileTest extends BikeSharingKernelTestCase
+class TranslationsTest extends BikeSharingKernelTestCase
 {
+    private const SOURCE_LOCALE = 'en';
     private const LOCALES = ['en', 'sk', 'cs', 'de', 'uk'];
     private const DOMAINS = ['messages+intl-icu', 'rentSystem+intl-icu', 'validators+intl-icu'];
+
+    /** debug:translation sets this bit of its exit code when a message used in code is not translated. */
+    private const DEBUG_TRANSLATION_MISSING = 1;
 
     /**
      * @return iterable<string, array{string, string}>
@@ -22,6 +28,16 @@ class TranslationsCompileTest extends BikeSharingKernelTestCase
             foreach (self::DOMAINS as $domain) {
                 yield $locale . ' ' . $domain => [$locale, $domain];
             }
+        }
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function localeProvider(): iterable
+    {
+        foreach (self::LOCALES as $locale) {
+            yield $locale => [$locale];
         }
     }
 
@@ -51,6 +67,48 @@ class TranslationsCompileTest extends BikeSharingKernelTestCase
                 )
             );
         }
+    }
+
+    #[DataProvider('localeDomainProvider')]
+    public function testEveryLocaleTranslatesTheSameMessagesAsTheSource(string $locale, string $domain): void
+    {
+        $source = $this->messagesOf(self::SOURCE_LOCALE, $domain);
+        $messages = $this->messagesOf($locale, $domain);
+
+        $this->assertSame(
+            [],
+            array_values(array_diff(array_keys($source), array_keys($messages))),
+            sprintf('Messages missing in %s / %s', $locale, $domain)
+        );
+        $this->assertSame(
+            [],
+            array_values(array_diff(array_keys($messages), array_keys($source))),
+            sprintf('Messages in %s / %s that %s does not have', $locale, $domain, self::SOURCE_LOCALE)
+        );
+        $this->assertSame(
+            [],
+            array_keys(array_filter(
+                $messages,
+                static fn (string $message, string $key): bool => $message === '' && $source[$key] !== '',
+                ARRAY_FILTER_USE_BOTH
+            )),
+            sprintf('Empty messages in %s / %s', $locale, $domain)
+        );
+    }
+
+    #[DataProvider('localeProvider')]
+    public function testEveryMessageUsedInCodeIsTranslated(string $locale): void
+    {
+        $command = (new Application(self::$kernel))->find('debug:translation');
+        $tester = new CommandTester($command);
+
+        $exitCode = $tester->execute(['locale' => $locale, '--only-missing' => true]);
+
+        $this->assertSame(
+            0,
+            $exitCode & self::DEBUG_TRANSLATION_MISSING,
+            sprintf("Messages used in code but missing in %s:\n%s", $locale, $tester->getDisplay())
+        );
     }
 
     /**
