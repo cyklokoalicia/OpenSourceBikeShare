@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use BikeShare\SmsConnector\DisabledConnector;
 use BikeShare\SmsConnector\EuroSmsConnector;
 use BikeShare\SmsConnector\SmsConnectorFactory;
-use BikeShare\SmsConnector\TextmagicSmsConnector;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -69,11 +68,6 @@ class SmsConnectorFactoryTest extends TestCase
             'connectorName' => 'eurosms',
             'debugMode' => true,
             'expectedInstance' => EuroSmsConnector::class,
-        ];
-        yield 'textmagic' => [
-            'connectorName' => 'textmagic.com',
-            'debugMode' => true,
-            'expectedInstance' => TextmagicSmsConnector::class,
         ];
         yield 'unknown' => [
             'connectorName' => 'unknown',

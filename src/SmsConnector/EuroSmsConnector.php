@@ -123,9 +123,4 @@ class EuroSmsConnector extends AbstractConnector
     {
         return 'eurosms';
     }
-
-    public function getMaxMessageLength(): int
-    {
-        return 1600;
-    }
 }

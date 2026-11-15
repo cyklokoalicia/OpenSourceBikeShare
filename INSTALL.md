@@ -61,7 +61,7 @@ Configuration is managed via environment variables in `.env.dev` (development) o
 - `APP_SECRET` — unique secret for security (change for production)
 
 **Optional — SMS system:**
-- `SMS_CONNECTOR` — SMS gateway provider (`disabled`, `eurosms`, `textmagic`, `debug`). Leave `disabled` to turn off SMS.
+- `SMS_CONNECTOR` — SMS gateway provider (`disabled`, `eurosms`, `debug`). Leave `disabled` to turn off SMS.
 - `SMS_CONNECTOR_CONFIG` — JSON configuration for the selected SMS connector.
 - `COUNTRY_CODES` — JSON array of supported ISO 3166-1 alpha-2 country codes, e.g. `["SK", "CZ"]`.
 

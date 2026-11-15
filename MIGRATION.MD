@@ -44,6 +44,8 @@ CREATE TABLE `userClient` (
     UNIQUE KEY `userId_platform` (`userId`, `platform`),
     KEY `lastSeenAt` (`lastSeenAt`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `sent` MODIFY `text` varchar(2000) NOT NULL;
 ```
 
 ## Environment Changes

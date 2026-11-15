@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
-use BikeShare\Db\DbInterface;
 use BikeShare\Rent\DTO\RentSystemResult;
 use BikeShare\Rent\Enum\RentSystemType;
 use BikeShare\Rent\RentSystemFactory;
 use BikeShare\Repository\BikeRepository;
+use BikeShare\Repository\SentRepository;
 use BikeShare\Repository\StandRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -25,8 +24,7 @@ class ScanController extends AbstractController
         private readonly BikeRepository $bikeRepository,
         private readonly StandRepository $standRepository,
         private readonly TranslatorInterface $translator,
-        private readonly DbInterface $db,
-        private readonly ClockInterface $clock,
+        private readonly SentRepository $sentRepository,
     ) {
     }
 
@@ -85,17 +83,9 @@ class ScanController extends AbstractController
 
     private function logResponse(TranslatableInterface $response): void
     {
-        $this->db->query(
-            'INSERT INTO sent
-                SET number = :number,
-                    text = :text,
-                    time = :time
-                ',
-            [
-                'number' => $this->getUser()->getUserIdentifier(),
-                'text' => strip_tags($response->trans($this->translator)),
-                'time' => $this->clock->now()->format('Y-m-d H:i:s'),
-            ]
+        $this->sentRepository->add(
+            $this->getUser()->getUserIdentifier(),
+            strip_tags($response->trans($this->translator))
         );
     }
 }
