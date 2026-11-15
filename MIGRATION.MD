@@ -79,6 +79,10 @@ MESSENGER_CHATS_JSON=[{"name":"Newcomers TG","url":"https://t.me/example"}]
 
 Empty array (`[]`, the default) disables the welcome redirect for new registrations.
 
+`SMS_CONNECTOR=textmagic` is no longer supported: the Textmagic connector was removed.
+Switch to `eurosms` or `disabled`. An unknown value does not stop the app from booting;
+it logs "Error creating SMS connector" and silently drops every outgoing SMS.
+
 ## Rental history pairs
 
 Fill missing `pairActionId` values and normalize unambiguous reverse links across the full history:
