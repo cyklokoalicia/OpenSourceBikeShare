@@ -49,7 +49,7 @@ class AddCommand extends AbstractCommand implements SmsCommandInterface
         $this->userRegistration->register(
             $phone,
             $email,
-            substr(md5(mt_rand() . microtime() . $fullName), 0, 8),
+            bin2hex(random_bytes(4)),
             $user->getCity(),
             $fullName,
             0

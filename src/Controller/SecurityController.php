@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
+use BikeShare\App\Entity\User;
 use BikeShare\App\Security\UserProvider;
+use BikeShare\Form\ChangePasswordFormType;
+use BikeShare\Form\ResetPasswordRequestFormType;
 use BikeShare\Notification\Notification;
 use BikeShare\Notification\NotificationType;
 use BikeShare\Notification\NotifierInterface;
 use BikeShare\Notification\UserRecipient;
+use BikeShare\Purifier\PhonePurifierInterface;
+use BikeShare\Repository\PasswordResetRepository;
+use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -20,6 +28,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SecurityController extends AbstractController
 {
+    private const PASSWORD_RESET_LIFETIME_MINUTES = 60;
+
     public function login(
         bool $isSmsSystemEnabled,
         AuthenticationUtils $authenticationUtils
@@ -52,47 +62,65 @@ class SecurityController extends AbstractController
         Request $request,
         NotifierInterface $notifier,
         UserProvider $userProvider,
-        UserPasswordHasherInterface $passwordHasher,
+        PhonePurifierInterface $phonePurifier,
+        PasswordResetRepository $passwordResetRepository,
+        RateLimiterFactory $passwordResetIpLimiter,
+        RateLimiterFactory $passwordResetNumberLimiter,
         TranslatorInterface $translator
     ): Response {
-        if ($request->isMethod('POST')) {
-            $number = $request->request->get('number');
+        $form = $this->createForm(ResetPasswordRequestFormType::class);
+        $form->handleRequest($request);
 
-            try {
-                $user = $userProvider->loadUserByIdentifier($number);
-            } catch (UserNotFoundException) {
-                $user = null;
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (!$passwordResetIpLimiter->create($request->getClientIp())->consume()->isAccepted()) {
+                $this->addFlash('error', $translator->trans('password.reset.too_many'));
+
+                return $this->redirectToRoute('reset_password');
             }
 
-            if (!is_null($user)) {
-                mt_srand(crc32(microtime()));
-                $plainPassword = substr(md5(mt_rand() . microtime() . $user->getUserIdentifier()), 0, 8);
-                $hashedPassword = $passwordHasher->hashPassword(
-                    $user,
-                    $plainPassword
-                );
-                $userProvider->upgradePassword($user, $hashedPassword);
+            $number = trim((string)$form->get('number')->getData());
+            $number = $phonePurifier->isValid($number) ? $phonePurifier->purify($number) : $number;
+            // The per-number limit is consumed for unknown numbers too, so the two cases cannot be told apart.
+            if ($passwordResetNumberLimiter->create($number)->consume()->isAccepted()) {
+                try {
+                    $user = $userProvider->loadUserByIdentifier($number);
+                } catch (UserNotFoundException) {
+                    $user = null;
+                }
 
-                $names = preg_split("/[\s,]+/", $user->getUsername());
-                $notifier->notify(
-                    new Notification(
-                        NotificationType::PasswordReset,
-                        new TranslatableMessage('Password reset'),
-                        new TranslatableMessage(
-                            'password.reset.mail',
-                            ['name' => $names[0], 'password' => $plainPassword]
-                        )
-                    ),
-                    new UserRecipient($user->getUserId())
-                );
+                if ($user instanceof User) {
+                    $token = bin2hex(random_bytes(32));
+                    $passwordResetRepository->save(
+                        $user->getUserId(),
+                        hash('sha256', $token),
+                        self::PASSWORD_RESET_LIFETIME_MINUTES
+                    );
+
+                    $names = preg_split("/[\s,]+/", $user->getUsername());
+                    $notifier->notify(
+                        new Notification(
+                            NotificationType::PasswordReset,
+                            new TranslatableMessage('Password reset'),
+                            new TranslatableMessage(
+                                'password.reset.link.mail',
+                                [
+                                    'name' => $names[0],
+                                    'resetUrl' => $this->generateUrl(
+                                        'reset_password_confirm',
+                                        ['token' => $token],
+                                        UrlGeneratorInterface::ABSOLUTE_URL
+                                    ),
+                                    'minutes' => self::PASSWORD_RESET_LIFETIME_MINUTES,
+                                ]
+                            )
+                        ),
+                        new UserRecipient($user->getUserId())
+                    );
+                }
             }
 
-            $this->addFlash(
-                'success',
-                $translator->trans('Your password has been reset successfully.')
-                . ' '
-                . $translator->trans('Check your email.')
-            );
+            // The same answer whether or not the number is registered, so it cannot be used to find accounts.
+            $this->addFlash('success', $translator->trans('password.reset.requested'));
 
             return $this->redirectToRoute('reset_password');
         }
@@ -100,8 +128,49 @@ class SecurityController extends AbstractController
         return $this->render(
             'security/reset_password.html.twig',
             [
+                'form' => $form,
                 'isSmsSystemEnabled' => $isSmsSystemEnabled,
             ]
         );
+    }
+
+    public function resetPasswordConfirm(
+        string $token,
+        Request $request,
+        UserProvider $userProvider,
+        UserRepository $userRepository,
+        PasswordResetRepository $passwordResetRepository,
+        UserPasswordHasherInterface $passwordHasher,
+        TranslatorInterface $translator
+    ): Response {
+        $userId = $passwordResetRepository->findUserIdByTokenHash(hash('sha256', $token));
+        $userItem = is_null($userId) ? null : $userRepository->findItem($userId);
+        if (is_null($userItem)) {
+            $this->addFlash('error', $translator->trans('password.reset.invalid_link'));
+
+            return $this->redirectToRoute('reset_password');
+        }
+
+        $form = $this->createForm(ChangePasswordFormType::class, null, ['require_current_password' => false]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $userProvider->loadUserByIdentifier($userItem['number']);
+            $userProvider->upgradePassword(
+                $user,
+                $passwordHasher->hashPassword($user, $form->get('plainPassword')->getData())
+            );
+            $passwordResetRepository->deleteByUserId($userId);
+
+            $this->addFlash('success', $translator->trans('password.reset.done'));
+
+            return $this->redirectToRoute('login');
+        }
+
+        $response = $this->render('security/reset_password_confirm.html.twig', ['form' => $form]);
+        // The token is in the URL: keep it out of the Referer of anything the page loads.
+        $response->headers->set('Referrer-Policy', 'no-referrer');
+
+        return $response;
     }
 }

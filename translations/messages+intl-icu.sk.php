@@ -90,6 +90,16 @@ return [
     'SMS code has been sent to your phone +{phoneNumber}.' => 'SMS kód bol odoslaný na váš telefón +{phoneNumber}.',
     'Coupon' => 'Kupón',
     'Password reset' => 'Obnovenie hesla',
+    'password.reset.link.mail' => 'Dobrý deň {name},
+
+niekto požiadal o obnovenie hesla k vášmu účtu. Nové heslo si nastavíte otvorením tohto odkazu do {minutes} minút:
+{resetUrl}
+
+Ak ste to neboli vy, tento e-mail ignorujte. Vaše heslo zostáva nezmenené.',
+    'password.reset.requested' => 'Ak je toto číslo zaregistrované, poslali sme na jeho e-mail odkaz na nastavenie nového hesla.',
+    'password.reset.too_many' => 'Príliš veľa žiadostí o obnovenie hesla. Skúste to neskôr.',
+    'password.reset.invalid_link' => 'Tento odkaz na obnovenie hesla je neplatný alebo vypršal. Požiadajte o nový.',
+    'password.reset.done' => 'Vaše heslo bolo zmenené. Teraz sa môžete prihlásiť.',
     'success.registration.mail' => 'Dobrý deň {name}
 boli ste zaregistrovaný do komunitného systému zdieľania bicyklov {systemName}.
 Pravidlá systému sú k dispozícii tu: {systemRulesPageUrl}
@@ -97,15 +107,6 @@ Kliknutím na nasledujúci odkaz potvrdíte svoj e-mail: {emailConfirmURL}',
     'email.confirmation.mail' => 'Dobrý deň {name}
 Kliknutím na nasledujúci odkaz potvrdíte svoj e-mail: {emailConfirmURL}',
     'Hello' => 'Dobrý deň',
-    'Your password has been reset successfully.' => 'Vaše heslo bolo úspešne obnovené.',
-    'Your new password is:' => 'Vaše nové heslo je:',
-    'password.reset.mail' => 'Dobrý deň {name},
-
-Vaše heslo bolo úspešne obnovené.
-
-Vaše nové heslo je:
-{password}',
-    'Check your email.' => 'Skontrolujte si e-mail.',
     'Registration' => 'Registrácia',
     'Email confirmation' => 'Potvrdenie e-mailu',
     'You will receive SMS code to this phone number +{phoneNumber}.' => 'Na toto telefónne číslo +{phoneNumber} dostanete SMS kód.',

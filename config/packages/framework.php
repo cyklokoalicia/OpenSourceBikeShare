@@ -35,6 +35,21 @@ return static function (FrameworkConfig $framework): void {
         ->defaultLifetime(900)
         ->public(true);
 
+    // Password reset requests: per client IP against bulk abuse, per phone number against mail flooding one user.
+    // No lock: a race lets a request or two past the limit, which is fine here and spares the Lock component.
+    $framework->rateLimiter()
+        ->limiter('password_reset_ip')
+        ->policy('sliding_window')
+        ->lockFactory(null)
+        ->limit(10)
+        ->interval('1 hour');
+    $framework->rateLimiter()
+        ->limiter('password_reset_number')
+        ->policy('fixed_window')
+        ->lockFactory(null)
+        ->limit(3)
+        ->interval('1 hour');
+
     $framework
         ->defaultLocale('en')
         ->enabledLocales(['en', 'sk', 'cs', 'de', 'uk'])

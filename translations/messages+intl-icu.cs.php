@@ -90,6 +90,16 @@ return [
     'SMS code has been sent to your phone +{phoneNumber}.' => 'SMS kód byl odeslán na váš telefon +{phoneNumber}.',
     'Coupon' => 'Kupón',
     'Password reset' => 'Obnovení hesla',
+    'password.reset.link.mail' => 'Dobrý den {name},
+
+někdo požádal o obnovení hesla k vašemu účtu. Nové heslo si nastavíte otevřením tohoto odkazu do {minutes} minut:
+{resetUrl}
+
+Pokud jste to nebyli vy, tento e-mail ignorujte. Vaše heslo zůstává beze změny.',
+    'password.reset.requested' => 'Pokud je toto číslo zaregistrované, poslali jsme na jeho e-mail odkaz pro nastavení nového hesla.',
+    'password.reset.too_many' => 'Příliš mnoho žádostí o obnovení hesla. Zkuste to později.',
+    'password.reset.invalid_link' => 'Tento odkaz pro obnovení hesla je neplatný nebo vypršel. Požádejte o nový.',
+    'password.reset.done' => 'Vaše heslo bylo změněno. Nyní se můžete přihlásit.',
     'success.registration.mail' => 'Dobrý den {name}
 byli jste zaregistrováni do komunitního systému sdílení kol {systemName}.
 Pravidla systému jsou k dispozici zde: {systemRulesPageUrl}
@@ -97,15 +107,6 @@ Kliknutím na následující odkaz potvrdíte svůj e-mail: {emailConfirmURL}',
     'email.confirmation.mail' => 'Dobrý den {name}
 Kliknutím na následující odkaz potvrdíte svůj e-mail: {emailConfirmURL}',
     'Hello' => 'Dobrý den',
-    'Your password has been reset successfully.' => 'Vaše heslo bylo úspěšně obnoveno.',
-    'Your new password is:' => 'Vaše nové heslo je:',
-    'password.reset.mail' => 'Dobrý den {name},
-
-Vaše heslo bylo úspěšně obnoveno.
-
-Vaše nové heslo je:
-{password}',
-    'Check your email.' => 'Zkontrolujte si e-mail.',
     'Registration' => 'Registrace',
     'Email confirmation' => 'Potvrzení e-mailu',
     'You will receive SMS code to this phone number +{phoneNumber}.' => 'Na toto telefonní číslo +{phoneNumber} obdržíte SMS kód.',
