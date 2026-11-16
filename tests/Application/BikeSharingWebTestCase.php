@@ -9,6 +9,8 @@ use Monolog\Level;
 use Monolog\LogRecord;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class BikeSharingWebTestCase extends WebTestCase
 {
@@ -55,6 +57,38 @@ abstract class BikeSharingWebTestCase extends WebTestCase
         }
         $_SERVER[$name] = $value;
         $_ENV[$name] = $value;
+    }
+
+    /**
+     * A CSRF token valid for the client's next request, issued without a request of its own.
+     * Lets a test post a form in one request, keeping per-request state such as failFor().
+     * Joins the client's current session when it has one, so a logged-in client stays logged in.
+     */
+    protected function csrfToken(string $tokenId): string
+    {
+        $container = $this->client->getContainer();
+        $session = $container->get('session.factory')->createSession();
+        $cookieJar = $this->client->getCookieJar();
+        $sessionCookie = $cookieJar->get($session->getName());
+        if ($sessionCookie !== null) {
+            $session->setId($sessionCookie->getValue());
+        }
+        $request = Request::create('/', server: static::SERVER_OPTIONS);
+        $request->setSession($session);
+
+        $requestStack = $container->get('request_stack');
+        $requestStack->push($request);
+        try {
+            $token = $container->get('security.csrf.token_manager')->getToken($tokenId)->getValue();
+        } finally {
+            $requestStack->pop();
+        }
+        $session->save();
+        if ($sessionCookie === null) {
+            $cookieJar->set(new Cookie($session->getName(), $session->getId()));
+        }
+
+        return $token;
     }
 
     /**
