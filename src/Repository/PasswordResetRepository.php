@@ -48,6 +48,21 @@ class PasswordResetRepository
         return $row ? (int)$row['userId'] : null;
     }
 
+    /**
+     * Deletes the user's pending reset if it still matches the token, so that of two concurrent uses only one wins.
+     */
+    public function consume(int $userId, string $tokenHash): bool
+    {
+        return $this->db->query(
+            'DELETE FROM passwordReset WHERE userId = :userId AND tokenHash = :tokenHash AND expiresAt > :now',
+            [
+                'userId' => $userId,
+                'tokenHash' => $tokenHash,
+                'now' => $this->clock->now()->format('Y-m-d H:i:s'),
+            ]
+        )->rowCount() === 1;
+    }
+
     public function deleteByUserId(int $userId): void
     {
         $this->db->query('DELETE FROM passwordReset WHERE userId = :userId', ['userId' => $userId]);

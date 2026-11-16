@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Application\Controller;
 
+use BikeShare\App\Entity\User;
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Db\DbInterface;
 use BikeShare\Mail\MailSenderInterface;
@@ -21,6 +22,8 @@ class ResetPasswordTest extends BikeSharingWebTestCase
 {
     private const USER_ID = 4;
     private const USER_PHONE_NUMBER = '421951111111';
+    private const USER_PASSWORD = 'password';
+    private const ADMIN_PHONE_NUMBER = '421951222222';
     private const UNKNOWN_NUMBER = '421999999999';
     private const CLIENT_IP = '127.0.0.1';
     private const IP_LIMIT = 10;
@@ -31,6 +34,14 @@ class ResetPasswordTest extends BikeSharingWebTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Fixtures give the user a random password; the API login and the profile form need a known one.
+        $this->client->getContainer()->get(DbInterface::class)->query(
+            'UPDATE users SET password = :password WHERE userId = :userId',
+            [
+                'password' => password_hash(self::USER_PASSWORD, PASSWORD_BCRYPT, ['cost' => 4]),
+                'userId' => self::USER_ID,
+            ]
+        );
         $this->originalPasswordHash = $this->readPasswordHash();
         $this->resetLimiters();
     }
@@ -39,8 +50,8 @@ class ResetPasswordTest extends BikeSharingWebTestCase
     {
         $db = $this->client->getContainer()->get(DbInterface::class);
         $db->query(
-            'UPDATE users SET password = :password WHERE userId = :userId',
-            ['password' => $this->originalPasswordHash, 'userId' => self::USER_ID]
+            'UPDATE users SET password = :password, number = :number WHERE userId = :userId',
+            ['password' => $this->originalPasswordHash, 'number' => self::USER_PHONE_NUMBER, 'userId' => self::USER_ID]
         );
         $db->query('DELETE FROM passwordReset WHERE userId = :userId', ['userId' => self::USER_ID]);
         $this->resetLimiters();
@@ -84,13 +95,7 @@ class ResetPasswordTest extends BikeSharingWebTestCase
         $this->requestReset(self::USER_PHONE_NUMBER);
         $resetPath = $this->resetPathFromMail();
 
-        $this->client->request(Request::METHOD_GET, $resetPath);
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseHeaderSame('Referrer-Policy', 'no-referrer');
-        $this->client->submitForm('reset-password', [
-            'change_password_form[plainPassword][first]' => $newSecret,
-            'change_password_form[plainPassword][second]' => $newSecret,
-        ]);
+        $this->setNewPasswordThroughTheLink($resetPath, $newSecret);
 
         $this->assertResponseRedirects('/login');
         $this->assertFlash('success', 'password.reset.done');
@@ -101,6 +106,103 @@ class ResetPasswordTest extends BikeSharingWebTestCase
         $this->client->request(Request::METHOD_GET, $resetPath);
         $this->assertResponseRedirects('/resetPassword', null, 'A used link does not work again');
         $this->assertFlash('error', 'password.reset.invalid_link');
+    }
+
+    public function testResetEndsTheAppSessionsOfTheOldPassword(): void
+    {
+        $this->client->request(Request::METHOD_POST, '/api/v1/auth/token', [
+            'number' => self::USER_PHONE_NUMBER,
+            'password' => self::USER_PASSWORD,
+        ]);
+        $this->assertResponseIsSuccessful();
+        $refreshToken = $this->decodeApiResponseData()['refreshToken'];
+
+        $this->requestReset(self::USER_PHONE_NUMBER);
+        $this->setNewPasswordThroughTheLink($this->resetPathFromMail());
+        $this->assertResponseRedirects('/login');
+
+        $this->client->request(Request::METHOD_POST, '/api/v1/auth/refresh', ['refreshToken' => $refreshToken]);
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    public function testLinkWorksWhenTheStoredNumberIsNoLongerAValidPhoneNumber(): void
+    {
+        $this->requestReset(self::USER_PHONE_NUMBER);
+        $resetPath = $this->resetPathFromMail();
+        $this->client->getContainer()->get(DbInterface::class)->query(
+            'UPDATE users SET number = :number WHERE userId = :userId',
+            ['number' => '12', 'userId' => self::USER_ID]
+        );
+
+        $this->setNewPasswordThroughTheLink($resetPath);
+
+        $this->assertResponseRedirects('/login');
+        $this->assertNotSame($this->originalPasswordHash, $this->readPasswordHash());
+    }
+
+    public function testChangingThePasswordInTheProfileCancelsThePendingLink(): void
+    {
+        $this->requestReset(self::USER_PHONE_NUMBER);
+        $resetPath = $this->resetPathFromMail();
+
+        $this->client->loginUser($this->loadUser(self::USER_PHONE_NUMBER));
+        $newSecret = bin2hex(random_bytes(6));
+        $crawler = $this->client->request(Request::METHOD_GET, '/user/profile');
+        $this->client->submit($crawler->selectButton('Change Password')->form([
+            'change_password_form[currentPassword]' => self::USER_PASSWORD,
+            'change_password_form[plainPassword][first]' => $newSecret,
+            'change_password_form[plainPassword][second]' => $newSecret,
+        ]));
+        $this->assertResponseRedirects('/user/profile');
+
+        $this->client->request(Request::METHOD_GET, $resetPath);
+        $this->assertResponseRedirects('/resetPassword');
+        $this->assertFlash('error', 'password.reset.invalid_link');
+    }
+
+    public function testAnAdminEditOfTheUserCancelsThePendingLink(): void
+    {
+        $this->requestReset(self::USER_PHONE_NUMBER);
+        $resetPath = $this->resetPathFromMail();
+        $userItem = $this->client->getContainer()->get(UserRepository::class)->findItem(self::USER_ID);
+
+        $this->client->loginUser($this->loadUser(self::ADMIN_PHONE_NUMBER));
+        $this->client->request(
+            Request::METHOD_PATCH,
+            '/api/v1/admin/users/' . self::USER_ID,
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'username' => $userItem['userName'],
+                'email' => $userItem['mail'],
+                'number' => $userItem['number'],
+                'privileges' => $userItem['privileges'],
+                'userLimit' => $userItem['userLimit'],
+            ], JSON_THROW_ON_ERROR)
+        );
+        $this->assertResponseIsSuccessful();
+
+        $this->assertSame(0, $this->countResetTokens());
+    }
+
+    public function testRequestForAnotherHostIsRejected(): void
+    {
+        $this->expectLog(Logger::ERROR, '/Untrusted Host "evil\\.example"/');
+
+        $this->client->request(
+            Request::METHOD_POST,
+            '/resetPassword',
+            [
+                'reset_password_request_form' => [
+                    '_token' => $this->csrfToken('reset_password_request_form'),
+                    'number' => self::USER_PHONE_NUMBER,
+                ],
+            ],
+            server: ['HTTP_HOST' => 'evil.example']
+        );
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertSame([], $this->client->getContainer()->get(MailSenderInterface::class)->getSentMessages());
+        $this->assertSame(0, $this->countResetTokens());
     }
 
     public function testMismatchedPasswordsChangeNothing(): void
@@ -222,6 +324,26 @@ class ResetPasswordTest extends BikeSharingWebTestCase
                 'number' => $number,
             ],
         ]);
+    }
+
+    private function setNewPasswordThroughTheLink(string $resetPath, ?string $newSecret = null): void
+    {
+        $newSecret ??= bin2hex(random_bytes(6));
+        $this->client->request(Request::METHOD_GET, $resetPath);
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Referrer-Policy', 'no-referrer');
+        $this->client->submitForm('reset-password', [
+            'change_password_form[plainPassword][first]' => $newSecret,
+            'change_password_form[plainPassword][second]' => $newSecret,
+        ]);
+    }
+
+    private function loadUser(string $number): User
+    {
+        $user = $this->client->getContainer()->get(UserProvider::class)->loadUserByIdentifier($number);
+        $this->assertInstanceOf(User::class, $user);
+
+        return $user;
     }
 
     private function resetPathFromMail(): string

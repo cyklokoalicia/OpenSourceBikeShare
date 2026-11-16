@@ -117,6 +117,19 @@ class RefreshTokenRepository
         );
     }
 
+    public function revokeAllForUser(int $userId): void
+    {
+        $this->db->query(
+            'UPDATE api_refresh_tokens
+             SET revokedAt = :now
+             WHERE userId = :userId AND revokedAt IS NULL',
+            [
+                'now' => $this->clock->now()->format('Y-m-d H:i:s'),
+                'userId' => $userId,
+            ]
+        );
+    }
+
     public function revokeToken(string $plainToken): void
     {
         $this->db->query(

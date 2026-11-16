@@ -88,6 +88,14 @@ MESSENGER_CHATS_JSON=[{"name":"Newcomers TG","url":"https://t.me/example"}]
 
 Empty array (`[]`, the default) disables the welcome redirect for new registrations.
 
+```
+TRUSTED_HOSTS='^(www\.)?example\.com$'
+```
+
+Regex of the host names the site answers to; requests for any other host get 400. Password reset and
+e-mail confirmation mails carry absolute links built from the request's host, so without it a forged
+`Host` header could point those links at another site. Empty or undefined accepts any host, as before.
+
 `SMS_CONNECTOR=textmagic` is no longer supported: the Textmagic connector was removed.
 Switch to `eurosms` or `disabled`. An unknown value does not stop the app from booting;
 it logs "Error creating SMS connector" and silently drops every outgoing SMS.

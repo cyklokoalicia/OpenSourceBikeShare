@@ -20,6 +20,10 @@ return static function (FrameworkConfig $framework): void {
 
     $framework->secret('%env(APP_SECRET)%');
 
+    // Absolute links in mails (password reset, e-mail confirmation) take their host from the request.
+    // A host regex here rejects requests for any other host, so a forged Host header cannot redirect those links.
+    $framework->trustedHosts(['%env(TRUSTED_HOSTS)%']);
+
     $cache = $framework->cache();
 
     $cache->pool('cache.static')

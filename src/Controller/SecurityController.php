@@ -14,7 +14,7 @@ use BikeShare\Notification\NotifierInterface;
 use BikeShare\Notification\UserRecipient;
 use BikeShare\Purifier\PhonePurifierInterface;
 use BikeShare\Repository\PasswordResetRepository;
-use BikeShare\Repository\UserRepository;
+use BikeShare\Repository\RefreshTokenRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -79,7 +79,11 @@ class SecurityController extends AbstractController
             }
 
             $number = trim((string)$form->get('number')->getData());
-            $number = $phonePurifier->isValid($number) ? $phonePurifier->purify($number) : $number;
+            try {
+                $number = $phonePurifier->purify($number);
+            } catch (\InvalidArgumentException) {
+                // Not a phone number: limit the raw value, it cannot match a user anyway.
+            }
             // The per-number limit is consumed for unknown numbers too, so the two cases cannot be told apart.
             if ($passwordResetNumberLimiter->create($number)->consume()->isAccepted()) {
                 try {
@@ -138,29 +142,36 @@ class SecurityController extends AbstractController
         string $token,
         Request $request,
         UserProvider $userProvider,
-        UserRepository $userRepository,
         PasswordResetRepository $passwordResetRepository,
+        RefreshTokenRepository $refreshTokenRepository,
         UserPasswordHasherInterface $passwordHasher,
         TranslatorInterface $translator
     ): Response {
-        $userId = $passwordResetRepository->findUserIdByTokenHash(hash('sha256', $token));
-        $userItem = is_null($userId) ? null : $userRepository->findItem($userId);
-        if (is_null($userItem)) {
-            $this->addFlash('error', $translator->trans('password.reset.invalid_link'));
-
-            return $this->redirectToRoute('reset_password');
+        $tokenHash = hash('sha256', $token);
+        $userId = $passwordResetRepository->findUserIdByTokenHash($tokenHash);
+        try {
+            $user = is_null($userId) ? null : $userProvider->loadUserById($userId);
+        } catch (UserNotFoundException) {
+            $user = null;
+        }
+        if (is_null($user)) {
+            return $this->invalidResetLink($translator);
         }
 
         $form = $this->createForm(ChangePasswordFormType::class, null, ['require_current_password' => false]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $userProvider->loadUserByIdentifier($userItem['number']);
+            // Claim the link before changing anything: of two concurrent submissions only one gets past here.
+            if (!$passwordResetRepository->consume($user->getUserId(), $tokenHash)) {
+                return $this->invalidResetLink($translator);
+            }
             $userProvider->upgradePassword(
                 $user,
                 $passwordHasher->hashPassword($user, $form->get('plainPassword')->getData())
             );
-            $passwordResetRepository->deleteByUserId($userId);
+            // Whoever knew the old password may hold an app session: it ends with the reset.
+            $refreshTokenRepository->revokeAllForUser($user->getUserId());
 
             $this->addFlash('success', $translator->trans('password.reset.done'));
 
@@ -172,5 +183,12 @@ class SecurityController extends AbstractController
         $response->headers->set('Referrer-Policy', 'no-referrer');
 
         return $response;
+    }
+
+    private function invalidResetLink(TranslatorInterface $translator): Response
+    {
+        $this->addFlash('error', $translator->trans('password.reset.invalid_link'));
+
+        return $this->redirectToRoute('reset_password');
     }
 }

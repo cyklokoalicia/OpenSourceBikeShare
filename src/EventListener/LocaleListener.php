@@ -17,11 +17,11 @@ class LocaleListener
     public function __invoke(RequestEvent $event): void
     {
         $request = $event->getRequest();
-        $session = $request->getSession();
-
         $locale = $request->getPreferredLanguage($this->enabledLocales) ?? $this->defaultLocale;
-
-        $locale = $session->get('_locale', $locale);
+        // No session when the request failed before it was opened, e.g. the error page for an untrusted host.
+        if ($request->hasSession()) {
+            $locale = $request->getSession()->get('_locale', $locale);
+        }
 
         $request->setLocale($locale);
     }

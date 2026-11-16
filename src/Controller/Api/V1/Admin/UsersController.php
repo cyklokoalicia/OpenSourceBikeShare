@@ -6,6 +6,7 @@ namespace BikeShare\Controller\Api\V1\Admin;
 
 use BikeShare\Credit\CreditSystemInterface;
 use BikeShare\Enum\CreditChangeType;
+use BikeShare\Repository\PasswordResetRepository;
 use BikeShare\Repository\UserClientRepository;
 use BikeShare\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -45,7 +46,8 @@ class UsersController extends AbstractController
         string $userId,
         bool $isSmsSystemEnabled,
         Request $request,
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        PasswordResetRepository $passwordResetRepository
     ): Response {
         if (empty($userId) || !is_numeric($userId)) {
             return $this->json(['detail' => 'Invalid user id'], Response::HTTP_BAD_REQUEST);
@@ -79,6 +81,8 @@ class UsersController extends AbstractController
             $privileges,
             $userLimit
         );
+        // A reset link already mailed may have gone to an address the admin has just replaced.
+        $passwordResetRepository->deleteByUserId((int)$userId);
 
         return $this->json([
             'message' => 'Details of user ' . $userName . ' updated.'

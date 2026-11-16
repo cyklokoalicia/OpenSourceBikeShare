@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace BikeShare\Controller;
 
+use BikeShare\App\Entity\User;
 use BikeShare\App\Security\UserProvider;
 use BikeShare\Form\ChangePasswordFormType;
+use BikeShare\Repository\PasswordResetRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,8 +28,12 @@ class UserController extends AbstractController
         TranslatorInterface $translator,
         TokenStorageInterface $tokenStorage,
         RememberMeHandlerInterface $rememberMeHandler,
+        PasswordResetRepository $passwordResetRepository,
     ): Response {
         $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
         $form = $this->createForm(ChangePasswordFormType::class);
         $form->handleRequest($request);
 
@@ -42,6 +48,8 @@ class UserController extends AbstractController
                     $newPassword
                 );
                 $userProvider->upgradePassword($user, $hashedPassword);
+                // A reset link mailed earlier would otherwise still overwrite the password just chosen.
+                $passwordResetRepository->deleteByUserId($user->getUserId());
 
                 // Keep this session signed in: with the old hash in the token the next request would see a
                 // changed user and log out. Other sessions and remember-me cookies are invalidated on purpose.
