@@ -121,7 +121,7 @@ return function (SecurityConfig $security) {
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()
-        ->path('^/resetPassword$')
+        ->path('^/resetPassword(/[0-9a-f]{64})?$')
         ->roles(['PUBLIC_ACCESS']);
     $security
         ->accessControl()

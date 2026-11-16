@@ -42,16 +42,30 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             throw new UserNotFoundException(sprintf('Unknown user %s', $identifier));
         }
 
+        return $this->loadUserWhere('number', $identifier);
+    }
+
+    /**
+     * @throws UserNotFoundException if the user is not found
+     */
+    public function loadUserById(int $userId): User
+    {
+        return $this->loadUserWhere('userId', $userId);
+    }
+
+    /**
+     * @param 'number'|'userId' $column
+     */
+    private function loadUserWhere(string $column, int|string $value): User
+    {
         $result = $this->db->query(
             'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed, registrationDate
-             FROM users 
-             WHERE number = :identifier',
-            [
-                'identifier' => $identifier
-            ]
+             FROM users
+             WHERE ' . $column . ' = :value',
+            ['value' => $value]
         );
         if ($result->rowCount() == 0) {
-            throw new UserNotFoundException(sprintf('Unknown user %s', $identifier));
+            throw new UserNotFoundException(sprintf('Unknown user %s', $value));
         }
 
         $row = $result->fetchAssoc();

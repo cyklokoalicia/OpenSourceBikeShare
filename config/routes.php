@@ -61,6 +61,9 @@ return function (RoutingConfigurator $routes) {
         ->controller([\BikeShare\Controller\SecurityController::class, 'logout']);
     $routes->add('reset_password', '/resetPassword')
         ->controller([\BikeShare\Controller\SecurityController::class, 'resetPassword']);
+    $routes->add('reset_password_confirm', '/resetPassword/{token}')
+        ->requirements(['token' => '[0-9a-f]{64}'])
+        ->controller([\BikeShare\Controller\SecurityController::class, 'resetPasswordConfirm']);
     $routes->add('user_settings_geolocation', '/user/settings/geolocation')
         ->methods(['PUT'])
         ->controller([\BikeShare\Controller\UserSettingsController::class, 'saveGeolocation']);

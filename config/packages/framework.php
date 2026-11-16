@@ -5,7 +5,10 @@ declare(strict_types=1);
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Config\FrameworkConfig;
 
-return static function (FrameworkConfig $framework): void {
+return static function (
+    FrameworkConfig $framework,
+    \Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator $container
+): void {
     $framework->phpErrors()
         ->throw(false);
 
@@ -19,6 +22,12 @@ return static function (FrameworkConfig $framework): void {
     $framework->router()->utf8(true);
 
     $framework->secret('%env(APP_SECRET)%');
+
+    // Absolute links in mails (password reset, e-mail confirmation) take their host from the request.
+    // A host regex here rejects requests for any other host, so a forged Host header cannot redirect those links.
+    $framework->trustedHosts(['%env(TRUSTED_HOSTS)%']);
+    // Empty by default: any host is accepted, as before the variable existed.
+    $container->parameters()->set('env(TRUSTED_HOSTS)', '');
 
     $cache = $framework->cache();
 
@@ -34,6 +43,21 @@ return static function (FrameworkConfig $framework): void {
         ->adapters(['cache.adapter.filesystem'])
         ->defaultLifetime(900)
         ->public(true);
+
+    // Password reset requests: per client IP against bulk abuse, per phone number against mail flooding one user.
+    // No lock: a race lets a request or two past the limit, which is fine here and spares the Lock component.
+    $framework->rateLimiter()
+        ->limiter('password_reset_ip')
+        ->policy('sliding_window')
+        ->lockFactory(null)
+        ->limit(10)
+        ->interval('1 hour');
+    $framework->rateLimiter()
+        ->limiter('password_reset_number')
+        ->policy('fixed_window')
+        ->lockFactory(null)
+        ->limit(3)
+        ->interval('1 hour');
 
     $framework
         ->defaultLocale('en')

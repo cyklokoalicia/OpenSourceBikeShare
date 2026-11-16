@@ -20,12 +20,23 @@ class MailAssertions
      */
     public static function assertConfirmationLink(array $mail, string $expectedKey): string
     {
+        return self::assertLink($mail, $expectedKey, 'emailConfirmURL');
+    }
+
+    /**
+     * Returns the path of the link in the given parameter of a captured mail,
+     * after checking the mail body is the expected translation.
+     *
+     * @param array{message: mixed} $mail
+     */
+    public static function assertLink(array $mail, string $expectedKey, string $parameter): string
+    {
         $message = $mail['message'] ?? null;
         Assert::assertInstanceOf(TranslatableMessage::class, $message);
         Assert::assertSame($expectedKey, $message->getMessage());
-        $link = parse_url((string)($message->getParameters()['emailConfirmURL'] ?? ''), PHP_URL_PATH);
-        Assert::assertIsString($link, 'Email confirmation link not found');
-        Assert::assertNotSame('', $link, 'Email confirmation link not found');
+        $link = parse_url((string)($message->getParameters()[$parameter] ?? ''), PHP_URL_PATH);
+        Assert::assertIsString($link, sprintf('Link "%s" not found', $parameter));
+        Assert::assertNotSame('', $link, sprintf('Link "%s" not found', $parameter));
 
         return $link;
     }

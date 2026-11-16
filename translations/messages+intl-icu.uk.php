@@ -90,6 +90,16 @@ return [
     'SMS code has been sent to your phone +{phoneNumber}.' => 'SMS-код було надіслано на ваш телефон +{phoneNumber}.',
     'Coupon' => 'Купон',
     'Password reset' => 'Скидання пароля',
+    'password.reset.link.mail' => 'Вітаємо, {name}!
+
+Хтось попросив скинути пароль до вашого облікового запису. Щоб задати новий пароль, відкрийте це посилання протягом {minutes} хвилин:
+{resetUrl}
+
+Якщо це були не ви, просто проігноруйте цей лист. Ваш пароль лишається без змін.',
+    'password.reset.requested' => 'Якщо цей номер зареєстрований, ми надіслали на його e-mail посилання для встановлення нового пароля.',
+    'password.reset.too_many' => 'Забагато запитів на скидання пароля. Спробуйте пізніше.',
+    'password.reset.invalid_link' => 'Це посилання для скидання пароля недійсне або застаріле. Запросіть нове.',
+    'password.reset.done' => 'Ваш пароль змінено. Тепер можна увійти.',
     'success.registration.mail' => 'Привіт {name}
 ви були зареєстровані в системі спільного використання велосипедів {systemName}.
 Правила системи доступні тут: {systemRulesPageUrl}
@@ -97,15 +107,6 @@ return [
     'email.confirmation.mail' => 'Привіт {name}
 Натиснувши на наступне посилання, ви підтвердите свою електронну пошту: {emailConfirmURL}',
     'Hello' => 'Привіт',
-    'Your password has been reset successfully.' => 'Ваш пароль було успішно скинуто.',
-    'Your new password is:' => 'Ваш новий пароль:',
-    'password.reset.mail' => 'Привіт {name},
-
-Ваш пароль було успішно скинуто.
-
-Ваш новий пароль:
-{password}',
-    'Check your email.' => 'Перевірте свою електронну пошту.',
     'Registration' => 'Реєстрація',
     'Email confirmation' => 'Підтвердження електронної пошти',
     'You will receive SMS code to this phone number +{phoneNumber}.' => 'Ви отримаєте SMS-код на цей номер телефону +{phoneNumber}.',

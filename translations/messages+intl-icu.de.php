@@ -90,6 +90,16 @@ return [
     'SMS code has been sent to your phone +{phoneNumber}.' => 'SMS-Code wurde an dein Telefon +{phoneNumber} gesendet.',
     'Coupon' => 'Gutschein',
     'Password reset' => 'Passwort zurücksetzen',
+    'password.reset.link.mail' => 'Hallo {name},
+
+jemand hat das Zurücksetzen des Passworts für Ihr Konto angefordert. Um ein neues Passwort festzulegen, öffnen Sie diesen Link innerhalb von {minutes} Minuten:
+{resetUrl}
+
+Wenn Sie das nicht waren, ignorieren Sie diese E-Mail. Ihr Passwort bleibt unverändert.',
+    'password.reset.requested' => 'Wenn diese Nummer registriert ist, haben wir einen Link zum Festlegen eines neuen Passworts an die zugehörige E-Mail-Adresse gesendet.',
+    'password.reset.too_many' => 'Zu viele Anfragen zum Zurücksetzen des Passworts. Bitte versuchen Sie es später erneut.',
+    'password.reset.invalid_link' => 'Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an.',
+    'password.reset.done' => 'Ihr Passwort wurde geändert. Sie können sich jetzt anmelden.',
     'success.registration.mail' => 'Hallo {name}
 du wurdest im Community-Bike-Share-System {systemName} registriert.
 Die Systemregeln findest du hier: {systemRulesPageUrl}
@@ -97,15 +107,6 @@ Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmU
     'email.confirmation.mail' => 'Hallo {name}
 Durch Klicken auf den folgenden Link bestätigst du deine E-Mail: {emailConfirmURL}',
     'Hello' => 'Hallo',
-    'Your password has been reset successfully.' => 'Dein Passwort wurde erfolgreich zurückgesetzt.',
-    'Your new password is:' => 'Dein neues Passwort lautet:',
-    'password.reset.mail' => 'Hallo {name},
-
-Dein Passwort wurde erfolgreich zurückgesetzt.
-
-Dein neues Passwort lautet:
-{password}',
-    'Check your email.' => 'Überprüfe deine E-Mail.',
     'Registration' => 'Registrierung',
     'Email confirmation' => 'E-Mail-Bestätigung',
     'You will receive SMS code to this phone number +{phoneNumber}.' => 'Du erhältst einen SMS-Code an diese Telefonnummer +{phoneNumber}.',

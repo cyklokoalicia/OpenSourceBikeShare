@@ -83,6 +83,16 @@ return [
   'SMS code has been sent to your phone +{phoneNumber}.' => 'SMS code has been sent to your phone +{phoneNumber}.',
   'Coupon' => 'Coupon',
   'Password reset' => 'Password reset',
+  'password.reset.link.mail' => 'Hello {name},
+
+someone asked to reset the password of your account. To set a new password, open this link within {minutes} minutes:
+{resetUrl}
+
+If it was not you, ignore this e-mail. Your password stays the same.',
+  'password.reset.requested' => 'If this number is registered, we have sent a link to set a new password to its e-mail.',
+  'password.reset.too_many' => 'Too many password reset requests. Please try again later.',
+  'password.reset.invalid_link' => 'This password reset link is invalid or has expired. Please request a new one.',
+  'password.reset.done' => 'Your password has been changed. You can log in now.',
   'success.registration.mail' => 'Hello {name}
 you have been registered into community bike share system {systemName}.
 System rules are available here: {systemRulesPageUrl}
@@ -90,15 +100,6 @@ By clicking the following link you will confirm your email: {emailConfirmURL}',
   'email.confirmation.mail' => 'Hello {name}
 By clicking the following link you will confirm your email: {emailConfirmURL}',
   'Hello' => 'Hello',
-  'Your password has been reset successfully.' => 'Your password has been reset successfully.',
-  'Your new password is:' => 'Your new password is:',
-  'password.reset.mail' => 'Hello {name},
-
-Your password has been reset successfully.
-
-Your new password is:
-{password}',
-  'Check your email.' => 'Check your email.',
   'Registration' => 'Registration',
   'Email confirmation' => 'Email confirmation',
   'You will receive SMS code to this phone number +{phoneNumber}.' => 'You will receive SMS code to this phone number +{phoneNumber}.',
