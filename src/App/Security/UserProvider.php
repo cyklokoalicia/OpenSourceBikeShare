@@ -42,7 +42,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             throw new UserNotFoundException(sprintf('Unknown user %s', $identifier));
         }
 
-        return $this->loadUserWhere('number = :identifier', ['identifier' => $identifier], $identifier);
+        return $this->loadUserWhere('number', $identifier);
     }
 
     /**
@@ -50,22 +50,22 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function loadUserById(int $userId): User
     {
-        return $this->loadUserWhere('userId = :userId', ['userId' => $userId], (string)$userId);
+        return $this->loadUserWhere('userId', $userId);
     }
 
     /**
-     * @param array<string, mixed> $parameters
+     * @param 'number'|'userId' $column
      */
-    private function loadUserWhere(string $condition, array $parameters, string $identifier): User
+    private function loadUserWhere(string $column, int|string $value): User
     {
         $result = $this->db->query(
             'SELECT userId, number, mail, password, city, userName, privileges, isNumberConfirmed, registrationDate
              FROM users
-             WHERE ' . $condition,
-            $parameters
+             WHERE ' . $column . ' = :value',
+            ['value' => $value]
         );
         if ($result->rowCount() == 0) {
-            throw new UserNotFoundException(sprintf('Unknown user %s', $identifier));
+            throw new UserNotFoundException(sprintf('Unknown user %s', $value));
         }
 
         $row = $result->fetchAssoc();

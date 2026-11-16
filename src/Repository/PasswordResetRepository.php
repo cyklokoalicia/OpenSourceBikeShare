@@ -21,50 +21,54 @@ class PasswordResetRepository
     /**
      * Replaces any earlier pending reset of the user, so only the latest link works.
      */
-    public function save(int $userId, string $tokenHash, int $lifetimeMinutes): void
+    public function save(int $userId, string $plainToken, int $lifetimeMinutes): void
     {
-        $now = $this->clock->now();
         $this->db->query(
-            'INSERT INTO passwordReset (userId, tokenHash, expiresAt, createdAt)
-             VALUES (:userId, :tokenHash, :expiresAt, :createdAt)
-             ON DUPLICATE KEY UPDATE tokenHash = VALUES(tokenHash), expiresAt = VALUES(expiresAt),
-                 createdAt = VALUES(createdAt)',
+            'INSERT INTO passwordReset (userId, tokenHash, expiresAt) VALUES (:userId, :tokenHash, :expiresAt)
+             ON DUPLICATE KEY UPDATE tokenHash = VALUES(tokenHash), expiresAt = VALUES(expiresAt)',
             [
                 'userId' => $userId,
-                'tokenHash' => $tokenHash,
-                'expiresAt' => $now->modify(sprintf('+%d minutes', $lifetimeMinutes))->format('Y-m-d H:i:s'),
-                'createdAt' => $now->format('Y-m-d H:i:s'),
+                'tokenHash' => $this->hashToken($plainToken),
+                'expiresAt' => $this->clock->now()
+                    ->modify(sprintf('+%d minutes', $lifetimeMinutes))
+                    ->format('Y-m-d H:i:s'),
             ]
         );
     }
 
-    public function findUserIdByTokenHash(string $tokenHash): ?int
+    public function findUserIdByToken(string $plainToken): ?int
     {
         $row = $this->db->query(
             'SELECT userId FROM passwordReset WHERE tokenHash = :tokenHash AND expiresAt > :now',
-            ['tokenHash' => $tokenHash, 'now' => $this->clock->now()->format('Y-m-d H:i:s')]
+            ['tokenHash' => $this->hashToken($plainToken), 'now' => $this->now()]
         )->fetchAssoc();
 
         return $row ? (int)$row['userId'] : null;
     }
 
     /**
-     * Deletes the user's pending reset if it still matches the token, so that of two concurrent uses only one wins.
+     * Deletes the pending reset if the token is still valid, so that of two concurrent uses only one wins.
      */
-    public function consume(int $userId, string $tokenHash): bool
+    public function consume(string $plainToken): bool
     {
         return $this->db->query(
-            'DELETE FROM passwordReset WHERE userId = :userId AND tokenHash = :tokenHash AND expiresAt > :now',
-            [
-                'userId' => $userId,
-                'tokenHash' => $tokenHash,
-                'now' => $this->clock->now()->format('Y-m-d H:i:s'),
-            ]
+            'DELETE FROM passwordReset WHERE tokenHash = :tokenHash AND expiresAt > :now',
+            ['tokenHash' => $this->hashToken($plainToken), 'now' => $this->now()]
         )->rowCount() === 1;
     }
 
     public function deleteByUserId(int $userId): void
     {
         $this->db->query('DELETE FROM passwordReset WHERE userId = :userId', ['userId' => $userId]);
+    }
+
+    private function hashToken(string $plainToken): string
+    {
+        return hash('sha256', $plainToken);
+    }
+
+    private function now(): string
+    {
+        return $this->clock->now()->format('Y-m-d H:i:s');
     }
 }

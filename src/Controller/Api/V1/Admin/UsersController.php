@@ -73,6 +73,7 @@ class UsersController extends AbstractController
             return $this->json(['detail' => 'Invalid payload'], Response::HTTP_BAD_REQUEST);
         }
 
+        $previousMail = $userRepository->findItem((int)$userId)['mail'] ?? null;
         $userRepository->updateItem(
             (int)$userId,
             $userName,
@@ -81,8 +82,10 @@ class UsersController extends AbstractController
             $privileges,
             $userLimit
         );
-        // A reset link already mailed may have gone to an address the admin has just replaced.
-        $passwordResetRepository->deleteByUserId((int)$userId);
+        if ($previousMail !== $email) {
+            // A reset link already mailed went to the address the admin has just replaced.
+            $passwordResetRepository->deleteByUserId((int)$userId);
+        }
 
         return $this->json([
             'message' => 'Details of user ' . $userName . ' updated.'

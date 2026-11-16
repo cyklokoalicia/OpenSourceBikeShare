@@ -33,9 +33,6 @@ use libphonenumber\PhoneNumberUtil;
 use Symfony\Component\Dotenv\Command\DotenvDumpCommand;
 
 return static function (ContainerConfigurator $container): void {
-    // Empty: any host is accepted, as before the variable existed.
-    $container->parameters()->set('env(TRUSTED_HOSTS)', '');
-
     $services = $container->services();
     $services->defaults()
         ->public()

@@ -5,7 +5,10 @@ declare(strict_types=1);
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Config\FrameworkConfig;
 
-return static function (FrameworkConfig $framework): void {
+return static function (
+    FrameworkConfig $framework,
+    \Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator $container
+): void {
     $framework->phpErrors()
         ->throw(false);
 
@@ -23,6 +26,8 @@ return static function (FrameworkConfig $framework): void {
     // Absolute links in mails (password reset, e-mail confirmation) take their host from the request.
     // A host regex here rejects requests for any other host, so a forged Host header cannot redirect those links.
     $framework->trustedHosts(['%env(TRUSTED_HOSTS)%']);
+    // Empty by default: any host is accepted, as before the variable existed.
+    $container->parameters()->set('env(TRUSTED_HOSTS)', '');
 
     $cache = $framework->cache();
 

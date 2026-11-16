@@ -108,7 +108,6 @@ CREATE TABLE `passwordReset` (
   `userId` int(11) UNSIGNED NOT NULL,
   `tokenHash` char(64) NOT NULL,
   `expiresAt` datetime NOT NULL,
-  `createdAt` datetime NOT NULL,
   PRIMARY KEY (`userId`),
   UNIQUE KEY `tokenHash` (`tokenHash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

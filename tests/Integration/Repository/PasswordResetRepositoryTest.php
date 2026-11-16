@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace BikeShare\Test\Integration\Repository;
 
-use BikeShare\Db\DbInterface;
 use BikeShare\Repository\PasswordResetRepository;
 use BikeShare\Test\Integration\BikeSharingKernelTestCase;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
 class PasswordResetRepositoryTest extends BikeSharingKernelTestCase
 {
+    use ClockSensitiveTrait;
+
     private const USER_ID = 4;
 
     protected function tearDown(): void
@@ -21,25 +23,20 @@ class PasswordResetRepositoryTest extends BikeSharingKernelTestCase
     public function testATokenIsConsumedOnlyOnce(): void
     {
         $repository = self::getContainer()->get(PasswordResetRepository::class);
-        $tokenHash = hash('sha256', 'token');
-        $repository->save(self::USER_ID, $tokenHash, 60);
+        $repository->save(self::USER_ID, 'token', 60);
 
-        $this->assertFalse($repository->consume(self::USER_ID, hash('sha256', 'other')), 'Another token');
-        $this->assertTrue($repository->consume(self::USER_ID, $tokenHash));
-        $this->assertFalse($repository->consume(self::USER_ID, $tokenHash), 'The second use');
-        $this->assertNull($repository->findUserIdByTokenHash($tokenHash));
+        $this->assertFalse($repository->consume('other'), 'Another token');
+        $this->assertTrue($repository->consume('token'));
+        $this->assertFalse($repository->consume('token'), 'The second use');
+        $this->assertNull($repository->findUserIdByToken('token'));
     }
 
     public function testAnExpiredTokenCannotBeConsumed(): void
     {
         $repository = self::getContainer()->get(PasswordResetRepository::class);
-        $tokenHash = hash('sha256', 'token');
-        $repository->save(self::USER_ID, $tokenHash, 60);
-        self::getContainer()->get(DbInterface::class)->query(
-            'UPDATE passwordReset SET expiresAt = :past WHERE userId = :userId',
-            ['past' => '2000-01-01 00:00:00', 'userId' => self::USER_ID]
-        );
+        $repository->save(self::USER_ID, 'token', 60);
+        static::mockTime('+61 minutes');
 
-        $this->assertFalse($repository->consume(self::USER_ID, $tokenHash));
+        $this->assertFalse($repository->consume('token'));
     }
 }

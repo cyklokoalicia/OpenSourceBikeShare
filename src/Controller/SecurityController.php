@@ -78,7 +78,7 @@ class SecurityController extends AbstractController
                 return $this->redirectToRoute('reset_password');
             }
 
-            $number = trim((string)$form->get('number')->getData());
+            $number = (string)$form->get('number')->getData();
             try {
                 $number = $phonePurifier->purify($number);
             } catch (\InvalidArgumentException) {
@@ -91,35 +91,8 @@ class SecurityController extends AbstractController
                 } catch (UserNotFoundException) {
                     $user = null;
                 }
-
                 if ($user instanceof User) {
-                    $token = bin2hex(random_bytes(32));
-                    $passwordResetRepository->save(
-                        $user->getUserId(),
-                        hash('sha256', $token),
-                        self::PASSWORD_RESET_LIFETIME_MINUTES
-                    );
-
-                    $names = preg_split("/[\s,]+/", $user->getUsername());
-                    $notifier->notify(
-                        new Notification(
-                            NotificationType::PasswordReset,
-                            new TranslatableMessage('Password reset'),
-                            new TranslatableMessage(
-                                'password.reset.link.mail',
-                                [
-                                    'name' => $names[0],
-                                    'resetUrl' => $this->generateUrl(
-                                        'reset_password_confirm',
-                                        ['token' => $token],
-                                        UrlGeneratorInterface::ABSOLUTE_URL
-                                    ),
-                                    'minutes' => self::PASSWORD_RESET_LIFETIME_MINUTES,
-                                ]
-                            )
-                        ),
-                        new UserRecipient($user->getUserId())
-                    );
+                    $this->mailResetLink($user, $passwordResetRepository, $notifier);
                 }
             }
 
@@ -147,14 +120,13 @@ class SecurityController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         TranslatorInterface $translator
     ): Response {
-        $tokenHash = hash('sha256', $token);
-        $userId = $passwordResetRepository->findUserIdByTokenHash($tokenHash);
-        try {
-            $user = is_null($userId) ? null : $userProvider->loadUserById($userId);
-        } catch (UserNotFoundException) {
-            $user = null;
+        $userId = $passwordResetRepository->findUserIdByToken($token);
+        if (is_null($userId)) {
+            return $this->invalidResetLink($translator);
         }
-        if (is_null($user)) {
+        try {
+            $user = $userProvider->loadUserById($userId);
+        } catch (UserNotFoundException) {
             return $this->invalidResetLink($translator);
         }
 
@@ -163,7 +135,7 @@ class SecurityController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Claim the link before changing anything: of two concurrent submissions only one gets past here.
-            if (!$passwordResetRepository->consume($user->getUserId(), $tokenHash)) {
+            if (!$passwordResetRepository->consume($token)) {
                 return $this->invalidResetLink($translator);
             }
             $userProvider->upgradePassword(
@@ -183,6 +155,36 @@ class SecurityController extends AbstractController
         $response->headers->set('Referrer-Policy', 'no-referrer');
 
         return $response;
+    }
+
+    private function mailResetLink(
+        User $user,
+        PasswordResetRepository $passwordResetRepository,
+        NotifierInterface $notifier
+    ): void {
+        $token = bin2hex(random_bytes(32));
+        $passwordResetRepository->save($user->getUserId(), $token, self::PASSWORD_RESET_LIFETIME_MINUTES);
+
+        $names = preg_split("/[\s,]+/", $user->getUsername());
+        $notifier->notify(
+            new Notification(
+                NotificationType::PasswordReset,
+                new TranslatableMessage('Password reset'),
+                new TranslatableMessage(
+                    'password.reset.link.mail',
+                    [
+                        'name' => $names[0],
+                        'resetUrl' => $this->generateUrl(
+                            'reset_password_confirm',
+                            ['token' => $token],
+                            UrlGeneratorInterface::ABSOLUTE_URL
+                        ),
+                        'minutes' => self::PASSWORD_RESET_LIFETIME_MINUTES,
+                    ]
+                )
+            ),
+            new UserRecipient($user->getUserId())
+        );
     }
 
     private function invalidResetLink(TranslatorInterface $translator): Response
