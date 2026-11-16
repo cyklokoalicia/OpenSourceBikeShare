@@ -68,7 +68,8 @@ abstract class BikeSharingWebTestCase extends WebTestCase
     {
         $container = $this->client->getContainer();
         $session = $container->get('session.factory')->createSession();
-        $sessionCookie = $this->client->getCookieJar()->get($session->getName());
+        $cookieJar = $this->client->getCookieJar();
+        $sessionCookie = $cookieJar->get($session->getName());
         if ($sessionCookie !== null) {
             $session->setId($sessionCookie->getValue());
         }
@@ -83,7 +84,9 @@ abstract class BikeSharingWebTestCase extends WebTestCase
             $requestStack->pop();
         }
         $session->save();
-        $this->client->getCookieJar()->set(new Cookie($session->getName(), $session->getId()));
+        if ($sessionCookie === null) {
+            $cookieJar->set(new Cookie($session->getName(), $session->getId()));
+        }
 
         return $token;
     }
